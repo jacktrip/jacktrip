@@ -155,6 +155,7 @@ if (rtaudio)
   add_compile_definitions(RT_AUDIO)
   set (qjacktrip_SRC ${qjacktrip_SRC}
     src/RtAudioInterface.cpp
+    src/StereoToMono.cpp
   )
 endif ()
 
@@ -179,6 +180,7 @@ if (NOT nogui)
   if (NOT novs)
     set (qjacktrip_SRC ${qjacktrip_SRC}
       src/gui/virtualstudio.cpp
+      src/gui/vsInit.cpp
       src/gui/vsQuickView.cpp
       src/gui/vsServerInfo.cpp
       src/gui/vsPing.cpp

@@ -125,23 +125,23 @@ Rectangle {
 
     Connections {
         target: virtualstudio
-        onAuthSucceeded: { 
+        function onAuthSucceeded() {
             if (virtualstudio.showDeviceSetup) {
                 virtualstudio.windowState = "setup";
             } else {
                 virtualstudio.windowState = "browse";
             }
         }
-        onAuthFailed: {
+        function onAuthFailed() {
             loginScreen.failTextVisible = true;
         }
-        onConnected: {
+        function onConnected() {
             virtualstudio.windowState = "connected";
         }
-        onFailed: {
+        function onFailed() {
             virtualstudio.windowState = "failed";
         }
-        onDisconnected: {
+        function onDisconnected() {
             virtualstudio.windowState = "browse";
         }
     }

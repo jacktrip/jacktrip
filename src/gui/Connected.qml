@@ -48,6 +48,8 @@ Item {
     property string shadowColour: virtualstudio.darkMode ? "#40000000" : "#80A1A1A1"
     property string toolTipBackgroundColour: virtualstudio.darkMode ? "#323232" : "#F3F3F3"
     property string toolTipTextColour: textColour
+    property string warningTextColour: "#DB0A0A"
+    property string linkText: virtualstudio.darkMode ? "#8B8D8D" : "#272525"
 
     property string meterGreen: "#61C554"
     property string meterYellow: "#F5BF4F"
@@ -129,7 +131,7 @@ Item {
             id: mic
             source: "mic.svg"
             x: 0; y: 0
-            width: 18 * virtualstudio.uiScale; height: 28 * virtualstudio.uiScale
+            width: 28 * virtualstudio.uiScale; height: 28 * virtualstudio.uiScale
             sourceSize: Qt.size(mic.width,mic.height)
             fillMode: Image.PreserveAspectFit
             smooth: true
@@ -160,7 +162,7 @@ Item {
             anchors.top: inputDeviceHeader.bottom
             anchors.left: inputDeviceHeader.left
             text: virtualstudio.audioBackend == "JACK" ?
-                virtualstudio.audioBackend : inputComboModel.filter(item => item.type === "element")[virtualstudio.inputDevice].text
+                virtualstudio.audioBackend : virtualstudio.inputDevice
             font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
             elide: Text.ElideRight
@@ -210,7 +212,7 @@ Item {
             anchors.top: outputDeviceHeader.bottom
             anchors.left: outputDeviceHeader.left
             text: virtualstudio.audioBackend == "JACK" ?
-                virtualstudio.audioBackend : outputComboModel.filter(item => item.type === "element")[virtualstudio.outputDevice].text
+                virtualstudio.audioBackend : virtualstudio.outputDevice
             font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
             elide: Text.ElideRight
@@ -290,7 +292,7 @@ Item {
             onClicked: { virtualstudio.inputMuted = !virtualstudio.inputMuted }
             Image {
                 id: micMute
-                width: 11.57 * virtualstudio.uiScale; height: 18 * virtualstudio.uiScale
+                width: 18 * virtualstudio.uiScale; height: 18 * virtualstudio.uiScale
                 anchors { verticalCenter: parent.verticalCenter; horizontalCenter: parent.horizontalCenter }
                 source: virtualstudio.inputMuted ? "micoff.svg" : "mic.svg"
                 sourceSize: Qt.size(micMute.width,micMute.height)
@@ -430,7 +432,7 @@ Item {
         visible: showReadyScreen
         x: networkStatsHeader.x + networkStatsHeader.width; y: 410 * virtualstudio.uiScale
         width: parent.width - networkStatsHeader.width - 2 * bodyMargin * virtualstudio.uiScale
-        height: 128 * virtualstudio.uiScale
+        height: 72 * virtualstudio.uiScale
 
         Text {
             id: netstat0
@@ -448,6 +450,33 @@ Item {
             topPadding: 8 * virtualstudio.uiScale
             anchors.top: netstat0.bottom
             color: textColour
+        }
+    }
+
+    Item {
+        id: devicesWarning
+        visible: showReadyScreen && Boolean(virtualstudio.devicesWarning)
+        x: bodyMargin * virtualstudio.uiScale
+        width: parent.width - (2 * x)
+        anchors.top: networkStatsText.bottom
+        anchors.topMargin: 12 * virtualstudio.uiScale
+
+        Text {
+            x: 0; y: 0
+            width: devicesWarning.width
+            textFormat: Text.RichText
+            text: (virtualstudio.devicesWarning)
+                + ((virtualstudio.devicesWarningHelpUrl)
+                    ? `&nbsp;<a style="color: ${linkText};" href=${virtualstudio.devicesWarningHelpUrl}>Learn More.</a>`
+                    : ""
+                )
+            onLinkActivated: link => {
+                virtualstudio.openLink(link)
+            }
+            horizontalAlignment: Text.AlignHLeft
+            wrapMode: Text.WordWrap
+            font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: warningTextColour
         }
     }
 

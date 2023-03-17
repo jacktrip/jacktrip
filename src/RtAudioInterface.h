@@ -43,6 +43,7 @@
 #include <QQueue>
 
 #include "AudioInterface.h"
+#include "StereoToMono.h"
 #include "jacktrip_globals.h"
 class JackTrip;  // Forward declaration
 
@@ -51,18 +52,16 @@ class RtAudioInterface : public AudioInterface
 {
    public:
     /** \brief The class constructor
-     * \param jacktrip Pointer to the JackTrip class that connects all classes (mediator)
      * \param NumInChans Number of Input Channels
      * \param NumOutChans Number of Output Channels
      * \param AudioBitResolution Audio Sample Resolutions in bits
+     * \param processWithNetwork Send audio to and from the network
+     * \param jacktrip Pointer to the JackTrip class that connects all classes (mediator)
      */
-    RtAudioInterface(JackTrip* jacktrip, int NumInChans = gDefaultNumInChannels,
-                     int NumOutChans                        = gDefaultNumOutChannels,
-                     audioBitResolutionT AudioBitResolution = BIT16);
-    /// \brief Overloaded class constructor with null JackTrip pointer
-    RtAudioInterface(int NumInChans                         = gDefaultNumInChannels,
-                     int NumOutChans                        = gDefaultNumOutChannels,
-                     audioBitResolutionT AudioBitResolution = BIT16);
+    RtAudioInterface(QVarLengthArray<int> InputChans, QVarLengthArray<int> OutputChans,
+                     inputMixModeT InputMixMode             = AudioInterface::MIX_UNSET,
+                     audioBitResolutionT AudioBitResolution = BIT16,
+                     bool processWithNetwork = false, JackTrip* jacktrip = nullptr);
     /// \brief The class destructor
     virtual ~RtAudioInterface();
 
@@ -74,7 +73,8 @@ class RtAudioInterface : public AudioInterface
     /// \brief This has no effect in RtAudio
     virtual void connectDefaultPorts() {}
 
-    static void getDeviceList(QStringList* list, QStringList* categories, bool isInput);
+    static void getDeviceList(QStringList* list, QStringList* categories,
+                              QList<int>* channels, bool isInput);
     static void getDeviceInfoFromName(std::string deviceName, int* index,
                                       std::string* api, bool isInput);
 
@@ -96,14 +96,15 @@ class RtAudioInterface : public AudioInterface
                                      const std::string& errorText);
     void printDeviceInfo(std::string api, unsigned int deviceId);
 
-    int mNumInChans;   ///< Number of Input Channels
-    int mNumOutChans;  ///<  Number of Output Channels
     QVarLengthArray<float*>
         mInBuffer;  ///< Vector of Input buffers/channel read from JACK
     QVarLengthArray<float*>
         mOutBuffer;     ///< Vector of Output buffer/channel to write to JACK
     RtAudio* mRtAudio;  ///< RtAudio class if the input and output device are the same
+
     unsigned int getDefaultDeviceForLinuxPulseAudio(bool isInput);
+
+    StereoToMono* mStereoToMonoMixer = NULL;
 };
 
 #endif  // __RTAUDIOINTERFACE_H__

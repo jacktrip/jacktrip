@@ -39,6 +39,7 @@
 #include <QTemporaryFile>
 
 #include "../JackTrip.h"
+#include "../Settings.h"
 #include "../UdpHubListener.h"
 #include "messageDialog.h"
 #include "vuMeter.h"
@@ -65,7 +66,7 @@ class QJackTrip : public QMainWindow
     Q_OBJECT
 
    public:
-    explicit QJackTrip(int argc = 0, bool suppressCommandlineWarning = false,
+    explicit QJackTrip(Settings* settings, bool suppressCommandlineWarning = false,
                        QWidget* parent = nullptr);
     ~QJackTrip() override;
 
@@ -97,8 +98,8 @@ class QJackTrip : public QMainWindow
     void start();
     void stop();
     void exit();
-    void updatedInputMeasurements(const QVector<float> valuesInDb);
-    void updatedOutputMeasurements(const QVector<float> valuesInDb);
+    void updatedInputMeasurements(const float* valuesInDb, int numChannels);
+    void updatedOutputMeasurements(const float* valuesInDb, int numChannels);
 #ifndef NO_VS
     void virtualStudioMode();
 #endif
@@ -111,7 +112,7 @@ class QJackTrip : public QMainWindow
     void enableUi(bool enabled);
     void advancedOptionsForHubServer(bool isHubServer);
     void migrateSettings();
-    void loadSettings();
+    void loadSettings(Settings* cliSettings = nullptr);
     void saveSettings();
 
 #ifdef RT_AUDIO
@@ -124,6 +125,8 @@ class QJackTrip : public QMainWindow
 
     QString commandLineFromCurrentOptions();
     void showCommandLineMessageBox();
+
+    JackTrip::hubConnectionModeT hubModeFromPatchType(patchTypeT patchType);
 
     QScopedPointer<Ui::QJackTrip> m_ui;
     QScopedPointer<UdpHubListener> m_udpHub;
@@ -153,9 +156,10 @@ class QJackTrip : public QMainWindow
     QString m_lastPath;
 
     QLabel m_autoQueueIndicator;
-    int m_argc;
     bool m_hideWarning;
-    bool m_firstShow = true;
+    bool m_audioFallback       = false;
+    bool m_usingRtAudioAlready = false;
+    bool m_firstShow           = true;
 
 #ifndef NO_VS
     QSharedPointer<VirtualStudio> m_vs;

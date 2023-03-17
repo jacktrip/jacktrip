@@ -218,7 +218,7 @@ void UdpHubListener::start()
             emit signalError(error_message);
             return;
         }
-        mAuth.reset(new Auth(mCredsFile));
+        mAuth.reset(new Auth(mCredsFile, true));
     }
 
     cout << "JackTrip HUB SERVER: Waiting for client connections..." << endl;

@@ -78,15 +78,26 @@ class VirtualStudio : public QObject
     Q_PROPERTY(bool selectableBackend READ selectableBackend CONSTANT)
     Q_PROPERTY(QString audioBackend READ audioBackend WRITE setAudioBackend NOTIFY
                    audioBackendChanged)
-    Q_PROPERTY(
-        int inputDevice READ inputDevice WRITE setInputDevice NOTIFY inputDeviceChanged)
-    Q_PROPERTY(int outputDevice READ outputDevice WRITE setOutputDevice NOTIFY
+    Q_PROPERTY(QString inputDevice READ inputDevice WRITE setInputDevice NOTIFY
+                   inputDeviceChanged)
+    Q_PROPERTY(QString outputDevice READ outputDevice WRITE setOutputDevice NOTIFY
                    outputDeviceChanged)
     Q_PROPERTY(int previousInput READ previousInput WRITE setPreviousInput NOTIFY
                    previousInputChanged)
     Q_PROPERTY(int previousOutput READ previousOutput WRITE setPreviousOutput NOTIFY
                    previousOutputChanged)
-
+#ifdef RT_AUDIO
+    Q_PROPERTY(int baseInputChannel READ baseInputChannel WRITE setBaseInputChannel NOTIFY
+                   baseInputChannelChanged)
+    Q_PROPERTY(int numInputChannels READ numInputChannels WRITE setNumInputChannels NOTIFY
+                   numInputChannelsChanged)
+    Q_PROPERTY(int inputMixMode READ inputMixMode WRITE setInputMixMode NOTIFY
+                   inputMixModeChanged)
+    Q_PROPERTY(int baseOutputChannel READ baseOutputChannel WRITE setBaseOutputChannel
+                   NOTIFY baseOutputChannelChanged)
+    Q_PROPERTY(int numOutputChannels READ numOutputChannels WRITE setNumOutputChannels
+                   NOTIFY numOutputChannelsChanged)
+#endif
     Q_PROPERTY(QString devicesWarning READ devicesWarning NOTIFY devicesWarningChanged)
     Q_PROPERTY(QString devicesError READ devicesError NOTIFY devicesErrorChanged)
     Q_PROPERTY(QString devicesWarningHelpUrl READ devicesWarningHelpUrl NOTIFY
@@ -99,6 +110,8 @@ class VirtualStudio : public QObject
     Q_PROPERTY(int bufferStrategy READ bufferStrategy WRITE setBufferStrategy NOTIFY
                    bufferStrategyChanged)
     Q_PROPERTY(int currentStudio READ currentStudio NOTIFY currentStudioChanged)
+    Q_PROPERTY(QUrl studioToJoin READ studioToJoin WRITE setStudioToJoin NOTIFY
+                   studioToJoinChanged)
     Q_PROPERTY(QJsonObject regions READ regions NOTIFY regionsChanged)
     Q_PROPERTY(QJsonObject userMetadata READ userMetadata NOTIFY userMetadataChanged)
     Q_PROPERTY(bool showInactive READ showInactive WRITE setShowInactive NOTIFY
@@ -145,6 +158,7 @@ class VirtualStudio : public QObject
     void setStandardWindow(QSharedPointer<QJackTrip> window);
     void show();
     void raiseToTop();
+    bool vsModeActive();
 
     bool showFirstRun();
     void setShowFirstRun(bool show);
@@ -154,10 +168,24 @@ class VirtualStudio : public QObject
     bool selectableBackend();
     QString audioBackend();
     void setAudioBackend(const QString& backend);
-    int inputDevice();
-    void setInputDevice(int device);
-    int outputDevice();
-    void setOutputDevice(int device);
+    QString inputDevice();
+    void setInputDevice(const QString& device);
+#ifdef RT_AUDIO
+    int baseInputChannel();
+    void setBaseInputChannel(int baseChannel);
+    int numInputChannels();
+    void setNumInputChannels(int numChannels);
+    void setInputMixMode(int mode);
+    int inputMixMode();
+#endif
+    QString outputDevice();
+    void setOutputDevice(const QString& device);
+#ifdef RT_AUDIO
+    int baseOutputChannel();
+    void setBaseOutputChannel(int baseChannel);
+    int numOutputChannels();
+    void setNumOutputChannels(int numChannels);
+#endif
     int previousInput();
     void setPreviousInput(int device);
     int previousOutput();
@@ -220,6 +248,9 @@ class VirtualStudio : public QObject
     void logout();
     void refreshStudios(int index, bool signalRefresh = false);
     void refreshDevices();
+    void validateDevicesState();
+    void validateInputDevicesState();
+    void validateOutputDevicesState();
     void playOutputAudio();
     void revertSettings();
     void applySettings();
@@ -232,8 +263,8 @@ class VirtualStudio : public QObject
     void editProfile();
     void showAbout();
     void openLink(const QString& url);
-    void updatedInputVuMeasurements(const QVector<float>& valuesInDecibels);
-    void updatedOutputVuMeasurements(const QVector<float>& valuesInDecibels);
+    void updatedInputVuMeasurements(const float* valuesInDecibels, int numChannels);
+    void updatedOutputVuMeasurements(const float* valuesInDecibels, int numChannels);
     void setInputVolume(float multiplier);
     void setOutputVolume(float multiplier);
     void setInputMuted(bool muted);
@@ -255,9 +286,14 @@ class VirtualStudio : public QObject
     void logoSectionChanged();
     void audioBackendChanged(bool useRtAudio, bool shouldRestart = true);
     void inputDeviceChanged(QString device, bool shouldRestart = true);
+    void baseInputChannelChanged(int baseChannel, bool shouldRestart = true);
+    void numInputChannelsChanged(int numChannels, bool shouldRestart = true);
+    void inputMixModeChanged(int mode, bool shouldRestart = true);
     void outputDeviceChanged(QString device, bool shouldRestart = true);
     void inputDeviceSelected(QString device, bool shouldRestart = true);
     void outputDeviceSelected(QString device, bool shouldRestart = true);
+    void baseOutputChannelChanged(int baseChannel, bool shouldRestart = true);
+    void numOutputChannelsChanged(int numChannels, bool shouldRestart = true);
     void previousInputChanged();
     void previousOutputChanged();
     void devicesWarningChanged();
@@ -327,11 +363,13 @@ class VirtualStudio : public QObject
     void stopAudio();
     bool readyToJoin();
 #ifdef RT_AUDIO
-    QVariant formatDeviceList(const QStringList& devices, const QStringList& categories);
+    QVariant formatDeviceList(const QStringList& devices, const QStringList& categories,
+                              const QList<int>& channels);
 #endif
 
     bool m_showFirstRun = false;
     bool m_checkSsl     = true;
+    bool m_vsModeActive = false;
     QString m_updateChannel;
     QString m_refreshToken;
     QString m_userId;
@@ -415,12 +453,22 @@ class VirtualStudio : public QObject
     QStringList m_outputDeviceList;
     QStringList m_inputDeviceCategories;
     QStringList m_outputDeviceCategories;
+    QList<int> m_inputDeviceChannels;
+    QList<int> m_outputDeviceChannels;
     QString m_inputDevice;
     QString m_outputDevice;
     quint16 m_bufferSize;
     QString m_previousInput;
     QString m_previousOutput;
     quint16 m_previousBuffer;
+
+    int m_baseInputChannel;
+    int m_numInputChannels;
+    int m_inputMixMode;
+
+    int m_baseOutputChannel;
+    int m_numOutputChannels;
+
     bool m_previousUseRtAudio = false;
     inline void delay(int millisecondsWait)
     {

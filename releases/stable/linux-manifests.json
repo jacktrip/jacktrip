@@ -2,6 +2,16 @@
     "app_name": "JackTrip",
     "releases": [
         {
+            "version": "1.7.1",
+            "changelog": "Video button, bug fixes, Linux build fixes, and Qt upgrades: https://github.com/jacktrip/jacktrip/releases/tag/v1.7.1",
+            "download": {
+                "date": "2023-02-10T00:00:00Z",
+                "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.7.1-Linux-x64-binary.zip",
+                "downloadSize": 34338503,
+                "sha256": "4298e1edd561815630e3c6573660eeea15b199a12742ab1b90d43a6e3522b632"
+            }
+        },
+        {
             "version": "1.7.0",
             "changelog": "Start/join inactive studios, fix crashes and hanging UI on Windows: https://github.com/jacktrip/jacktrip/releases/tag/v1.7.0",
             "download": {

@@ -30,87 +30,51 @@
 //*****************************************************************
 
 /**
- * \file Meter.h
+ * \file StereoToMono.h
  * \author Dominick Hing
- * \date August 2022
+ * \date February 2023
  * \license MIT
  */
 
-#ifndef __METER_H__
-#define __METER_H__
+#ifndef __STEREOTOMONO_H__
+#define __STEREOTOMONO_H__
 
 #include <QObject>
-#include <QTimer>
+#include <QVector>
 #include <iostream>
 #include <vector>
 
 #include "ProcessPlugin.h"
-#include "meterdsp.h"
+#include "stereotomonodsp.h"
 
 /** \brief The Meter class measures the live audio loudness level
  */
-class Meter : public ProcessPlugin
+class StereoToMono : public ProcessPlugin
 {
     Q_OBJECT;
 
    public:
     /// \brief The class constructor sets the number of channels to measure
-    Meter(int numchans, bool verboseFlag = false) : mNumChannels(numchans)
+    StereoToMono(bool verboseFlag = false)
     {
         setVerbose(verboseFlag);
-        for (int i = 0; i < mNumChannels; i++) {
-            meterP.push_back(new meterdsp);
-            // meterUIP.push_back(new APIUI);
-            // meterP[i]->buildUserInterface(meterUIP[i]);
-        }
+        stereoToMonoP = new stereotomonodsp;
     }
 
     /// \brief The class destructor
-    virtual ~Meter()
-    {
-        for (int i = 0; i < mNumChannels; i++) {
-            delete meterP[i];
-        }
-        meterP.clear();
-        if (mValues) {
-            delete mValues;
-        }
-        if (mOutValues) {
-            delete mOutValues;
-        }
-        if (mBuffer) {
-            delete mBuffer;
-        }
-    }
+    virtual ~StereoToMono() { delete stereoToMonoP; }
 
     void init(int samplingRate) override;
-    int getNumInputs() override { return (mNumChannels); }
-    int getNumOutputs() override { return (mNumChannels); }
+    int getNumInputs() override { return 2; }
+    int getNumOutputs() override { return 2; }
     void compute(int nframes, float** inputs, float** outputs) override;
-    const char* getName() const override { return "VU Meter"; };
-
-    void updateNumChannels(int nChansIn, int nChansOut) override;
+    const char* getName() const override { return "Stereo-to-Mono"; };
 
    private:
-    void setupValues();
-
     float fs;
-    int mNumChannels;
-    float threshold = -80.0;
-    std::vector<meterdsp*> meterP;
-    bool hasProcessedAudio = false;
-
-    QTimer mTimer;
-    float* mValues    = nullptr;
-    float* mOutValues = nullptr;
-    float* mBuffer    = nullptr;
-    int mBufSize      = 0;
-
-   private slots:
-    void onTick();
-
-   signals:
-    void onComputedVolumeMeasurements(float* values, int n);
+    // int mNumChannels;
+    stereotomonodsp* stereoToMonoP;
+    // bool hasProcessedAudio = false;
 };
 
 #endif

@@ -41,26 +41,22 @@
 #include <cstdlib>
 
 #include "JackTrip.h"
+#include "StereoToMono.h"
 #include "jacktrip_globals.h"
 
 using std::cout;
 using std::endl;
 
 //*******************************************************************************
-RtAudioInterface::RtAudioInterface(JackTrip* jacktrip, int NumInChans, int NumOutChans,
-                                   audioBitResolutionT AudioBitResolution)
-    : AudioInterface(jacktrip, NumInChans, NumOutChans, AudioBitResolution)
+RtAudioInterface::RtAudioInterface(QVarLengthArray<int> InputChans,
+                                   QVarLengthArray<int> OutputChans,
+                                   inputMixModeT InputMixMode,
+                                   audioBitResolutionT AudioBitResolution,
+                                   bool processWithNetwork, JackTrip* jacktrip)
+    : AudioInterface(InputChans, OutputChans, InputMixMode, AudioBitResolution,
+                     processWithNetwork, jacktrip)
     , mRtAudio(NULL)
 {
-}
-
-//*******************************************************************************
-RtAudioInterface::RtAudioInterface(int NumInChans, int NumOutChans,
-                                   audioBitResolutionT AudioBitResolution)
-    : AudioInterface(nullptr, NumInChans, NumOutChans, AudioBitResolution, false)
-    , mRtAudio(NULL)
-{
-    RtAudioInterface(nullptr, NumInChans, NumOutChans, AudioBitResolution);
 }
 
 //*******************************************************************************
@@ -69,16 +65,47 @@ RtAudioInterface::~RtAudioInterface()
     if (mRtAudio != NULL) {
         delete mRtAudio;
     }
+
+    if (mStereoToMonoMixer != NULL) {
+        delete mStereoToMonoMixer;
+    }
 }
 
 //*******************************************************************************
 void RtAudioInterface::setup(bool verbose)
 {
     // Initialize Buffer array to read and write audio and members
-    mNumInChans  = getNumInputChannels();
-    mNumOutChans = getNumOutputChannels();
-    mInBuffer.resize(getNumInputChannels());
-    mOutBuffer.resize(getNumOutputChannels());
+    QVarLengthArray<int> iChans = getInputChannels();
+    QVarLengthArray<int> oChans = getOutputChannels();
+
+    uint32_t chansIn     = iChans.size();
+    uint32_t chansOut    = oChans.size();
+    uint32_t baseChanIn  = 0;
+    uint32_t baseChanOut = 0;
+
+    if (iChans.size() >= 1) {
+        int min = iChans.at(0);
+        for (int i = 0; i < iChans.size(); i++) {
+            if (iChans.at(i) < min) {
+                min = iChans.at(i);
+            }
+        }
+        if (min >= 0) {
+            baseChanIn = min;
+        }
+    }
+
+    if (oChans.size() >= 1) {
+        int min = oChans.at(0);
+        for (int i = 0; i < oChans.size(); i++) {
+            if (oChans.at(i) < min) {
+                min = iChans.at(i);
+            }
+        }
+        if (min >= 0) {
+            baseChanOut = min;
+        }
+    }
 
     cout << "Setting Up RtAudio Interface" << endl;
     cout << gPrintSeparator << endl;
@@ -93,8 +120,8 @@ void RtAudioInterface::setup(bool verbose)
 
     QStringList all_input_devices;
     QStringList all_output_devices;
-    getDeviceList(&all_input_devices, NULL, true);
-    getDeviceList(&all_output_devices, NULL, false);
+    getDeviceList(&all_input_devices, NULL, NULL, true);
+    getDeviceList(&all_output_devices, NULL, NULL, false);
 
     unsigned int n_devices_input  = all_input_devices.size();
     unsigned int n_devices_output = all_output_devices.size();
@@ -170,12 +197,20 @@ void RtAudioInterface::setup(bool verbose)
     auto dev_info_input  = rtAudioIn->getDeviceInfo(index_in);
     auto dev_info_output = rtAudioOut->getDeviceInfo(index_out);
 
-    if (static_cast<unsigned int>(getNumInputChannels()) > dev_info_input.inputChannels) {
-        setNumInputChannels(dev_info_input.inputChannels);
+    if (baseChanIn + chansIn > dev_info_input.inputChannels) {
+        baseChanIn = 0;
+        chansIn    = 2;
+        if (dev_info_input.inputChannels < 2) {
+            chansIn = 1;
+        }
     }
-    if (static_cast<unsigned int>(getNumOutputChannels())
-        > dev_info_output.outputChannels) {
-        setNumOutputChannels(dev_info_output.outputChannels);
+
+    if (baseChanOut + chansOut > dev_info_output.outputChannels) {
+        baseChanOut = 0;
+        chansOut    = 2;
+        if (dev_info_output.outputChannels < 2) {
+            chansOut = 1;
+        }
     }
 
     if (verbose) {
@@ -212,10 +247,12 @@ void RtAudioInterface::setup(bool verbose)
     }
 
     RtAudio::StreamParameters in_params, out_params;
-    in_params.deviceId   = index_in;
-    out_params.deviceId  = index_out;
-    in_params.nChannels  = getNumInputChannels();
-    out_params.nChannels = getNumOutputChannels();
+    in_params.deviceId      = index_in;
+    out_params.deviceId     = index_out;
+    in_params.nChannels     = chansIn;
+    out_params.nChannels    = chansOut;
+    in_params.firstChannel  = baseChanIn;
+    out_params.firstChannel = baseChanOut;
 
     RtAudio::StreamOptions options;
     // The second flag affects linux and mac only
@@ -227,8 +264,31 @@ void RtAudioInterface::setup(bool verbose)
     options.priority   = 30;
     options.streamName = gJackDefaultClientName;
 
+    // Update parent class
+    QVarLengthArray<int> updatedInputChannels;
+    QVarLengthArray<int> updatedOutputChannels;
+    updatedInputChannels.resize(chansIn);
+    updatedOutputChannels.resize(chansOut);
+    for (uint32_t i = 0; i < chansIn; i++) {
+        updatedInputChannels[i] = baseChanIn + i;
+    }
+    for (uint32_t i = 0; i < chansOut; i++) {
+        updatedOutputChannels[i] = baseChanOut + i;
+    }
+    setInputChannels(updatedInputChannels);
+    setOutputChannels(updatedOutputChannels);
+
+    // Setup buffers
+    mInBuffer.resize(chansIn);
+    mOutBuffer.resize(chansOut);
+
     unsigned int sampleRate   = getSampleRate();           // mSamplingRate;
     unsigned int bufferFrames = getBufferSizeInSamples();  // mBufferSize;
+    mStereoToMonoMixer        = new StereoToMono();
+    mStereoToMonoMixer->init(sampleRate);
+
+    // Setup parent class
+    AudioInterface::setup(verbose);
 
     try {
         // IMPORTANT NOTE: It's VERY important to remember to pass "this"
@@ -245,9 +305,6 @@ void RtAudioInterface::setup(bool verbose)
         std::cout << e.getMessage() << '\n' << std::endl;
         throw std::runtime_error(e.getMessage());
     }
-
-    // Setup parent class
-    AudioInterface::setup(verbose);
 }
 
 //*******************************************************************************
@@ -343,18 +400,23 @@ int RtAudioInterface::RtAudioCallback(void* outputBuffer, void* inputBuffer,
     inputBuffer_sample  = (sample_t*)inputBuffer;
     outputBuffer_sample = (sample_t*)outputBuffer;
 
+    int chansIn = getNumInputChannels();
     if (inputBuffer_sample != NULL && outputBuffer_sample != NULL) {
         // Get input and output buffers
         //-------------------------------------------------------------------
-        for (int i = 0; i < mNumInChans; i++) {
+        for (int i = 0; i < mInBuffer.size(); i++) {
             // Input Ports are READ ONLY
             mInBuffer[i] = inputBuffer_sample + (nFrames * i);
         }
-        for (int i = 0; i < mNumOutChans; i++) {
+
+        for (int i = 0; i < mOutBuffer.size(); i++) {
             // Output Ports are WRITABLE
             mOutBuffer[i] = outputBuffer_sample + (nFrames * i);
         }
-
+        if (chansIn == 2 && mInBuffer.size() == chansIn
+            && mInputMixMode == AudioInterface::MIXTOMONO) {
+            mStereoToMonoMixer->compute(nFrames, mInBuffer.data(), mInBuffer.data());
+        }
         AudioInterface::callback(mInBuffer, mOutBuffer, nFrames);
     }
 
@@ -417,38 +479,22 @@ int RtAudioInterface::stopProcess()
 
 //*******************************************************************************
 void RtAudioInterface::getDeviceList(QStringList* list, QStringList* categories,
-                                     bool isInput)
+                                     QList<int>* channels, bool isInput)
 {
     RtAudio baseRtAudio;
     RtAudio::Api baseRtAudioApi = baseRtAudio.getCurrentApi();
-
-    // Add (default)
-    list->clear();
-    list->append(QStringLiteral("(default)"));
     if (categories != NULL) {
-#ifdef _WIN32
-        switch (baseRtAudioApi) {
-        case RtAudio::WINDOWS_ASIO:
-            categories->append(QStringLiteral("Low-Latency (ASIO)"));
-            break;
-        case RtAudio::WINDOWS_WASAPI:
-            categories->append(QStringLiteral("All Devices (Non-ASIO)"));
-            break;
-        case RtAudio::WINDOWS_DS:
-            categories->append(QStringLiteral("All Devices (Non-ASIO)"));
-            break;
-        default:
-            categories->append(QStringLiteral(""));
-            break;
-        }
-#else
-        categories->append(QStringLiteral(""));
-#endif
+        categories->clear();
     }
+    if (channels != NULL) {
+        channels->clear();
+    }
+    list->clear();
 
     // Explicitly add default device
     QString defaultDeviceName = "";
     uint32_t defaultDeviceIdx;
+    RtAudio::DeviceInfo defaultDeviceInfo;
     if (isInput) {
         defaultDeviceIdx = baseRtAudio.getDefaultInputDevice();
     } else {
@@ -456,8 +502,8 @@ void RtAudioInterface::getDeviceList(QStringList* list, QStringList* categories,
     }
 
     if (defaultDeviceIdx != 0) {
-        RtAudio::DeviceInfo info = baseRtAudio.getDeviceInfo(defaultDeviceIdx);
-        defaultDeviceName        = QString::fromStdString(info.name);
+        defaultDeviceInfo = baseRtAudio.getDeviceInfo(defaultDeviceIdx);
+        defaultDeviceName = QString::fromStdString(defaultDeviceInfo.name);
     }
 
     if (defaultDeviceName != "") {
@@ -481,6 +527,13 @@ void RtAudioInterface::getDeviceList(QStringList* list, QStringList* categories,
 #else
             categories->append(QStringLiteral(""));
 #endif
+        }
+        if (channels != NULL) {
+            if (isInput) {
+                channels->append(defaultDeviceInfo.inputChannels);
+            } else {
+                channels->append(defaultDeviceInfo.outputChannels);
+            }
         }
     }
 
@@ -520,8 +573,16 @@ void RtAudioInterface::getDeviceList(QStringList* list, QStringList* categories,
 
                 if (isInput && info.inputChannels > 0) {
                     list->append(QString::fromStdString(info.name));
+                    if (channels != NULL) {
+                        channels->append(info.inputChannels);
+                    }
                 } else if (!isInput && info.outputChannels > 0) {
                     list->append(QString::fromStdString(info.name));
+                    if (channels != NULL) {
+                        channels->append(info.outputChannels);
+                    }
+                } else {
+                    continue;
                 }
 
                 if (categories == NULL) {

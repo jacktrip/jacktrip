@@ -35,6 +35,9 @@ VuMeter::VuMeter(QWidget* parent) : QWidget(parent), m_level(0)
     m_yellowOff.setRgb(85, 65, 22);
     m_redOn.setRgb(242, 27, 27);
     m_redOff.setRgb(84, 4, 4);
+
+    m_threshhold1 = std::round(m_bins * 0.6);
+    m_threshhold2 = std::round(m_bins * 0.8);
 }
 
 void VuMeter::setLevel(qreal level)
@@ -53,17 +56,17 @@ void VuMeter::paintEvent([[maybe_unused]] QPaintEvent* event)
     for (quint32 i = 0; i < m_bins; i++) {
         bool on = level > i;
         if (on) {
-            if (i < 9) {
+            if (i < m_threshhold1) {
                 painter.setBrush(m_greenOn);
-            } else if (i < 12) {
+            } else if (i < m_threshhold2) {
                 painter.setBrush(m_yellowOn);
             } else {
                 painter.setBrush(m_redOn);
             }
         } else {
-            if (i < 9) {
+            if (i < m_threshhold1) {
                 painter.setBrush(m_greenOff);
-            } else if (i < 12) {
+            } else if (i < m_threshhold2) {
                 painter.setBrush(m_yellowOff);
             } else {
                 painter.setBrush(m_redOff);

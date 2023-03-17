@@ -93,7 +93,16 @@ class VsAudioInterface : public QObject
 
    public slots:
     void setInputDevice(QString deviceName, bool shouldRestart = true);
+#ifdef RT_AUDIO
+    void setBaseInputChannel(int baseChannel, bool shouldRestart = true);
+    void setNumInputChannels(int numChannels, bool shouldRestart = true);
+    void setInputMixMode(const int mode, bool shouldRestart = true);
+#endif
     void setOutputDevice(QString deviceName, bool shouldRestart = true);
+#ifdef RT_AUDIO
+    void setBaseOutputChannel(int baseChannel, bool shouldRestart = true);
+    void setNumOutputChannels(int numChannels, bool shouldRestart = true);
+#endif
     void setAudioInterfaceMode(bool useRtAudio, bool shouldRestart = true);
     void setInputVolume(float multiplier);
     void setOutputVolume(float multiplier);
@@ -108,8 +117,8 @@ class VsAudioInterface : public QObject
     void triggerPlayback();
     void settingsUpdated();
     void modeUpdated();
-    void newInputMeterMeasurements(QVector<float> values);
-    void newOutputMeterMeasurements(QVector<float> values);
+    void newInputMeterMeasurements(float* values, int numChannels);
+    void newOutputMeterMeasurements(float* values, int numChannels);
     void errorToProcess(const QString& errorMessage);
     void devicesErrorMsgChanged(const QString& msg);
     void devicesWarningMsgChanged(const QString& msg);
@@ -119,8 +128,8 @@ class VsAudioInterface : public QObject
    private slots:
     // void refreshAudioStream();
     void replaceProcess();
-    void processInputMeterMeasurements(QVector<float> values);
-    void processOutputMeterMeasurements(QVector<float> values);
+    void processInputMeterMeasurements(float* values, int numChannels);
+    void processOutputMeterMeasurements(float* values, int numChannels);
 
    private:
     void setupJackAudio();
@@ -132,6 +141,10 @@ class VsAudioInterface : public QObject
     bool m_outMuted       = false;
     bool m_audioActive    = false;
     bool m_hasBeenActive  = false;
+
+    int m_baseInputChannel  = 0;
+    int m_baseOutputChannel = 0;
+    int m_inputMixMode      = 0;
 
     // Needed in constructor
     int m_numAudioChansIn;   ///< Number of Audio Input Channels

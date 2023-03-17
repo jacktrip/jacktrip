@@ -9,7 +9,12 @@ else
   name_suffix = ''
 endif
 
-qt5 = import('qt5')
+if get_option('qtversion') == '5'
+  qt = import('qt5')
+else
+  qt = import('qt6')
+endif
+
 cmake = import('cmake')
 
 compiler = meson.get_compiler('cpp')
@@ -38,6 +43,7 @@ src = [	'src/DataProtocol.cpp',
 	'src/Meter.cpp',
 	'src/Volume.cpp',
 	'src/Tone.cpp',
+	'src/StereoToMono.cpp',
 	'src/Reverb.cpp',
 	'src/main.cpp',
 	'src/SslServer.cpp',
@@ -47,6 +53,7 @@ moc_h = ['src/DataProtocol.h',
 	'src/JackTrip.h',
 	'src/ProcessPlugin.h',
 	'src/Meter.h',
+	'src/StereoToMono.h',
 	'src/Volume.h',
 	'src/Tone.h',
 	'src/JackTripWorker.h',
@@ -87,7 +94,11 @@ endif
 
 if get_option('nogui') == true
 	defines += '-DNO_GUI'
-	qt5_dep = dependency('qt5', modules: ['Core', 'Network'], include_type: 'system')
+	if get_option('qtversion') == '5'
+		qt_dep = dependency('qt5', modules: ['Core', 'Network'], include_type: 'system')
+	else
+		qt_dep = dependency('qt6', modules: ['Core', 'Network'], include_type: 'system')
+	endif
 else
 	src += [
 		'src/gui/qjacktrip.cpp',
@@ -111,11 +122,16 @@ else
 
 	if get_option('novs') == true
 		defines += '-DNO_VS'
-		qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets'], include_type: 'system')
+		if get_option('qtversion') == '5'
+			qt_dep = dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets'], include_type: 'system')
+		else
+			qt_dep = dependency('qt6', modules: ['Core', 'Gui', 'Network', 'Widgets'], include_type: 'system')
+		endif
 		qres = ['src/gui/qjacktrip_novs.qrc']
 	else
 		src += [
 			'src/gui/virtualstudio.cpp',
+			'src/gui/vsInit.cpp',
 			'src/gui/vsDevice.cpp',
 			'src/gui/vsAudioInterface.cpp',
 			'src/gui/vsServerInfo.cpp',
@@ -128,6 +144,7 @@ else
 		]
 		moc_h += [
 			'src/gui/virtualstudio.h',
+			'src/gui/vsInit.h',
 			'src/gui/vsDevice.h',
 			'src/gui/vsAudioInterface.h',
 			'src/gui/vsServerInfo.h',
@@ -145,7 +162,11 @@ else
 			moc_h += ['src/gui/vsMacPermissions.h']
 		endif
 
-		qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'QuickControls2', 'Qml', 'Svg', 'NetworkAuth', 'WebSockets'], include_type: 'system')
+		if get_option('qtversion') == '5'
+			qt_dep = dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'QuickControls2', 'Qml', 'Svg', 'NetworkAuth', 'WebSockets'], include_type: 'system')
+		else
+			qt_dep = dependency('qt6', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'QuickControls2', 'Qml', 'Svg', 'NetworkAuth', 'WebSockets'], include_type: 'system')
+		endif
 		qres = ['src/gui/qjacktrip.qrc']
 	endif
 
@@ -167,9 +188,7 @@ else
 		ui_h += ['src/dblsqd/update_dialog.ui']
 	endif
 endif
-deps += qt5_dep
-
-prepro_files = qt5.preprocess(moc_headers : moc_h, ui_files : ui_h, qresources : qres)
+deps += qt_dep
 
 # TODO: QT_OPENSOURCE should only be defined for open source Qt distribution
 # in QMake this can be checked with QT_EDITION == 'OpenSource'
@@ -206,7 +225,11 @@ if host_machine.system() == 'darwin' and get_option('novs') == false
 	deps += apple_av_dep
 endif
 
-jacktrip = executable('jacktrip', src, prepro_files, include_directories: incdirs, dependencies: deps, c_args: c_defines, cpp_args: defines, install: true )
+qres_files = qt.compile_resources(sources: qres)
+moc_files = qt.compile_moc(headers: moc_h, extra_args: defines)
+ui_files = qt.compile_ui(sources: ui_h)
+
+jacktrip = executable('jacktrip', src, qres_files, ui_files, moc_files, include_directories: incdirs, dependencies: deps, c_args: c_defines, cpp_args: defines, install: true )
 
 help2man = find_program('help2man', required: false)
 if not (host_machine.system() == 'windows')

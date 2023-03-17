@@ -39,7 +39,7 @@
 #define __JACKAUDIOINTERFACE_H__
 
 #include <iostream>
-//#include <tr1/memory> //for shared_ptr
+// #include <tr1/memory> //for shared_ptr
 #ifdef USE_WEAK_JACK
 #include "weak_libjack.h"
 #else
@@ -67,74 +67,76 @@ class JackAudioInterface : public AudioInterface
 {
    public:
     /** \brief The class constructor
-     * \param jacktrip Pointer to the JackTrip class that connects all classes (mediator)
      * \param NumInChans Number of Input Channels
      * \param NumOutChans Number of Output Channels
      * \param AudioBitResolution Audio Sample Resolutions in bits
+     * \param processWithNetwork Send audio to and from the network
+     * \param jacktrip Pointer to the JackTrip class that connects all classes (mediator)
      * \param ClientName Client name in Jack
      */
     JackAudioInterface(
-        JackTrip* jacktrip, int NumInChans, int NumOutChans,
+        QVarLengthArray<int> InputChans, QVarLengthArray<int> OutputChans,
 #ifdef WAIR  // wair
         int NumNetRevChans,
 #endif  // endwhere
         AudioInterface::audioBitResolutionT AudioBitResolution = AudioInterface::BIT16,
-        const QString& ClientName = QStringLiteral("JackTrip"));
-    /// \brief Overloaded class constructor with null JackTrip pointer
-    JackAudioInterface(
-        int NumInChans, int NumOutChans,
-#ifdef WAIR  // wair
-        int NumNetRevChans,
-#endif  // endwhere
-        AudioInterface::audioBitResolutionT AudioBitResolution = AudioInterface::BIT16,
+        bool processWithNetwork = false, JackTrip* jacktrip = nullptr,
         const QString& ClientName = QStringLiteral("JackTrip"));
     /// \brief The class destructor
     virtual ~JackAudioInterface();
 
     /// \brief Setup the client
-    virtual void setup(bool verbose = true);
+    virtual void setup(bool verbose = true) override;
     /** \brief Tell the JACK server that we are ready to roll. The
      * process-callback will start running. This runs on its own thread.
      * \return 0 on success, otherwise a non-zero error code
      */
-    virtual int startProcess();
+    virtual int startProcess() override;
     /** \brief Stops the process-callback thread
      * \return 0 on success, otherwise a non-zero error code
      */
-    virtual int stopProcess();
+    virtual int stopProcess() override;
     /// \brief Connect the default ports, capture to sends, and receives to playback
-    void connectDefaultPorts();
+    void connectDefaultPorts() override;
+
+    /// \brief Get Number of Input Channels
+    virtual int getNumInputChannels() const override { return mNumInChans; }
+    /// \brief Get Number of Output Channels
+    virtual int getNumOutputChannels() const override { return mNumOutChans; }
 
     //--------------SETTERS---------------------------------------------
     /// \brief Set Client Name to something different that the default (JackTrip)
-    virtual void setClientName(const QString& ClientName) { mClientName = ClientName; }
-    virtual void setSampleRate(uint32_t /*sample_rate*/)
+    virtual void setClientName(const QString& ClientName) override
+    {
+        mClientName = ClientName;
+    }
+    virtual void setSampleRate(uint32_t /*sample_rate*/) override
     {
         std::cout << "WARNING: Setting the Sample Rate in Jack mode has no effect."
                   << std::endl;
     }
-    virtual void setBufferSizeInSamples(uint32_t /*buf_size*/)
+    virtual void setBufferSizeInSamples(uint32_t /*buf_size*/) override
     {
         std::cout << "WARNING: Setting the Sample Rate in Jack mode has no effect."
                   << std::endl;
     }
-    virtual void enableBroadcastOutput() { mBroadcast = true; }
+    virtual void enableBroadcastOutput() override { mBroadcast = true; }
     //------------------------------------------------------------------
 
     //--------------GETTERS---------------------------------------------
     /// \brief Get the actual client name assigned by the Jack server
     virtual QString getAssignedClientName() final { return mAssignedClientName; }
     /// \brief Get the Jack Server Sampling Rate, in samples/second
-    virtual uint32_t getSampleRate() const;
+    virtual uint32_t getSampleRate() const override;
     /// \brief Get the Jack Server Buffer Size, in samples
-    virtual uint32_t getBufferSizeInSamples() const;
+    virtual uint32_t getBufferSizeInSamples() const override;
     /// \brief Get the Jack Server Buffer Size, in bytes
     virtual uint32_t getBufferSizeInBytes() const
     {
         return (getBufferSizeInSamples() * getAudioBitResolution() / 8);
     }
     /// \brief Get size of each audio per channel, in bytes
-    virtual size_t getSizeInBytesPerChannel() const;
+    virtual size_t getSizeInBytesPerChannel() const override;
     //------------------------------------------------------------------
 
    private:
@@ -181,12 +183,7 @@ class JackAudioInterface : public AudioInterface
     // reference : http://article.gmane.org/gmane.comp.audio.jackit/12873
     static int wrapperProcessCallback(jack_nframes_t nframes, void* arg);
 
-    int mNumInChans;      ///< Number of Input Channels
-    int mNumOutChans;     ///<  Number of Output Channels
-#ifdef WAIR               // WAIR
-    int mNumNetRevChans;  ///<  Number of Network Audio Channels (network comb filters
-#endif                    // endwhere
-    int mNumFrames;       ///< Buffer block size, in samples
+    int mNumFrames;  ///< Buffer block size, in samples
 
     jack_client_t* mClient;  ///< Jack Client
     QString mClientName;     ///< Jack Client Name
@@ -201,9 +198,7 @@ class JackAudioInterface : public AudioInterface
     QVarLengthArray<sample_t*>
         mBroadcastBuffer;  ///< Vector of Output buffer/channel to write to JACK
     bool mBroadcast;
-    QVector<ProcessPlugin*> mProcessPlugins;  ///< Vector of ProcesPlugin<EM>s</EM>
     static QMutex sJackMutex;  ///< Mutex to make thread safe jack functions that are not
-    JackTrip* mJackTrip;       ///< JackTrip Mediator Class pointer
 };
 
 #endif

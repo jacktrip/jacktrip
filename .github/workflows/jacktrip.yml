@@ -19,6 +19,8 @@ on:
       - 'documentation/**'
       - 'scripts/**'
       - 'README**'
+  release:
+    types: [published]
   workflow_dispatch:
   schedule:
     - cron:  '0 0 * * 0' # run weekly to refresh static Qt cache
@@ -60,14 +62,14 @@ jobs:
             release-name: Linux-x64 # specify a separate name for all builds that should be included in releases
             runs-on: ubuntu-20.04
             system-rtaudio: false
-            bundled-rtaudio: false # set either system-rtaudio or bundled-rtaudio as true, not both
+            bundled-rtaudio: true # set either system-rtaudio or bundled-rtaudio as true, not both
             nogui: false
             novs: false
             weakjack: false
             # vcpkg-triplet: x64-mingw-static # used when installing rtaudio with vcpkg (Windows)
             # qt-arch: 'win64_msvc2019_64' # specify when using shared (official) qt libraries (Windows)
-            static-qt-version: 5.15.3 # if set, it will enable static Qt build
-            qt-static-cache-key: 'v29' # required for static qt; update this to force rebuilding static Qt
+            static-qt-version: 5.15.8 # if set, it will enable static Qt build
+            qt-static-cache-key: 'v30' # required for static qt; update this to force rebuilding static Qt
             jacktrip-path: jacktrip # needed for binary upload
             binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
             # bundle-path: bundle # directory relative to build path; triggers application bundle creation and upload (macOS)
@@ -76,6 +78,17 @@ jobs:
             # meson-library-type: shared # shared, static, both
             # static-analysis: true # run clang-tidy static analysis (meson/Linux only)
             
+          - name: Linux-x64-qmake-gcc-shared-no_rtaudio
+            runs-on: ubuntu-22.04
+            system-rtaudio: false
+            bundled-rtaudio: false
+            nogui: false
+            novs: false
+            weakjack: false
+            # jacktrip-path: jacktrip
+            # binary-path: binary
+            build-system: qmake
+
           - name: Linux-x64-qmake-gcc-shared-bundled_rtaudio
             runs-on: ubuntu-22.04
             system-rtaudio: false
@@ -95,8 +108,8 @@ jobs:
             nogui: true
             novs: true
             weakjack: false
-            static-qt-version: 5.15.3
-            qt-static-cache-key: 'v29' # we use the same key as the main Linux build
+            static-qt-version: 5.15.8
+            qt-static-cache-key: 'v30' # we use the same key as the main Linux build
             jacktrip-path: jacktrip
             binary-path: binary
             build-system: qmake
@@ -114,18 +127,16 @@ jobs:
             meson-library-type: shared
             static-analysis: true
             
-          # - name: Linux-x64-meson-gcc-shared # meson static build doesn't work currently
-          #   runs-on: ubuntu-18.04
-          #   system-rtaudio: false
-          #   bundled-rtaudio: false
-          #   nogui: false
-          #   weakjack: false
-          #   static-qt-version: 5.12.12
-          #   qt-static-cache-key: 'v26'
-          #   jacktrip-path: jacktrip
-          #   binary-path: binary
-          #   build-system: meson
-          #   meson-library-type: static
+          - name: Linux-x64-meson-gcc-shared # meson shared build without rtaudio
+            runs-on: ubuntu-22.04
+            system-rtaudio: false
+            bundled-rtaudio: false
+            nogui: false
+            weakjack: false
+            # jacktrip-path: jacktrip
+            # binary-path: binary
+            build-system: meson
+            meson-library-type: shared
 
           - name: macOS-x64-qmake-clang-static-bundled_rtaudio
             release-name: macOS-x64
@@ -135,8 +146,8 @@ jobs:
             nogui: false
             novs: false
             weakjack: true
-            static-qt-version: 5.15.2
-            qt-static-cache-key: 'v07'
+            static-qt-version: 5.15.8
+            qt-static-cache-key: 'v08'
             jacktrip-path: jacktrip
             # binary-path: binary # don't upload the binary itself since we upload the bundle
             bundle-path: bundle
@@ -179,8 +190,8 @@ jobs:
             novs: false
             weakjack: true
             vcpkg-triplet: x64-mingw-static
-            static-qt-version: 5.15.2
-            qt-static-cache-key: 'v07'
+            static-qt-version: 5.15.8
+            qt-static-cache-key: 'v08'
             jacktrip-path: release/jacktrip.exe
             binary-path: binary
             installer-path: installer
@@ -373,7 +384,7 @@ jobs:
           QT_FULL_VERSION=${{ matrix.static-qt-version }}
           QT_MAJOR_MINOR_VERSION=`echo $QT_FULL_VERSION | cut -d '.' -f1-2`
           QT_ARCHIVE_BASE_NAME=qt-everywhere-
-          if [[ ! "$QT_MAJOR_MINOR_VERSION" < "5.15" ]]; then QT_ARCHIVE_BASE_NAME=${QT_ARCHIVE_BASE_NAME}opensource-; fi # filename changed to qt-everywhere-opensource-src-<version> in Qt 5.15
+          if [[ ! "$QT_FULL_VERSION" < "5.15.3" && "$QT_FULL_VERSION" < "6.0.0" ]]; then QT_ARCHIVE_BASE_NAME=${QT_ARCHIVE_BASE_NAME}opensource-; fi # filename changed to qt-everywhere-opensource-src-<version> in Qt 5.15.3
           QT_SRC_URL="https://download.qt.io/archive/qt/$QT_MAJOR_MINOR_VERSION/$QT_FULL_VERSION/single/${QT_ARCHIVE_BASE_NAME}src-$QT_FULL_VERSION.tar.xz"
           echo "Downloading Qt source from $QT_SRC_URL"
           curl -L $QT_SRC_URL -o qt.tar.xz
@@ -618,7 +629,6 @@ jobs:
           path: ${{ env.CLANG_TIDY_PATH }}/
   sign:
     needs: [build, check-secrets]
-    if: needs.check-secrets.outputs.should_run == 'true'
     runs-on: ${{ matrix.runs-on }}
     name: ${{ matrix.name }}
     strategy:
@@ -636,11 +646,13 @@ jobs:
       BUILD_PATH: ${{ github.workspace }}/builddir
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
           submodules: true
+        if: needs.check-secrets.outputs.should_run == 'true'
       - name: set version string for artifacts
+        if: needs.check-secrets.outputs.should_run == 'true'
         shell: bash
         id: set-version
         run: |
@@ -654,22 +666,22 @@ jobs:
           else
             NAME="${{ matrix.build-job-name }}"
           fi
-          echo "::set-output name=version::$VERSION"
-          echo "::set-output name=name::$NAME"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "name=$NAME" >> $GITHUB_OUTPUT
       - name: Retrieve binary artifact
         uses: actions/download-artifact@v2
-        if: matrix.binary-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name))
+        if: (matrix.binary-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name))) && needs.check-secrets.outputs.should_run == 'true'
         with:
           name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-binary
           path: ${{ env.BUILD_PATH }}/${{ matrix.binary-path }}
       - name: Retrieve Windows installer artifact
         uses: actions/download-artifact@v2
-        if: runner.os == 'Linux' && matrix.installer-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name))
+        if: (runner.os == 'Linux' && matrix.installer-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name))) && needs.check-secrets.outputs.should_run == 'true'
         with:
           name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer
           path: ${{ env.BUILD_PATH }}/${{ matrix.installer-path }}
       - name: sign artifacts for Windows
-        if: runner.os == 'Linux' && matrix.installer-path
+        if: runner.os == 'Linux' && matrix.installer-path && needs.check-secrets.outputs.should_run == 'true'
         env:
           TOTP: ${{ secrets.TOTP_SECRET }}
           CRED_ID: ${{ secrets.ESIGNER_CREDENTIAL_ID }}
@@ -685,14 +697,14 @@ jobs:
           rm $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi
       - name: upload installer
         uses: actions/upload-artifact@v3
-        if: matrix.installer-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name))
+        if: (matrix.installer-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name))) && needs.check-secrets.outputs.should_run == 'true'
         with:
           name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer
           path: ${{ env.BUILD_PATH }}/${{ matrix.installer-path }}
   # release - list of files uploaded to GH release is specified in the *upload* step
   deploy_gh:
-    if: startsWith(github.ref, 'refs/tags/') # run on tagged commits
-    needs: build
+    if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'release' # run on releases only
+    needs: [build, sign]
     runs-on: ubuntu-latest
     name: 'deploy release'
     env:
@@ -710,3 +722,155 @@ jobs:
           draft: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  deploy_jtl:
+    if:  startsWith(github.ref, 'refs/tags/') && github.event_name == 'release' && needs.check-secrets.outputs.should_run == 'true'
+    needs: [build, sign]
+    runs-on: ${{ matrix.runs-on }}
+    name: ${{ matrix.name }}
+    strategy:
+      matrix:
+        include:
+          - name: Update Windows manifests
+            if: needs.check-secrets.outputs.should_run == 'true'
+            platform-name: win
+            release-name: Windows-x64
+            build-job-name: Windows-x64-qmake-gcc-static-bundled_rtaudio
+            runs-on: ubuntu-latest
+          - name: Update Mac manifests
+            if: needs.check-secrets.outputs.should_run == 'true'
+            platform-name: mac
+            release-name: macOS-x64
+            build-job-name: macOS-x64-qmake-clang-static-bundled_rtaudio
+            runs-on: ubuntu-latest
+          - name: Update Linux manifests
+            if: needs.check-secrets.outputs.should_run == 'true'
+            platform-name: linux
+            release-name: Linux-x64
+            build-job-name: Linux-x64-qmake-gcc-static
+            runs-on: ubuntu-latest
+    permissions:
+      contents: "read"
+      id-token: "write"
+    env:
+      DOWNLOAD_PATH: ${{ github.workspace }}/Install
+      GCP_IDP: ${{ secrets.GCP_IDP }}
+      GCS_SVC_ACCT: ${{ secrets.GCS_SVC_ACCT }}
+    steps:
+      - name: set version string for manifests
+        shell: bash
+        id: set-version
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/}
+          else
+            VERSION=${GITHUB_SHA::7}
+          fi
+          if [[ -n "${{ matrix.release-name }}" && "$GITHUB_REF" == refs/tags/* ]]; then
+            NAME="${{ matrix.release-name }}"
+          else
+            NAME="${{ matrix.build-job-name }}"
+          fi
+          if [[ "${{ matrix.platform-name }}" == "mac" ]]; then
+            EXTENSION=".pkg"
+            TYPE="signed-installer"
+          elif [[ "${{ matrix.platform-name }}" == "win" ]]; then
+            EXTENSION=".msi"
+            TYPE="signed-installer"
+          else
+            EXTENSION=".zip"
+            TYPE="binary"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "name=$NAME" >> $GITHUB_OUTPUT
+          echo "extension=$EXTENSION" >> $GITHUB_OUTPUT
+          echo "type=$TYPE" >> $GITHUB_OUTPUT
+      - name: download artifacts
+        uses: actions/download-artifact@v2
+        with:
+          path: ${{ env.DOWNLOAD_PATH }}
+          name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-${{ steps.set-version.outputs.type }}
+      - name: Authenticate to GCS
+        uses: google-github-actions/auth@v1
+        with:
+          workload_identity_provider: ${{ env.GCP_IDP }}
+          service_account: ${{ env.GCS_SVC_ACCT }}
+          create_credentials_file: true
+      - name: Upload files
+        run: |
+          gcloud storage cp ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-${{ steps.set-version.outputs.type }}${{ steps.set-version.outputs.extension }} gs://files.jacktrip.org/app-builds
+      - name: Update edge manifests
+        id: update-edge
+        run: |
+          mkdir ${{ env.DOWNLOAD_PATH }}/app-releases
+          gcloud storage cp --recursive gs://files.jacktrip.org/app-releases/* ${{ env.DOWNLOAD_PATH }}/app-releases
+
+          file_sha=$(shasum -a 256 ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-${{ steps.set-version.outputs.type }}${{ steps.set-version.outputs.extension }} | cut -d ' ' -f 1)
+          file_size=$(stat -c%s ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-${{ steps.set-version.outputs.type }}${{ steps.set-version.outputs.extension }})
+          echo "filesha=$file_sha" >> $GITHUB_OUTPUT
+          echo "filesize=$file_size" >> $GITHUB_OUTPUT
+          
+          version_number=$(echo ${{ steps.set-version.outputs.version }} | cut -c 2- )
+          echo "versionnum=$version_number" >> $GITHUB_OUTPUT
+
+          # Define the JSON object to append
+          new_object=$(cat <<EOF
+          [{
+            "version":  "$version_number",
+            "changelog": "Full changelog at https://github.com/jacktrip/jacktrip/releases/tag/${{ steps.set-version.outputs.version }}",
+            "download": {
+                "date": "$(date "+%Y-%m-%dT00:00:00Z")",
+                "url": "https://files.jacktrip.org/app-builds/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-${{ steps.set-version.outputs.type }}${{ steps.set-version.outputs.extension }}",
+                "downloadSize": "$file_size",
+                "sha256": "$file_sha"
+            }
+          }]
+          EOF
+          )
+
+          if [[ "${{ matrix.platform-name }}" != "linux"  ]]; then
+            # Read the existing JSON array from the file
+            existing_array=$(jq '.releases' ${{ env.DOWNLOAD_PATH }}/app-releases/edge/${{ matrix.platform-name }}-manifests.json)
+
+            # Combine the new object and the existing array into a new array
+            new_array=$(echo "$new_object $existing_array" | jq -s 'add')
+
+            # Update the "releases" key in the root object with the new array
+            jq '.releases = '"$new_array" ${{ env.DOWNLOAD_PATH }}/app-releases/edge/${{ matrix.platform-name }}-manifests.json > tmpfile && mv tmpfile ${{ env.DOWNLOAD_PATH }}/app-releases/edge/${{ matrix.platform-name }}-manifests.json
+
+            gcloud storage cp ${{ env.DOWNLOAD_PATH }}/app-releases/edge/${{ matrix.platform-name }}-manifests.json gs://files.jacktrip.org/app-releases/edge
+          fi
+      - name: Update stable manifests
+        if: github.event_name == 'release' && !github.event.release.prerelease
+        run: |
+          # do the full release work
+          file_sha=${{ steps.update-edge.outputs.filesha }}
+          file_size=${{ steps.update-edge.outputs.filesize }}
+          
+          version_number=${{ steps.update-edge.outputs.versionnum }}
+
+          # Define the JSON object to append
+          new_object=$(cat <<EOF
+          [{
+            "version":  "$version_number",
+            "changelog": "Full changelog at https://github.com/jacktrip/jacktrip/releases/tag/${{ steps.set-version.outputs.version }}",
+            "download": {
+                "date": "$(date "+%Y-%m-%dT00:00:00Z")",
+                "url": "https://files.jacktrip.org/app-builds/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-${{ steps.set-version.outputs.type }}${{ steps.set-version.outputs.extension }}",
+                "downloadSize": "$file_size",
+                "sha256": "$file_sha"
+            }
+          }]
+          EOF
+          )
+
+          # Read the existing JSON array from the file
+          existing_array=$(jq '.releases' ${{ env.DOWNLOAD_PATH }}/app-releases/stable/${{ matrix.platform-name }}-manifests.json)
+
+          # Combine the new object and the existing array into a new array
+          new_array=$(echo "$new_object $existing_array" | jq -s 'add')
+
+          # Update the "releases" key in the root object with the new array
+          jq '.releases = '"$new_array" ${{ env.DOWNLOAD_PATH }}/app-releases/stable/${{ matrix.platform-name }}-manifests.json > tmpfile && mv tmpfile ${{ env.DOWNLOAD_PATH }}/app-releases/stable/${{ matrix.platform-name }}-manifests.json
+
+          gcloud storage cp ${{ env.DOWNLOAD_PATH }}/app-releases/stable/${{ matrix.platform-name }}-manifests.json gs://files.jacktrip.org/app-releases/stable
+          

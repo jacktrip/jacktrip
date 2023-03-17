@@ -209,6 +209,7 @@ HEADERS += src/DataProtocol.h \
            src/Meter.h \
            src/Volume.h \
            src/Tone.h \
+           src/StereoToMono.h \
            src/AudioTester.h \
            src/jacktrip_globals.h \
            src/jacktrip_types.h \
@@ -247,6 +248,7 @@ HEADERS += src/DataProtocol.h \
              src/gui/vuMeter.h
   !novs {
     HEADERS += src/gui/virtualstudio.h \
+               src/gui/vsInit.h \
                src/gui/vsDevice.h \
                src/gui/vsAudioInterface.h \
                src/gui/vsServerInfo.h \
@@ -278,6 +280,7 @@ SOURCES += src/DataProtocol.cpp \
            src/Regulator.cpp \
            src/Reverb.cpp \
            src/Meter.cpp \
+           src/StereoToMono.cpp \
            src/Volume.cpp \
            src/Tone.cpp \
            src/AudioTester.cpp \
@@ -310,6 +313,7 @@ SOURCES += src/DataProtocol.cpp \
              src/gui/vuMeter.cpp
   !novs {
     SOURCES += src/gui/virtualstudio.cpp \
+               src/gui/vsInit.cpp \
                src/gui/vsDevice.cpp \
                src/gui/vsAudioInterface.cpp \
                src/gui/vsServerInfo.cpp \

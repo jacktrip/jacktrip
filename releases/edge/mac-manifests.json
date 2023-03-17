@@ -2,6 +2,26 @@
     "app_name": "JackTrip",
     "releases": [
         {
+            "version": "1.8.0-beta1",
+            "changelog": "Full changelog at https://github.com/jacktrip/jacktrip/releases/tag/v1.8.0-beta1",
+            "download": {
+                "date": "2023-03-01T00:00:00Z",
+                "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.8.0-beta1-macOS-x64-installer.pkg",
+                "downloadSize": 11761503,
+                "sha256": "3159d5625d42db7925867949880eceef581f4991959f85bf4203c2ae15fc623f"
+            }
+        },
+        {
+            "version": "1.7.1",
+            "changelog": "Video button, bug fixes, Linux build fixes, and Qt upgrades: https://github.com/jacktrip/jacktrip/releases/tag/v1.7.1",
+            "download": {
+                "date": "2023-02-10T00:00:00Z",
+                "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.7.1-macOS-x64-installer.pkg",
+                "downloadSize": 11679783,
+                "sha256": "027d1d3aeb4aaca79b21824371a0bfb915b8c43afe924a8ec2be92df719a431f"
+            }
+        },
+        {
             "version": "1.7.1-beta1",
             "changelog": "Video button, bug fixes, and Qt upgrades: https://github.com/jacktrip/jacktrip/releases/tag/v1.7.1-beta1",
             "download": {

@@ -82,7 +82,8 @@ bool JackTrip::sJackStopped = false;
 
 //*******************************************************************************
 JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
-                   int NumChansIn, int NumChansOut,
+                   int BaseChanIn, int NumChansIn, int BaseChanOut, int NumChansOut,
+                   AudioInterface::inputMixModeT InputMixMode,
 #ifdef WAIR  // WAIR
                    int NumNetRevChans,
 #endif  // endwhere
@@ -97,8 +98,11 @@ JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
     , mDataProtocol(DataProtocolType)
     , mPacketHeaderType(PacketHeaderType)
     , mAudiointerfaceMode(JackTrip::JACK)
+    , mBaseAudioChanIn(BaseChanIn)
     , mNumAudioChansIn(NumChansIn)
+    , mBaseAudioChanOut(BaseChanOut)
     , mNumAudioChansOut(NumChansOut)
+    , mInputMixMode(InputMixMode)
 #ifdef WAIR  // WAIR
     , mNumNetRevChans(NumNetRevChans)
 #endif  // endwhere
@@ -189,12 +193,21 @@ void JackTrip::setupAudio(
         if (gVerboseFlag)
             std::cout << "  JackTrip:setupAudio before new JackAudioInterface"
                       << std::endl;
-        mAudioInterface =
-            new JackAudioInterface(this, mNumAudioChansIn, mNumAudioChansOut,
+        QVarLengthArray<int> inputChannels;
+        QVarLengthArray<int> outputChannels;
+        inputChannels.resize(mNumAudioChansIn);
+        outputChannels.resize(mNumAudioChansOut);
+        for (int i = 0; i < mNumAudioChansIn; i++) {
+            inputChannels[i] = 1 + i;
+        }
+        for (int i = 0; i < mNumAudioChansOut; i++) {
+            outputChannels[i] = 1 + i;
+        }
+        mAudioInterface = new JackAudioInterface(inputChannels, outputChannels,
 #ifdef WAIR  // wair
-                                   mNumNetRevChans,
+                                                 mNumNetRevChans,
 #endif  // endwhere
-                                   mAudioBitResolution);
+                                                 mAudioBitResolution, true, this);
 
 #ifdef WAIRTOHUB  // WAIR
 
@@ -237,8 +250,19 @@ void JackTrip::setupAudio(
 #ifdef NO_JACK  /// \todo FIX THIS REPETITION OF CODE
 #ifdef RT_AUDIO
         cout << "Warning: using non jack version, RtAudio will be used instead" << endl;
-        mAudioInterface = new RtAudioInterface(this, mNumAudioChansIn, mNumAudioChansOut,
-                                               mAudioBitResolution);
+        QVarLengthArray<int> inputChannels;
+        QVarLengthArray<int> outputChannels;
+        inputChannels.resize(mNumAudioChansIn);
+        outputChannels.resize(mNumAudioChansOut);
+        for (int i = 0; i < mNumAudioChansIn; i++) {
+            inputChannels[i] = mBaseAudioChanIn + i;
+        }
+        for (int i = 0; i < mNumAudioChansOut; i++) {
+            outputChannels[i] = mBaseAudioChanOut + i;
+        }
+        mAudioInterface =
+            new RtAudioInterface(inputChannels, outputChannels, mInputMixMode,
+                                 mAudioBitResolution, true, this);
         mAudioInterface->setSampleRate(mSampleRate);
         mAudioInterface->setDeviceID(mDeviceID);
         mAudioInterface->setInputDevice(mInputDeviceName);
@@ -246,16 +270,32 @@ void JackTrip::setupAudio(
         mAudioInterface->setBufferSizeInSamples(mAudioBufferSize);
         mAudioInterface->setup(true);
         // Setup might have reduced number of channels
+
+        // TODO: Add check for if base input channel needs to change
         mNumAudioChansIn  = mAudioInterface->getNumInputChannels();
         mNumAudioChansOut = mAudioInterface->getNumOutputChannels();
+        if (mNumAudioChansIn == 2 && mInputMixMode == AudioInterface::MIXTOMONO) {
+            mNumAudioChansIn = 1;
+        }
         // Setup might have changed buffer size
         mAudioBufferSize = mAudioInterface->getBufferSizeInSamples();
 #endif
 #endif
     } else if (mAudiointerfaceMode == JackTrip::RTAUDIO) {
 #ifdef RT_AUDIO
-        mAudioInterface = new RtAudioInterface(this, mNumAudioChansIn, mNumAudioChansOut,
-                                               mAudioBitResolution);
+        QVarLengthArray<int> inputChannels;
+        QVarLengthArray<int> outputChannels;
+        inputChannels.resize(mNumAudioChansIn);
+        outputChannels.resize(mNumAudioChansOut);
+        for (int i = 0; i < mNumAudioChansIn; i++) {
+            inputChannels[i] = mBaseAudioChanIn + i;
+        }
+        for (int i = 0; i < mNumAudioChansOut; i++) {
+            outputChannels[i] = mBaseAudioChanOut + i;
+        }
+        mAudioInterface =
+            new RtAudioInterface(inputChannels, outputChannels, mInputMixMode,
+                                 mAudioBitResolution, true, this);
         mAudioInterface->setSampleRate(mSampleRate);
         mAudioInterface->setDeviceID(mDeviceID);
         mAudioInterface->setInputDevice(mInputDeviceName);
@@ -263,8 +303,13 @@ void JackTrip::setupAudio(
         mAudioInterface->setBufferSizeInSamples(mAudioBufferSize);
         mAudioInterface->setup(true);
         // Setup might have reduced number of channels
+
+        // TODO: Add check for if base input channel needs to change
         mNumAudioChansIn  = mAudioInterface->getNumInputChannels();
         mNumAudioChansOut = mAudioInterface->getNumOutputChannels();
+        if (mNumAudioChansIn == 2 && mInputMixMode == AudioInterface::MIXTOMONO) {
+            mNumAudioChansIn = 1;
+        }
         // Setup might have changed buffer size
         mAudioBufferSize = mAudioInterface->getBufferSizeInSamples();
 #endif
@@ -1316,7 +1361,8 @@ int JackTrip::clientPingToServerStart()
         mAwaitingTcp = true;
         mElapsedTime = 0;
         mEndTime     = 30000;  // Timeout after 30 seconds.
-        mRetryTimer.setInterval(randomizer.bounded(0, 2000 * pow(2, mRetries)));
+        mRetryTimer.setInterval(randomizer.bounded(
+            static_cast<int>(0), static_cast<int>(2000 * pow(2, mRetries))));
         mRetryTimer.setSingleShot(true);
         mRetryTimer.disconnect();
         connect(&mRetryTimer, &QTimer::timeout, this, &JackTrip::tcpTimerTick);

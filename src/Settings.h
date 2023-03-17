@@ -60,7 +60,12 @@ class Settings : public QObject
     Q_OBJECT;
 
    public:
-    Settings(QObject* parent = nullptr) : QObject(parent), mAudioTester(new AudioTester)
+    Settings(bool guiEnabled = false, QObject* parent = nullptr)
+        : QObject(parent)
+#ifndef NO_GUI
+        , mGuiEnabled(guiEnabled)
+#endif
+        , mAudioTester(new AudioTester)
     {
     }
 
@@ -77,16 +82,56 @@ class Settings : public QObject
 #endif
 
     bool getLoopBack() { return mLoopBack; }
-    bool isHubServer() { return mJackTripServer; }
+    bool isHubServer() { return mJackTripMode == JackTrip::SERVERPINGSERVER; }
+    bool guiIgnoresArguments() { return mGuiIgnoresArguments; }
+    bool isModeSet() { return mModeSet; }
+
+    JackTrip::jacktripModeT getJackTripMode() { return mJackTripMode; }
+    int getNumAudioInputChans() { return mNumAudioInputChans; }
+    int getNumAudioOutputChans() { return mNumAudioOutputChans; }
+    int getQueueLength() { return mBufferQueueLength; }
+    unsigned int getRedundancy() { return mRedundancy; }
+    QString getPeerAddress() { return mPeerAddress; }
+    int getBindPort() { return mBindPortNum; }
+    int getPeerPort() { return mPeerPortNum; }
+    int getServerUdpPort() { return mServerUdpPortNum; }
+    AudioInterface::audioBitResolutionT getAudioBitResolution()
+    {
+        return mAudioBitResolution;
+    }
+    JackTrip::underrunModeT getUnderrunMode() { return mUnderrunMode; }
+    bool getStopOnTimeout() { return mStopOnTimeout; }
+    QString getClientName() { return mClientName; }
+    QString getRemoteClientName() { return mRemoteClientName; }
+    bool getConnectDefaultAudioPorts() { return mConnectDefaultAudioPorts; }
+    int getBufferStrategy() { return mBufferStrategy; }
+    int getBroadCastQueue() { return mBroadcastQueue; }
+    bool getUseRtUdpPriority() { return mUseRtUdpPriority; }
+    unsigned int getHubConnectionMode() { return mHubConnectionMode; }
+    bool getPatchServerAudio() { return mPatchServerAudio; }
+    bool getStereoUpmix() { return mStereoUpmix; }
+    bool getUseAuthentication() { return mAuth; }
+    QString getCertFile() { return mCertFile; }
+    QString getKeyFile() { return mKeyFile; }
+    QString getCredsFile() { return mCredsFile; }
+    QString getUsername() { return mUsername; }
+    QString getPassword() { return mPassword; }
 
    private:
     void disableEcho(bool disabled);
+    void checkMode();
+
+    bool mGuiEnabled          = false;
+    bool mGuiIgnoresArguments = false;
 
     JackTrip::jacktripModeT mJackTripMode =
-        JackTrip::SERVER;                                   ///< JackTrip::jacktripModeT
+        JackTrip::SERVER;  ///< JackTrip::jacktripModeT
+    bool mModeSet                         = false;
     JackTrip::dataProtocolT mDataProtocol = JackTrip::UDP;  ///< Data Protocol
     int mNumAudioInputChans               = 2;              ///< Number of Input Channels
     int mNumAudioOutputChans              = 2;              ///< Number of Output Channels
+    int mBaseAudioInputChanNum            = 0;              ///< Base Input Channel Number
+    int mBaseAudioOutputChanNum           = 0;  ///< Base Output Channel Number
     int mBufferQueueLength =
         gDefaultQueueLength;  ///< Audio Buffer from network queue length
     AudioInterface::audioBitResolutionT mAudioBitResolution = AudioInterface::BIT16;
@@ -111,7 +156,6 @@ class Settings : public QObject
     bool mLoopBack           = false;                 ///< Loop-back mode
     bool mJamLink            = false;                 ///< JamLink mode
     bool mEmptyHeader        = false;                 ///< EmptyHeader mode
-    bool mJackTripServer     = false;                 ///< JackTrip Server mode
     QString mLocalAddress    = gDefaultLocalAddress;  ///< Local Address
     unsigned int mRedundancy = 1;      ///< Redundancy factor for data in the network
     bool mUseJack            = true;   ///< Use or not JackAduio
