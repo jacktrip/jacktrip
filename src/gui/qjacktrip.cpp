@@ -438,9 +438,10 @@ void QJackTrip::showEvent(QShowEvent* event)
 
         // Use the ipify API to find our external IP address.
         connect(m_netManager.data(), &QNetworkAccessManager::finished, this,
-            &QJackTrip::receivedIP);
+                &QJackTrip::receivedIP);
         m_netManager->get(QNetworkRequest(QUrl(QStringLiteral("https://api.ipify.org"))));
-        m_netManager->get(QNetworkRequest(QUrl(QStringLiteral("https://api6.ipify.org"))));
+        m_netManager->get(
+            QNetworkRequest(QUrl(QStringLiteral("https://api6.ipify.org"))));
 
         // Also show our JACK not found warning if needed.
 #ifdef RT_AUDIO
