@@ -10,6 +10,7 @@
     <file>Login.qml</file>
     <file>Studio.qml</file>
     <file>Browse.qml</file>
+    <file>AudioSettings.qml</file>
     <file>Settings.qml</file>
     <file>Meter.qml</file>
     <file>Connected.qml</file>
@@ -29,6 +30,7 @@
     <file>cog.svg</file>
     <file>mic.svg</file>
     <file>micoff.svg</file>
+    <file>help.svg</file>
     <file>quiet.svg</file>
     <file>loud.svg</file>
     <file>refresh.svg</file>
