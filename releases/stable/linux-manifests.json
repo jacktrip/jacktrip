@@ -2,6 +2,16 @@
     "app_name": "JackTrip",
     "releases": [
         {
+            "version": "1.8.0",
+            "changelog": "Full changelog at https://github.com/jacktrip/jacktrip/releases/tag/v1.8.0",
+            "download": {
+              "date": "2023-03-18T00:00:00Z",
+              "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.8.0-Linux-x64-binary.zip",
+              "downloadSize": "36167636",
+              "sha256": "6f14273ffd5526d576a184f4559adb4124def8760d0b9ba60c43b0fa75b2d1a5"
+            }
+        },
+        {
             "version": "1.7.1",
             "changelog": "Video button, bug fixes, Linux build fixes, and Qt upgrades: https://github.com/jacktrip/jacktrip/releases/tag/v1.7.1",
             "download": {
