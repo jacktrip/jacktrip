@@ -1108,15 +1108,23 @@ JackTrip* Settings::getConfiguredJackTrip()
     // Change default Buffer Size
     if (mChangeDefaultBS) {
         jackTrip->setAudioBufferSizeInSamples(mAudioBufferSize);
+        if (!mChangeDefaultSR) {
+            jackTrip->setSampleRate(48000);
+            mSampleRate = 48000;
+        }
     }
 
     // Change default Sampling Rate
     if (mChangeDefaultSR) {
         jackTrip->setSampleRate(mSampleRate);
+        if (!mChangeDefaultBS) {
+            jackTrip->setAudioBufferSizeInSamples(128);
+            mAudioBufferSize = 128;
+        }
     }
 
 #if defined(__unix__)
-    if (mChangeDefaultBS and mChangeDefaultSR) {
+    if (mChangeDefaultBS or mChangeDefaultSR) {
         char latency_env[40];
         sprintf(latency_env, "%d/%d", mAudioBufferSize, mSampleRate);
         setenv("PIPEWIRE_LATENCY", latency_env, 1);
