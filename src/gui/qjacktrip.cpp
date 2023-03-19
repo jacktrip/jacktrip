@@ -64,7 +64,6 @@ QJackTrip::QJackTrip(Settings* settings, bool suppressCommandlineWarning, QWidge
     , m_jackTripRunning(false)
     , m_isExiting(false)
     , m_exitSent(false)
-    , m_hasIPv4Reply(false)
     , m_hideWarning(false)
 {
     m_ui->setupUi(this);
@@ -728,6 +727,8 @@ void QJackTrip::browseForFile()
 void QJackTrip::receivedIP(QNetworkReply* reply)
 {
     QMutexLocker locker(&m_requestMutex);
+    m_replyCount++;
+
     // Check whether we're dealing with our IPv4 or IPv6 request.
     if (reply->url().host().startsWith(QLatin1String("api6"))) {
         if (reply->error() == QNetworkReply::NoError) {
@@ -738,28 +739,33 @@ void QJackTrip::receivedIP(QNetworkReply* reply)
                 reply->deleteLater();
                 return;
             }
-            if (m_hasIPv4Reply) {
+        }
+    } else {
+        if (reply->error() == QNetworkReply::NoError) {
+            m_IPv4Address = QString(reply->readAll());
+        }
+    }
+
+    if (m_replyCount == 2) {
+        // Set our label if both replies have arrived.
+        if (m_IPv4Address.isEmpty() && m_IPv6Address.isEmpty()) {
+            m_ui->ipLabel->setText(
+                QStringLiteral("Unable to determine external IP address."));
+        } else if (m_IPv4Address.isEmpty()) {
+            m_ui->ipLabel->setText(
+                QStringLiteral("External IPv6 address: ").append(m_IPv6Address));
+            m_ui->ipLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
+        } else {
+            m_ui->ipLabel->setText(
+                QStringLiteral("External IP address: ").append(m_IPv4Address));
+            m_ui->ipLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
+            if (!m_IPv6Address.isEmpty()) {
                 m_ui->ipLabel->setText(m_ui->ipLabel->text().append(
                     QStringLiteral("\n(IPv6: %1)").arg(m_IPv6Address)));
             }
-            m_ui->ipLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
         }
-    } else {
-        if (reply->error() != QNetworkReply::NoError) {
-            m_ui->ipLabel->setText(
-                QStringLiteral("Unable to determine external IP address."));
-        } else {
-            QByteArray address = reply->readAll();
-            m_ui->ipLabel->setText(
-                QStringLiteral("External IP address: ").append(address));
-            m_ui->ipLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
-        }
-        if (!m_IPv6Address.isEmpty()) {
-            m_ui->ipLabel->setText(m_ui->ipLabel->text().append(
-                QStringLiteral("\n(IPv6: %1)").arg(m_IPv6Address)));
-        }
-        m_hasIPv4Reply = true;
     }
+
     reply->deleteLater();
 }
 
