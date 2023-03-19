@@ -1115,11 +1115,13 @@ JackTrip* Settings::getConfiguredJackTrip()
         jackTrip->setSampleRate(mSampleRate);
     }
 
+#if defined(__unix__)
     if (mChangeDefaultBS and mChangeDefaultSR) {
         char latency_env[40];
         sprintf(latency_env, "%d/%d", mAudioBufferSize, mSampleRate);
         setenv("PIPEWIRE_LATENCY", latency_env, 1);
     }
+#endif
 
     // Set RtAudio
 #ifdef RT_AUDIO
