@@ -162,10 +162,12 @@ class Settings : public QObject
     bool mChangeDefaultSR    = false;  ///< Change Default Sampling Rate
     bool mChangeDefaultID    = 0;      ///< Change Default device ID
     bool mChangeDefaultBS    = false;  ///< Change Default Buffer Size
-#ifdef RT_AUDIO
+
     unsigned int mSampleRate;
-    unsigned int mDeviceID;
     unsigned int mAudioBufferSize;
+
+#ifdef RT_AUDIO
+    unsigned int mDeviceID;
     std::string mInputDeviceName, mOutputDeviceName;
 #endif
     unsigned int mHubConnectionMode = JackTrip::SERVERTOCLIENT;

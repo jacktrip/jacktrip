@@ -155,10 +155,11 @@ void Settings::parseInput(int argc, char** argv)
         {"clientname", required_argument, NULL, 'J'},  // Run in JamLink mode
         {"remotename", required_argument, NULL, 'K'},  // Client name on hub server
         {"appendthreadid", no_argument, NULL,
-         OPT_APPENDTHREADID},  // Append thread id to client names
+         OPT_APPENDTHREADID},                       // Append thread id to client names
+        {"srate", required_argument, NULL, 'T'},    // Set Sample Rate
+        {"bufsize", required_argument, NULL, 'F'},  // Set buffer Size
 #ifdef RT_AUDIO
-        {"rtaudio", no_argument, NULL, 'R'},      // Run in JamLink mode
-        {"srate", required_argument, NULL, 'T'},  // Set Sample Rate
+        {"rtaudio", no_argument, NULL, 'R'},  // Run in JamLink mode
         {"deviceid", required_argument, NULL,
          'd'},  // Set RTAudio device id to use (DEPRECATED)
         {"audiodevice", required_argument, NULL,
@@ -168,8 +169,7 @@ void Settings::parseInput(int argc, char** argv)
         {"audiooutputdevice", required_argument, NULL,
          OPT_AUDIOOUTPUTDEVICE},  // Set RTAudio output device by name
         {"listdevices", no_argument, NULL,
-         OPT_LISTDEVICES},                          // Set RTAudio device id to use
-        {"bufsize", required_argument, NULL, 'F'},  // Set buffer Size
+         OPT_LISTDEVICES},  // Set RTAudio device id to use
 #endif
         {"nojackportsconnect", no_argument, NULL,
          'D'},                                // Don't connect default Audio Ports
@@ -217,7 +217,7 @@ void Settings::parseInput(int argc, char** argv)
     int ch;
     while ((ch = getopt_long(
                 argc, argv,
-                "n:N:H:sc:SC:L:o:B:P:U:q:r:b:ztlwjeJ:K:RTd:F:p:uiDvVhI:G:f:O:a:x:A",
+                "n:N:H:sc:SC:L:o:B:P:U:q:r:b:ztlwjeJ:K:RT:d:F:p:uiDvVhI:G:f:O:a:x:A",
                 longopts, NULL))
            != -1) {
         switch (ch) {
@@ -400,17 +400,23 @@ void Settings::parseInput(int argc, char** argv)
         case OPT_APPENDTHREADID:
             mAppendThreadID = true;
             break;
-#ifdef RT_AUDIO
-        case 'R':  // RtAudio
-            //-------------------------------------------------------
-            mGuiIgnoresArguments = true;
-            mUseJack             = false;
-            break;
         case 'T':  // Sampling Rate
             //-------------------------------------------------------
             mGuiIgnoresArguments = true;
             mChangeDefaultSR     = true;
             mSampleRate          = atoi(optarg);
+            break;
+        case 'F':  // Buffer Size
+            //-------------------------------------------------------
+            mGuiIgnoresArguments = true;
+            mChangeDefaultBS     = true;
+            mAudioBufferSize     = atoi(optarg);
+            break;
+#ifdef RT_AUDIO
+        case 'R':  // RtAudio
+            //-------------------------------------------------------
+            mGuiIgnoresArguments = true;
+            mUseJack             = false;
             break;
         case 'd':  // RTAudio device id
             //-------------------------------------------------------
@@ -420,12 +426,6 @@ void Settings::parseInput(int argc, char** argv)
                  << endl;
             mChangeDefaultID = true;
             mDeviceID        = atoi(optarg);
-            break;
-        case 'F':  // Buffer Size
-            //-------------------------------------------------------
-            mGuiIgnoresArguments = true;
-            mChangeDefaultBS     = true;
-            mAudioBufferSize     = atoi(optarg);
             break;
         case OPT_AUDIODEVICE:  // Set audio device
             //-------------------------------------------------------
@@ -897,16 +897,16 @@ void Settings::printUsage()
             "(sources) mixing at Hub Server (otherwise 2 assumed by -O)"
          << endl;
     cout << endl;
+    cout << " -T, --srate #                            Set the sampling rate, works only "
+            "on some audio backends (default: 48000)"
+         << endl;
+    cout << " -F, --bufsize #                          Set the buffer size, works only "
+            "on some audio backends (default: 128)"
+         << endl;
 #ifdef RT_AUDIO
     cout << "ARGUMENTS TO USE JACKTRIP WITHOUT JACK:" << endl;
     cout << " -R, --rtaudio                            Use system's default sound system "
             "instead of Jack"
-         << endl;
-    cout << " -T, --srate #                            Set the sampling rate, works on "
-            "--rtaudio mode only (default: 48000)"
-         << endl;
-    cout << " -F, --bufsize #                          Set the buffer size, works on "
-            "--rtaudio mode only (default: 128)"
          << endl;
     cout << " --audiodevice \"input-output device name\"" << endl;
     cout << " --audiodevice \"input device name\",\"output device name\"" << endl;
@@ -1105,10 +1105,9 @@ JackTrip* Settings::getConfiguredJackTrip()
         jackTrip->setPacketHeaderType(DataProtocol::EMPTY);
     }
 
-    // Set RtAudio
-#ifdef RT_AUDIO
-    if (!mUseJack) {
-        jackTrip->setAudiointerfaceMode(JackTrip::RTAUDIO);
+    // Change default Buffer Size
+    if (mChangeDefaultBS) {
+        jackTrip->setAudioBufferSizeInSamples(mAudioBufferSize);
     }
 
     // Change default Sampling Rate
@@ -1116,14 +1115,21 @@ JackTrip* Settings::getConfiguredJackTrip()
         jackTrip->setSampleRate(mSampleRate);
     }
 
+    if (mChangeDefaultBS and mChangeDefaultSR) {
+        char latency_env[40];
+        sprintf(latency_env, "%d/%d", mAudioBufferSize, mSampleRate);
+        setenv("PIPEWIRE_LATENCY", latency_env, 1);
+    }
+
+    // Set RtAudio
+#ifdef RT_AUDIO
+    if (!mUseJack) {
+        jackTrip->setAudiointerfaceMode(JackTrip::RTAUDIO);
+    }
+
     // Change default device ID
     if (mChangeDefaultID) {
         jackTrip->setDeviceID(mDeviceID);
-    }
-
-    // Change default Buffer Size
-    if (mChangeDefaultBS) {
-        jackTrip->setAudioBufferSizeInSamples(mAudioBufferSize);
     }
 
     // Set device names
