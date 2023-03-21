@@ -41,9 +41,6 @@ Item {
 
     property string settingsGroupView: "Audio"
 
-    property int inputCurrIndex: getCurrentInputDeviceIndex()
-    property int outputCurrIndex: getCurrentOutputDeviceIndex()
-
     function getCurrentInputDeviceIndex () {
         if (virtualstudio.inputDevice === "") {
             return inputComboModel.findIndex(elem => elem.type === "element");
@@ -80,8 +77,8 @@ Item {
 
         AudioSettings{
             id: audioSettings
-            inputCurrIndex: inputCurrIndex
-            outputCurrIndex: outputCurrIndex
+            inputCurrIndex: getCurrentInputDeviceIndex();
+            outputCurrIndex: getCurrentOutputDeviceIndex();
         }
     }
 
@@ -138,8 +135,8 @@ Item {
                 display: AbstractButton.TextBesideIcon
                 onClicked: {
                     virtualstudio.refreshDevices();
-                    inputCurrIndex = getCurrentInputDeviceIndex();
-                    outputCurrIndex = getCurrentOutputDeviceIndex();
+                    audioSettings.inputCurrIndex = getCurrentInputDeviceIndex();
+                    audioSettings.outputCurrIndex = getCurrentOutputDeviceIndex();
                 }
                 width: 144 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
                 font {
@@ -618,8 +615,8 @@ Item {
             }
             onClicked: {
                 virtualstudio.windowState = "browse";
-                inputCurrIndex = virtualstudio.previousInput;
-                outputCurrIndex = virtualstudio.previousOutput;
+                audioSettings.inputCurrIndex = virtualstudio.previousInput;
+                audioSettings.outputCurrIndex = virtualstudio.previousOutput;
                 virtualstudio.revertSettings()
             }
             anchors.verticalCenter: parent.verticalCenter

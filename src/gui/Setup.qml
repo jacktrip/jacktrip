@@ -44,9 +44,9 @@ Item {
 
     property bool currShowWarnings: virtualstudio.showWarnings
     property string warningScreen: virtualstudio.showWarnings ? "ethernet" : ( permissions.micPermission == "unknown" ? "microphone" : "acknowledged")
-
-    property int inputCurrIndex: getCurrentInputDeviceIndex()
-    property int outputCurrIndex: getCurrentOutputDeviceIndex()
+    property bool isUsingJack: virtualstudio.audioBackend == "JACK"
+    property bool isUsingRtAudio: virtualstudio.audioBackend == "RtAudio"
+    property bool hasNoBackend: !isUsingJack && !isUsingRtAudio && !virtualstudio.backendAvailable;
 
     function getCurrentInputDeviceIndex () {
         if (virtualstudio.inputDevice === "") {
@@ -564,8 +564,8 @@ Item {
             display: AbstractButton.TextBesideIcon
             onClicked: {
                 virtualstudio.refreshDevices();
-                inputCurrIndex = getCurrentInputDeviceIndex();
-                outputCurrIndex = getCurrentOutputDeviceIndex();
+                audioSettings.inputCurrIndex = getCurrentInputDeviceIndex();
+                audioSettings.outputCurrIndex = getCurrentOutputDeviceIndex();
             }
             anchors.right: parent.right
             anchors.rightMargin: rightMargin * virtualstudio.uiScale
@@ -575,7 +575,7 @@ Item {
                 family: "Poppins"
                 pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale
             }
-            visible: parent.isUsingRtAudio
+            visible: isUsingRtAudio
         }
 
         AudioSettings {
@@ -584,8 +584,8 @@ Item {
             anchors.top: pageTitle.bottom
             anchors.topMargin: 24 * virtualstudio.uiScale
 
-            inputCurrIndex: inputCurrIndex
-            outputCurrIndex: outputCurrIndex
+            inputCurrIndex: getCurrentInputDeviceIndex();
+            outputCurrIndex: getCurrentOutputDeviceIndex();
         }
 
         Button {
