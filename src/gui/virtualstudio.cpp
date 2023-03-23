@@ -2067,6 +2067,9 @@ void VirtualStudio::setupAuthenticator()
             "Studio Login Successful</h1>\n"
             "<p style=\"font-size: 21px; font-weight:300;\">You may close this window "
             "and return to the JackTrip application.</p>\n"
+            "<p style=\"font-size: 21px; font-weight:300;\">Alternatively, "
+            "&nbsp;<a href=\"https://app.jacktrip.org/studios/create\">click "
+            "here</a>&nbsp; to create your first studio.</p>\n"
             "</div>\n"));
         m_authenticator->setReplyHandler(replyHandler);
         connect(m_authenticator.data(), &QOAuth2AuthorizationCodeFlow::granted, this,
