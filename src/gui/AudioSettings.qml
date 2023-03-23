@@ -297,7 +297,7 @@ Rectangle {
             anchors.right: outputCombo.horizontalCenter
             anchors.rightMargin: 8 * virtualstudio.uiScale
             anchors.top: outputChannelsLabel.bottom
-            anchors.topMargin: 12 * virtualstudio.uiScale
+            anchors.topMargin: 4 * virtualstudio.uiScale
             model: outputChannelsComboModel
             currentIndex: (() => {
                 let idx = outputChannelsComboModel.findIndex(elem => elem.baseChannel === virtualstudio.baseOutputChannel
@@ -607,7 +607,7 @@ Rectangle {
             anchors.right: inputCombo.horizontalCenter
             anchors.rightMargin: 8 * virtualstudio.uiScale
             anchors.top: inputChannelsLabel.bottom
-            anchors.topMargin: 12 * virtualstudio.uiScale
+            anchors.topMargin: 4 * virtualstudio.uiScale
             model: inputChannelsComboModel
             currentIndex: (() => {
                 let idx = inputChannelsComboModel.findIndex(elem => elem.baseChannel === virtualstudio.baseInputChannel
@@ -665,7 +665,7 @@ Rectangle {
             anchors.right: inputCombo.right
             anchors.rightMargin: 8 * virtualstudio.uiScale
             anchors.top: inputMixModeLabel.bottom
-            anchors.topMargin: 12 * virtualstudio.uiScale
+            anchors.topMargin: 4 * virtualstudio.uiScale
             model: inputMixModeComboModel
             currentIndex: (() => {
                 let idx = inputMixModeComboModel.findIndex(elem => elem.value === virtualstudio.inputMixMode);
@@ -1070,7 +1070,7 @@ Rectangle {
         anchors.left: parent.left
         anchors.leftMargin: leftMargin * virtualstudio.uiScale
         anchors.right: parent.right
-        
+
         visible: parent.hasNoBackend
 
         Text {

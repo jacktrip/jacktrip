@@ -539,8 +539,10 @@ void JackTrip::startProcess(
 #endif  // endwhere
     );
 
-    if (mAudioInterface->getDevicesErrorMsg() != "") {
-        stop();
+    QString audioInterfaceError =
+        QString::fromStdString(mAudioInterface->getDevicesErrorMsg());
+    if (audioInterfaceError != "") {
+        stop(audioInterfaceError);
         return;
     }
 
@@ -1156,7 +1158,10 @@ void JackTrip::tcpTimerTick()
             serverHostAddress = info.addresses().constFirst();
         }
     }
-    mTcpClient.connectToHost(serverHostAddress, mTcpServerPort);
+
+    if (mTcpClient.state() == QAbstractSocket::UnconnectedState) {
+        mTcpClient.connectToHost(serverHostAddress, mTcpServerPort);
+    }
 
     mRetryTimer.start();
 }
@@ -1369,7 +1374,9 @@ int JackTrip::clientPingToServerStart()
         mRetryTimer.start();
     }
 
-    mTcpClient.connectToHost(serverHostAddress, mTcpServerPort);
+    if (mTcpClient.state() == QAbstractSocket::UnconnectedState) {
+        mTcpClient.connectToHost(serverHostAddress, mTcpServerPort);
+    }
 
     if (gVerboseFlag)
         cout << "Connecting to TCP Server at "

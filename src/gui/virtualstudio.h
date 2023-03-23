@@ -256,6 +256,7 @@ class VirtualStudio : public QObject
     void applySettings();
     void connectToStudio(int studioIndex);
     void completeConnection();
+    void triggerReconnect();
     void disconnect();
     void manageStudio(int studioIndex, bool start = false);
     void launchVideo(int studioIndex);
@@ -395,8 +396,9 @@ class VirtualStudio : public QObject
 
     QTimer m_refreshTimer;
     QMutex m_refreshMutex;
-    bool m_allowRefresh      = true;
-    bool m_refreshInProgress = false;
+    bool m_allowRefresh        = true;
+    bool m_refreshInProgress   = false;
+    bool m_reconnectInProgress = false;
 
     QJsonObject m_networkStats;
 
