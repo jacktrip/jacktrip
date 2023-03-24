@@ -390,7 +390,7 @@ Item {
                 border.color: showPromptButton.down || showPromptButton.hovered ? saveButtonPressedStroke : saveButtonStroke
                 layer.enabled: showPromptButton.hovered && !showPromptButton.down
             }
-            onClicked: { 
+            onClicked: {
                 permissions.getMicPermission();
             }
             anchors.right: microphonePrompt.right
@@ -478,7 +478,7 @@ Item {
                 border.color: openSettingsButton.down || openSettingsButton.hovered ? saveButtonPressedStroke : saveButtonStroke
                 layer.enabled: openSettingsButton.hovered && !openSettingsButton.down
             }
-            onClicked: { 
+            onClicked: {
                 permissions.openSystemPrivacy();
             }
             anchors.right: parent.right
@@ -538,6 +538,8 @@ Item {
         id: setupItem
         width: parent.width; height: parent.height
         visible: (warningScreen == "acknowledged" || warningScreen == "microphone") && permissions.micPermission == "granted"
+
+        property bool isUsingRtAudio: virtualstudio.audioBackend == "RtAudio"
 
         Text {
             id: pageTitle
