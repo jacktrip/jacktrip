@@ -324,7 +324,7 @@ void VirtualStudio::show()
     if (m_checkSsl) {
         // Check our available SSL version
         QString sslVersion = QSslSocket::sslLibraryVersionString();
-        qDebug() << "SSL Library: " << sslVersion.toStdString();
+        qDebug() << "SSL Library: " << sslVersion;
         if (sslVersion.isEmpty()) {
             QMessageBox msgBox;
             msgBox.setText(
