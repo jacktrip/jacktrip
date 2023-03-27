@@ -2407,14 +2407,14 @@ void VirtualStudio::startAudio()
     }
 #ifdef RT_AUDIO
     validateDevicesState();
-    m_vsAudioInterface->setInputDevice(m_inputDevice, true);
-    m_vsAudioInterface->setOutputDevice(m_outputDevice, true);
+    m_vsAudioInterface->setInputDevice(m_inputDevice, false);
+    m_vsAudioInterface->setOutputDevice(m_outputDevice, false);
     m_vsAudioInterface->setAudioInterfaceMode(m_useRtAudio);
-    m_vsAudioInterface->setBaseInputChannel(m_baseInputChannel, true);
-    m_vsAudioInterface->setNumInputChannels(m_numInputChannels, true);
-    m_vsAudioInterface->setInputMixMode(m_inputMixMode, true);
-    m_vsAudioInterface->setBaseOutputChannel(m_baseOutputChannel, true);
-    m_vsAudioInterface->setNumOutputChannels(m_numOutputChannels, true);
+    m_vsAudioInterface->setBaseInputChannel(m_baseInputChannel, false);
+    m_vsAudioInterface->setNumInputChannels(m_numInputChannels, false);
+    m_vsAudioInterface->setInputMixMode(m_inputMixMode, false);
+    m_vsAudioInterface->setBaseOutputChannel(m_baseOutputChannel, false);
+    m_vsAudioInterface->setNumOutputChannels(m_numOutputChannels, false);
 #endif
     connect(m_vsAudioInterface.data(), &VsAudioInterface::devicesErrorMsgChanged, this,
             &VirtualStudio::updatedDevicesErrorMsg);
@@ -2484,8 +2484,8 @@ void VirtualStudio::restartAudio()
     if (!m_vsAudioInterface.isNull()) {
 #ifdef RT_AUDIO
         validateDevicesState();
-        m_vsAudioInterface->setInputDevice(m_inputDevice, true);
-        m_vsAudioInterface->setOutputDevice(m_outputDevice, true);
+        m_vsAudioInterface->setInputDevice(m_inputDevice, false);
+        m_vsAudioInterface->setOutputDevice(m_outputDevice, false);
 #endif
         m_vsAudioInterface->setupAudio();
         m_vsAudioInterface->setupPlugins();
