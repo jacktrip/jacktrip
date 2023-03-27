@@ -1099,6 +1099,7 @@ void VirtualStudio::refreshDevices()
                                                        inputComboModel);
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("outputComboModel"),
                                                        outputComboModel);
+    validateDevicesState();
     if (!m_vsAudioInterface.isNull()) {
         restartAudio();
     }
