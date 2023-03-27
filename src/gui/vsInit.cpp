@@ -65,7 +65,7 @@ void VsInit::checkForInstance(QString& deeplink)
         m_instanceCheckSocket.data(), &QLocalSocket::connected, this,
         [=]() {
             // pass deeplink to existing instance before quitting
-            qDebug() << "Deeplink: " + deeplink;
+            qDebug() << "Deeplink:" << deeplink;
             if (!deeplink.isEmpty()) {
                 QByteArray baDeeplink = deeplink.toLocal8Bit();
                 qint64 writeBytes     = m_instanceCheckSocket->write(baDeeplink);
