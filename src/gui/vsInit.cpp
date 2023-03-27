@@ -65,6 +65,7 @@ void VsInit::checkForInstance(QString& deeplink)
         m_instanceCheckSocket.data(), &QLocalSocket::connected, this,
         [=]() {
             // pass deeplink to existing instance before quitting
+            qDebug() << deeplink;
             if (!deeplink.isEmpty()) {
                 QByteArray baDeeplink = deeplink.toLocal8Bit();
                 qint64 writeBytes     = m_instanceCheckSocket->write(baDeeplink);
@@ -112,20 +113,26 @@ void VsInit::checkForInstance(QString& deeplink)
                                 qDebug() << "Never received connection";
                                 return;
                             }
+                            qDebug() << "Connected";
 
                             if (!connectedSocket->waitForReadyRead()) {
                                 qDebug() << "Never ready to read";
-                                return;
+                                if (!(connectedSocket->bytesAvailable() > 0)) {
+                                    qDebug() << "Ready but no bytes available";
+                                    return;
+                                }
                             }
-
+                            qDebug() << "Ready to read";
                             if (connectedSocket->bytesAvailable()
                                 < (int)sizeof(quint16)) {
                                 qDebug() << "no bytes available";
                                 break;
                             }
+                            qDebug() << "bytes available";
 
                             QByteArray in(connectedSocket->readAll());
                             QString urlString(in);
+                            qDebug() << urlString;
                             QUrl url(urlString);
 
                             // Join studio using received URL
