@@ -2409,7 +2409,7 @@ void VirtualStudio::startAudio()
     validateDevicesState();
     m_vsAudioInterface->setInputDevice(m_inputDevice, false);
     m_vsAudioInterface->setOutputDevice(m_outputDevice, false);
-    m_vsAudioInterface->setAudioInterfaceMode(m_useRtAudio);
+    m_vsAudioInterface->setAudioInterfaceMode(m_useRtAudio, false);
     m_vsAudioInterface->setBaseInputChannel(m_baseInputChannel, false);
     m_vsAudioInterface->setNumInputChannels(m_numInputChannels, false);
     m_vsAudioInterface->setInputMixMode(m_inputMixMode, false);
