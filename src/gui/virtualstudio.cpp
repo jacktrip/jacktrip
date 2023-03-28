@@ -31,7 +31,7 @@
 
 /**
  * \file virtualstudio.cpp
- * \author Aaron Wyatt
+ * \author Matt Horton, based on code by Aaron Wyatt
  * \date March 2022
  */
 
@@ -324,6 +324,9 @@ void VirtualStudio::show()
     if (m_checkSsl) {
         // Check our available SSL version
         QString sslVersion = QSslSocket::sslLibraryVersionString();
+        // Important: this needs to be output with qDebug rather than to std::cout
+        // otherwise it may get passed to an existing JackTrip instance in place of our
+        // deeplink. (Need to find the root cause of this.)
         qDebug() << "SSL Library: " << sslVersion;
         if (sslVersion.isEmpty()) {
             QMessageBox msgBox;
@@ -1637,7 +1640,7 @@ void VirtualStudio::manageStudio(int studioIndex, bool start)
         QString expiration =
             QDateTime::currentDateTimeUtc().addSecs(60 * 30).toString(Qt::ISODate);
         QJsonObject json      = {{QLatin1String("enabled"), true},
-                            {QLatin1String("expiresAt"), expiration}};
+                                 {QLatin1String("expiresAt"), expiration}};
         QJsonDocument request = QJsonDocument(json);
 
         QNetworkReply* reply = m_authenticator->put(
