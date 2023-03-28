@@ -80,8 +80,6 @@ Item {
 
         AudioSettings{
             id: audioSettings
-            inputCurrIndex: inputCurrIndex
-            outputCurrIndex: outputCurrIndex
         }
     }
 

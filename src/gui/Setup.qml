@@ -44,33 +44,6 @@ Item {
     property bool currShowWarnings: virtualstudio.showWarnings
     property string warningScreen: virtualstudio.showWarnings ? "ethernet" : ( permissions.micPermission == "unknown" ? "microphone" : "acknowledged")
 
-    property int inputCurrIndex: getCurrentInputDeviceIndex()
-    property int outputCurrIndex: getCurrentOutputDeviceIndex()
-
-    function getCurrentInputDeviceIndex () {
-        if (virtualstudio.inputDevice === "") {
-            return inputComboModel.findIndex(elem => elem.type === "element");
-        }
-
-        let idx = inputComboModel.findIndex(elem => elem.type === "element" && elem.text === virtualstudio.inputDevice);
-        if (idx < 0) {
-            idx = inputComboModel.findIndex(elem => elem.type === "element");
-        }
-        return idx;
-    }
-
-    function getCurrentOutputDeviceIndex() {
-        if (virtualstudio.outputDevice === "") {
-            return outputComboModel.findIndex(elem => elem.type === "element");
-        }
-
-        let idx = outputComboModel.findIndex(elem => elem.type === "element" && elem.text === virtualstudio.outputDevice);
-        if (idx < 0) {
-            idx = outputComboModel.findIndex(elem => elem.type === "element");
-        }
-        return idx;
-    }
-
     Item {
         id: ethernetWarningItem
         width: parent.width; height: parent.height
@@ -565,8 +538,6 @@ Item {
             display: AbstractButton.TextBesideIcon
             onClicked: {
                 virtualstudio.refreshDevices();
-                inputCurrIndex = getCurrentInputDeviceIndex();
-                outputCurrIndex = getCurrentOutputDeviceIndex();
             }
             anchors.right: parent.right
             anchors.rightMargin: rightMargin * virtualstudio.uiScale
@@ -584,9 +555,6 @@ Item {
             width: parent.width
             anchors.top: pageTitle.bottom
             anchors.topMargin: 24 * virtualstudio.uiScale
-
-            inputCurrIndex: inputCurrIndex
-            outputCurrIndex: outputCurrIndex
         }
 
         Button {

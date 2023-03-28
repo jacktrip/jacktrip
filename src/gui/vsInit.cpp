@@ -115,7 +115,10 @@ void VsInit::checkForInstance(QString& deeplink)
 
                             if (!connectedSocket->waitForReadyRead()) {
                                 qDebug() << "Never ready to read";
-                                return;
+                                if (!(connectedSocket->bytesAvailable() > 0)) {
+                                    qDebug() << "Not ready and no bytes available";
+                                    return;
+                                }
                             }
 
                             if (connectedSocket->bytesAvailable()

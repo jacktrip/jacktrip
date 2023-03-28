@@ -43,8 +43,32 @@ Rectangle {
     property bool isUsingRtAudio: virtualstudio.audioBackend == "RtAudio"
     property bool hasNoBackend: !isUsingJack && !isUsingRtAudio && !virtualstudio.backendAvailable;
 
-    required property int inputCurrIndex
-    required property int outputCurrIndex
+    property int inputCurrIndex: getCurrentInputDeviceIndex()
+    property int outputCurrIndex: getCurrentOutputDeviceIndex()
+
+    function getCurrentInputDeviceIndex () {
+        if (virtualstudio.inputDevice === "") {
+            return inputComboModel.findIndex(elem => elem.type === "element");
+        }
+
+        let idx = inputComboModel.findIndex(elem => elem.type === "element" && elem.text === virtualstudio.inputDevice);
+        if (idx < 0) {
+            idx = inputComboModel.findIndex(elem => elem.type === "element");
+        }
+        return idx;
+    }
+
+    function getCurrentOutputDeviceIndex() {
+        if (virtualstudio.outputDevice === "") {
+            return outputComboModel.findIndex(elem => elem.type === "element");
+        }
+
+        let idx = outputComboModel.findIndex(elem => elem.type === "element" && elem.text === virtualstudio.outputDevice);
+        if (idx < 0) {
+            idx = outputComboModel.findIndex(elem => elem.type === "element");
+        }
+        return idx;
+    }
 
     Item {
         id: usingRtAudio
