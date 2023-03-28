@@ -80,8 +80,6 @@ Item {
 
         AudioSettings{
             id: audioSettings
-            inputCurrIndex: inputCurrIndex
-            outputCurrIndex: outputCurrIndex
         }
     }
 
@@ -201,8 +199,8 @@ Item {
                         anchors.left: audioButtonText.right
                         anchors.verticalCenter: audioButtonText.verticalCenter
                         anchors.rightMargin: 16 * virtualstudio.uiScale
-                        width: 8 * virtualstudio.uiScale 
-                        height: 8 * virtualstudio.uiScale 
+                        width: 8 * virtualstudio.uiScale
+                        height: 8 * virtualstudio.uiScale
                         color: errorFlagColour
                         radius: 4 * virtualstudio.uiScale
                         visible: Boolean(virtualstudio.devicesError)
@@ -231,7 +229,7 @@ Item {
                         color: textColour
                     }
                 }
-                
+
 
                 background: Rectangle {
                     width: parent.width
