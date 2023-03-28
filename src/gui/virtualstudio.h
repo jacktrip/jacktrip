@@ -396,9 +396,8 @@ class VirtualStudio : public QObject
 
     QTimer m_refreshTimer;
     QMutex m_refreshMutex;
-    bool m_allowRefresh        = true;
-    bool m_refreshInProgress   = false;
-    bool m_reconnectInProgress = false;
+    bool m_allowRefresh      = true;
+    bool m_refreshInProgress = false;
 
     QJsonObject m_networkStats;
 

@@ -1458,7 +1458,9 @@ void VirtualStudio::connectToStudio(int studioIndex)
         completeConnection();
     }
 
-    m_reconnectInProgress = false;
+    if (m_device != nullptr) {
+        m_device->setReconnect(false);
+    }
 }
 
 void VirtualStudio::completeConnection()
@@ -1591,14 +1593,14 @@ void VirtualStudio::completeConnection()
 
 void VirtualStudio::triggerReconnect()
 {
-    m_reconnectInProgress = true;
-    m_connectionState     = QStringLiteral("Reconnecting...");
-    emit connectionStateChanged();
-    m_retryPeriodTimer.stop();
-    m_retryPeriod = false;
     if (m_jackTripRunning) {
-        m_device->stopPinger();
-        m_device->stopJackTrip();
+        m_connectionState = QStringLiteral("Reconnecting...");
+        emit connectionStateChanged();
+        m_retryPeriodTimer.stop();
+        m_retryPeriod = false;
+        if (m_device != nullptr) {
+            m_device->setReconnect(true);
+        }
     }
 }
 
@@ -1806,7 +1808,7 @@ void VirtualStudio::slotAuthFailed()
 
 void VirtualStudio::processFinished()
 {
-    if (m_reconnectInProgress) {
+    if (m_device->reconnect()) {
         if (m_device->hasTerminated()) {
             connectToStudio(m_currentStudio);
         }
