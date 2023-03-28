@@ -1081,6 +1081,11 @@ void VirtualStudio::refreshStudios(int index, bool signalRefresh)
 void VirtualStudio::refreshDevices()
 {
 #ifdef RT_AUDIO
+    if (!m_vsAudioInterface.isNull()) {
+        m_vsAudioInterface->closeAudio();
+        setAudioReady(false);
+    }
+
     RtAudioInterface::getDeviceList(&m_inputDeviceList, &m_inputDeviceCategories,
                                     &m_inputDeviceChannels, true);
     RtAudioInterface::getDeviceList(&m_outputDeviceList, &m_outputDeviceCategories,
@@ -1095,11 +1100,9 @@ void VirtualStudio::refreshDevices()
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("outputComboModel"),
                                                        outputComboModel);
     validateDevicesState();
-    emit inputDeviceChanged(m_inputDevice, false);
-    emit outputDeviceChanged(m_outputDevice, false);
-    emit baseInputChannelChanged(m_baseInputChannel, false);
-    emit numInputChannelsChanged(m_numInputChannels, false);
-    emit inputMixModeChanged(m_inputMixMode, false);
+    if (!m_vsAudioInterface.isNull()) {
+        restartAudio();
+    }
 #endif
 }
 
@@ -1170,9 +1173,9 @@ void VirtualStudio::validateInputDevicesState()
         m_numInputChannels = 1;
         m_inputMixMode     = static_cast<int>(AudioInterface::MONO);
 
-        emit baseInputChannelChanged(m_baseInputChannel);
-        emit numInputChannelsChanged(m_numInputChannels);
-        emit inputMixModeChanged(m_inputMixMode);
+        emit baseInputChannelChanged(m_baseInputChannel, false);
+        emit numInputChannelsChanged(m_numInputChannels, false);
+        emit inputMixModeChanged(m_inputMixMode, false);
     } else {
         // set the input channels selector to have the options based on the currently
         // selected device
@@ -1207,8 +1210,8 @@ void VirtualStudio::validateInputDevicesState()
             // the ability to use the first 2 channels
             m_baseInputChannel = 0;
             m_numInputChannels = 2;
-            emit baseInputChannelChanged(m_baseInputChannel);
-            emit numInputChannelsChanged(m_numInputChannels);
+            emit baseInputChannelChanged(m_baseInputChannel, false);
+            emit numInputChannelsChanged(m_numInputChannels, false);
         }
         if (m_numInputChannels != 1) {
             // Set the input mix mode to have two options: "Stereo" and "Mix to Mono" if
@@ -1235,7 +1238,7 @@ void VirtualStudio::validateInputDevicesState()
             if (m_inputMixMode != static_cast<int>(AudioInterface::STEREO)
                 && m_inputMixMode != static_cast<int>(AudioInterface::MIXTOMONO)) {
                 m_inputMixMode = static_cast<int>(AudioInterface::STEREO);
-                emit inputMixModeChanged(m_inputMixMode);
+                emit inputMixModeChanged(m_inputMixMode, false);
             }
         } else {
             // Set the input mix mode to just have "Mono" as the option if we're using 1
@@ -1253,7 +1256,7 @@ void VirtualStudio::validateInputDevicesState()
             // if m_inputMixMode is an invalid value, set it to AudioInterface::MONO
             if (m_inputMixMode != static_cast<int>(AudioInterface::MONO)) {
                 m_inputMixMode = static_cast<int>(AudioInterface::MONO);
-                emit inputMixModeChanged(m_inputMixMode);
+                emit inputMixModeChanged(m_inputMixMode, false);
             }
         }
     }
@@ -1309,8 +1312,8 @@ void VirtualStudio::validateOutputDevicesState()
         m_baseOutputChannel = 0;
         m_numOutputChannels = 1;
 
-        emit baseOutputChannelChanged(m_baseOutputChannel);
-        emit numOutputChannelsChanged(m_numOutputChannels);
+        emit baseOutputChannelChanged(m_baseOutputChannel, false);
+        emit numOutputChannelsChanged(m_numOutputChannels, false);
     } else {
         // set the output channels selector to have the options based on the currently
         // selected device
@@ -1338,8 +1341,8 @@ void VirtualStudio::validateOutputDevicesState()
             // the ability to use the first 2 channels
             m_baseOutputChannel = 0;
             m_numOutputChannels = 2;
-            emit baseOutputChannelChanged(m_baseOutputChannel);
-            emit numOutputChannelsChanged(m_numOutputChannels);
+            emit baseOutputChannelChanged(m_baseOutputChannel, false);
+            emit numOutputChannelsChanged(m_numOutputChannels, false);
         }
     }
 #endif  // RT_AUDIO
@@ -2404,14 +2407,14 @@ void VirtualStudio::startAudio()
     }
 #ifdef RT_AUDIO
     validateDevicesState();
-    m_vsAudioInterface->setInputDevice(m_inputDevice, true);
-    m_vsAudioInterface->setOutputDevice(m_outputDevice, true);
-    m_vsAudioInterface->setAudioInterfaceMode(m_useRtAudio);
-    m_vsAudioInterface->setBaseInputChannel(m_baseInputChannel, true);
-    m_vsAudioInterface->setNumInputChannels(m_numInputChannels, true);
-    m_vsAudioInterface->setInputMixMode(m_inputMixMode, true);
-    m_vsAudioInterface->setBaseOutputChannel(m_baseOutputChannel, true);
-    m_vsAudioInterface->setNumOutputChannels(m_numOutputChannels, true);
+    m_vsAudioInterface->setInputDevice(m_inputDevice, false);
+    m_vsAudioInterface->setOutputDevice(m_outputDevice, false);
+    m_vsAudioInterface->setAudioInterfaceMode(m_useRtAudio, false);
+    m_vsAudioInterface->setBaseInputChannel(m_baseInputChannel, false);
+    m_vsAudioInterface->setNumInputChannels(m_numInputChannels, false);
+    m_vsAudioInterface->setInputMixMode(m_inputMixMode, false);
+    m_vsAudioInterface->setBaseOutputChannel(m_baseOutputChannel, false);
+    m_vsAudioInterface->setNumOutputChannels(m_numOutputChannels, false);
 #endif
     connect(m_vsAudioInterface.data(), &VsAudioInterface::devicesErrorMsgChanged, this,
             &VirtualStudio::updatedDevicesErrorMsg);
@@ -2481,8 +2484,8 @@ void VirtualStudio::restartAudio()
     if (!m_vsAudioInterface.isNull()) {
 #ifdef RT_AUDIO
         validateDevicesState();
-        m_vsAudioInterface->setInputDevice(m_inputDevice, true);
-        m_vsAudioInterface->setOutputDevice(m_outputDevice, true);
+        m_vsAudioInterface->setInputDevice(m_inputDevice, false);
+        m_vsAudioInterface->setOutputDevice(m_outputDevice, false);
 #endif
         m_vsAudioInterface->setupAudio();
         m_vsAudioInterface->setupPlugins();
