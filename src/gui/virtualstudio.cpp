@@ -1400,7 +1400,7 @@ void VirtualStudio::applySettings()
     settings.setValue(QStringLiteral("NumInputChannels"), m_numInputChannels);
     settings.setValue(QStringLiteral("InputMixMode"), m_inputMixMode);
     settings.setValue(QStringLiteral("BaseOutputChannel"), m_baseOutputChannel);
-    settings.setValue(QStringLiteral("NumOutputChannels"), m_baseInputChannel);
+    settings.setValue(QStringLiteral("NumOutputChannels"), m_numOutputChannels);
     settings.endGroup();
 
     m_previousUseRtAudio = m_useRtAudio;
