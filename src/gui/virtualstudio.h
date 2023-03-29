@@ -31,7 +31,7 @@
 
 /**
  * \file virtualstudio.h
- * \author Aaron Wyatt
+ * \author Matt Horton, based on code by Aaron Wyatt
  * \date March 2022
  */
 

@@ -31,7 +31,7 @@
 
 /**
  * \file virtualstudio.cpp
- * \author Aaron Wyatt
+ * \author Matt Horton, based on code by Aaron Wyatt
  * \date March 2022
  */
 
@@ -324,6 +324,9 @@ void VirtualStudio::show()
     if (m_checkSsl) {
         // Check our available SSL version
         QString sslVersion = QSslSocket::sslLibraryVersionString();
+        // Important: this needs to be output with qDebug rather than to std::cout
+        // otherwise it may get passed to an existing JackTrip instance in place of our
+        // deeplink. (Need to find the root cause of this.)
         qDebug() << "SSL Library: " << sslVersion;
         if (sslVersion.isEmpty()) {
             QMessageBox msgBox;
