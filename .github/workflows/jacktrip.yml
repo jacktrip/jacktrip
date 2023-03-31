@@ -340,6 +340,7 @@ jobs:
         shell: bash
         run: |
           choco install jack --version=1.9.17 --no-progress
+          choco install msys2 --no-progress
           if [[ "${{ matrix.build-system }}" == "qmake" && -n "${{ matrix.static-qt-version }}" && -n "${{ matrix.vcpkg-triplet }}" ]]; then 
             vcpkg install openssl --triplet="${{ matrix.vcpkg-triplet }}"
           fi
