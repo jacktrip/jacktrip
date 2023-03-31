@@ -341,6 +341,7 @@ jobs:
         run: |
           choco install jack --version=1.9.17 --no-progress
           if [[ "${{ matrix.build-system }}" == "qmake" && -n "${{ matrix.static-qt-version }}" && -n "${{ matrix.vcpkg-triplet }}" ]]; then 
+            choco install msys2 --no-progress
             vcpkg install openssl --triplet="${{ matrix.vcpkg-triplet }}"
           fi
           if [[ "${{ matrix.system-rtaudio }}" == true && -n "${{ matrix.vcpkg-triplet }}" ]]; then 
