@@ -123,7 +123,8 @@ class StdDev
 class Regulator : public RingBuffer
 {
    public:
-    Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen);
+    Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bufStrategy,
+              int bqLen);
     virtual ~Regulator();
 
     void shimFPP(const int8_t* buf, int len, int seq_num);
@@ -143,12 +144,17 @@ class Regulator : public RingBuffer
         return (true);
     }
 
-    // called by RegulatorWorker after each audio callback, to prep next packet
+    void pullPacket(int8_t* buf);
+
     void pullPacket();
 
     virtual void readSlotNonBlocking(int8_t* ptrToReadSlot)
     {
-        ::memcpy(ptrToReadSlot, mNextPacket.load(std::memory_order_acquire), mBytes);
+        if (mBufStrategy == 3) {  // PLC workerThread
+            ::memcpy(ptrToReadSlot, mNextPacket.load(std::memory_order_acquire), mBytes);
+        } else {  // mBufStrategy == 4 compute in this thread
+            pullPacket(ptrToReadSlot);
+        }
     }
 
     virtual void readBroadcastSlot(int8_t* ptrToReadSlot)
@@ -208,6 +214,7 @@ class Regulator : public RingBuffer
     double mAutoHeadroom;
     double mFPPdurMsec;
     double mPeerFPPdurMsec;
+    int mBufStrategy;
     void changeGlobal(double);
     void changeGlobal_2(int);
     void changeGlobal_3(int);

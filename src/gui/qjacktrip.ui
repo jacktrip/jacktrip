@@ -7,14 +7,14 @@
     <x>0</x>
     <y>0</y>
     <width>409</width>
-    <height>961</height>
+    <height>997</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>JackTrip</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="qjacktrip.qrc">
+   <iconset resource="qjacktrip_novs.qrc">
     <normaloff>:/qjacktrip/icon.png</normaloff>:/qjacktrip/icon.png</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
@@ -109,7 +109,7 @@
        </size>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>3</number>
       </property>
       <property name="tabsClosable">
        <bool>false</bool>
@@ -1408,7 +1408,12 @@ for better quality at the expense of latency.</string>
           </item>
           <item>
            <property name="text">
-            <string>3 (experimental)</string>
+            <string>3 (experimental - in own thread) </string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>4 (experimental - in callback)</string>
            </property>
           </item>
          </widget>
@@ -1901,7 +1906,7 @@ To connect to a hub server you need to run as a hub client.</string>
      <x>0</x>
      <y>0</y>
      <width>409</width>
-     <height>30</height>
+     <height>27</height>
     </rect>
    </property>
   </widget>
@@ -1981,7 +1986,7 @@ To connect to a hub server you need to run as a hub client.</string>
   <tabstop>disconnectScriptBrowse</tabstop>
  </tabstops>
  <resources>
-  <include location="qjacktrip.qrc"/>
+  <include location="qjacktrip_novs.qrc"/>
  </resources>
  <connections/>
 </ui>

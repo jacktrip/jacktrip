@@ -536,7 +536,7 @@ void Settings::parseInput(int argc, char** argv)
             break;
         case OPT_BUFSTRATEGY:  // Buf strategy
             mBufferStrategy = atoi(optarg);
-            if (-1 > mBufferStrategy || 3 < mBufferStrategy) {
+            if (-1 > mBufferStrategy || 4 < mBufferStrategy) {
                 std::cerr << "Unsupported buffer strategy " << optarg << endl;
                 printUsage();
                 std::exit(1);
@@ -862,7 +862,7 @@ void Settings::printUsage()
     cout << " -D, --nojackportsconnect                 Don't connect default audio ports "
             "in jack"
          << endl;
-    cout << " --bufstrategy # (0, 1, 2)                Use alternative jitter buffer"
+    cout << " --bufstrategy # (0, 1, 2, 3, 4)          Use alternative jitter buffer"
          << endl;
     cout << " --broadcast <broadcast_queue>            Duplicate receive ports with the specified broadcast_queue length. "
                                                        "Broadcast outputs have higher latency but less packet loss.\n";

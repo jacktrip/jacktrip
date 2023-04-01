@@ -38,7 +38,7 @@
 #ifndef __JACKTRIP_H__
 #define __JACKTRIP_H__
 
-//#include <tr1/memory> //for shared_ptr
+// #include <tr1/memory> //for shared_ptr
 #include <QObject>
 #include <QSharedPointer>
 #include <QSslSocket>
@@ -58,7 +58,7 @@
 #include "PacketHeader.h"
 #include "RingBuffer.h"
 
-//#include <signal.h>
+// #include <signal.h>
 /** \brief Main class to creates a SERVER (to listen) or a CLIENT (to connect
  * to a listening server) to send audio streams in the network.
  *
@@ -392,7 +392,7 @@ class JackTrip : public QObject
     virtual void receiveNetworkPacket(int8_t* ptrToReadSlot)
     {
         mReceiveRingBuffer->readSlotNonBlocking(ptrToReadSlot);
-        if (mBufferStrategy == 3) {
+        if (mBufferStrategy == 3) {  // PLC workerThread
             // trigger next packet using RegulatorThread
             emit signalReceivedNetworkPacket();
         }

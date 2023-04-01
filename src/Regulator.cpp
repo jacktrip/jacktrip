@@ -105,13 +105,15 @@ constexpr double AutoInitValFactor =
 constexpr int WindowDivisor = 8;     // for faster auto tracking
 constexpr int MaxFPP        = 1024;  // tested up to this FPP
 //*******************************************************************************
-Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen)
+Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bufStrategy,
+                     int bqLen)
     : RingBuffer(0, 0)
     , mNumChannels(rcvChannels)
     , mAudioBitRes(bit_res)
     , mFPP(FPP)
     , mMsecTolerance((double)qLen)  // handle non-auto mode, expects positive qLen
     , mAuto(false)
+    , mBufStrategy(bufStrategy)
     , m_b_BroadcastQueueLength(bqLen)
 {
     // catch settings that are compute bound using long HIST
@@ -359,6 +361,13 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
     if (mLastSeqNumIn != -1)
         memcpy(mSlots[mLastSeqNumIn % mNumSlots], buf, mBytes);
 };
+
+//*******************************************************************************
+void Regulator::pullPacket(int8_t* buf)
+{  // only for mBufferStrategy == 4, not using workerThread
+    pullPacket();
+    memcpy(buf, mXfrBuffer, mBytes);
+}
 
 //*******************************************************************************
 void Regulator::pullPacket()
