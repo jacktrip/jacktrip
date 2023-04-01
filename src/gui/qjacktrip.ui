@@ -1906,7 +1906,7 @@ To connect to a hub server you need to run as a hub client.</string>
      <x>0</x>
      <y>0</y>
      <width>409</width>
-     <height>27</height>
+     <height>30</height>
     </rect>
    </property>
   </widget>
@@ -1986,7 +1986,7 @@ To connect to a hub server you need to run as a hub client.</string>
   <tabstop>disconnectScriptBrowse</tabstop>
  </tabstops>
  <resources>
-  <include location="qjacktrip_novs.qrc"/>
+  <include location="qjacktrip.qrc"/>
  </resources>
  <connections/>
 </ui>
