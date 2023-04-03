@@ -283,10 +283,14 @@ jobs:
           rm -rf "$VCPKG_INSTALLATION_ROOT"
       - name: Install vcpkg
         if: runner.os == 'Windows' && matrix.vcpkg-triplet
-        uses: friendlyanon/setup-vcpkg@v1
-        with:
-          committish: 19af97cba8ca48474e4ad15a24ed50271a9ecdac
-          path: ${{ env.VCPKG_INSTALLATION_ROOT }}
+        shell: pwsh
+        run: |
+          $vcpkgCommit = '19af97cba8ca48474e4ad15a24ed50271a9ecdac'
+          pushd "$env:VCPKG_INSTALLATION_ROOT"
+          git fetch --depth=1 origin $vcpkgCommit
+          git reset --hard $vcpkgCommit
+          ./bootstrap-vcpkg.bat
+          popd
       - name: cache vcpkg archives on Windows
         if: runner.os == 'Windows' && matrix.vcpkg-triplet
         uses: actions/cache@v3
