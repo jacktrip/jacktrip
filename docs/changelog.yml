@@ -1,3 +1,18 @@
+- Version: "1.8.1"
+  Date: 2023-03-29
+  Description:
+  - (added) VS mode - tooltips to explain input and output device
+  - (added) buffer size and sample rate now settable with Pipewire
+  - (added) VS mode - link to create a studio on the login complete page
+  - (fixed) Device names with special characters work again
+  - (fixed) undefine boolean error
+  - (fixed) VS Mode - Audio settings correctly show the selected device
+  - (fixed) VS Mode - Refresh button doesn't crash Windows any more
+  - (fixed) VS Mode - Output channel selections save correctly
+  - (updated) documentation styling
+  - (updated) removed ipify from VS mode
+  - (updated) ip check can now function with only IPv6
+  - (updated) cleaned up vsinit class
 - Version: "1.8.0"
   Date: 2023-03-01
   Description:

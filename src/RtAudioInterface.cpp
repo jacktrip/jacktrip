@@ -629,7 +629,8 @@ void RtAudioInterface::getDeviceInfoFromName(std::string deviceName, int* index,
         unsigned int devices = rtaudio.getDeviceCount();
         for (unsigned int j = 0; j < devices; j++) {
             RtAudio::DeviceInfo info = rtaudio.getDeviceInfo(j);
-            if (info.probed == true && deviceName == info.name) {
+            if (info.probed == true
+                && deviceName == QString::fromStdString(info.name).toStdString()) {
                 if ((isInput && info.inputChannels > 0)
                     || (!isInput && info.outputChannels > 0)) {
                     *index = j;

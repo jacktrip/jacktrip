@@ -152,7 +152,8 @@ class QJackTrip : public QMainWindow
 
     QMutex m_requestMutex;
     QString m_IPv6Address;
-    bool m_hasIPv4Reply;
+    QString m_IPv4Address;
+    int m_replyCount = 0;
     QString m_lastPath;
 
     QLabel m_autoQueueIndicator;

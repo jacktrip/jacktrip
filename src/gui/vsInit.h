@@ -31,7 +31,7 @@
 
 /**
  * \file vsInit.h
- * \author
+ * \author Aaron Wyatt, based on code by Matt Horton
  * \date February 2023
  */
 
@@ -45,7 +45,7 @@
 
 #include "virtualstudio.h"
 
-class VsInit : QObject
+class VsInit : public QObject
 {
     Q_OBJECT
 
@@ -53,16 +53,22 @@ class VsInit : QObject
     VsInit() = default;
 
     static QString parseDeeplink(QCoreApplication* app);
+    void checkForInstance(QString& deeplink);
+    void setVs(QSharedPointer<VirtualStudio> vs) { m_vs = vs; }
 #ifdef _WIN32
     static void setUrlScheme();
 #endif
-    void checkForInstance(QString& deeplink);
-    void setVs(QSharedPointer<VirtualStudio> vs) { m_vs = vs; }
+
+   private slots:
+    void connectionReceived();
+    void connectionFailed(QLocalSocket::LocalSocketError socketError);
+    void responseReceived();
 
    private:
     QScopedPointer<QLocalServer> m_instanceServer;
     QScopedPointer<QLocalSocket> m_instanceCheckSocket;
     QSharedPointer<VirtualStudio> m_vs;
+    QString m_deeplink;
 };
 
 #endif  // __VSINIT_H__
