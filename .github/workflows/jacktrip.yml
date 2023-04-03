@@ -276,7 +276,18 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.x'
-      - name: cache vcpkg on Windows
+      - name: Remove preinstalled vcpkg
+        if: runner.os == 'Windows' && matrix.vcpkg-triplet
+        shell: bash
+        run: |
+          rm -rf "$VCPKG_INSTALLATION_ROOT"
+      - name: Install vcpkg
+        if: runner.os == 'Windows' && matrix.vcpkg-triplet
+        uses: friendlyanon/setup-vcpkg@1
+        with:
+          committish: 19af97cba8ca48474e4ad15a24ed50271a9ecdac
+          path: $VCPKG_INSTALLATION_ROOT
+      - name: cache vcpkg archives on Windows
         if: runner.os == 'Windows' && matrix.vcpkg-triplet
         uses: actions/cache@v3
         with:
