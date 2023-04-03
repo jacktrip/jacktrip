@@ -165,8 +165,10 @@ JackTrip::~JackTrip()
     delete mDataProtocolReceiver;
     delete mAudioInterface;
     delete mPacketHeader;
-    delete mRegulatorWorkerPtr;
-    delete mRegulatorThreadPtr;
+    if (mRegulatorWorkerPtr != NULL)
+        delete mRegulatorWorkerPtr;
+    if (mRegulatorThreadPtr != NULL)
+        delete mRegulatorThreadPtr;
     delete mSendRingBuffer;
     delete mReceiveRingBuffer;
 }
@@ -429,14 +431,14 @@ void JackTrip::setupRingBuffers()
             mReceiveRingBuffer =
                 new RingBuffer(audio_output_slot_size, mBufferQueueLength);
             mPacketHeader->setBufferRequiresSameSettings(true);
-        } else if (mBufferStrategy == 3) {
+        } else if ((mBufferStrategy == 3) || (mBufferStrategy == 4)) {
             cout << "Using experimental buffer strategy " << mBufferStrategy
                  << "-- Regulator with PLC" << endl;
 
             mReceiveRingBuffer =
                 new Regulator(mNumAudioChansOut, mAudioBitResolution, mAudioBufferSize,
-                              mBufferQueueLength, mBroadcastQueueLength);
-            // bufStrategy 3, mBufferQueueLength is in integer msec not packets
+                              mBufferQueueLength, mBufferStrategy, mBroadcastQueueLength);
+            // bufStrategy 3 or 4, mBufferQueueLength is in integer msec not packets
 
             mPacketHeader->setBufferRequiresSameSettings(false);  // = asym is default
 
