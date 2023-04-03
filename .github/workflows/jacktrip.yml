@@ -276,12 +276,6 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.x'
-      - name: Remove preinstalled vcpkg
-        if: runner.os == 'Windows' && matrix.vcpkg-triplet
-        shell: bash
-        run: |
-          rm -rf "$VCPKG_INSTALLATION_ROOT"
-          mkdir "$VCPKG_INSTALLATION_ROOT"
       - name: Install vcpkg
         if: runner.os == 'Windows' && matrix.vcpkg-triplet
         shell: pwsh
