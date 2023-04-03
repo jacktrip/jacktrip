@@ -194,6 +194,7 @@ void JackTripWorker::start()
     mJackTrip->setBindPorts(mServerPort);
     // jacktrip.setPeerPorts(mClientPort);
     mJackTrip->setBufferStrategy(mBufferStrategy);
+    mJackTrip->setRegulatorThread(mRegulatorThreadPtr);
     mJackTrip->setNetIssuesSimulation(mSimulatedLossRate, mSimulatedJitterRate,
                                       mSimulatedDelayRel);
     mJackTrip->setBroadcast(mBroadcastQueue);

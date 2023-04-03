@@ -51,7 +51,6 @@
 
 #include "AudioInterface.h"
 #include "RingBuffer.h"
-#include "jacktrip_globals.h"
 
 class BurgAlgorithm
 {

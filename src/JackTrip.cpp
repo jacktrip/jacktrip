@@ -167,8 +167,6 @@ JackTrip::~JackTrip()
     delete mPacketHeader;
     if (mRegulatorWorkerPtr != NULL)
         delete mRegulatorWorkerPtr;
-    if (mRegulatorThreadPtr != NULL)
-        delete mRegulatorThreadPtr;
     delete mSendRingBuffer;
     delete mReceiveRingBuffer;
 }
@@ -667,16 +665,11 @@ void JackTrip::completeConnection()
     }
 
     if (mBufferStrategy == 3) {
-        mRegulatorThreadPtr = new QThread();
-        mRegulatorThreadPtr->setObjectName("RegulatorThread");
         Regulator* regulatorPtr    = reinterpret_cast<Regulator*>(mReceiveRingBuffer);
         RegulatorWorker* workerPtr = new RegulatorWorker(regulatorPtr);
         workerPtr->moveToThread(mRegulatorThreadPtr);
         QObject::connect(this, &JackTrip::signalReceivedNetworkPacket, workerPtr,
                          &RegulatorWorker::pullPacket, Qt::QueuedConnection);
-        mRegulatorThreadPtr->start();
-        QObject::connect(this, &JackTrip::signalAudioStarted, workerPtr,
-                         &RegulatorWorker::setRealtimePriority, Qt::QueuedConnection);
         mRegulatorWorkerPtr = workerPtr;
     }
 
@@ -1178,12 +1171,6 @@ void JackTrip::stop(const QString& errorMessage)
     mHasShutdown = true;
     std::cout << "Stopping JackTrip..." << std::endl;
 
-    if (mRegulatorThreadPtr != nullptr) {
-        // Stop the Regulator thread
-        mRegulatorThreadPtr->quit();
-        mRegulatorThreadPtr->wait();
-    }
-
     if (mDataProtocolSender != nullptr) {
         // Stop The Sender
         mDataProtocolSender->stop();
@@ -1218,9 +1205,6 @@ void JackTrip::waitThreads()
 {
     mDataProtocolSender->wait();
     mDataProtocolReceiver->wait();
-    if (mRegulatorThreadPtr != nullptr) {
-        mRegulatorThreadPtr->wait();
-    }
 }
 
 //*******************************************************************************

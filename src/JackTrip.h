@@ -226,6 +226,9 @@ class JackTrip : public QObject
     {
         mBufferStrategy = BufferStrategy;
     }
+    void setRegulatorThread(QThread* ptr) {
+        mRegulatorThreadPtr = ptr;
+    }
     /// \brief Sets (override) Audio Bit Resolution after construction
     virtual void setAudioBitResolution(
         AudioInterface::audioBitResolutionT AudioBitResolution)

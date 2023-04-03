@@ -80,6 +80,8 @@ UdpHubListener::UdpHubListener(int server_port, int server_udp_port, QObject* pa
            "client fan out/in, including server", "full mix, including server"})
     , m_connectDefaultAudioPorts(false)
     , mIOStatTimeout(0)
+    , mRegulatorThreadPtr(NULL)
+    , mThreadPrioritySetterPtr(NULL)
 {
     // Register JackTripWorker with the hub listener
     // mJTWorker = new JackTripWorker(this);
@@ -127,6 +129,10 @@ UdpHubListener::~UdpHubListener()
         delete mJTWorkers->at(i);
     }
     delete mJTWorkers;
+    if (mRegulatorThreadPtr != NULL)
+        delete mRegulatorThreadPtr;
+    if (mThreadPrioritySetterPtr != NULL)
+        delete mThreadPrioritySetterPtr;
 }
 
 //*******************************************************************************
@@ -230,6 +236,22 @@ void UdpHubListener::start()
     mStopCheckTimer.setInterval(200);
     connect(&mStopCheckTimer, &QTimer::timeout, this, &UdpHubListener::stopCheck);
     mStopCheckTimer.start();
+
+    // Start regulator thread if bufstrategy == 3
+    if (mBufferStrategy == 3) {
+        // create shared regulator thread
+        mRegulatorThreadPtr = new QThread();
+        mRegulatorThreadPtr->setObjectName("RegulatorThread");
+        mRegulatorThreadPtr->start();
+        // set realtime priority
+        ThreadPrioritySetter* setter_ptr = new ThreadPrioritySetter();
+        setter_ptr->moveToThread(mRegulatorThreadPtr);
+        QObject::connect(this, &UdpHubListener::signalStarted, setter_ptr,
+                         &ThreadPrioritySetter::setRealtimePriority, Qt::QueuedConnection);
+        mThreadPrioritySetterPtr = setter_ptr;
+    }
+
+    emit signalStarted();
 }
 
 void UdpHubListener::receivedNewConnection()
@@ -345,6 +367,7 @@ void UdpHubListener::receivedClientInfo(QSslSocket* clientConnection)
         mJTWorkers->at(id)->setIOStatStream(mIOStatStream);
     }
     mJTWorkers->at(id)->setBufferStrategy(mBufferStrategy);
+    mJTWorkers->at(id)->setRegulatorThread(mRegulatorThreadPtr);
     mJTWorkers->at(id)->setNetIssuesSimulation(mSimulatedLossRate, mSimulatedJitterRate,
                                                mSimulatedDelayRel);
     mJTWorkers->at(id)->setBroadcast(mBroadcastQueue);
@@ -667,6 +690,11 @@ void UdpHubListener::stopAllThreads()
         } else {
             iterator.next();
         }
+    }
+    if (mRegulatorThreadPtr != nullptr) {
+        // Stop the Regulator thread
+        mRegulatorThreadPtr->quit();
+        mRegulatorThreadPtr->wait();
     }
 }
 // TODO:

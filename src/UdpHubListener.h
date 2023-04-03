@@ -111,8 +111,7 @@ class UdpHubListener : public QObject
     void stopCheck();
 
    signals:
-    void Listening();
-    void ClientAddressSet();
+    void signalStarted();
     void signalRemoveThread(int id);
     void signalStopped();
     void signalError(const QString& errorMessage);
@@ -190,6 +189,10 @@ class UdpHubListener : public QObject
 
     int mIOStatTimeout;
     QSharedPointer<std::ostream> mIOStatStream;
+
+    /// thread used to pull packets from Regulator (if mBufferStrategy==3)
+    QThread* mRegulatorThreadPtr;
+    QObject* mThreadPrioritySetterPtr;
 
     int mBufferStrategy;
     int mBroadcastQueue;
@@ -270,6 +273,22 @@ class UdpHubListener : public QObject
     void setBroadcast(int broadcast_queue) { mBroadcastQueue = broadcast_queue; }
     void setUseRtUdpPriority(bool use) { mUseRtUdpPriority = use; }
     bool mAppendThreadID = false;
+};
+
+// ThreadPrioritySetter is used to set the priority for a QThread by calling slot setRealtimePriority
+class ThreadPrioritySetter : public QObject
+{
+    Q_OBJECT;
+
+   public:
+    ThreadPrioritySetter() {}
+    virtual ~ThreadPrioritySetter() {}
+
+   public slots:
+    void setRealtimePriority()
+    {
+        setRealtimeProcessPriority();
+    }
 };
 
 #endif  //__UDPHUBLISTENER_H__
