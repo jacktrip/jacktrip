@@ -675,6 +675,8 @@ void JackTrip::completeConnection()
         QObject::connect(this, &JackTrip::signalReceivedNetworkPacket, workerPtr,
                          &RegulatorWorker::pullPacket, Qt::QueuedConnection);
         mRegulatorThreadPtr->start();
+        QObject::connect(this, &JackTrip::signalAudioStarted, workerPtr,
+                         &RegulatorWorker::setRealtimePriority, Qt::QueuedConnection);
         mRegulatorWorkerPtr = workerPtr;
     }
 

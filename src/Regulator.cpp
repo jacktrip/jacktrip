@@ -157,11 +157,13 @@ Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bufStr
 
     if (gVerboseFlag)
         cout << "mHist = " << mHist << " at " << mFPP << "\n";
-    mBytes     = mFPP * mNumChannels * mBitResolutionMode;
-    mPullQueue = new int8_t[mBytes * 2];
-    mXfrBuffer = mPullQueue;
-    mPacketCnt = 0;  // burg initialization
-    mNextPacket.store(mPullQueue + mBytes, std::memory_order_release);
+    mBytes      = mFPP * mNumChannels * mBitResolutionMode;
+    mPullQueue  = new int8_t[mBytes * 2];
+    mXfrBuffer  = mPullQueue;
+    mPacketCnt  = 0;  // burg initialization
+    mLastPacket = mPullQueue + mBytes;
+    mNextPacket.store(mLastPacket, std::memory_order_release);
+    mWorkerUnderruns.store(0);
     mFadeUp.resize(mFPP, 0.0);
     mFadeDown.resize(mFPP, 0.0);
     for (int i = 0; i < mFPP; i++) {
@@ -799,6 +801,10 @@ bool Regulator::getStats(RingBuffer::IOStat* stat, bool reset)
         mBufIncUnderrun   = 0;
         mBufIncCompensate = 0;
         mBroadcastSkew    = 0;
+    }
+
+    if (mBufStrategy == 3) {
+        cout << "PLC worker underruns: " << mWorkerUnderruns.exchange(0) << endl;
     }
 
     // hijack  of  struct IOStat {

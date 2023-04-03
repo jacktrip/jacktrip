@@ -126,7 +126,8 @@ constexpr int gMaxRemoteNameLength           = 64;
 /// \name Global Functions
 
 #ifdef __APPLE__
-void setRealtimeProcessPriority(int bufferSize, int sampleRate);
+void setRealtimeProcessPriority(int bufferSize = gDefaultBufferSizeInSamples,
+                                int sampleRate = gDefaultSampleRate);
 #else
 void setRealtimeProcessPriority();
 #endif
