@@ -283,7 +283,7 @@ jobs:
           rm -rf "$VCPKG_INSTALLATION_ROOT"
       - name: Install vcpkg
         if: runner.os == 'Windows' && matrix.vcpkg-triplet
-        uses: friendlyanon/setup-vcpkg@1
+        uses: friendlyanon/setup-vcpkg@v1
         with:
           committish: 19af97cba8ca48474e4ad15a24ed50271a9ecdac
           path: $VCPKG_INSTALLATION_ROOT
