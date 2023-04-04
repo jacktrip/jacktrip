@@ -51,6 +51,7 @@
 
 #include "AudioInterface.h"
 #include "RingBuffer.h"
+#include "jacktrip_globals.h"
 
 class BurgAlgorithm
 {
@@ -151,7 +152,12 @@ class Regulator : public RingBuffer
     virtual void readSlotNonBlocking(int8_t* ptrToReadSlot)
     {
         if (mBufStrategy == 3) {  // PLC workerThread
-            ::memcpy(ptrToReadSlot, mNextPacket.load(std::memory_order_acquire), mBytes);
+            const void* ptrToPacket = mNextPacket.load(std::memory_order_acquire);
+            ::memcpy(ptrToReadSlot, ptrToPacket, mBytes);
+            if (ptrToPacket == mLastPacket) {
+                mWorkerUnderruns.fetch_add(1);
+            }
+            mLastPacket = ptrToPacket;
         } else {  // mBufStrategy == 4 compute in this thread
             pullPacket(ptrToReadSlot);
         }
@@ -183,6 +189,8 @@ class Regulator : public RingBuffer
     int mBytesPeerPacket;
     int8_t* mPullQueue;
     int8_t* mXfrBuffer;
+    const void* mLastPacket;
+    std::atomic<int> mWorkerUnderruns;
     std::atomic<const void*> mNextPacket;
     int8_t* mAssembledPacket;
     int mPacketCnt;
@@ -240,6 +248,7 @@ class RegulatorWorker : public QObject
             mRegulatorPtr->pullPacket();
         }
     }
+    void setRealtimePriority() { setRealtimeProcessPriority(); }
 
    private:
     Regulator* mRegulatorPtr;
