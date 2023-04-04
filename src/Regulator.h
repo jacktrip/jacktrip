@@ -124,7 +124,7 @@ class StdDev
 class Regulator : public RingBuffer
 {
    public:
-    Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bufStrategy,
+    Regulator(int rcvChannels, int bit_res, int FPP, int qLen, bool use_worker_thread,
               int bqLen);
     virtual ~Regulator();
 
@@ -151,14 +151,16 @@ class Regulator : public RingBuffer
 
     virtual void readSlotNonBlocking(int8_t* ptrToReadSlot)
     {
-        if (mBufStrategy == 3) {  // PLC workerThread
+        if (mUseWorkerThread) {
+            // use PLC workerThread for servers
             const void* ptrToPacket = mNextPacket.load(std::memory_order_acquire);
             ::memcpy(ptrToReadSlot, ptrToPacket, mBytes);
+            mLastPacket = ptrToPacket;
             if (ptrToPacket == mLastPacket) {
                 mWorkerUnderruns.fetch_add(1);
             }
-            mLastPacket = ptrToPacket;
-        } else {  // mBufStrategy == 4 compute in this thread
+        } else {
+            // use jack callback thread for clients
             pullPacket(ptrToReadSlot);
         }
     }
@@ -222,7 +224,7 @@ class Regulator : public RingBuffer
     double mAutoHeadroom;
     double mFPPdurMsec;
     double mPeerFPPdurMsec;
-    int mBufStrategy;
+    bool mUseWorkerThread;
     void changeGlobal(double);
     void changeGlobal_2(int);
     void changeGlobal_3(int);

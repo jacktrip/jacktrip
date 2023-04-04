@@ -1408,12 +1408,7 @@ for better quality at the expense of latency.</string>
           </item>
           <item>
            <property name="text">
-            <string>3 (experimental - in own thread) </string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>4 (experimental - in callback)</string>
+            <string>3 (experimental)</string>
            </property>
           </item>
          </widget>

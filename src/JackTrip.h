@@ -309,6 +309,11 @@ class JackTrip : public QObject
         mDataProtocolReceiver = DataProtocolReceiver;
     }
     virtual int getBufferStrategy() const noexcept { return mBufferStrategy; }
+    virtual int getRegulatorWithWorkerThread() const noexcept
+    {
+        return (mBufferStrategy == 3
+                && (mJackTripMode == SERVER || mJackTripMode == SERVERPINGSERVER));
+    }
 
     virtual RingBuffer* getSendRingBuffer() const { return mSendRingBuffer; }
     virtual RingBuffer* getReceiveRingBuffer() const { return mReceiveRingBuffer; }
@@ -392,7 +397,7 @@ class JackTrip : public QObject
     virtual void receiveNetworkPacket(int8_t* ptrToReadSlot)
     {
         mReceiveRingBuffer->readSlotNonBlocking(ptrToReadSlot);
-        if (mBufferStrategy == 3) {  // PLC workerThread
+        if (getRegulatorWithWorkerThread()) {  // PLC workerThread
             // trigger next packet using RegulatorThread
             emit signalReceivedNetworkPacket();
         }

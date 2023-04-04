@@ -431,14 +431,15 @@ void JackTrip::setupRingBuffers()
             mReceiveRingBuffer =
                 new RingBuffer(audio_output_slot_size, mBufferQueueLength);
             mPacketHeader->setBufferRequiresSameSettings(true);
-        } else if ((mBufferStrategy == 3) || (mBufferStrategy == 4)) {
+        } else if (mBufferStrategy == 3) {
+            bool use_worker_thread = getRegulatorWithWorkerThread();
             cout << "Using experimental buffer strategy " << mBufferStrategy
-                 << "-- Regulator with PLC" << endl;
-
-            mReceiveRingBuffer =
-                new Regulator(mNumAudioChansOut, mAudioBitResolution, mAudioBufferSize,
-                              mBufferQueueLength, mBufferStrategy, mBroadcastQueueLength);
-            // bufStrategy 3 or 4, mBufferQueueLength is in integer msec not packets
+                 << "-- Regulator with PLC (worker="
+                 << (use_worker_thread ? "true" : "false") << ")" << endl;
+            mReceiveRingBuffer = new Regulator(mNumAudioChansOut, mAudioBitResolution,
+                                               mAudioBufferSize, mBufferQueueLength,
+                                               use_worker_thread, mBroadcastQueueLength);
+            // bufStrategy 3, mBufferQueueLength is in integer msec not packets
 
             mPacketHeader->setBufferRequiresSameSettings(false);  // = asym is default
 
@@ -666,7 +667,7 @@ void JackTrip::completeConnection()
         mAudioInterface->appendProcessPluginToNetwork(i);
     }
 
-    if (mBufferStrategy == 3) {
+    if (getRegulatorWithWorkerThread()) {
         mRegulatorThreadPtr = new QThread();
         mRegulatorThreadPtr->setObjectName("RegulatorThread");
         Regulator* regulatorPtr    = reinterpret_cast<Regulator*>(mReceiveRingBuffer);
