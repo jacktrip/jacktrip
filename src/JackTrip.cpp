@@ -122,8 +122,6 @@ JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
     , mStopOnTimeout(false)
     , mSendRingBuffer(NULL)
     , mReceiveRingBuffer(NULL)
-    , mRegulatorThreadPtr(NULL)
-    , mRegulatorWorkerPtr(NULL)
     , mReceiverBindPort(receiver_bind_port)
     , mSenderPeerPort(sender_peer_port)
     , mSenderBindPort(sender_bind_port)
@@ -165,10 +163,6 @@ JackTrip::~JackTrip()
     delete mDataProtocolReceiver;
     delete mAudioInterface;
     delete mPacketHeader;
-    if (mRegulatorWorkerPtr != NULL)
-        delete mRegulatorWorkerPtr;
-    if (mRegulatorThreadPtr != NULL)
-        delete mRegulatorThreadPtr;
     delete mSendRingBuffer;
     delete mReceiveRingBuffer;
 }
@@ -432,12 +426,13 @@ void JackTrip::setupRingBuffers()
                 new RingBuffer(audio_output_slot_size, mBufferQueueLength);
             mPacketHeader->setBufferRequiresSameSettings(true);
         } else if ((mBufferStrategy == 3) || (mBufferStrategy == 4)) {
+            bool use_worker_thread = (mBufferStrategy == 3);
             cout << "Using experimental buffer strategy " << mBufferStrategy
-                 << "-- Regulator with PLC" << endl;
-
-            mReceiveRingBuffer =
-                new Regulator(mNumAudioChansOut, mAudioBitResolution, mAudioBufferSize,
-                              mBufferQueueLength, mBufferStrategy, mBroadcastQueueLength);
+                 << "-- Regulator with PLC (worker="
+                 << (use_worker_thread ? "true" : "false") << ")" << endl;
+            mReceiveRingBuffer = new Regulator(mNumAudioChansOut, mAudioBitResolution,
+                                               mAudioBufferSize, mBufferQueueLength,
+                                               use_worker_thread, mBroadcastQueueLength);
             // bufStrategy 3 or 4, mBufferQueueLength is in integer msec not packets
 
             mPacketHeader->setBufferRequiresSameSettings(false);  // = asym is default
@@ -664,20 +659,6 @@ void JackTrip::completeConnection()
 
     for (auto& i : mProcessPluginsToNetwork) {
         mAudioInterface->appendProcessPluginToNetwork(i);
-    }
-
-    if (mBufferStrategy == 3) {
-        mRegulatorThreadPtr = new QThread();
-        mRegulatorThreadPtr->setObjectName("RegulatorThread");
-        Regulator* regulatorPtr    = reinterpret_cast<Regulator*>(mReceiveRingBuffer);
-        RegulatorWorker* workerPtr = new RegulatorWorker(regulatorPtr);
-        workerPtr->moveToThread(mRegulatorThreadPtr);
-        QObject::connect(this, &JackTrip::signalReceivedNetworkPacket, workerPtr,
-                         &RegulatorWorker::pullPacket, Qt::QueuedConnection);
-        mRegulatorThreadPtr->start();
-        QObject::connect(this, &JackTrip::signalAudioStarted, workerPtr,
-                         &RegulatorWorker::setRealtimePriority, Qt::QueuedConnection);
-        mRegulatorWorkerPtr = workerPtr;
     }
 
     mAudioInterface->initPlugins(true);  // mSampleRate known now, which plugins require
@@ -1178,12 +1159,6 @@ void JackTrip::stop(const QString& errorMessage)
     mHasShutdown = true;
     std::cout << "Stopping JackTrip..." << std::endl;
 
-    if (mRegulatorThreadPtr != nullptr) {
-        // Stop the Regulator thread
-        mRegulatorThreadPtr->quit();
-        mRegulatorThreadPtr->wait();
-    }
-
     if (mDataProtocolSender != nullptr) {
         // Stop The Sender
         mDataProtocolSender->stop();
@@ -1218,9 +1193,6 @@ void JackTrip::waitThreads()
 {
     mDataProtocolSender->wait();
     mDataProtocolReceiver->wait();
-    if (mRegulatorThreadPtr != nullptr) {
-        mRegulatorThreadPtr->wait();
-    }
 }
 
 //*******************************************************************************

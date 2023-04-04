@@ -53,6 +53,9 @@
 #include "RingBuffer.h"
 #include "jacktrip_globals.h"
 
+// forward declaration
+class RegulatorWorker;
+
 class BurgAlgorithm
 {
    public:
@@ -124,7 +127,7 @@ class StdDev
 class Regulator : public RingBuffer
 {
    public:
-    Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bufStrategy,
+    Regulator(int rcvChannels, int bit_res, int FPP, int qLen, bool use_worker_thread,
               int bqLen);
     virtual ~Regulator();
 
@@ -149,19 +152,7 @@ class Regulator : public RingBuffer
 
     void pullPacket();
 
-    virtual void readSlotNonBlocking(int8_t* ptrToReadSlot)
-    {
-        if (mBufStrategy == 3) {  // PLC workerThread
-            const void* ptrToPacket = mNextPacket.load(std::memory_order_acquire);
-            ::memcpy(ptrToReadSlot, ptrToPacket, mBytes);
-            if (ptrToPacket == mLastPacket) {
-                mWorkerUnderruns.fetch_add(1);
-            }
-            mLastPacket = ptrToPacket;
-        } else {  // mBufStrategy == 4 compute in this thread
-            pullPacket(ptrToReadSlot);
-        }
-    }
+    virtual void readSlotNonBlocking(int8_t* ptrToReadSlot);
 
     virtual void readBroadcastSlot(int8_t* ptrToReadSlot)
     {
@@ -190,7 +181,7 @@ class Regulator : public RingBuffer
     int8_t* mPullQueue;
     int8_t* mXfrBuffer;
     const void* mLastPacket;
-    std::atomic<int> mWorkerUnderruns;
+    int mWorkerUnderruns;
     std::atomic<const void*> mNextPacket;
     int8_t* mAssembledPacket;
     int mPacketCnt;
@@ -222,7 +213,7 @@ class Regulator : public RingBuffer
     double mAutoHeadroom;
     double mFPPdurMsec;
     double mPeerFPPdurMsec;
-    int mBufStrategy;
+    bool mUseWorkerThread;
     void changeGlobal(double);
     void changeGlobal_2(int);
     void changeGlobal_3(int);
@@ -231,6 +222,11 @@ class Regulator : public RingBuffer
     /// Pointer for the Broadcast RingBuffer
     RingBuffer* m_b_BroadcastRingBuffer;
     int m_b_BroadcastQueueLength;
+
+    /// thread used to pull packets from Regulator (if mBufferStrategy==3)
+    QThread* mRegulatorThreadPtr;
+    /// worker used to pull packets from Regulator (if mBufferStrategy==3)
+    RegulatorWorker* mRegulatorWorkerPtr;
 };
 
 class RegulatorWorker : public QObject
@@ -238,8 +234,20 @@ class RegulatorWorker : public QObject
     Q_OBJECT;
 
    public:
-    RegulatorWorker(Regulator* rPtr) : mRegulatorPtr(rPtr) {}
+    RegulatorWorker(Regulator* rPtr) : mRegulatorPtr(rPtr)
+    {
+        QObject::connect(this, &RegulatorWorker::startup, this,
+                         &RegulatorWorker::setRealtimePriority, Qt::QueuedConnection);
+        QObject::connect(this, &RegulatorWorker::signalPullPacket, this,
+                         &RegulatorWorker::pullPacket, Qt::QueuedConnection);
+        emit startup();
+    }
     virtual ~RegulatorWorker() {}
+    void startPullingNextPacket() { emit signalPullPacket(); }
+
+   signals:
+    void signalPullPacket();
+    void startup();
 
    public slots:
     void pullPacket()
