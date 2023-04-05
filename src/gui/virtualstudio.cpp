@@ -1492,16 +1492,21 @@ void VirtualStudio::completeConnection()
 #else
         int inputMixMode = -1;
 #endif
-        JackTrip* jackTrip = m_device->initJackTrip(
-            m_useRtAudio, input, output,
+        int bufferStrategy = m_bufferStrategy;
+        if (bufferStrategy == 2) {
+            bufferStrategy = 3;
+        }
+        JackTrip* jackTrip =
+            m_device->initJackTrip(m_useRtAudio, input, output,
 #ifdef RT_AUDIO
-            m_baseInputChannel, m_numInputChannels, m_baseOutputChannel,
-            m_numOutputChannels,
+                                   m_baseInputChannel, m_numInputChannels,
+                                   m_baseOutputChannel, m_numOutputChannels,
 #else
-            0, 2, 0, 2,  // default to 2 channels for input and 2 channels for output
-                         // starting at channel 0
+                                   0, 2, 0,
+                                   2,  // default to 2 channels for input and 2 channels
+                                       // for output starting at channel 0
 #endif
-            inputMixMode, buffer_size, m_bufferStrategy, studioInfo);
+                                   inputMixMode, buffer_size, bufferStrategy, studioInfo);
         if (jackTrip == 0) {
             processError("Could not bind port");
             return;
