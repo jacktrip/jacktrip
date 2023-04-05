@@ -105,16 +105,18 @@ constexpr double AutoInitValFactor =
 constexpr int WindowDivisor = 8;     // for faster auto tracking
 constexpr int MaxFPP        = 1024;  // tested up to this FPP
 //*******************************************************************************
-Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bufStrategy,
-                     int bqLen)
+Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen,
+                     bool use_worker_thread, int bqLen)
     : RingBuffer(0, 0)
     , mNumChannels(rcvChannels)
     , mAudioBitRes(bit_res)
     , mFPP(FPP)
     , mMsecTolerance((double)qLen)  // handle non-auto mode, expects positive qLen
     , mAuto(false)
-    , mBufStrategy(bufStrategy)
+    , mUseWorkerThread(use_worker_thread)
     , m_b_BroadcastQueueLength(bqLen)
+    , mRegulatorThreadPtr(NULL)
+    , mRegulatorWorkerPtr(NULL)
 {
     // catch settings that are compute bound using long HIST
     // hub client rcvChannels is set from client's settings parameters
@@ -161,9 +163,9 @@ Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bufStr
     mPullQueue  = new int8_t[mBytes * 2];
     mXfrBuffer  = mPullQueue;
     mPacketCnt  = 0;  // burg initialization
-    mLastPacket = mPullQueue + mBytes;
+    mLastPacket = nullptr;
     mNextPacket.store(mLastPacket, std::memory_order_release);
-    mWorkerUnderruns.store(0);
+    mWorkerUnderruns = 0;
     mFadeUp.resize(mFPP, 0.0);
     mFadeDown.resize(mFPP, 0.0);
     for (int i = 0; i < mFPP; i++) {
@@ -215,6 +217,14 @@ Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bufStr
                  << m_b_BroadcastQueueLength;
         // have not implemented the mJackTrip->queueLengthChanged functionality
     }
+    if (mUseWorkerThread) {
+        mRegulatorThreadPtr = new QThread();
+        mRegulatorThreadPtr->setObjectName("RegulatorThread");
+        RegulatorWorker* workerPtr = new RegulatorWorker(this);
+        workerPtr->moveToThread(mRegulatorThreadPtr);
+        mRegulatorThreadPtr->start();
+        mRegulatorWorkerPtr = workerPtr;
+    }
 }
 
 void Regulator::changeGlobal(double x)
@@ -259,6 +269,14 @@ Regulator::~Regulator()
     };
     if (m_b_BroadcastQueueLength)
         delete m_b_BroadcastRingBuffer;
+    if (mRegulatorWorkerPtr != nullptr)
+        delete mRegulatorWorkerPtr;
+    if (mRegulatorThreadPtr != nullptr) {
+        // Stop the Regulator thread
+        mRegulatorThreadPtr->quit();
+        mRegulatorThreadPtr->wait();
+        delete mRegulatorThreadPtr;
+    }
 }
 
 void Regulator::setFPPratio()
@@ -787,6 +805,29 @@ void StdDev::tick()
     }
 }
 
+void Regulator::readSlotNonBlocking(int8_t* ptrToReadSlot)
+{
+    if (mUseWorkerThread) {
+        // use separate worker thread for PLC
+        const void* ptrToPacket = mNextPacket.load(std::memory_order_acquire);
+        if (ptrToPacket == mLastPacket) {
+            mWorkerUnderruns++;
+            ::memset(ptrToReadSlot, 0, mBytes);
+            if (ptrToPacket == nullptr) {
+                // first time run
+                mRegulatorWorkerPtr->startPullingNextPacket();
+            }
+        } else {
+            ::memcpy(ptrToReadSlot, ptrToPacket, mBytes);
+            mLastPacket = ptrToPacket;
+            mRegulatorWorkerPtr->startPullingNextPacket();
+        }
+    } else {
+        // use jack callback thread to perform PLC
+        pullPacket(ptrToReadSlot);
+    }
+}
+
 //*******************************************************************************
 bool Regulator::getStats(RingBuffer::IOStat* stat, bool reset)
 {
@@ -803,8 +844,9 @@ bool Regulator::getStats(RingBuffer::IOStat* stat, bool reset)
         mBroadcastSkew    = 0;
     }
 
-    if (mBufStrategy == 3) {
-        cout << "PLC worker underruns: " << mWorkerUnderruns.exchange(0) << endl;
+    if (mUseWorkerThread) {
+        cout << "PLC worker underruns: " << mWorkerUnderruns << endl;
+        mWorkerUnderruns = 0;
     }
 
     // hijack  of  struct IOStat {
