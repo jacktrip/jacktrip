@@ -372,6 +372,8 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
 //*******************************************************************************
 void Regulator::pushPacket(const int8_t* buf, int seq_num)
 {
+    if (m_b_BroadcastQueueLength)
+        m_b_BroadcastRingBuffer->insertSlotNonBlocking(buf, mBytes, 0, seq_num);
     QMutexLocker locker(&mMutex);
     seq_num %= mModSeqNum;
     // if (seq_num==0) return;   // impose regular loss

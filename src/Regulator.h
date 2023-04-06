@@ -138,13 +138,10 @@ class Regulator : public RingBuffer
     // if (!mJackTrip->writeAudioBuffer(src, host_buf_size, last_seq_num))
     // instead of
     // if (!mJackTrip->writeAudioBuffer(src, host_buf_size, gap_size))
-    virtual bool insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int lostLen,
-                                       int seq_num)
+    virtual bool insertSlotNonBlocking(const int8_t* ptrToSlot, int len,
+                                       [[maybe_unused]] int lostLen, int seq_num)
     {
         shimFPP(ptrToSlot, len, seq_num);
-        if (m_b_BroadcastQueueLength)
-            m_b_BroadcastRingBuffer->insertSlotNonBlocking(ptrToSlot, len, lostLen,
-                                                           seq_num);
         return (true);
     }
 
