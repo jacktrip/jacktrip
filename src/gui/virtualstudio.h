@@ -256,6 +256,7 @@ class VirtualStudio : public QObject
     void applySettings();
     void connectToStudio(int studioIndex);
     void completeConnection();
+    void triggerReconnect();
     void disconnect();
     void manageStudio(int studioIndex, bool start = false);
     void launchVideo(int studioIndex);

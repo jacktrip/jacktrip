@@ -1113,6 +1113,9 @@ void VirtualStudio::validateDevicesState()
 {
     validateInputDevicesState();
     validateOutputDevicesState();
+    if (m_useRtAudio && m_connectionState == "Connected") {
+        triggerReconnect();
+    }
 }
 
 void VirtualStudio::validateInputDevicesState()
@@ -1462,6 +1465,10 @@ void VirtualStudio::connectToStudio(int studioIndex)
     } else {
         completeConnection();
     }
+
+    if (m_device != nullptr) {
+        m_device->setReconnect(false);
+    }
 }
 
 void VirtualStudio::completeConnection()
@@ -1595,6 +1602,19 @@ void VirtualStudio::completeConnection()
 #ifdef __APPLE__
     m_noNap.disableNap();
 #endif
+}
+
+void VirtualStudio::triggerReconnect()
+{
+    if (m_jackTripRunning) {
+        m_connectionState = QStringLiteral("Reconnecting...");
+        emit connectionStateChanged();
+        m_retryPeriodTimer.stop();
+        m_retryPeriod = false;
+        if (m_device != nullptr) {
+            m_device->setReconnect(true);
+        }
+    }
 }
 
 void VirtualStudio::disconnect()
@@ -1801,6 +1821,12 @@ void VirtualStudio::slotAuthFailed()
 
 void VirtualStudio::processFinished()
 {
+    if (m_device->reconnect()) {
+        if (m_device->hasTerminated()) {
+            connectToStudio(m_currentStudio);
+        }
+        return;
+    }
     // use disconnect function to handle reset of all internal flags and timers
     disconnect();
 

@@ -30,7 +30,6 @@ Item {
     property string sliderPressedColour: virtualstudio.darkMode ? "#ACAFAF" : "#DEE0E0"
     property string sliderTrackColour: virtualstudio.darkMode ? "#5B5858" : "light gray"
     property string sliderActiveTrackColour: virtualstudio.darkMode ? "light gray" : "black"
-    property string saveButtonShadow: "#80A1A1A1"
     property string saveButtonBackgroundColour: "#F2F3F3"
     property string saveButtonPressedColour: "#E7E8E8"
     property string saveButtonStroke: "#EAEBEB"

@@ -65,6 +65,9 @@ class VsDevice : public QObject
     void registerApp();
     void removeApp();
     void sendHeartbeat();
+    bool reconnect();
+    void setReconnect(bool reconnect);
+    bool hasTerminated();
     void setServerId(QString studioID);
     JackTrip* initJackTrip(bool useRtAudio, std::string input, std::string output,
                            int baseInputChannel, int numChannelsIn, int baseOutputChannel,
@@ -119,6 +122,7 @@ class VsDevice : public QObject
     float m_playbackVolume = 1.0;
     bool m_playbackMute    = false;
     QTimer* m_sendVolumeTimer;
+    bool m_reconnect = false;
 };
 
 #endif  // VSDEVICE_H

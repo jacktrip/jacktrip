@@ -297,6 +297,32 @@ void VsDevice::sendHeartbeat()
     }
 }
 
+bool VsDevice::reconnect()
+{
+    return m_reconnect;
+}
+
+void VsDevice::setReconnect(bool reconnect)
+{
+    m_reconnect = reconnect;
+    if (reconnect) {
+        qDebug() << "perform reconnect things";
+        stopPinger();
+        if (m_webSocket != nullptr && m_webSocket->isValid()) {
+            m_webSocket->closeSocket();
+        }
+        if (!m_jackTrip.isNull()) {
+            m_jackTrip->stop();
+            m_jackTrip.reset();
+        }
+    }
+}
+
+bool VsDevice::hasTerminated()
+{
+    return m_jackTrip.isNull();
+}
+
 // setServerId updates the emulated device with the provided serverId
 void VsDevice::setServerId(QString serverId)
 {
@@ -313,6 +339,7 @@ void VsDevice::setServerId(QString serverId)
             reply->deleteLater();
             return;
         }
+        m_deviceAgentConfig.insert("serverId", serverId);
         reply->deleteLater();
     });
 }
@@ -410,8 +437,12 @@ void VsDevice::startJackTrip()
 void VsDevice::stopJackTrip()
 {
     if (!m_jackTrip.isNull()) {
+        if (m_webSocket != nullptr && m_webSocket->isValid()) {
+            m_webSocket->closeSocket();
+        }
         setServerId("");
         m_jackTrip->stop();
+        m_jackTrip.reset();
     }
 }
 
@@ -515,7 +546,9 @@ void VsDevice::terminateJackTrip()
     if (!enabled()) {
         setServerId("");
     }
-    m_jackTrip.reset();
+    if (!m_jackTrip.isNull()) {
+        m_jackTrip.reset();
+    }
 }
 
 // onTextMessageReceived is a slot intended to be triggered by new incoming WSS messages
