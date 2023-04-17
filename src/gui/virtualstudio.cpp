@@ -212,7 +212,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
             QVariantList() << QVariant(QJsonValue(outputChannelsComboElement)))));
 
 #endif
-    m_bufferStrategy = settings.value(QStringLiteral("BufferStrategy"), 0).toInt();
+    m_bufferStrategy = settings.value(QStringLiteral("BufferStrategy"), 2).toInt();
     settings.endGroup();
 
 #ifdef USE_WEAK_JACK

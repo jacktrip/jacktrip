@@ -375,7 +375,7 @@ JackTrip* VsDevice::initJackTrip(
     m_jackTrip->setRemoteClientName(m_appID);
     // increment m_bufferStrategy by 1 for array-index mapping
     m_jackTrip->setBufferStrategy(bufferStrategy + 1);
-    if (bufferStrategy == 2) {
+    if (bufferStrategy == 2 || bufferStrategy == 3) {
         // use -q auto3 for loss concealment
         m_jackTrip->setBufferQueueLength(-3);
     } else {
