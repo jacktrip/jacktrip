@@ -1,3 +1,11 @@
+- Version: "1.9.0"
+  Date: 2023-04-18
+  Description:
+  - (added) buffer strategy 4 to run PLC in audio callback
+  - (added) VS Mode - change audio devices while connected
+  - (updated) regulator thread uses real-time priority
+  - (updated) VS mode - use buffer strategy 4
+  - (updated) VS mode - Default to PLC
 - Version: "1.8.1"
   Date: 2023-03-29
   Description:
