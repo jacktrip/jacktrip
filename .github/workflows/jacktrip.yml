@@ -140,14 +140,16 @@ jobs:
 
           - name: macOS-x64-qmake-clang-static-bundled_rtaudio
             release-name: macOS-x64
-            runs-on: macos-11
+            runs-on: macos-12
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
             novs: false
             weakjack: true
             static-qt-version: 5.15.8
-            qt-static-cache-key: 'v08'
+            macosx-deployment-target: 10.11
+            xcode-directory: /Applications/Xcode_14.2.app
+            qt-static-cache-key: 'v09'
             jacktrip-path: jacktrip
             # binary-path: binary # don't upload the binary itself since we upload the bundle
             bundle-path: bundle
@@ -243,7 +245,6 @@ jobs:
     env:
       BUILD_PATH: ${{ github.workspace }}/builddir
       QT_VERSION: '5.15.2' # for shared qt installer using install-qt-action
-      DEVELOPER_DIR: '/Applications/Xcode_11.7.app/Contents/Developer' # specify XCode version on macOS
       QT_SRC_PATH: ${{ github.workspace }}/../qt-static-src
       QT_STATIC_BUILD_PATH: ${{ github.workspace }}/qt-static # note: don't use '..' here as this is used with the cache action, which doesn't support '.' and '..' in paths
       QT_STATIC_OPTIONS: '-static -release -optimize-size -no-pch -nomake tools -nomake tests -nomake examples -opensource -confirm-license -skip webengine -skip qt3d -skip qtactiveqt -skip qtandroidextras -skip qtcharts -skip qtdatavis3d -skip qtdoc -skip qtgamepad -skip qtimageformats -skip qtlocation -skip qtmultimedia -skip qtpurchasing -skip qtpurchasing -skip qtremoteobjects -skip qtscript -skip qtsensors -skip qtserialbus -skip qtserialport -skip qtspeech -skip qttools -skip qtvirtualkeyboard -skip qtwebchannel -skip qtwebengine -skip qtwebglplugin -skip qtwebview -skip qtxmlpatterns' # common for all platforms
@@ -294,6 +295,9 @@ jobs:
           path: ~/AppData/Local/vcpkg/archives
           key: ${{ matrix.runs-on }}-${{ matrix.vcpkg-triplet }}-${{ matrix.system-rtaudio }}-${{ steps.set-version.outputs.stamp }}
           restore-keys: ${{ matrix.runs-on }}-${{ matrix.vcpkg-triplet }}-${{ matrix.system-rtaudio }}
+      - name: Select Xcode version
+        if: runner.os == 'macOS' && matrix.xcode-directory
+        run: sudo xcode-select -s ${{ matrix.xcode-directory }}
       - name: install dependencies for Linux
         if: runner.os == 'Linux'
         run: |
@@ -448,6 +452,9 @@ jobs:
         shell: bash
         run: |
           CONFIG_STRING="noclean"
+          if [[ -n "${{ matrix.macosx-deployment-target }}" ]]; then 
+            CONFIG_STRING="$CONFIG_STRING QMAKE_MACOSX_DEPLOYMENT_TARGET=${{ matrix.macosx-deployment-target }}"
+          fi
           if [[ -n "${{ matrix.static-qt-version }}" ]]; then 
             CONFIG_STRING="static $CONFIG_STRING"
             export QML_IMPORT_PATH=$QT_STATIC_BUILD_PATH/qml
