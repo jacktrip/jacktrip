@@ -68,8 +68,8 @@ jobs:
             weakjack: false
             # vcpkg-triplet: x64-mingw-static # used when installing rtaudio with vcpkg (Windows)
             # qt-arch: 'win64_msvc2019_64' # specify when using shared (official) qt libraries (Windows)
-            static-qt-version: 5.15.8 # if set, it will enable static Qt build
-            qt-static-cache-key: 'v30' # required for static qt; update this to force rebuilding static Qt
+            static-qt-version: 5.15.9 # if set, it will enable static Qt build
+            qt-static-cache-key: 'v31' # required for static qt; update this to force rebuilding static Qt
             jacktrip-path: jacktrip # needed for binary upload
             binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
             # bundle-path: bundle # directory relative to build path; triggers application bundle creation and upload (macOS)
@@ -108,8 +108,8 @@ jobs:
             nogui: true
             novs: true
             weakjack: false
-            static-qt-version: 5.15.8
-            qt-static-cache-key: 'v30' # we use the same key as the main Linux build
+            static-qt-version: 5.15.9
+            qt-static-cache-key: 'v31' # we use the same key as the main Linux build
             jacktrip-path: jacktrip
             binary-path: binary
             build-system: qmake
@@ -146,10 +146,11 @@ jobs:
             nogui: false
             novs: false
             weakjack: true
-            static-qt-version: 5.15.8
-            macosx-deployment-target: 10.11
-            xcode-directory: /Applications/Xcode_14.2.app
-            qt-static-cache-key: 'v09'
+            static-qt-version: 5.15.9
+            macosx-deployment-target: 10.13
+            macosx-architectures: 'arm64 x86_64'
+            xcode-directory: /Applications/Xcode_14.0.1.app # uses SDK macOS 12.3 which is latest supported by qt
+            qt-static-cache-key: 'v10'
             jacktrip-path: jacktrip
             # binary-path: binary # don't upload the binary itself since we upload the bundle
             bundle-path: bundle
@@ -192,8 +193,8 @@ jobs:
             novs: false
             weakjack: true
             vcpkg-triplet: x64-mingw-static
-            static-qt-version: 5.15.8
-            qt-static-cache-key: 'v08'
+            static-qt-version: 5.15.9
+            qt-static-cache-key: 'v09'
             jacktrip-path: release/jacktrip.exe
             binary-path: binary
             installer-path: installer
@@ -415,9 +416,18 @@ jobs:
           if [[ "${{ runner.os }}" == "Linux" ]]; then
             QT_STATIC_OPTIONS="-qt-zlib -qt-libpng -qt-libjpeg -system-freetype -fontconfig -qt-pcre -qt-harfbuzz -no-icu -opengl desktop $QT_STATIC_OPTIONS"
           fi
-          "$QT_SRC_PATH/configure" -prefix "$QT_STATIC_BUILD_PATH" $QT_STATIC_OPTIONS
-          echo "QT Configure command"
-          echo ""$QT_SRC_PATH/configure" -prefix "$QT_STATIC_BUILD_PATH" $QT_STATIC_OPTIONS"
+          if [[ -n "${{ matrix.macosx-deployment-target }}" ]]; then 
+            QT_STATIC_OPTIONS="$QT_STATIC_OPTIONS QMAKE_MACOSX_DEPLOYMENT_TARGET=${{ matrix.macosx-deployment-target }}"
+          fi
+          if [[ -n "${{ matrix.macosx-architectures }}" ]]; then
+            echo "QT Configure command"
+            echo "\"$QT_SRC_PATH/configure\" -prefix \"$QT_STATIC_BUILD_PATH\" $QT_STATIC_OPTIONS \"QMAKE_APPLE_DEVICE_ARCHS=${{ matrix.macosx-architectures }}\"" -no-sse2
+            "$QT_SRC_PATH/configure" -prefix "$QT_STATIC_BUILD_PATH" $QT_STATIC_OPTIONS "QMAKE_APPLE_DEVICE_ARCHS=${{ matrix.macosx-architectures }}" -no-sse2
+          else
+            echo "QT Configure command"
+            echo "\"$QT_SRC_PATH/configure\" -prefix \"$QT_STATIC_BUILD_PATH\" $QT_STATIC_OPTIONS"
+            "$QT_SRC_PATH/configure" -prefix "$QT_STATIC_BUILD_PATH" $QT_STATIC_OPTIONS
+          fi
           # build
           echo "building Qt"
           make -j4
@@ -454,6 +464,9 @@ jobs:
           CONFIG_STRING="noclean"
           if [[ -n "${{ matrix.macosx-deployment-target }}" ]]; then 
             CONFIG_STRING="$CONFIG_STRING QMAKE_MACOSX_DEPLOYMENT_TARGET=${{ matrix.macosx-deployment-target }}"
+          fi
+          if [[ -n "${{ matrix.macosx-architectures }}" ]]; then 
+            CONFIG_STRING="$CONFIG_STRING QMAKE_APPLE_DEVICE_ARCHS=\"${{ matrix.macosx-architectures }}\""
           fi
           if [[ -n "${{ matrix.static-qt-version }}" ]]; then 
             CONFIG_STRING="static $CONFIG_STRING"
