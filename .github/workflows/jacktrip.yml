@@ -140,17 +140,17 @@ jobs:
 
           - name: macOS-x64-qmake-clang-static-bundled_rtaudio
             release-name: macOS-x64
-            runs-on: macos-12
+            runs-on: macos-11
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
             novs: false
             weakjack: true
             static-qt-version: 5.15.9
-            macosx-deployment-target: 10.13
+            macosx-deployment-target: 10.11
             macosx-architectures: 'x86_64 arm64'
-            xcode-directory: /Applications/Xcode_14.0.1.app # uses SDK macOS 12.3 which is latest supported by qt
-            qt-static-cache-key: 'v10'
+            xcode-directory: /Applications/Xcode_11.7.app
+            qt-static-cache-key: 'v11'
             jacktrip-path: jacktrip
             # binary-path: binary # don't upload the binary itself since we upload the bundle
             bundle-path: bundle
