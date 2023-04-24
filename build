@@ -4,6 +4,7 @@
 # Parse command line options
 clean=1
 install=0
+jobs=1
 CONFIG="DEFINES+=JACKTRIP_BUILD_INFO=\\\"$(git describe --tags)-$(git rev-parse --short HEAD)\\\""
 UNKNOWN_OPTIONS=()
 BUILD_RTAUDIO=0
@@ -61,6 +62,13 @@ while [[ "$#" -gt 0 ]]; do
       install)
       echo "Will install JackTrip in system location"
       install=1
+      ;;
+      -j*)
+      jobs=$(echo $1 |sed 's,-j0*\([0-9]*\),\1,')
+      if [[ $jobs -le 1 ]]; then
+        jobs=1
+      fi
+      echo "Will build using $jobs make jobs"
       ;;
       -h|--help) 
       echo -e $HELP_STR; exit 
@@ -170,7 +178,7 @@ $QCMD -spec $QSPEC $CONFIG "${UNKNOWN_OPTIONS[@]}" $PRO_FILE
 if [[ $clean == 1 ]]; then
   $MCMD clean
 fi
-$MCMD release
+$MCMD -j$jobs release
 if [[ "$install" == 1 ]]; then
   echo "*** Installing JackTrip ***"
   echo "We need elevated privileges to install JackTrip in the system location"

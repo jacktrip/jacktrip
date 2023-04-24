@@ -69,7 +69,7 @@ jobs:
             # vcpkg-triplet: x64-mingw-static # used when installing rtaudio with vcpkg (Windows)
             # qt-arch: 'win64_msvc2019_64' # specify when using shared (official) qt libraries (Windows)
             static-qt-version: 5.15.9 # if set, it will enable static Qt build
-            qt-static-cache-key: 'v31' # required for static qt; update this to force rebuilding static Qt
+            qt-static-cache-key: 'v34' # required for static qt; update this to force rebuilding static Qt
             jacktrip-path: jacktrip # needed for binary upload
             binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
             # bundle-path: bundle # directory relative to build path; triggers application bundle creation and upload (macOS)
@@ -109,7 +109,7 @@ jobs:
             novs: true
             weakjack: false
             static-qt-version: 5.15.9
-            qt-static-cache-key: 'v31' # we use the same key as the main Linux build
+            qt-static-cache-key: 'v34' # we use the same key as the main Linux build
             jacktrip-path: jacktrip
             binary-path: binary
             build-system: qmake
@@ -245,6 +245,9 @@ jobs:
 
     env:
       BUILD_PATH: ${{ github.workspace }}/builddir
+      OPENSSL_FULL_VERSION: '3.1.0'
+      OPENSSL_SRC_PATH: ${{ github.workspace }}/openssl-src
+      OPENSSL_BUILD_PATH: ${{ github.workspace }}/openssl-build
       QT_VERSION: '5.15.2' # for shared qt installer using install-qt-action
       QT_SRC_PATH: ${{ github.workspace }}/../qt-static-src
       QT_STATIC_BUILD_PATH: ${{ github.workspace }}/qt-static # note: don't use '..' here as this is used with the cache action, which doesn't support '.' and '..' in paths
@@ -408,42 +411,66 @@ jobs:
           tar -xf qt.tar.xz
           # move qt to a known location
           mv qt-everywhere* $QT_SRC_PATH
-      - name: build static Qt on Linux / macOS
-        if: matrix.static-qt-version && steps.cache-static-qt.outputs.cache-hit != 'true' && runner.os != 'Windows'
+      - name: build static Qt on Linux
+        if: matrix.static-qt-version && steps.cache-static-qt.outputs.cache-hit != 'true' && matrix.name == 'Linux-x64-qmake-gcc-static'
         run: |
+          # Note that other static Linux runners will fail on first run. This is intentional to prevent two runners
+          # from trying to build and update the same cache item. Just re-run the failed jobs after cache is populated.
+          # Build static openssl
+          OPENSSL_SRC_URL="https://github.com/openssl/openssl/releases/download/openssl-${OPENSSL_FULL_VERSION}/openssl-${OPENSSL_FULL_VERSION}.tar.gz"
+          mkdir $OPENSSL_BUILD_PATH
+          curl -L $OPENSSL_SRC_URL -o openssl.tar.xz
+          tar -xf openssl.tar.xz
+          mv "openssl-$OPENSSL_FULL_VERSION" $OPENSSL_SRC_PATH
+          mkdir tmp
+          cd tmp
+          $OPENSSL_SRC_PATH/Configure --prefix=$OPENSSL_BUILD_PATH threads no-shared no-pic -static
+          make -j4
+          make install
+          cd ..
+          # Build static Qt
           mkdir $QT_STATIC_BUILD_PATH
-          MAKE_CMD="make -j4"
+          # extra parameters for building qt on linux
+          QT_STATIC_OPTIONS="-openssl -openssl-linked -qt-zlib -qt-libpng -qt-libjpeg -system-freetype -fontconfig -qt-pcre -qt-harfbuzz -no-icu -opengl desktop $QT_STATIC_OPTIONS"
           # configure
-          if [[ "${{ runner.os }}" == "macOS" ]]; then
-            # check for explicit osx deployment target
-            if [[ -n "${{ matrix.macosx-deployment-target }}" ]]; then 
-              QT_STATIC_OPTIONS="$QT_STATIC_OPTIONS QMAKE_MACOSX_DEPLOYMENT_TARGET=${{ matrix.macosx-deployment-target }}"
-            fi
-            # this patch force enables the arm64 neon feature for universal binary builds on osx
-            # without it, qt builds fail with undefined symbols due to configure only taking first architecture into account
-            patch -d "$QT_SRC_PATH/qtbase" < "./macos/qt/configure.json.patch"
-            # we can't just append to $QT_STATIC_OPTIONS for this because the space in argument makes things more tricky
-            echo "QT Configure command"
-            echo "\"$QT_SRC_PATH/configure\" -prefix \"$QT_STATIC_BUILD_PATH\" $QT_STATIC_OPTIONS \"QMAKE_APPLE_DEVICE_ARCHS=x86_64 arm64\""
-            "$QT_SRC_PATH/configure" -prefix "$QT_STATIC_BUILD_PATH" $QT_STATIC_OPTIONS "QMAKE_APPLE_DEVICE_ARCHS=x86_64 arm64"
-          else
-            # qt's build system has dependency problems on Linux, where some processes can try to use libraries while another one is creating them, i.e.
-            # g++: error: /home/runner/work/jacktrip/jacktrip/qtwayland/plugins/wayland-graphics-integration-client/libqt-plugin-wayland-egl.a: No such file or directory
-            MAKE_CMD="make"
-            # extra parameters for building qt on linux
-            QT_STATIC_OPTIONS="-qt-zlib -qt-libpng -qt-libjpeg -system-freetype -fontconfig -qt-pcre -qt-harfbuzz -no-icu -opengl desktop $QT_STATIC_OPTIONS"
-            echo "QT Configure command"
-            echo "\"$QT_SRC_PATH/configure\" -prefix \"$QT_STATIC_BUILD_PATH\" $QT_STATIC_OPTIONS"
-            "$QT_SRC_PATH/configure" -prefix "$QT_STATIC_BUILD_PATH" $QT_STATIC_OPTIONS
-          fi
+          echo "QT Configure command"
+          echo "\"$QT_SRC_PATH/configure\" -prefix \"$QT_STATIC_BUILD_PATH\" $QT_STATIC_OPTIONS OPENSSL_LIBS=\"$OPENSSL_BUILD_PATH/lib64/libssl.a $OPENSSL_BUILD_PATH/lib64/libcrypto.a\" -I \"$OPENSSL_BUILD_PATH/include\""
+          "$QT_SRC_PATH/configure" -prefix "$QT_STATIC_BUILD_PATH" $QT_STATIC_OPTIONS OPENSSL_LIBS="$OPENSSL_BUILD_PATH/lib64/libssl.a $OPENSSL_BUILD_PATH/lib64/libcrypto.a" -I "$OPENSSL_BUILD_PATH/include"
           # build
           echo "building Qt"
-          $MAKE_CMD
+          # we have to use a single process for make here because qt's build system has dependency problems on Linux,
+          # where some processes can try to use libraries while another one is creating them, i.e.
+          # g++: error: /home/runner/work/jacktrip/jacktrip/qtwayland/plugins/wayland-graphics-integration-client/libqt-plugin-wayland-egl.a: No such file or directory
+          make
+          # install
+          echo "installing Qt"
+          make install
+          cp -r $OPENSSL_BUILD_PATH/lib64 $QT_STATIC_BUILD_PATH
+          cp -r $OPENSSL_BUILD_PATH/include/openssl $QT_STATIC_BUILD_PATH/include
+      - name: build static Qt on macOS
+        if: matrix.static-qt-version && steps.cache-static-qt.outputs.cache-hit != 'true' && matrix.name == 'macOS-x64-qmake-clang-static-bundled_rtaudio'
+        run: |
+          mkdir $QT_STATIC_BUILD_PATH
+          # check for explicit osx deployment target
+          if [[ -n "${{ matrix.macosx-deployment-target }}" ]]; then 
+            QT_STATIC_OPTIONS="$QT_STATIC_OPTIONS QMAKE_MACOSX_DEPLOYMENT_TARGET=${{ matrix.macosx-deployment-target }}"
+          fi
+          # this patch force enables the arm64 neon feature for universal binary builds on osx
+          # without it, qt builds fail with undefined symbols due to configure only taking first architecture into account
+          patch -d "$QT_SRC_PATH/qtbase" < "./macos/qt/configure.json.patch"
+          # configure
+          # we can't just append to $QT_STATIC_OPTIONS for this because the space in argument makes things more tricky
+          echo "QT Configure command"
+          echo "\"$QT_SRC_PATH/configure\" -prefix \"$QT_STATIC_BUILD_PATH\" $QT_STATIC_OPTIONS \"QMAKE_APPLE_DEVICE_ARCHS=x86_64 arm64\""
+          "$QT_SRC_PATH/configure" -prefix "$QT_STATIC_BUILD_PATH" $QT_STATIC_OPTIONS "QMAKE_APPLE_DEVICE_ARCHS=x86_64 arm64"
+          # build
+          echo "building Qt"
+          make -j4
           # install
           echo "installing Qt"
           make install
       - name: build static Qt on Windows
-        if: matrix.static-qt-version && steps.cache-static-qt.outputs.cache-hit != 'true' && runner.os == 'Windows'
+        if: matrix.static-qt-version && steps.cache-static-qt.outputs.cache-hit != 'true' && matrix.name == 'Windows-x64-qmake-gcc-static-bundled_rtaudio'
         shell: cmd
         run: |
           mkdir %QT_STATIC_BUILD_PATH%
@@ -469,7 +496,7 @@ jobs:
         if: matrix.build-system == 'qmake'
         shell: bash
         run: |
-          CONFIG_STRING="noclean"
+          CONFIG_STRING="noclean -j4"
           if [[ -n "${{ matrix.static-qt-version }}" ]]; then 
             CONFIG_STRING="static $CONFIG_STRING"
             export QML_IMPORT_PATH=$QT_STATIC_BUILD_PATH/qml
@@ -568,13 +595,19 @@ jobs:
         shell: bash
         if: matrix.binary-path
         run: |
+          BINFILE=$BUILD_PATH/${{ matrix.jacktrip-path }}
+          ZIPFILE=$BUILD_PATH/${{ matrix.binary-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-binary.zip
           mkdir -p $BUILD_PATH/${{ matrix.binary-path }}
           if [[ "${{ runner.os }}" == "Windows" ]]; then
-            7z a $BUILD_PATH/${{ matrix.binary-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-binary.zip -tzip $BUILD_PATH/${{ matrix.jacktrip-path }} $GITHUB_WORKSPACE/LICENSE.md $GITHUB_WORKSPACE/LICENSES/
+            7z a $ZIPFILE -tzip $BINFILE $GITHUB_WORKSPACE/LICENSE.md $GITHUB_WORKSPACE/LICENSES/
           else
-            zip -j $BUILD_PATH/${{ matrix.binary-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-binary.zip $BUILD_PATH/${{ matrix.jacktrip-path }}
+            strip $BINFILE
+            zip -j $ZIPFILE $BINFILE
+            if [[ "${{ matrix.name }}" == "Linux-x64-qmake-gcc-static" ]]; then
+              zip -j $ZIPFILE $BUILD_PATH/org.jacktrip.JackTrip.desktop
+            fi
             cd $GITHUB_WORKSPACE # we need to be in the root project directory for adding licenses
-            zip -r $BUILD_PATH/${{ matrix.binary-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-binary.zip LICENSE.md LICENSES
+            zip -r $ZIPFILE LICENSE.md LICENSES
           fi
       - name: create app bundle and installer on macOS
         if: runner.os == 'macOS' && (matrix.bundle-path || matrix.installer-path)
