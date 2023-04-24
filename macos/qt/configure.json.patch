@@ -1,0 +1,20 @@
+--- configure.json	2023-04-22 13:05:35
++++ configure.json.new	2023-04-22 13:05:35
+@@ -1258,7 +1258,6 @@
+         },
+         "neon": {
+             "label": "NEON",
+-            "condition": "(arch.arm || arch.arm64) && subarch.neon",
+             "output": [
+                 "privateConfig",
+                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_NEON", "value": 1 }
+@@ -1614,8 +1613,7 @@
+                         },
+                         {
+                             "type": "feature",
+-                            "args": "neon",
+-                            "condition": "arch.arm || arch.arm64"
++                            "args": "neon"
+                         },
+                         {
+                             "type": "feature",
