@@ -594,6 +594,17 @@ QString VirtualStudio::devicesErrorHelpUrl()
     return m_devicesErrorHelpUrl;
 }
 
+QString VirtualStudio::connectedErrorMsg()
+{
+    return m_connectedErrorMsg;
+}
+
+void VirtualStudio::setConnectedErrorMsg(const QString& msg)
+{
+    m_connectedErrorMsg = msg;
+    emit connectedErrorMsgChanged();
+}
+
 float VirtualStudio::inputVolume()
 {
     return m_inMultiplier;
@@ -1621,6 +1632,7 @@ void VirtualStudio::disconnect()
 {
     m_connectionState = QStringLiteral("Disconnecting...");
     emit connectionStateChanged();
+    setConnectedErrorMsg("");
     m_retryPeriodTimer.stop();
     m_retryPeriod = false;
 
@@ -1680,9 +1692,21 @@ void VirtualStudio::manageStudio(int studioIndex, bool start)
             request.toJson());
         connect(reply, &QNetworkReply::finished, this, [&, reply]() {
             if (reply->error() != QNetworkReply::NoError) {
-                m_connectionState = QStringLiteral("Unable to Start Studio");
+                m_connectionState      = QStringLiteral("Unable to Start Studio");
+                QJsonDocument errorDoc = QJsonDocument::fromJson(reply->readAll());
+                if (!errorDoc.isNull()) {
+                    QJsonObject errorObj = errorDoc.object();
+                    if (errorObj.contains("error")) {
+                        QString errorMessage = errorObj.value("error").toString();
+                        if (errorMessage.contains(
+                                "Only one studio may be running at a time")) {
+                            setConnectedErrorMsg("one-studio-limit-reached");
+                        }
+                    }
+                }
                 emit connectionStateChanged();
             } else {
+                setConnectedErrorMsg("");
                 QByteArray response       = reply->readAll();
                 QJsonDocument serverState = QJsonDocument::fromJson(response);
                 if (serverState.object()[QStringLiteral("status")].toString()

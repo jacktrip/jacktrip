@@ -1153,6 +1153,26 @@ Item {
             text: "You will be automatically connected to the studio when it is ready."
             wrapMode: Text.WordWrap
         }
+
+        Text {
+            id: connectedErrorMessage1
+            x: 0
+            width: parent.width
+            color: warningTextColour
+            anchors.top: waitingText1.bottom
+            anchors.topMargin: 16 * virtualstudio.uiScale
+            anchors.bottomMargin: 16 * virtualstudio.uiScale
+            visible: parent.isAdmin && Boolean(virtualstudio.connectedErrorMsg)
+            textFormat: Text.RichText
+            text: virtualstudio.connectedErrorMsg == "one-studio-limit-reached"
+                ? `Your current plan allows you to use 1 studio at a time. <a style="color: ${linkText}; cursor: pointer" href="https://help.jacktrip.org/hc/en-us/requests/new">Contact us</a> to use multiple studios at a time.`
+                : ""
+            onLinkActivated: link => {
+                virtualstudio.openLink(link)
+            }
+            font {family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+            wrapMode: Text.WordWrap
+        }
     }
 
     Item {
