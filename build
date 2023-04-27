@@ -4,8 +4,9 @@
 # Parse command line options
 clean=1
 install=0
+jobs=1
 CONFIG="DEFINES+=JACKTRIP_BUILD_INFO=\\\"$(git describe --tags)-$(git rev-parse --short HEAD)\\\""
-UNKNOWN_OPTIONS=
+UNKNOWN_OPTIONS=()
 BUILD_RTAUDIO=0
 RTAUDIO=0
 NO_SYSTEM_RTAUDIO=0
@@ -25,7 +26,7 @@ weakjack - build with weak linking of jack libraries\n
 install - install jacktrip in system location (uses sudo)\n
 "
 while [[ "$#" -gt 0 ]]; do
-  if [[ -z "$UNKNOWN_OPTIONS" ]]; then
+  if [[ ${#UNKNOWN_OPTIONS[@]} -eq 0 ]]; then
     case $1 in
       noclean) clean=0 ;;
       nojack)
@@ -62,15 +63,22 @@ while [[ "$#" -gt 0 ]]; do
       echo "Will install JackTrip in system location"
       install=1
       ;;
+      -j*)
+      jobs=$(echo $1 |sed 's,-j0*\([0-9]*\),\1,')
+      if [[ $jobs -le 1 ]]; then
+        jobs=1
+      fi
+      echo "Will build using $jobs make jobs"
+      ;;
       -h|--help) 
       echo -e $HELP_STR; exit 
       ;;
-      *) UNKNOWN_OPTIONS="$UNKNOWN_OPTIONS $1" ;;
+      *) UNKNOWN_OPTIONS+=("$1") ;;
     esac
     shift
   else
     case $1 in
-      *) UNKNOWN_OPTIONS="$UNKNOWN_OPTIONS $1" ;;
+      *) UNKNOWN_OPTIONS+=("$1") ;;
     esac
     shift
   fi
@@ -164,15 +172,13 @@ cd builddir
 set -e
 
 # Build
-QCMDARGS=(-spec $QSPEC $CONFIG "$UNKNOWN_OPTIONS" $PRO_FILE)
 echo "qmake command:"
-echo $QCMD ${QCMDARGS[@]}
+echo $QCMD -spec $QSPEC $CONFIG "${UNKNOWN_OPTIONS[@]}" $PRO_FILE
+$QCMD -spec $QSPEC $CONFIG "${UNKNOWN_OPTIONS[@]}" $PRO_FILE
 if [[ $clean == 1 ]]; then
-  $QCMD ${QCMDARGS[@]}
   $MCMD clean
 fi
-$QCMD ${QCMDARGS[@]}
-$MCMD release
+$MCMD -j$jobs release
 if [[ "$install" == 1 ]]; then
   echo "*** Installing JackTrip ***"
   echo "We need elevated privileges to install JackTrip in the system location"

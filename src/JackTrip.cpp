@@ -122,8 +122,6 @@ JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
     , mStopOnTimeout(false)
     , mSendRingBuffer(NULL)
     , mReceiveRingBuffer(NULL)
-    , mRegulatorThreadPtr(NULL)
-    , mRegulatorWorkerPtr(NULL)
     , mReceiverBindPort(receiver_bind_port)
     , mSenderPeerPort(sender_peer_port)
     , mSenderBindPort(sender_bind_port)
@@ -165,8 +163,6 @@ JackTrip::~JackTrip()
     delete mDataProtocolReceiver;
     delete mAudioInterface;
     delete mPacketHeader;
-    delete mRegulatorWorkerPtr;
-    delete mRegulatorThreadPtr;
     delete mSendRingBuffer;
     delete mReceiveRingBuffer;
 }
@@ -429,14 +425,15 @@ void JackTrip::setupRingBuffers()
             mReceiveRingBuffer =
                 new RingBuffer(audio_output_slot_size, mBufferQueueLength);
             mPacketHeader->setBufferRequiresSameSettings(true);
-        } else if (mBufferStrategy == 3) {
+        } else if ((mBufferStrategy == 3) || (mBufferStrategy == 4)) {
+            bool use_worker_thread = (mBufferStrategy == 3);
             cout << "Using experimental buffer strategy " << mBufferStrategy
-                 << "-- Regulator with PLC" << endl;
-
-            mReceiveRingBuffer =
-                new Regulator(mNumAudioChansOut, mAudioBitResolution, mAudioBufferSize,
-                              mBufferQueueLength, mBroadcastQueueLength);
-            // bufStrategy 3, mBufferQueueLength is in integer msec not packets
+                 << "-- Regulator with PLC (worker="
+                 << (use_worker_thread ? "true" : "false") << ")" << endl;
+            mReceiveRingBuffer = new Regulator(mNumAudioChansOut, mAudioBitResolution,
+                                               mAudioBufferSize, mBufferQueueLength,
+                                               use_worker_thread, mBroadcastQueueLength);
+            // bufStrategy 3 or 4, mBufferQueueLength is in integer msec not packets
 
             mPacketHeader->setBufferRequiresSameSettings(false);  // = asym is default
 
@@ -539,8 +536,10 @@ void JackTrip::startProcess(
 #endif  // endwhere
     );
 
-    if (mAudioInterface->getDevicesErrorMsg() != "") {
-        stop();
+    QString audioInterfaceError =
+        QString::fromStdString(mAudioInterface->getDevicesErrorMsg());
+    if (audioInterfaceError != "") {
+        stop(audioInterfaceError);
         return;
     }
 
@@ -662,18 +661,6 @@ void JackTrip::completeConnection()
 
     for (auto& i : mProcessPluginsToNetwork) {
         mAudioInterface->appendProcessPluginToNetwork(i);
-    }
-
-    if (mBufferStrategy == 3) {
-        mRegulatorThreadPtr = new QThread();
-        mRegulatorThreadPtr->setObjectName("RegulatorThread");
-        Regulator* regulatorPtr    = reinterpret_cast<Regulator*>(mReceiveRingBuffer);
-        RegulatorWorker* workerPtr = new RegulatorWorker(regulatorPtr);
-        workerPtr->moveToThread(mRegulatorThreadPtr);
-        QObject::connect(this, &JackTrip::signalReceivedNetworkPacket, workerPtr,
-                         &RegulatorWorker::pullPacket, Qt::QueuedConnection);
-        mRegulatorThreadPtr->start();
-        mRegulatorWorkerPtr = workerPtr;
     }
 
     mAudioInterface->initPlugins(true);  // mSampleRate known now, which plugins require
@@ -1156,7 +1143,10 @@ void JackTrip::tcpTimerTick()
             serverHostAddress = info.addresses().constFirst();
         }
     }
-    mTcpClient.connectToHost(serverHostAddress, mTcpServerPort);
+
+    if (mTcpClient.state() == QAbstractSocket::UnconnectedState) {
+        mTcpClient.connectToHost(serverHostAddress, mTcpServerPort);
+    }
 
     mRetryTimer.start();
 }
@@ -1173,12 +1163,6 @@ void JackTrip::stop(const QString& errorMessage)
     }
     mHasShutdown = true;
     std::cout << "Stopping JackTrip..." << std::endl;
-
-    if (mRegulatorThreadPtr != nullptr) {
-        // Stop the Regulator thread
-        mRegulatorThreadPtr->quit();
-        mRegulatorThreadPtr->wait();
-    }
 
     if (mDataProtocolSender != nullptr) {
         // Stop The Sender
@@ -1214,9 +1198,6 @@ void JackTrip::waitThreads()
 {
     mDataProtocolSender->wait();
     mDataProtocolReceiver->wait();
-    if (mRegulatorThreadPtr != nullptr) {
-        mRegulatorThreadPtr->wait();
-    }
 }
 
 //*******************************************************************************
@@ -1369,7 +1350,9 @@ int JackTrip::clientPingToServerStart()
         mRetryTimer.start();
     }
 
-    mTcpClient.connectToHost(serverHostAddress, mTcpServerPort);
+    if (mTcpClient.state() == QAbstractSocket::UnconnectedState) {
+        mTcpClient.connectToHost(serverHostAddress, mTcpServerPort);
+    }
 
     if (gVerboseFlag)
         cout << "Connecting to TCP Server at "

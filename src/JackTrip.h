@@ -38,7 +38,7 @@
 #ifndef __JACKTRIP_H__
 #define __JACKTRIP_H__
 
-//#include <tr1/memory> //for shared_ptr
+// #include <tr1/memory> //for shared_ptr
 #include <QObject>
 #include <QSharedPointer>
 #include <QSslSocket>
@@ -58,7 +58,7 @@
 #include "PacketHeader.h"
 #include "RingBuffer.h"
 
-//#include <signal.h>
+// #include <signal.h>
 /** \brief Main class to creates a SERVER (to listen) or a CLIENT (to connect
  * to a listening server) to send audio streams in the network.
  *
@@ -392,10 +392,6 @@ class JackTrip : public QObject
     virtual void receiveNetworkPacket(int8_t* ptrToReadSlot)
     {
         mReceiveRingBuffer->readSlotNonBlocking(ptrToReadSlot);
-        if (mBufferStrategy == 3) {
-            // trigger next packet using RegulatorThread
-            emit signalReceivedNetworkPacket();
-        }
     }
     virtual void readAudioBuffer(int8_t* ptrToReadSlot)
     {
@@ -587,7 +583,6 @@ class JackTrip : public QObject
     void signalUdpWaitingTooLong();
     void signalQueueLengthChanged(int queueLength);
     void signalAudioStarted();
-    void signalReceivedNetworkPacket();
 
    public:
     /// \brief Set the AudioInteface object
@@ -659,10 +654,6 @@ class JackTrip : public QObject
     RingBuffer* mSendRingBuffer;
     /// Pointer for the Receive RingBuffer
     RingBuffer* mReceiveRingBuffer;
-    /// thread used to pull packets from Regulator (if mBufferStrategy==3)
-    QThread* mRegulatorThreadPtr;
-    /// worker used to pull packets from Regulator (if mBufferStrategy==3)
-    QObject* mRegulatorWorkerPtr;
 
     int mReceiverBindPort;  ///< Incoming (receiving) port for local machine
     int mSenderPeerPort;    ///< Incoming (receiving) port for peer machine

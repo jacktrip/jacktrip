@@ -63,6 +63,7 @@ nojack {
 # INCLUDEPATH+=/usr/include/stk
 # LIBS += -L/usr/local/lib -ljack -lstk -lm
   LIBS += -L/usr/local/lib -lm
+  QMAKE_CXXFLAGS += -fvisibility=hidden -fvisibility-inlines-hidden
   weakjack {
     message(Building with weak linking of JACK)
     INCLUDEPATH += externals/weakjack

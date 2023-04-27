@@ -212,7 +212,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
             QVariantList() << QVariant(QJsonValue(outputChannelsComboElement)))));
 
 #endif
-    m_bufferStrategy = settings.value(QStringLiteral("BufferStrategy"), 0).toInt();
+    m_bufferStrategy = settings.value(QStringLiteral("BufferStrategy"), 2).toInt();
     settings.endGroup();
 
 #ifdef USE_WEAK_JACK
@@ -1113,6 +1113,9 @@ void VirtualStudio::validateDevicesState()
 {
     validateInputDevicesState();
     validateOutputDevicesState();
+    if (m_useRtAudio && m_connectionState == "Connected") {
+        triggerReconnect();
+    }
 }
 
 void VirtualStudio::validateInputDevicesState()
@@ -1462,6 +1465,10 @@ void VirtualStudio::connectToStudio(int studioIndex)
     } else {
         completeConnection();
     }
+
+    if (m_device != nullptr) {
+        m_device->setReconnect(false);
+    }
 }
 
 void VirtualStudio::completeConnection()
@@ -1492,16 +1499,21 @@ void VirtualStudio::completeConnection()
 #else
         int inputMixMode = -1;
 #endif
-        JackTrip* jackTrip = m_device->initJackTrip(
-            m_useRtAudio, input, output,
+        int bufferStrategy = m_bufferStrategy;
+        if (bufferStrategy == 2) {
+            bufferStrategy = 3;
+        }
+        JackTrip* jackTrip =
+            m_device->initJackTrip(m_useRtAudio, input, output,
 #ifdef RT_AUDIO
-            m_baseInputChannel, m_numInputChannels, m_baseOutputChannel,
-            m_numOutputChannels,
+                                   m_baseInputChannel, m_numInputChannels,
+                                   m_baseOutputChannel, m_numOutputChannels,
 #else
-            0, 2, 0, 2,  // default to 2 channels for input and 2 channels for output
-                         // starting at channel 0
+                                   0, 2, 0,
+                                   2,  // default to 2 channels for input and 2 channels
+                                       // for output starting at channel 0
 #endif
-            inputMixMode, buffer_size, m_bufferStrategy, studioInfo);
+                                   inputMixMode, buffer_size, bufferStrategy, studioInfo);
         if (jackTrip == 0) {
             processError("Could not bind port");
             return;
@@ -1590,6 +1602,19 @@ void VirtualStudio::completeConnection()
 #ifdef __APPLE__
     m_noNap.disableNap();
 #endif
+}
+
+void VirtualStudio::triggerReconnect()
+{
+    if (m_jackTripRunning) {
+        m_connectionState = QStringLiteral("Reconnecting...");
+        emit connectionStateChanged();
+        m_retryPeriodTimer.stop();
+        m_retryPeriod = false;
+        if (m_device != nullptr) {
+            m_device->setReconnect(true);
+        }
+    }
 }
 
 void VirtualStudio::disconnect()
@@ -1796,6 +1821,12 @@ void VirtualStudio::slotAuthFailed()
 
 void VirtualStudio::processFinished()
 {
+    if (m_device->reconnect()) {
+        if (m_device->hasTerminated()) {
+            connectToStudio(m_currentStudio);
+        }
+        return;
+    }
     // use disconnect function to handle reset of all internal flags and timers
     disconnect();
 
