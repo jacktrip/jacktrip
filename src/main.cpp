@@ -50,6 +50,7 @@
 #include <QQuickView>
 #include <QSettings>
 #include <QTextStream>
+#include <QtWebEngine/qtwebengineglobal.h>
 
 #include "JTApplication.h"
 #include "gui/virtualstudio.h"
@@ -276,6 +277,7 @@ bool isRunFromCmd()
 
 int main(int argc, char* argv[])
 {
+    QtWebEngine::initialize();
     QScopedPointer<QCoreApplication> app(createApplication(argc, argv));
     QScopedPointer<JackTrip> jackTrip;
     QScopedPointer<UdpHubListener> udpHub;

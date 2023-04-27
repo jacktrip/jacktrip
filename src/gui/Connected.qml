@@ -1,6 +1,7 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
 import QtGraphicalEffects 1.12
+import QtWebEngine 1.11
 
 Item {
     width: parent.width; height: parent.height
@@ -122,6 +123,18 @@ Item {
 
         texts[1] = "Your connection quality is <b>" + quality + "</b>."
         return texts;
+    }
+
+    WebEngineView {
+        id: webEngineView
+        width: parent.width;
+        height: parent.height - 200
+        url: "https://webrtc.github.io/samples/src/content/getusermedia/gum/"
+        //url: `https://${virtualstudio.apiHost}/studios/${virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].id : ""}/live`
+        // https://stackoverflow.com/questions/65056421/how-would-someone-grant-permission-to-the-capture-audio-from-microphone-feature
+        onFeaturePermissionRequested: {
+            webEngineView.grantFeaturePermission(securityOrigin, feature, true);
+        }
     }
 
     Image {
