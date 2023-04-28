@@ -129,4 +129,28 @@ Item {
             color: backButton.down ? buttonTextPressed : (backButton.hovered ? buttonTextHover : buttonTextColour)
         }
     }
+
+
+    Button {
+        id: classicModeButton
+        visible: !showBackButton
+        background: Rectangle {
+            radius: 6 * virtualstudio.uiScale
+            color: classicModeButton.down ? buttonPressedColour : (classicModeButton.hovered ? buttonHoverColour : backgroundColour)
+            border.width: 0
+            layer.enabled: !classicModeButton.down
+        }
+        onClicked: { virtualstudio.windowState = "login"; virtualstudio.toStandard(); }
+        anchors.horizontalCenter: parent.horizontalCenter
+        y: 600 * virtualstudio.uiScale
+        width: 160 * virtualstudio.uiScale; height: 32 * virtualstudio.uiScale
+        Text {
+            text: "Use Classic Mode"
+            font.family: "Poppins"
+            font.pixelSize: 9 * virtualstudio.fontScale * virtualstudio.uiScale
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.verticalCenter: parent.verticalCenter
+            color: classicModeButton.down ? buttonTextPressed : (classicModeButton.hovered ? buttonTextHover : textColour)
+        }
+    }
 }
