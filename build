@@ -12,7 +12,7 @@ RTAUDIO=0
 NO_SYSTEM_RTAUDIO=0
 PRO_FILE="../jacktrip.pro"
 HELP_STR="usage:\n
-./build [noclean nojack rtaudio nogui novs vsonly static install [-config static]]\n\n
+./build [noclean nojack rtaudio nogui novs vsftux static install [-config static]]\n\n
 options:\n
 noclean - do not run \"make clean\" first\n
 nojack - build without jack\n
@@ -20,7 +20,7 @@ rtaudio - build with RtAudio\n
 no-system-rtaudio - use bundled RtAudio library even if it's available in the system\n
 nogui - build without the gui\n
 novs - build without Virtual Studio support\n
-vsonly - build without Classic GUI\n
+vsftux - build with Virtual Studio first launch experience\n
 noupdater - build without auto-update support\n
 static - build with static libraries\n
 weakjack - build with weak linking of jack libraries\n
@@ -48,9 +48,9 @@ while [[ "$#" -gt 0 ]]; do
       echo "Building without Virtual Studio support"
       CONFIG="-config novs $CONFIG" 
       ;;
-      vsonly)
-      echo "Building without Classic GUI"
-      CONFIG="-config vsonly $CONFIG" 
+      vsftux)
+      echo "Building with Virtual Studio first launch experience"
+      CONFIG="-config vsftux $CONFIG" 
       ;;
       noupdater)
       echo "Building without auto-update support"

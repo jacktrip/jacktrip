@@ -170,8 +170,8 @@ else
 		qres = ['src/gui/qjacktrip.qrc']
 	endif
 
-	if get_option('vsonly') == true
-		defines += '-DVS_ONLY'
+	if get_option('vsftux') == true
+		defines += '-DVS_FTUX'
 	endif
 
 	if get_option('noupdater') == true or host_machine.system() == 'linux'
