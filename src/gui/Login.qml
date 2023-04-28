@@ -11,6 +11,7 @@ Item {
     }
 
     property bool failTextVisible: false
+    property bool showBackButton: true
     
     property string backgroundColour: virtualstudio.darkMode ? "#272525" : "#FAFBFB"
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
@@ -91,7 +92,7 @@ Item {
         }
         onClicked: { failTextVisible = false; virtualstudio.login() }
         anchors.horizontalCenter: parent.horizontalCenter
-        y: 321 * virtualstudio.uiScale
+        y: showBackButton ? 321 * virtualstudio.uiScale : 371 * virtualstudio.uiScale
         width: 263 * virtualstudio.uiScale; height: 64 * virtualstudio.uiScale
         Text {
             text: "Sign In"
@@ -107,6 +108,7 @@ Item {
 
     Button {
         id: backButton
+        visible: showBackButton
         background: Rectangle {
             radius: 6 * virtualstudio.uiScale
             color: backButton.down ? buttonPressedColour : (backButton.hovered ? buttonHoverColour : buttonColour)
@@ -126,6 +128,5 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             color: backButton.down ? buttonTextPressed : (backButton.hovered ? buttonTextHover : buttonTextColour)
         }
-        visible: true
     }
 }
