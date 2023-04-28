@@ -104,6 +104,8 @@ class VirtualStudio : public QObject
                    devicesWarningHelpUrlChanged)
     Q_PROPERTY(QString devicesErrorHelpUrl READ devicesErrorHelpUrl NOTIFY
                    devicesErrorHelpUrlChanged)
+    Q_PROPERTY(
+        QString connectedErrorMsg READ connectedErrorMsg NOTIFY connectedErrorMsgChanged)
 
     Q_PROPERTY(
         int bufferSize READ bufferSize WRITE setBufferSize NOTIFY bufferSizeChanged)
@@ -194,6 +196,8 @@ class VirtualStudio : public QObject
     QString devicesError();
     QString devicesWarningHelpUrl();
     QString devicesErrorHelpUrl();
+    QString connectedErrorMsg();
+    void setConnectedErrorMsg(const QString& msg);
     int bufferSize();
     void setBufferSize(int index);
     int bufferStrategy();
@@ -301,6 +305,7 @@ class VirtualStudio : public QObject
     void devicesErrorChanged();
     void devicesWarningHelpUrlChanged();
     void devicesErrorHelpUrlChanged();
+    void connectedErrorMsgChanged();
     void triggerPlayOutputAudio();
     void bufferSizeChanged();
     void bufferStrategyChanged();
@@ -438,6 +443,7 @@ class VirtualStudio : public QObject
     QString m_devicesWarningHelpUrl = QStringLiteral("");
     QString m_devicesErrorHelpUrl   = QStringLiteral("");
     QString m_windowState           = QStringLiteral("login");
+    QString m_connectedErrorMsg     = QStringLiteral("");
 
     float m_meterMax = 0.0;
     float m_meterMin = -64.0;
