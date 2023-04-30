@@ -38,7 +38,34 @@
 
 #include "Tone.h"
 
+#include <iostream>
+
 #include "jacktrip_types.h"
+#include "tonedsp.h"
+
+//*******************************************************************************
+Tone::Tone(int numchans, bool verboseFlag) : mNumChannels(numchans)
+{
+    setVerbose(verboseFlag);
+    for (int i = 0; i < mNumChannels; i++) {
+        tonedsp* dsp_ptr = new tonedsp;
+        APIUI* ui_ptr    = new APIUI;
+        toneP.push_back(dsp_ptr);
+        toneUIP.push_back(ui_ptr);
+        dsp_ptr->buildUserInterface(ui_ptr);
+    }
+}
+
+//*******************************************************************************
+Tone::~Tone()
+{
+    for (int i = 0; i < mNumChannels; i++) {
+        delete static_cast<tonedsp*>(toneP[i]);
+        delete static_cast<APIUI*>(toneUIP[i]);
+    }
+    toneP.clear();
+    toneUIP.clear();
+}
 
 //*******************************************************************************
 void Tone::init(int samplingRate)
@@ -51,7 +78,8 @@ void Tone::init(int samplingRate)
     fs = float(fSamplingFreq);
 
     for (int i = 0; i < mNumChannels; i++) {
-        toneP[i]->init(fs);  // compression filter parameters depend on sampling rate
+        static_cast<tonedsp*>(toneP[i])->init(
+            fs);  // compression filter parameters depend on sampling rate
     }
     inited = true;
 }
@@ -71,7 +99,7 @@ void Tone::compute(int nframes, float** inputs, float** outputs)
 
     for (int i = 0; i < mNumChannels; i++) {
         /* Run the signal through Faust  */
-        toneP[i]->compute(nframes, &inputs[i], &outputs[i]);
+        static_cast<tonedsp*>(toneP[i])->compute(nframes, &inputs[i], &outputs[i]);
     }
 }
 
@@ -88,8 +116,9 @@ void Tone::updateNumChannels(int nChansIn, int nChansOut)
 void Tone::triggerPlayback()
 {
     for (int i = 0; i < mNumChannels; i++) {
-        int ndx = toneUIP[i]->getParamIndex("gate");
-        int v   = toneUIP[i]->getParamValue(ndx);
-        toneUIP[i]->setParamValue(ndx, v + 1);
+        APIUI* ui_ptr = static_cast<APIUI*>(toneUIP[i]);
+        int ndx       = ui_ptr->getParamIndex("gate");
+        int v         = ui_ptr->getParamValue(ndx);
+        ui_ptr->setParamValue(ndx, v + 1);
     }
 }
