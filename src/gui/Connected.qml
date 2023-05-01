@@ -191,6 +191,9 @@ Item {
             modal: true
             focus: true
             closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
+            onOpened: {
+                virtualstudio.refreshDevices()
+            }
             onClosed: {
                 virtualstudio.applySettings()
             }
