@@ -38,7 +38,37 @@
 
 #include "Meter.h"
 
+#include <iostream>
+
 #include "jacktrip_types.h"
+#include "meterdsp.h"
+
+//*******************************************************************************
+Meter::Meter(int numchans, bool verboseFlag) : mNumChannels(numchans)
+{
+    setVerbose(verboseFlag);
+    for (int i = 0; i < mNumChannels; i++) {
+        meterP.push_back(new meterdsp);
+    }
+}
+
+//*******************************************************************************
+Meter::~Meter()
+{
+    for (int i = 0; i < mNumChannels; i++) {
+        delete static_cast<meterdsp*>(meterP[i]);
+    }
+    meterP.clear();
+    if (mValues) {
+        delete mValues;
+    }
+    if (mOutValues) {
+        delete mOutValues;
+    }
+    if (mBuffer) {
+        delete mBuffer;
+    }
+}
 
 //*******************************************************************************
 void Meter::init(int samplingRate)
@@ -51,7 +81,7 @@ void Meter::init(int samplingRate)
 
     fs = float(fSamplingFreq);
     for (int i = 0; i < mNumChannels; i++) {
-        meterP[i]->init(fs);
+        static_cast<meterdsp*>(meterP[i])->init(fs);
     }
 
     /* Set meter values to the default floor */
@@ -97,7 +127,7 @@ void Meter::compute(int nframes, float** inputs, float** /*_*/)
 
     for (int i = 0; i < mNumChannels; i++) {
         /* Run the signal through Faust  */
-        meterP[i]->compute(nframes, &inputs[i], &mBuffer);
+        static_cast<meterdsp*>(meterP[i])->compute(nframes, &inputs[i], &mBuffer);
 
         /* Use the existing value of mValues[i] as
            the threshold - this will be reset to the default floor of -80dB
