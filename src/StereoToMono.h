@@ -40,12 +40,8 @@
 #define __STEREOTOMONO_H__
 
 #include <QObject>
-#include <QVector>
-#include <iostream>
-#include <vector>
 
 #include "ProcessPlugin.h"
-#include "stereotomonodsp.h"
 
 /** \brief The Meter class measures the live audio loudness level
  */
@@ -55,14 +51,10 @@ class StereoToMono : public ProcessPlugin
 
    public:
     /// \brief The class constructor sets the number of channels to measure
-    StereoToMono(bool verboseFlag = false)
-    {
-        setVerbose(verboseFlag);
-        stereoToMonoP = new stereotomonodsp;
-    }
+    StereoToMono(bool verboseFlag = false);
 
     /// \brief The class destructor
-    virtual ~StereoToMono() { delete stereoToMonoP; }
+    virtual ~StereoToMono();
 
     void init(int samplingRate) override;
     int getNumInputs() override { return 2; }
@@ -72,9 +64,7 @@ class StereoToMono : public ProcessPlugin
 
    private:
     float fs;
-    // int mNumChannels;
-    stereotomonodsp* stereoToMonoP;
-    // bool hasProcessedAudio = false;
+    void* stereoToMonoP;
 };
 
 #endif

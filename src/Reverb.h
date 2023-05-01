@@ -43,13 +43,7 @@
 
 #include <iostream>
 
-//#define SINE_TEST
-
 #include "ProcessPlugin.h"
-#include "freeverbdsp.h"  // stereo in and out
-#include "freeverbmonodsp.h"  // mono in and out (there is no mono to stereo case in jacktrip as yet)
-#include "zitarevdsp.h"      // stereo in and out
-#include "zitarevmonodsp.h"  // mono in and out
 
 /** \brief A Reverb is an echo-based delay effect,
  *  providing a virtual acoustic listening space.
@@ -59,92 +53,12 @@ class Reverb : public ProcessPlugin
    public:
     /// \brief The class constructor sets the number of channels to limit
     Reverb(int numInChans, int numOutChans, float reverbLevel = 1.0,
-           bool verboseFlag = false)  // xtor
-        : mNumInChannels(numInChans)
-        , mNumOutChannels(numOutChans)
-        , mReverbLevel(reverbLevel)
-    {
-        setVerbose(verboseFlag);
-        if (mNumInChannels < 1) {
-            std::cerr << "*** Reverb.h: must have at least one input audio channels\n";
-            mNumInChannels = 1;
-        }
-        if (mNumInChannels > 2) {
-            std::cerr << "*** Reverb.h: limiting number of audio output channels to 2\n";
-            mNumInChannels = 2;
-        }
-#if 0
-    std::cout << "Reverb: constructed for "
-              << mNumInChannels << " input channels and "
-              << mNumOutChannels << " output channels with reverb level = "
-              << mReverbLevel << "\n";
-#endif
-
-        if (mReverbLevel <= 1.0) {                    // freeverb:
-            freeverbStereoP   = new freeverbdsp;      // stereo input and output
-            freeverbMonoP     = new freeverbmonodsp;  // mono input, stereo output
-            freeverbStereoUIP = new APIUI;            // #included in *dsp.h
-            freeverbMonoUIP   = new APIUI;
-            freeverbStereoP->buildUserInterface(freeverbStereoUIP);
-            freeverbMonoP->buildUserInterface(freeverbMonoUIP);
-            // std::cout << "Using freeverb\n";
-        } else {
-            zitarevStereoP   = new zitarevdsp;      // stereo input and output
-            zitarevMonoP     = new zitarevmonodsp;  // mono input, stereo output
-            zitarevStereoUIP = new APIUI;
-            zitarevMonoUIP   = new APIUI;
-            zitarevStereoP->buildUserInterface(zitarevStereoUIP);
-            zitarevMonoP->buildUserInterface(zitarevMonoUIP);
-            // std::cout << "Using zitarev\n";
-        }
-    }
+           bool verboseFlag = false);
 
     /// \brief The class destructor
-    virtual ~Reverb()
-    {
-        if (mReverbLevel <= 1.0) {  // freeverb:
-            delete freeverbStereoP;
-            delete freeverbMonoP;
-            delete freeverbStereoUIP;
-            delete freeverbMonoUIP;
-        } else {
-            delete zitarevStereoP;
-            delete zitarevMonoP;
-            delete zitarevStereoUIP;
-            delete zitarevMonoUIP;
-        }
-    }
+    virtual ~Reverb();
 
-    void init(int samplingRate) override
-    {
-        ProcessPlugin::init(samplingRate);
-        // std::cout << "Reverb: init(" << samplingRate << ")\n";
-        if (samplingRate != fSamplingFreq) {
-            std::cerr << "Sampling rate not set by superclass!\n";
-            std::exit(1);
-        }
-        fs = float(fSamplingFreq);
-        if (mReverbLevel <= 1.0) {  // freeverb:
-            freeverbStereoP->init(
-                fs);  // compression filter parameters depend on sampling rate
-            freeverbMonoP->init(
-                fs);  // compression filter parameters depend on sampling rate
-            int ndx = freeverbStereoUIP->getParamIndex("Wet");
-            freeverbStereoUIP->setParamValue(ndx, mReverbLevel);
-            freeverbMonoUIP->setParamValue(ndx, mReverbLevel);
-        } else {  // zitarev:
-            zitarevStereoP->init(
-                fs);  // compression filter parameters depend on sampling rate
-            zitarevMonoP->init(
-                fs);  // compression filter parameters depend on sampling rate
-            int ndx = zitarevStereoUIP->getParamIndex("Wet");
-            float zitaLevel =
-                mReverbLevel - 1.0f;  // range within zitarev is 0 to 1 (our version only)
-            zitarevStereoUIP->setParamValue(ndx, zitaLevel);
-            zitarevMonoUIP->setParamValue(ndx, zitaLevel);
-        }
-        inited = true;
-    }
+    void init(int samplingRate) override;
     int getNumInputs() override { return (mNumInChannels); }
     int getNumOutputs() override { return (mNumOutChannels); }
     void compute(int nframes, float** inputs, float** outputs) override;
@@ -157,15 +71,15 @@ class Reverb : public ProcessPlugin
 
     float mReverbLevel;
 
-    freeverbdsp* freeverbStereoP;
-    freeverbmonodsp* freeverbMonoP;
-    APIUI* freeverbStereoUIP;
-    APIUI* freeverbMonoUIP;
+    void* freeverbStereoP;
+    void* freeverbMonoP;
+    void* freeverbStereoUIP;
+    void* freeverbMonoUIP;
 
-    zitarevdsp* zitarevStereoP;
-    zitarevmonodsp* zitarevMonoP;
-    APIUI* zitarevStereoUIP;
-    APIUI* zitarevMonoUIP;
+    void* zitarevStereoP;
+    void* zitarevMonoP;
+    void* zitarevStereoUIP;
+    void* zitarevMonoUIP;
 };
 
 #endif
