@@ -251,6 +251,5 @@ summary({'JACK': jack_dep.found(),
 
 summary({'Application ID': application_id,
 	'GUI': not get_option('nogui'),
-	'WAIR': get_option('wair'),
 	'Manpage': help2man.found()}, bool_yn: true, section: 'Configuration')
 

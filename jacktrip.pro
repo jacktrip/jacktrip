@@ -44,7 +44,6 @@ nogui {
 QT += network
 
 # switch added in rc.1.2 enables wair build, some of it merged as WAIRTOHUB
-# DEFINES += WAIR
 DEFINES += WAIRTOHUB
 
 # configuration with RtAudio

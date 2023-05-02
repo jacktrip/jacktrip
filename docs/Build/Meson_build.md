@@ -41,7 +41,7 @@ find its documentation at [mesonbuild.com](https://mesonbuild.com/).
 ## Configuration
 
 If you are in a build directory, `meson configure` shows you all available options.
-Current project options are `jack`, `nogui`, `rtaudio` and `wair`.
+Current project options are `jack`, `nogui`, and `rtaudio`.
 Meson shows you also the options of subprojects like RtAudio.
 
 ## Build
