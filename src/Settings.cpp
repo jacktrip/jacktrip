@@ -41,7 +41,6 @@
 // #include "NetKS.h"
 #include "Effects.h"
 
-
 // #include "JackTripWorker.h"
 #include <getopt.h>  // for command line parsing
 
@@ -120,8 +119,8 @@ void Settings::parseInput(int argc, char** argv)
         {"receivechannels", required_argument, NULL,
          OPT_NUMRECEIVE},  // Number of incoming channels
         {"sendchannels", required_argument, NULL,
-         OPT_NUMSEND},                     // Number of outgoing channels
-        {"server", no_argument, NULL, 's'},                    // Run in P2P server mode
+         OPT_NUMSEND},                       // Number of outgoing channels
+        {"server", no_argument, NULL, 's'},  // Run in P2P server mode
         {"client", required_argument, NULL,
          'c'},  // Run in P2P client mode, set server IP address
         {"localaddress", required_argument, NULL,

@@ -65,8 +65,8 @@ JackAudioInterface::JackAudioInterface(
     QVarLengthArray<int> InputChans, QVarLengthArray<int> OutputChans,
     AudioInterface::audioBitResolutionT AudioBitResolution, bool processWithNetwork,
     JackTrip* jacktrip, const QString& ClientName)
-    : AudioInterface(InputChans, OutputChans, MIX_UNSET,
-                     AudioBitResolution, processWithNetwork, jacktrip)
+    : AudioInterface(InputChans, OutputChans, MIX_UNSET, AudioBitResolution,
+                     processWithNetwork, jacktrip)
     , mClient(NULL)
     , mClientName(ClientName)
     , mBroadcast(false)

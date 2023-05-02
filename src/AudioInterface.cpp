@@ -54,8 +54,7 @@ AudioInterface::AudioInterface(QVarLengthArray<int> InputChans,
                                bool processWithNetwork, JackTrip* jacktrip)
     : mInputChans(InputChans)
     , mOutputChans(OutputChans)
-    ,
-    mAudioBitResolution(AudioBitResolution * 8)
+    , mAudioBitResolution(AudioBitResolution * 8)
     , mBitResolutionMode(AudioBitResolution)
     , mSampleRate(gDefaultSampleRate)
     , mBufferSizeInSamples(gDefaultBufferSizeInSamples)
@@ -127,8 +126,8 @@ void AudioInterface::setup(bool /*verbose*/)
 
     int size_audio_input  = mSizeInBytesPerChannel * nChansIn;
     int size_audio_output = mSizeInBytesPerChannel * nChansOut;
-    mAudioInputPacket  = new int8_t[size_audio_input];
-    mAudioOutputPacket = new int8_t[size_audio_output];
+    mAudioInputPacket     = new int8_t[size_audio_input];
+    mAudioOutputPacket    = new int8_t[size_audio_output];
 
     // Initialize and assign memory for ProcessPlugins Buffers
     {
@@ -346,7 +345,7 @@ void AudioInterface::computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buff
                 // use interleaved channel layout
                 //&mInputPacket[(i*mSizeInBytesPerChannel) + (j*mBitResolutionMode)],
                 &mAudioInputPacket[(j * mBitResolutionMode * nChansIn)
-                                    + (i * mBitResolutionMode)],
+                                   + (i * mBitResolutionMode)],
                 mBitResolutionMode);
         }
     }

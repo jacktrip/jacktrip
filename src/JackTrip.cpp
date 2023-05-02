@@ -83,8 +83,8 @@ bool JackTrip::sJackStopped = false;
 //*******************************************************************************
 JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
                    int BaseChanIn, int NumChansIn, int BaseChanOut, int NumChansOut,
-                   AudioInterface::inputMixModeT InputMixMode,
-                   int BufferQueueLength, unsigned int redundancy,
+                   AudioInterface::inputMixModeT InputMixMode, int BufferQueueLength,
+                   unsigned int redundancy,
                    AudioInterface::audioBitResolutionT AudioBitResolution,
                    DataProtocol::packetHeaderTypeT PacketHeaderType,
                    underrunModeT UnderRunMode, int receiver_bind_port,
