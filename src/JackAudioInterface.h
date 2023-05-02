@@ -76,9 +76,6 @@ class JackAudioInterface : public AudioInterface
      */
     JackAudioInterface(
         QVarLengthArray<int> InputChans, QVarLengthArray<int> OutputChans,
-#ifdef WAIR  // wair
-        int NumNetRevChans,
-#endif  // endwhere
         AudioInterface::audioBitResolutionT AudioBitResolution = AudioInterface::BIT16,
         bool processWithNetwork = false, JackTrip* jacktrip = nullptr,
         const QString& ClientName = QStringLiteral("JackTrip"));

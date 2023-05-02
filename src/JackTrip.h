@@ -137,9 +137,6 @@ class JackTrip : public QObject
         int BaseChanIn = 0, int NumChansIn = gDefaultNumInChannels, int BaseChanOut = 0,
         int NumChansOut                            = gDefaultNumInChannels,
         AudioInterface::inputMixModeT InputMixMode = AudioInterface::MIX_UNSET,
-#ifdef WAIR  // wair
-        int NumNetRevChans = 0,
-#endif  // endwhere
         int BufferQueueLength                                  = gDefaultQueueLength,
         unsigned int redundancy                                = gDefaultRedundancy,
         AudioInterface::audioBitResolutionT AudioBitResolution = AudioInterface::BIT16,
@@ -493,22 +490,12 @@ class JackTrip : public QObject
     int getHeaderSizeInBytes() const { return mPacketHeader->getHeaderSizeInBytes(); }
     int getTotalAudioInputPacketSizeInBytes() const
     {
-#ifdef WAIR  // WAIR
-        if (mNumNetRevChans)
-            return mAudioInterface->getSizeInBytesPerChannel() * mNumNetRevChans;
-        else  // not wair
-#endif        // endwhere
-            return mAudioInterface->getSizeInBytesPerChannel() * mNumAudioChansIn;
+        return mAudioInterface->getSizeInBytesPerChannel() * mNumAudioChansIn;
     }
 
     int getTotalAudioOutputPacketSizeInBytes() const
     {
-#ifdef WAIR  // WAIR
-        if (mNumNetRevChans)
-            return mAudioInterface->getSizeInBytesPerChannel() * mNumNetRevChans;
-        else  // not wair
-#endif        // endwhere
-            return mAudioInterface->getSizeInBytesPerChannel() * mNumAudioChansOut;
+        return mAudioInterface->getSizeInBytesPerChannel() * mNumAudioChansOut;
     }
     //@}
     //------------------------------------------------------------------------------------
@@ -627,9 +614,6 @@ class JackTrip : public QObject
     int mNumAudioChansOut;                        ///< Number of Audio Output Channels
     AudioInterface::inputMixModeT mInputMixMode;  ///< Input mix mode
 
-#ifdef WAIR                  // WAIR
-    int mNumNetRevChans;     ///< Number of Network Audio Channels (net comb filters)
-#endif                       // endwhere
     int mBufferQueueLength;  ///< Audio Buffer from network queue length
     int mBufferStrategy;
     int mBroadcastQueueLength;

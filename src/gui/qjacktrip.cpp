@@ -894,9 +894,6 @@ void QJackTrip::start()
             m_jackTrip.reset(new JackTrip(
                 jackTripMode, JackTrip::UDP, 0, m_ui->channelSendSpinBox->value(), 0,
                 m_ui->channelRecvSpinBox->value(), AudioInterface::MIX_UNSET,
-#ifdef WAIR  // wair
-                0,
-#endif  // endwhere
                 m_ui->queueLengthSpinBox->value(), m_ui->redundancySpinBox->value(),
                 resolution));
             m_jackTrip->setConnectDefaultAudioPorts(

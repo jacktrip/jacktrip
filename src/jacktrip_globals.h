@@ -66,15 +66,6 @@ constexpr const char* gDOMAIN_TRIPLE = "192.168.0";  // for TUB multiclient hub
 constexpr int gMIN_TUB               = 11;           // lowest client address
 constexpr int gMAX_TUB               = 20;           // highest client address
 
-#ifdef WAIR  // wair
-// uses hub mode
-// hard wire the number of netrev (comb filter) channels
-#define NUMNETREVCHANSbecauseNOTINRECEIVEDheader 16  // for jacktripworker, jmess
-constexpr int gDefaultNumNetRevChannels   = NUMNETREVCHANSbecauseNOTINRECEIVEDheader;
-constexpr int gDefaultAddCombFilterLength = 0;
-constexpr int gDefaultCombFilterFeedback  = 0;
-#endif  // endwhere
-
 // const JackAudioInterface::audioBitResolutionT gDefaultBitResolutionMode =
 //    JackAudioInterface::BIT16;
 constexpr AudioInterface::audioBitResolutionT gDefaultBitResolutionMode =

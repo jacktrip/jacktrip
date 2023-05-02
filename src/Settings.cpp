@@ -41,10 +41,6 @@
 // #include "NetKS.h"
 #include "Effects.h"
 
-#ifdef WAIR  // wair
-#include "Stk16.dsp.h"
-#include "ap8x2.dsp.h"
-#endif  // endwhere
 
 // #include "JackTripWorker.h"
 #include <getopt.h>  // for command line parsing
@@ -125,12 +121,6 @@ void Settings::parseInput(int argc, char** argv)
          OPT_NUMRECEIVE},  // Number of incoming channels
         {"sendchannels", required_argument, NULL,
          OPT_NUMSEND},                     // Number of outgoing channels
-#ifdef WAIR                                // WAIR
-        {"wair", no_argument, NULL, 'w'},  // Run in LAIR mode, sets numnetrevchannels
-        {"addcombfilterlength", required_argument, NULL,
-         'N'},                                                 // added comb filter length
-        {"combfilterfeedback", required_argument, NULL, 'H'},  // comb filter feedback
-#endif                                                         // endwhere
         {"server", no_argument, NULL, 's'},                    // Run in P2P server mode
         {"client", required_argument, NULL,
          'c'},  // Run in P2P client mode, set server IP address
@@ -253,23 +243,6 @@ void Settings::parseInput(int argc, char** argv)
         case 'U':  // UDP Bind Port
             mServerUdpPortNum = atoi(optarg);
             break;
-#ifdef WAIR
-        case 'w':
-            //-------------------------------------------------------
-            mWAIR = true;
-            mNumNetRevChans =
-                gDefaultNumNetRevChannels;  // fixed amount sets number of network
-                                            // channels and comb filters for WAIR
-            break;
-        case 'N':
-            //-------------------------------------------------------
-            mClientAddCombLen = atoi(optarg);  // cmd line comb length adjustment
-            break;
-        case 'H':  // comb feedback adjustment
-            //-------------------------------------------------------
-            mClientRoomSize = atof(optarg);  // cmd line comb feedback adjustment
-            break;
-#endif             // endwhere
         case 's':  // Run in P2P server mode
             //-------------------------------------------------------
             mJackTripMode = JackTrip::SERVER;
@@ -808,15 +781,6 @@ void Settings::printUsage()
             "the network (# greater than 0)\n";
     cout << "     --sendchannels #                          Number of send Channels to "
             "the network (# greater than 0)\n";
-#ifdef WAIR  // WAIR
-    cout << " -w, --wair                               Run in WAIR Mode" << endl;
-    cout << " -N, --addcombfilterlength #              comb length adjustment for WAIR "
-            "(default "
-         << gDefaultAddCombFilterLength << ")" << endl;
-    cout << " -H, --combfilterfeedback # (roomSize)    comb feedback adjustment for WAIR "
-            "(default "
-         << gDefaultCombFilterFeedback << ")" << endl;
-#endif  // endwhere
     cout << " -q, --queue # (2 or more)                Queue Buffer Length, in Packet "
             "Size (default: "
          << gDefaultQueueLength << ")" << endl;
@@ -990,9 +954,6 @@ UdpHubListener* Settings::getConfiguredHubServer()
         std::cout << "JackTrip HUB SERVER TCP Bind Port: " << mBindPortNum << std::endl;
     UdpHubListener* udpHub = new UdpHubListener(mBindPortNum, mServerUdpPortNum);
     // udpHub->setSettings(this);
-#ifdef WAIR  // WAIR
-    udpHub->setWAIR(mWAIR);
-#endif  // endwhere
     if (mPatchServerAudio) {
         if (mHubConnectionMode == JackTrip::CLIENTFOFI) {
             mHubConnectionMode = JackTrip::SERVFOFI;
@@ -1045,19 +1006,11 @@ UdpHubListener* Settings::getConfiguredHubServer()
 
 JackTrip* Settings::getConfiguredJackTrip()
 {
-#ifdef WAIR  // WAIR
-    if (gVerboseFlag)
-        std::cout << "Settings:startJackTrip mNumNetRevChans = " << mNumNetRevChans
-                  << std::endl;
-#endif  // endwhere
     if (gVerboseFlag)
         std::cout << "Settings:startJackTrip before new JackTrip" << std::endl;
     JackTrip* jackTrip = new JackTrip(
         mJackTripMode, mDataProtocol, mBaseAudioInputChanNum, mNumAudioInputChans,
         mBaseAudioOutputChanNum, mNumAudioOutputChans, AudioInterface::MIX_UNSET,
-#ifdef WAIR  // wair
-        mNumNetRevChans,
-#endif  // endwhere
         mBufferQueueLength, mRedundancy, mAudioBitResolution,
         /*DataProtocol::packetHeaderTypeT PacketHeaderType = */ DataProtocol::DEFAULT,
         /*underrunModeT UnderRunMode = */ mUnderrunMode,
@@ -1220,27 +1173,6 @@ JackTrip* Settings::getConfiguredJackTrip()
     for (auto p : incomingEffects) {
         jackTrip->appendProcessPluginFromNetwork(p);
     }
-
-#ifdef WAIR  // WAIR
-    if (mWAIR) {
-        cout << "Running in WAIR Mode..." << endl;
-        cout << gPrintSeparator << std::endl;
-        switch (mNumNetRevChans) {
-        case 16: {
-            jackTrip->appendProcessPluginFromNetwork(
-                new ap8x2(mNumChansOut));  // plugin slot 0
-            /////////////////////////////////////////////////////////
-            Stk16* plugin = new Stk16(mNumNetRevChans);
-            plugin->Stk16::initCombClient(mClientAddCombLen, mClientRoomSize);
-            jackTrip->appendProcessPluginFromNetwork(plugin);  // plugin slot 1
-        } break;
-        default:
-            throw std::invalid_argument(
-                "Settings: mNumNetRevChans doesn't correspond to Faust plugin");
-            break;
-        }
-    }
-#endif  // endwhere
 
     return jackTrip;
 }

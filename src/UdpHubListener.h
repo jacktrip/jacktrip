@@ -198,15 +198,6 @@ class UdpHubListener : public QObject
     double mSimulatedDelayRel;
     bool mUseRtUdpPriority;
 
-#ifdef WAIR  // wair
-    bool mWAIR;
-    void connectMesh(bool spawn);
-    void enumerateRunningThreadIDs();
-
-   public:
-    void setWAIR(int b) { mWAIR = b; }
-    bool isWAIR() { return mWAIR; }
-#endif  // endwhere
 #ifndef NO_JACK
     void connectPatch(bool spawn, const QString& clientName);
 #endif

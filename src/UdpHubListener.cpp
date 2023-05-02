@@ -70,9 +70,6 @@ UdpHubListener::UdpHubListener(int server_port, int server_udp_port, QObject* pa
     ,  // final udp base port number
     mRequireAuth(false)
     , mStopped(false)
-#ifdef WAIR  // wair
-    , mWAIR(false)
-#endif  // endwhere
     , mTotalRunningThreads(0)
     , mHubPatchDescriptions(
           {"server-to-clients", "client loopback", "client fan out/in but not loopback",
@@ -555,10 +552,6 @@ void UdpHubListener::registerClientWithPatcher(QString& clientName)
     cout << "JackTrip HUB SERVER: Total Running Threads:  " << mTotalRunningThreads
          << endl;
     cout << "===============================================================" << endl;
-#ifdef WAIR  // WAIR
-    if (isWAIR())
-        connectMesh(true);  // invoked with -Sw
-#endif                      // endwhere
     // qDebug() << "mPeerAddress" << mActiveAddress[id].address <<
     // mActiveAddress[id].port;
     connectPatch(true, clientName);
@@ -566,10 +559,6 @@ void UdpHubListener::registerClientWithPatcher(QString& clientName)
 
 void UdpHubListener::unregisterClientWithPatcher(QString& clientName)
 {
-#ifdef WAIR  // wair
-    if (isWAIR())
-        connectMesh(false);  // invoked with -Sw
-#endif                       // endwhere
     connectPatch(false, clientName);
 }
 #endif  // NO_JACK
@@ -579,10 +568,6 @@ int UdpHubListener::releaseThread(int id)
 {
     QMutexLocker lock(&mMutex);
     mTotalRunningThreads--;
-#ifdef WAIR  // wair
-    if (isWAIR())
-        connectMesh(false);  // invoked with -Sw
-#endif                       // endwhere
     mJTWorkers->at(id)->deleteLater();
     mJTWorkers->replace(id, nullptr);
     return 0;  /// \todo Check if we really need to return an argument here
@@ -607,30 +592,6 @@ void UdpHubListener::releaseDuplicateThreads(JackTripWorker* worker,
 }
 
 #ifndef NO_JACK
-#ifdef WAIR  // wair
-//*******************************************************************************
-void UdpHubListener::connectMesh(bool spawn)
-{
-    cout << ((spawn) ? "spawning" : "releasing") << " jacktripWorker so change mesh"
-         << endl;
-    JMess tmp;
-    tmp.connectSpawnedPorts(
-        gDefaultNumInChannels);  // change gDefaultNumInChannels if more than stereo LAIR
-                                 // interconnects
-    //  tmp.disconnectAll();
-    //  enumerateRunningThreadIDs();
-}
-
-//*******************************************************************************
-void UdpHubListener::enumerateRunningThreadIDs()
-{
-    for (int id = 0; id < gMaxThreads; id++) {
-        if (mJTWorkers->at(id) != nullptr) {
-            qDebug() << id;
-        }
-    }
-}
-#endif  // endwhere
 
 void UdpHubListener::connectPatch(bool spawn, const QString& clientName)
 {

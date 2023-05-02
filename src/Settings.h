@@ -146,13 +146,6 @@ class Settings : public QObject
     bool mStopOnTimeout{false};  /// < Stop jacktrip after 10 second network timeout
     int mBufferStrategy{1};
 
-#ifdef WAIR                   // wair
-    int mNumNetRevChans = 0;  ///< Number of Network Audio Channels (net comb filters)
-    int mClientAddCombLen;    ///< cmd line adjustment of net comb
-    double mClientRoomSize;   ///< freeverb room size
-    bool mWAIR = false;       ///< WAIR mode
-#endif                        // endwhere
-
     bool mLoopBack           = false;                 ///< Loop-back mode
     bool mJamLink            = false;                 ///< JamLink mode
     bool mEmptyHeader        = false;                 ///< EmptyHeader mode

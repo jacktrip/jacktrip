@@ -63,15 +63,9 @@ QMutex JackAudioInterface::sJackMutex;
 //*******************************************************************************
 JackAudioInterface::JackAudioInterface(
     QVarLengthArray<int> InputChans, QVarLengthArray<int> OutputChans,
-#ifdef WAIR  // wair
-    int NumNetRevChans,
-#endif  // endwhere
     AudioInterface::audioBitResolutionT AudioBitResolution, bool processWithNetwork,
     JackTrip* jacktrip, const QString& ClientName)
     : AudioInterface(InputChans, OutputChans, MIX_UNSET,
-#ifdef WAIR  // wair
-                     NumNetRevChans,
-#endif  // endwhere
                      AudioBitResolution, processWithNetwork, jacktrip)
     , mClient(NULL)
     , mClientName(ClientName)
@@ -117,17 +111,7 @@ void JackAudioInterface::setupClient()
     /// verbose message, check how to desable them.
     {
         QMutexLocker locker(&sJackMutex);
-//#ifndef WAIR // WAIR
-//        mClient = jack_client_open (client_name, options, &status, server_name);
-//#else
-//        mClient = jack_client_open (client_name, JackUseExactName, &status,
-//        server_name);
-//#endif // endwhere
-#ifndef WAIR  // WAIR
         mClient = jack_client_open(clientName.constData(), options, &status);
-#else
-        mClient = jack_client_open(clientName.constData(), JackUseExactName, &status);
-#endif  // endwhere
     }
 
     if (mClient == NULL) {

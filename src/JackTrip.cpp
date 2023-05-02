@@ -84,9 +84,6 @@ bool JackTrip::sJackStopped = false;
 JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
                    int BaseChanIn, int NumChansIn, int BaseChanOut, int NumChansOut,
                    AudioInterface::inputMixModeT InputMixMode,
-#ifdef WAIR  // WAIR
-                   int NumNetRevChans,
-#endif  // endwhere
                    int BufferQueueLength, unsigned int redundancy,
                    AudioInterface::audioBitResolutionT AudioBitResolution,
                    DataProtocol::packetHeaderTypeT PacketHeaderType,
@@ -103,9 +100,6 @@ JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
     , mBaseAudioChanOut(BaseChanOut)
     , mNumAudioChansOut(NumChansOut)
     , mInputMixMode(InputMixMode)
-#ifdef WAIR  // WAIR
-    , mNumNetRevChans(NumNetRevChans)
-#endif  // endwhere
     , mBufferQueueLength(BufferQueueLength)
     , mBufferStrategy(1)
     , mBroadcastQueueLength(0)
@@ -200,9 +194,6 @@ void JackTrip::setupAudio(
             outputChannels[i] = 1 + i;
         }
         mAudioInterface = new JackAudioInterface(inputChannels, outputChannels,
-#ifdef WAIR  // wair
-                                                 mNumNetRevChans,
-#endif  // endwhere
                                                  mAudioBitResolution, true, this);
 
 #ifdef WAIRTOHUB  // WAIR

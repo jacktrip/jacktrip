@@ -48,9 +48,6 @@
 //#include "NetKS.h"
 #include "LoopBack.h"
 #include "Settings.h"
-#ifdef WAIR  // wair
-#include "dcblock2gain.dsp.h"
-#endif  // endwhere
 
 using std::cout;
 using std::endl;
@@ -107,49 +104,10 @@ void JackTripWorker::setJackTrip(int id, const QString& client_address,
     if (gVerboseFlag)
         cout << "---> JackTripWorker: Creating jacktrip objects..." << endl;
 
-#ifdef WAIR  // WAIR
-             // forces    BufferQueueLength to 2
-             // need to parse numNetChans from incoming header
-             // but force to 16 for now
-#define FORCEBUFFERQ 2
-    if (mUdpHubListener->isWAIR()) {  // invoked with -Sw
-        mWAIR           = true;
-        mNumNetRevChans = NUMNETREVCHANSbecauseNOTINRECEIVEDheader;
-    } else {
-    };
-#endif  // endwhere
-
 #ifndef __JAMTEST__
-#ifdef WAIR  // WAIR
-    //        bool tmp = mJTWorkers->at(id)->isWAIR();
-    //        qDebug() << "is WAIR?" <<  tmp ;
-    qDebug() << "mNumNetRevChans" << mNumNetRevChans;
 
-    mJackTrip.reset(new JackTrip(JackTrip::SERVERPINGSERVER, JackTrip::UDP, 0, 1, 0, 1,
-                                 AudioInterface::MIX_UNSET, mNumNetRevChans,
-                                 FORCEBUFFERQ));
-    // Add Plugins
-    if (mWAIR) {
-        cout << "Running in WAIR Mode..." << endl;
-        cout << gPrintSeparator << std::endl;
-        switch (mNumNetRevChans) {
-        case 16:  // freeverb
-            mJackTrip->appendProcessPluginFromNetwork(
-                new dcblock2gain(1));  // plugin slot 0
-            ///////////////
-            //            mJackTrip->appendProcessPlugin(new comb16server(mNumNetChans));
-            // -S LAIR no AP  mJackTrip->appendProcessPlugin(new AP8(mNumChans));
-            break;
-        default:
-            throw std::invalid_argument(
-                "Settings: mNumNetChans doesn't correspond to Faust plugin");
-            break;
-        }
-    }
-#else   // endwhere
     mJackTrip.reset(new JackTrip(JackTrip::SERVERPINGSERVER, JackTrip::UDP, 0, 1, 0, 1,
                                  AudioInterface::MIX_UNSET, mBufferQueueLength));
-#endif  // not wair
 #endif  // ifndef __JAMTEST__
 
 #ifdef __JAMTEST__

@@ -103,9 +103,6 @@ class AudioInterface
     AudioInterface(
         QVarLengthArray<int> InputChans, QVarLengthArray<int> OutputChans,
         inputMixModeT InputMixMode,
-#ifdef WAIR  // wair
-        int NumNetRevChans,
-#endif  // endwhere
         AudioInterface::audioBitResolutionT AudioBitResolution = AudioInterface::BIT16,
         bool processWithNetwork = false, JackTrip* jacktrip = nullptr);
     /// \brief The class destructor
@@ -261,13 +258,6 @@ class AudioInterface
 
     QVarLengthArray<int> mInputChans;
     QVarLengthArray<int> mOutputChans;
-#ifdef WAIR               // wair
-    int mNumNetRevChans;  ///<  Number of Network Audio Channels (net comb filters)
-    QVarLengthArray<sample_t*>
-        mNetInBuffer;  ///< Vector of Input buffers/channel read from net
-    QVarLengthArray<sample_t*>
-        mAPInBuffer;  ///< Vector of Input buffers/channel for AllPass input
-#endif                // endwhere
     QVarLengthArray<sample_t*>
         mInBufCopy;           ///< needed in callback() to modify JACK audio input
     int mAudioBitResolution;  ///< Bit resolution in audio samples
