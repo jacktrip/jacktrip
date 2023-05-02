@@ -759,7 +759,7 @@ Item {
     Item {
         id: outputDevice
         visible: showReadyScreen
-        x: bodyMargin * virtualstudio.uiScale; y: 320 * virtualstudio.uiScale
+        x: bodyMargin * virtualstudio.uiScale; y: 360 * virtualstudio.uiScale
         width: Math.min(parent.width / 2, 320 * virtualstudio.uiScale) - x
         height: 100 * virtualstudio.uiScale
         clip: true
@@ -921,12 +921,66 @@ Item {
                 }
             }
         }
+
+        Text {
+            id: monText
+            width: 24 * virtualstudio.uiScale
+            height: 24
+            anchors.left: inputDeviceMeters.left
+            anchors.verticalCenter: monitorSlider.verticalCenter
+            topPadding: 4 * virtualstudio.uiScale
+            text: "MON"
+            font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale; bold: true }
+            color: textColour
+        }
+
+        Slider {
+            id: monitorSlider
+            from: 0.0
+            value: virtualstudio ? virtualstudio.monitorVolume : 0.5
+            onMoved: { virtualstudio.monitorVolume = value }
+            to: 1.0
+            padding: 0
+            y: inputSlider.y + 36 * virtualstudio.uiScale
+            anchors.left: inputMute.right
+            anchors.leftMargin: 8 * virtualstudio.uiScale
+            anchors.right: inputDeviceMeters.right
+
+            background: Rectangle {
+                x: monitorSlider.leftPadding
+                y: monitorSlider.topPadding + monitorSlider.availableHeight / 2 - height / 2
+                implicitWidth: parent.width
+                implicitHeight: 6
+                width: monitorSlider.availableWidth
+                height: implicitHeight
+                radius: 4
+                color: sliderTrackColour
+
+                Rectangle {
+                    width: monitorSlider.visualPosition * parent.width
+                    height: parent.height
+                    color: sliderActiveTrackColour
+                    radius: 4
+                }
+            }
+
+            handle: Rectangle {
+                x: monitorSlider.leftPadding + monitorSlider.visualPosition * (monitorSlider.availableWidth - width)
+                y: monitorSlider.topPadding + monitorSlider.availableHeight / 2 - height / 2
+                implicitWidth: 26 * virtualstudio.uiScale
+                implicitHeight: 26 * virtualstudio.uiScale
+                radius: 13 * virtualstudio.uiScale
+                color: monitorSlider.pressed ? sliderPressedColour : sliderColour
+                border.color: buttonStroke
+            }
+        }
+
     }
 
     Item {
         id: outputControls
         visible: showReadyScreen
-        x: outputDevice.x + outputDevice.width; y: 320 * virtualstudio.uiScale
+        x: outputDevice.x + outputDevice.width; y: 360 * virtualstudio.uiScale
         width: parent.width - inputDevice.width - 2 * bodyMargin * virtualstudio.uiScale
 
         Meter {
@@ -982,7 +1036,7 @@ Item {
     Item {
         id: networkStatsHeader
         visible: showReadyScreen
-        x: bodyMargin * virtualstudio.uiScale; y: 410 * virtualstudio.uiScale
+        x: bodyMargin * virtualstudio.uiScale; y: 450 * virtualstudio.uiScale
         width: Math.min(parent.width / 2, 320 * virtualstudio.uiScale) - x
         height: 128 * virtualstudio.uiScale
 
@@ -1017,7 +1071,7 @@ Item {
     Item {
         id: networkStatsText
         visible: showReadyScreen
-        x: networkStatsHeader.x + networkStatsHeader.width; y: 410 * virtualstudio.uiScale
+        x: networkStatsHeader.x + networkStatsHeader.width; y: 450 * virtualstudio.uiScale
         width: parent.width - networkStatsHeader.width - 2 * bodyMargin * virtualstudio.uiScale
         height: 72 * virtualstudio.uiScale
 
