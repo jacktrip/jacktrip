@@ -372,7 +372,14 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
         }
 
         for (int i = 0; i < nChansMon; i++) {
-            std::memcpy(mMonProcessBuffer[i], in_buffer[i], sizeof(sample_t) * n_frames);
+            if (mInputChans.size() == 2 && mInputMixMode == AudioInterface::MIXTOMONO) {
+                // if using mix-to-mono, in_buffer[0] should already contain the mixed audio,
+                // so copy it to the monitor buffer. See RtAudioInterface.cpp
+                std::memcpy(mMonProcessBuffer[i], in_buffer[0], sizeof(sample_t) * n_frames);
+            } else {
+                // otherwise, copy each channel individually
+                std::memcpy(mMonProcessBuffer[i], in_buffer[i], sizeof(sample_t) * n_frames);
+            }
         }
         for (int i = 0; i < mProcessPluginsToMonitor.size(); i++) {
             ProcessPlugin* p = mProcessPluginsToMonitor[i];
