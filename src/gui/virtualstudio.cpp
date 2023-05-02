@@ -1601,7 +1601,8 @@ void VirtualStudio::completeConnection()
         // Setup monitor
         m_monitor = new Monitor(jackTrip->getNumInputChannels());
         jackTrip->appendProcessPluginToMonitor(m_monitor);
-        connect(this, &VirtualStudio::updatedMonitorVolume, m_monitor, &Monitor::volumeUpdated);
+        connect(this, &VirtualStudio::updatedMonitorVolume, m_monitor,
+                &Monitor::volumeUpdated);
 
         // Grab previous levels
         QSettings settings;
@@ -1612,7 +1613,7 @@ void VirtualStudio::completeConnection()
         m_inMuted       = settings.value(QStringLiteral("InMuted"), false).toBool();
         m_outMuted      = settings.value(QStringLiteral("OutMuted"), false).toBool();
         m_monMuted      = settings.value(QStringLiteral("MonMuted"), false).toBool();
-        
+
         emit updatedInputVolume(m_inMultiplier);
         emit updatedOutputVolume(m_outMultiplier);
         emit updatedMonitorVolume(m_monMultiplier);

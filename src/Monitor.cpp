@@ -49,7 +49,7 @@ Monitor::Monitor(int numchans, bool verboseFlag) : mNumChannels(numchans)
     setVerbose(verboseFlag);
     for (int i = 0; i < mNumChannels; i++) {
         monitordsp* dsp_ptr = new monitordsp;
-        APIUI* ui_ptr      = new APIUI;
+        APIUI* ui_ptr       = new APIUI;
         monitorP.push_back(dsp_ptr);
         monitorUIP.push_back(ui_ptr);  // #included in monitordsp.h
         dsp_ptr->buildUserInterface(ui_ptr);
@@ -66,7 +66,6 @@ Monitor::~Monitor()
     monitorP.clear();
     monitorUIP.clear();
 }
-
 
 //*******************************************************************************
 void Monitor::init(int samplingRate)
@@ -112,23 +111,22 @@ void Monitor::compute(int nframes, float** inputs, float** outputs)
             delete mInBufferInput;
         }
 
-        mBufSize = nframes;
-        mOutBufferInput  = new float[mBufSize];
+        mBufSize        = nframes;
+        mOutBufferInput = new float[mBufSize];
         mInBufferInput  = new float[mBufSize];
     }
 
     std::vector<float*> buffer{mInBufferInput, mOutBufferInput};
     for (int i = 0; i < mNumChannels; i++) {
-
         // copy inputs and outputs into a separate memory buffer
         memcpy(mInBufferInput, inputs[i], nframes * sizeof(float));
         memcpy(mOutBufferInput, outputs[i], nframes * sizeof(float));
 
         /* Run the signal through Faust  */
-        static_cast<monitordsp*>(monitorP[i])->compute(nframes, buffer.data(), &outputs[i]);
+        static_cast<monitordsp*>(monitorP[i])
+            ->compute(nframes, buffer.data(), &outputs[i]);
     }
 }
-
 
 //*******************************************************************************
 void Monitor::updateNumChannels(int nChansIn, int nChansOut)

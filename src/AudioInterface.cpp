@@ -170,9 +170,10 @@ AudioInterface::~AudioInterface()
 //*******************************************************************************
 void AudioInterface::setup(bool /*verbose*/)
 {
-    int nChansIn               = mInputChans.size();
-    int nChansOut              = mOutputChans.size();
-    int nChansMon              = std::min(nChansIn, nChansOut); // Note: Should be 2 when mixing stereo-to-mono
+    int nChansIn  = mInputChans.size();
+    int nChansOut = mOutputChans.size();
+    int nChansMon =
+        std::min(nChansIn, nChansOut);  // Note: Should be 2 when mixing stereo-to-mono
     inputMixModeT inputMixMode = mInputMixMode;
     if (inputMixMode == MIXTOMONO) {
         nChansIn = 1;
@@ -238,7 +239,7 @@ void AudioInterface::setup(bool /*verbose*/)
         // set memory to 0
         std::memset(mOutProcessBuffer[i], 0, sizeof(sample_t) * nframes);
     }
-    for(int i = 0; i < ((mNumNetRevChans) ? mNumNetRevChans : nChansMon); i++) {
+    for (int i = 0; i < ((mNumNetRevChans) ? mNumNetRevChans : nChansMon); i++) {
         mMonProcessBuffer[i] = new sample_t[nframes];
         // set memory to 0
         std::memset(mMonitorProcess[i], 0, sizeof(sample_t) * nframes);
@@ -267,9 +268,10 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
                               QVarLengthArray<sample_t*>& out_buffer,
                               unsigned int n_frames)
 {
-    int nChansIn               = mInputChans.size();
-    int nChansOut              = mOutputChans.size();
-    int nChansMon              = std::min(nChansIn, nChansOut); // Note: Should be 2 when mixing stereo-to-mono
+    int nChansIn  = mInputChans.size();
+    int nChansOut = mOutputChans.size();
+    int nChansMon =
+        std::min(nChansIn, nChansOut);  // Note: Should be 2 when mixing stereo-to-mono
     inputMixModeT inputMixMode = mInputMixMode;
     if (inputMixMode == MIXTOMONO) {
         nChansIn = 1;
@@ -348,7 +350,9 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
     // mAudioTesterP will be nullptr for hub server's JackTripWorker instances:
     bool audioTesting = (mAudioTesterP && mAudioTesterP->getEnabled());
     int nop = mProcessPluginsToNetwork.size();  // number of OUTGOING processing modules
-    if (nop > 0 || audioTesting || mProcessPluginsToMonitor.size() > 0) {              // cannot modify in_buffer, so make a copy
+    if (nop > 0 || audioTesting
+        || mProcessPluginsToMonitor.size()
+               > 0) {  // cannot modify in_buffer, so make a copy
         // in_buffer is "in" from local audio hardware via JACK
         if (mInBufCopy.size() < nChansIn) {  // created in constructor above
             std::cerr << "*** AudioInterface.cpp: Number of Input Channels changed - "
@@ -373,12 +377,14 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
 
         for (int i = 0; i < nChansMon; i++) {
             if (mInputChans.size() == 2 && mInputMixMode == AudioInterface::MIXTOMONO) {
-                // if using mix-to-mono, in_buffer[0] should already contain the mixed audio,
-                // so copy it to the monitor buffer. See RtAudioInterface.cpp
-                std::memcpy(mMonProcessBuffer[i], in_buffer[0], sizeof(sample_t) * n_frames);
+                // if using mix-to-mono, in_buffer[0] should already contain the mixed
+                // audio, so copy it to the monitor buffer. See RtAudioInterface.cpp
+                std::memcpy(mMonProcessBuffer[i], in_buffer[0],
+                            sizeof(sample_t) * n_frames);
             } else {
                 // otherwise, copy each channel individually
-                std::memcpy(mMonProcessBuffer[i], in_buffer[i], sizeof(sample_t) * n_frames);
+                std::memcpy(mMonProcessBuffer[i], in_buffer[i],
+                            sizeof(sample_t) * n_frames);
             }
         }
         for (int i = 0; i < mProcessPluginsToMonitor.size(); i++) {
@@ -776,43 +782,47 @@ void AudioInterface::appendProcessPluginToMonitor(ProcessPlugin* plugin)
     if (not plugin) {
         return;
     }
-    int nChansIn               = mInputChans.size();
-    int nChansOut              = mOutputChans.size();
-    int nChansMon              = std::min(nChansIn, nChansOut); // Note: Should be 2 when mixing stereo-to-mono
+    int nChansIn  = mInputChans.size();
+    int nChansOut = mOutputChans.size();
+    int nChansMon =
+        std::min(nChansIn, nChansOut);  // Note: Should be 2 when mixing stereo-to-mono
 
     if (plugin->getNumInputs() > nChansMon) {
         std::cerr
             << "*** AudioInterface.cpp: appendProcessPluginToMonitor: ProcessPlugin "
             << typeid(plugin).name() << " REJECTED due to having "
-            << plugin->getNumInputs() << " inputs, while the monitor audio input requires "
-            << nChansMon << " outputs\n";
+            << plugin->getNumInputs()
+            << " inputs, while the monitor audio input requires " << nChansMon
+            << " outputs\n";
         return;
     }
-    
 
     if (plugin->getNumOutputs() > nChansMon) {
         std::cerr
             << "*** AudioInterface.cpp: appendProcessPluginToMonitor: ProcessPlugin "
             << typeid(plugin).name() << " REJECTED due to having "
-            << plugin->getNumOutputs() << " inputs, while the monitor audio output requires "
-            << nChansMon << " outputs\n";
+            << plugin->getNumOutputs()
+            << " inputs, while the monitor audio output requires " << nChansMon
+            << " outputs\n";
         return;
     }
-    
+
     mProcessPluginsToMonitor.append(plugin);
 }
 
 void AudioInterface::initPlugins(bool verbose)
 {
-    int nChansIn               = mInputChans.size();
-    int nChansOut              = mOutputChans.size();
-    int nChansMon              = std::min(nChansIn, nChansOut); // Note: Should be 2 when mixing stereo-to-mono
+    int nChansIn  = mInputChans.size();
+    int nChansOut = mOutputChans.size();
+    int nChansMon =
+        std::min(nChansIn, nChansOut);  // Note: Should be 2 when mixing stereo-to-mono
     inputMixModeT inputMixMode = mInputMixMode;
     if (inputMixMode == MIXTOMONO) {
         nChansIn = 1;
     }
 
-    int nPlugins = mProcessPluginsFromNetwork.size() + mProcessPluginsToNetwork.size() + mProcessPluginsToMonitor.size();
+    int nPlugins = mProcessPluginsFromNetwork.size() + mProcessPluginsToNetwork.size()
+                   + mProcessPluginsToMonitor.size();
     if (nPlugins > 0) {
         if (verbose) {
             std::cout << "Initializing Faust plugins (have " << nPlugins

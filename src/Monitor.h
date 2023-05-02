@@ -36,7 +36,6 @@
  * \license MIT
  */
 
-
 #ifndef __MONITOR_H__
 #define __MONITOR_H__
 
@@ -48,11 +47,11 @@
 /** \brief The Monitor plugin adds a portion of the input signal multiplied by a
  *  constant factor to the output signal
  */
-class Monitor : public ProcessPlugin {
-
+class Monitor : public ProcessPlugin
+{
     Q_OBJECT;
 
-  public:
+   public:
     /// \brief The class constructor sets the number of channels to use
     Monitor(int numchans, bool verboseFlag = false);
 
@@ -67,10 +66,10 @@ class Monitor : public ProcessPlugin {
 
     void updateNumChannels(int nChansIn, int nChansOut) override;
 
-  public slots:
+   public slots:
     void volumeUpdated(float multiplier);
 
-  private:
+   private:
     std::vector<void*> monitorP;
     std::vector<void*> monitorUIP;
     float fs;
@@ -78,10 +77,8 @@ class Monitor : public ProcessPlugin {
     float mVolMultiplier = 0.0;
 
     float* mOutBufferInput = nullptr;
-    float* mInBufferInput = nullptr;
-    int mBufSize = 0;
-
+    float* mInBufferInput  = nullptr;
+    int mBufSize           = 0;
 };
-
 
 #endif

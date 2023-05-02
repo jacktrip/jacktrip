@@ -49,8 +49,8 @@
 
 #include "../JackTrip.h"
 #include "../Meter.h"
-#include "../Volume.h"
 #include "../Monitor.h"
+#include "../Volume.h"
 #include "vsAudioInterface.h"
 #include "vsConstants.h"
 #include "vsDevice.h"
@@ -460,7 +460,7 @@ class VirtualStudio : public QObject
 
     float m_inMultiplier  = 1.0;
     float m_outMultiplier = 1.0;
-    float m_monMultiplier  = 1.0;
+    float m_monMultiplier = 1.0;
     bool m_inMuted        = false;
     bool m_outMuted       = false;
     bool m_monMuted       = false;

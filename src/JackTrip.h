@@ -679,7 +679,7 @@ class JackTrip : public QObject
     QVector<ProcessPlugin*>
         mProcessPluginsToNetwork;  ///< Vector of ProcessPlugin<EM>s</EM>
     QVector<ProcessPlugin*>
-        mProcessPluginsToMonitor; ///< Vector of ProcessPlugin<EM>s</EM>
+        mProcessPluginsToMonitor;  ///< Vector of ProcessPlugin<EM>s</EM>
     QTimer mTimeoutTimer;
     QTimer mRetryTimer;
     int mRetries;
