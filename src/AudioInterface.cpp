@@ -118,7 +118,7 @@ AudioInterface::AudioInterface(QVarLengthArray<int> InputChans,
             new sample_t[MAX_AUDIO_BUFFER_SIZE];  // required for processing audio input
     }
 
-    // TODO: Unnecessary variables. Remove these
+    // Not used in this class but may be needed by subclasses
     mNumInChans  = mInputChans.size();
     mNumOutChans = mOutputChans.size();
 }
@@ -779,11 +779,26 @@ void AudioInterface::appendProcessPluginToMonitor(ProcessPlugin* plugin)
     int nChansIn               = mInputChans.size();
     int nChansOut              = mOutputChans.size();
     int nChansMon              = std::min(nChansIn, nChansOut); // Note: Should be 2 when mixing stereo-to-mono
-    inputMixModeT inputMixMode = mInputMixMode;
-    if (inputMixMode == MIXTOMONO) {
-        nChansIn = 1;
-    }
 
+    if (plugin->getNumInputs() > nChansMon) {
+        std::cerr
+            << "*** AudioInterface.cpp: appendProcessPluginToMonitor: ProcessPlugin "
+            << typeid(plugin).name() << " REJECTED due to having "
+            << plugin->getNumInputs() << " inputs, while the monitor audio input requires "
+            << nChansMon << " outputs\n";
+        return;
+    }
+    
+
+    if (plugin->getNumOutputs() > nChansMon) {
+        std::cerr
+            << "*** AudioInterface.cpp: appendProcessPluginToMonitor: ProcessPlugin "
+            << typeid(plugin).name() << " REJECTED due to having "
+            << plugin->getNumOutputs() << " inputs, while the monitor audio output requires "
+            << nChansMon << " outputs\n";
+        return;
+    }
+    
     mProcessPluginsToMonitor.append(plugin);
 }
 
