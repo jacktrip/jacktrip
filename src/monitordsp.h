@@ -1110,7 +1110,7 @@ class FAUST_API AccUpDownConverter : public UpdatableValueConverter {
 
     public:
 
-        AccUpDownConverter(double amin, double amid, double amax, double fmin, double fmid, double fmax) :
+        AccUpDownConverter(double amin, double amid, double amax, double fmin, double /*fmid*/, double fmax) :
             fA2F(amin,amid,amax,fmin,fmax,fmin),
             fF2A(fmin,fmax,amin,amax)				// Special, pseudo inverse of a non monotonic function
         {}
@@ -1118,7 +1118,7 @@ class FAUST_API AccUpDownConverter : public UpdatableValueConverter {
         virtual double ui2faust(double x) { return fA2F(x); }
         virtual double faust2ui(double x) { return fF2A(x); }
 
-        virtual void setMappingValues(double amin, double amid, double amax, double fmin, double fmid, double fmax)
+        virtual void setMappingValues(double amin, double amid, double amax, double fmin, double /*fmid*/, double fmax)
         {
             //__android_log_print(ANDROID_LOG_ERROR, "Faust", "AccUpDownConverter update %f %f %f %f %f %f", amin,amid,amax,fmin,fmid,fmax);
             fA2F = Interpolator3pt(amin, amid, amax, fmin, fmax, fmin);
@@ -1144,7 +1144,7 @@ class FAUST_API AccDownUpConverter : public UpdatableValueConverter {
 
     public:
 
-        AccDownUpConverter(double amin, double amid, double amax, double fmin, double fmid, double fmax) :
+        AccDownUpConverter(double amin, double amid, double amax, double fmin, double /*fmid*/, double fmax) :
             fA2F(amin,amid,amax,fmax,fmin,fmax),
             fF2A(fmin,fmax,amin,amax)				// Special, pseudo inverse of a non monotonic function
         {}
@@ -1152,7 +1152,7 @@ class FAUST_API AccDownUpConverter : public UpdatableValueConverter {
         virtual double ui2faust(double x) { return fA2F(x); }
         virtual double faust2ui(double x) { return fF2A(x); }
 
-        virtual void setMappingValues(double amin, double amid, double amax, double fmin, double fmid, double fmax)
+        virtual void setMappingValues(double amin, double amid, double amax, double fmin, double /*fmid*/, double fmax)
         {
             //__android_log_print(ANDROID_LOG_ERROR, "Faust", "AccDownUpConverter update %f %f %f %f %f %f", amin,amid,amax,fmin,fmid,fmax);
             fA2F = Interpolator3pt(amin, amid, amax, fmax, fmin, fmax);
@@ -1179,14 +1179,14 @@ class FAUST_API ZoneControl {
         ZoneControl(FAUSTFLOAT* zone) : fZone(zone) {}
         virtual ~ZoneControl() {}
 
-        virtual void update(double v) const {}
+        virtual void update(double /*v*/) const {}
 
-        virtual void setMappingValues(int curve, double amin, double amid, double amax, double min, double init, double max) {}
-        virtual void getMappingValues(double& amin, double& amid, double& amax) {}
+        virtual void setMappingValues(int /*curve*/, double /*amin*/, double /*amid*/, double /*amax*/, double /*min*/, double /*init*/, double /*max*/) {}
+        virtual void getMappingValues(double& /*amin*/, double& /*amid*/, double& /*amax*/) {}
 
         FAUSTFLOAT* getZone() { return fZone; }
 
-        virtual void setActive(bool on_off) {}
+        virtual void setActive(bool /*on_off*/) {}
         virtual bool getActive() { return false; }
 
         virtual int getCurve() { return -1; }
@@ -1577,11 +1577,11 @@ class APIUI : public PathBuilder, public Meta, public UI
 
         // -- soundfiles
 
-        virtual void addSoundfile(const char* label, const char* filename, Soundfile** sf_zone) {}
+        virtual void addSoundfile(const char* /*label*/, const char* /*filename*/, Soundfile** /*sf_zone*/) {}
 
         // -- metadata declarations
 
-        virtual void declare(FAUSTFLOAT* zone, const char* key, const char* val)
+        virtual void declare(FAUSTFLOAT* /*zone*/, const char* key, const char* val)
         {
             // Keep metadata
             fCurrentMetadata[key] = val;
@@ -1607,7 +1607,7 @@ class APIUI : public PathBuilder, public Meta, public UI
             }
         }
 
-        virtual void declare(const char* key, const char* val)
+        virtual void declare(const char* /*key*/, const char* /*val*/)
         {}
 
         //-------------------------------------------------------------------------------
@@ -2046,7 +2046,7 @@ class monitordsp : public dsp {
 		return 1;
 	}
 	
-	static void classInit(int sample_rate) {
+	static void classInit(int /*sample_rate*/) {
 	}
 	
 	virtual void instanceConstants(int sample_rate) {
