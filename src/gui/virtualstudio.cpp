@@ -1599,7 +1599,9 @@ void VirtualStudio::completeConnection()
                 &VirtualStudio::updatedInputVuMeasurements);
 
         // Setup monitor
-        m_monitor = new Monitor(jackTrip->getNumInputChannels());
+        // Note: Constructor determines how many internal monitor buffers to allocate
+        m_monitor = new Monitor(
+            std::max(jackTrip->getNumInputChannels(), jackTrip->getNumOutputChannels()));
         jackTrip->appendProcessPluginToMonitor(m_monitor);
         connect(this, &VirtualStudio::updatedMonitorVolume, m_monitor,
                 &Monitor::volumeUpdated);
