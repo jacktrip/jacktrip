@@ -66,10 +66,18 @@ class Meter : public ProcessPlugin
 
     void updateNumChannels(int nChansIn, int nChansOut) override;
 
+    void setIsMonitoringMeter(bool isMonitoringMeter)
+    {
+        mIsMonitoringMeter = isMonitoringMeter;
+    };
+    bool getIsMonitoringMeter() { return mIsMonitoringMeter; };
+
    private:
     void setupValues();
 
     float fs;
+    bool mIsMonitoringMeter = false;
+
     int mNumChannels;
     float threshold = -80.0;
     std::vector<void*> meterP;
