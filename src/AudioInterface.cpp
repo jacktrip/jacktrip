@@ -866,7 +866,8 @@ void AudioInterface::setDevicesErrorMsg(errorMessageT msg)
         break;
 #ifdef _WIN32
     case DEVICE_ERR_SAME_ASIO:
-        mErrorMsg     = "When using ASIO, please select the same device for your input and output.";
+        mErrorMsg =
+            "When using ASIO, please select the same device for your input and output.";
         mErrorHelpUrl = "https://help.jacktrip.org/hc/en-us/articles/4409919243155";
         break;
 #endif
