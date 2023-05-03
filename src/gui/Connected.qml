@@ -831,8 +831,9 @@ Item {
             padding: 0
             y: inputDeviceMeters.y + 36 * virtualstudio.uiScale
             anchors.left: inputMute.right
+            anchors.right: inputStudioText.left
             anchors.leftMargin: 8 * virtualstudio.uiScale
-            anchors.right: inputDeviceMeters.right
+            anchors.rightMargin: 8 * virtualstudio.uiScale
             opacity: virtualstudio.inputMuted ? 0.3 : 1
 
             background: Rectangle {
@@ -920,6 +921,19 @@ Item {
                     color: "transparent"
                 }
             }
+        }
+
+        Text {
+            id: inputStudioText
+            width: 40 * virtualstudio.uiScale
+            height: 24
+            horizontalAlignment: Text.AlignRight
+            anchors.right: inputDeviceMeters.right
+            anchors.verticalCenter: inputSlider.verticalCenter
+            topPadding: 4 * virtualstudio.uiScale
+            text: "Studio"
+            font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale; bold: true }
+            color: textColour
         }
     }
 
