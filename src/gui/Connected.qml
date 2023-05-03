@@ -161,7 +161,7 @@ Item {
         visible: showReadyScreen && isUsingRtAudio
         x: bodyMargin * virtualstudio.uiScale; y: 200 * virtualstudio.uiScale
         width: parent.width - (2 * x)
-        height: 360 * virtualstudio.uiScale
+        height: 372 * virtualstudio.uiScale
         clip: true
 
         Button {
@@ -191,9 +191,6 @@ Item {
             modal: true
             focus: true
             closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
-            onOpened: {
-                virtualstudio.refreshDevices()
-            }
             onClosed: {
                 virtualstudio.applySettings()
             }
@@ -290,6 +287,25 @@ Item {
                             background: Rectangle {
                                 color: "transparent"
                             }
+                        }
+                    }
+
+                    Image {
+                        id: headphonesIcon
+                        anchors.left: outputLabel.left
+                        anchors.top: outputLabel.bottom
+                        anchors.topMargin: bottomToolTipMargin * virtualstudio.uiScale
+                        source: "headphones.svg"
+                        sourceSize: Qt.size(28 * virtualstudio.uiScale, 28 * virtualstudio.uiScale)
+                        fillMode: Image.PreserveAspectFit
+                        smooth: true
+
+                        Colorize {
+                            anchors.fill: parent
+                            source: parent
+                            hue: 0
+                            saturation: 0
+                            lightness: virtualstudio.darkMode ? 1 : 0
                         }
                     }
 
@@ -455,6 +471,25 @@ Item {
                             background: Rectangle {
                                 color: "transparent"
                             }
+                        }
+                    }
+
+                    Image {
+                        id: microphoneIcon
+                        anchors.left: inputLabel.left
+                        anchors.top: inputLabel.bottom
+                        anchors.topMargin: bottomToolTipMargin * virtualstudio.uiScale
+                        source: "mic.svg"
+                        sourceSize: Qt.size(32 * virtualstudio.uiScale, 32 * virtualstudio.uiScale)
+                        fillMode: Image.PreserveAspectFit
+                        smooth: true
+
+                        Colorize {
+                            anchors.fill: parent
+                            source: parent
+                            hue: 0
+                            saturation: 0
+                            lightness: virtualstudio.darkMode ? 1 : 0
                         }
                     }
 
@@ -702,6 +737,40 @@ Item {
                             color: !Boolean(virtualstudio.devicesError) && virtualstudio.backendAvailable ? saveButtonText : disabledButtonText
                             anchors.horizontalCenter: parent.horizontalCenter
                             anchors.verticalCenter: parent.verticalCenter
+                        }
+                    }
+
+                    Button {
+                        id: refreshButton
+                        text: "Refresh Devices"
+                        anchors.right: closePopupButton.left
+                        anchors.rightMargin: rightMargin * virtualstudio.uiScale
+                        anchors.bottomMargin: rightMargin * virtualstudio.uiScale
+                        anchors.bottom: parent.bottom
+                        width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+
+                        palette.buttonText: textColour
+                        background: Rectangle {
+                            radius: 6 * virtualstudio.uiScale
+                            color: refreshButton.down ? buttonPressedColour : (refreshButton.hovered ? buttonHoverColour : buttonColour)
+                            border.width: 1
+                            border.color: refreshButton.down ? buttonPressedStroke : (refreshButton.hovered ? buttonHoverStroke : buttonStroke)
+                        }
+
+                        icon {
+                            source: "refresh.svg";
+                            color: textColour;
+                        }
+                        display: AbstractButton.TextBesideIcon
+                        onClicked: {
+                            virtualstudio.refreshDevices();
+                            inputCurrIndex = getCurrentInputDeviceIndex();
+                            outputCurrIndex = getCurrentOutputDeviceIndex();
+                        }
+
+                        font {
+                            family: "Poppins"
+                            pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale
                         }
                     }
                 }
