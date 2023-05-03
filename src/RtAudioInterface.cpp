@@ -238,12 +238,10 @@ void RtAudioInterface::setup(bool verbose)
         if (api_in != "asio") {
             AudioInterface::setDevicesWarningMsg(AudioInterface::DEVICE_WARN_LATENCY);
             AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_NONE);
-        } else
-            (index_in != = index_out)
-            {
-                AudioInterface::setDevicesWarningMsg(AudioInterface::DEVICE_WARN_NONE);
-                AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_SAME_ASIO);
-            }
+        } else if (api_in == "asio" && index_in != index_out) {
+            AudioInterface::setDevicesWarningMsg(AudioInterface::DEVICE_WARN_NONE);
+            AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_SAME_ASIO);
+        }
 #endif
     } else {
         AudioInterface::setDevicesWarningMsg(AudioInterface::DEVICE_WARN_NONE);
