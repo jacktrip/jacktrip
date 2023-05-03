@@ -35,6 +35,9 @@ nogui {
     QT += quickcontrols2
     QT += svg
     QT += websockets
+    vsftux {
+      DEFINES += VS_FTUX
+    }
   }
   noupdater|linux-g++|linux-g++-64 {
     DEFINES += NO_UPDATER

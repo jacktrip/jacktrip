@@ -514,6 +514,9 @@ jobs:
           if [[ "${{ matrix.novs }}" == true ]]; then 
             CONFIG_STRING="novs $CONFIG_STRING"
           fi
+          if [[ "${{  needs.check-secrets.outputs.should_run }}" == "true" ]]; then 
+            CONFIG_STRING="vsftux $CONFIG_STRING"
+          fi
           if [[ "${{ matrix.weakjack }}" == true ]]; then 
             CONFIG_STRING="weakjack $CONFIG_STRING"
           fi
