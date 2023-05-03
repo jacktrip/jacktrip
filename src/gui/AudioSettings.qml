@@ -196,6 +196,10 @@ Rectangle {
                             outputCombo.currentIndex = index
                             outputCombo.popup.close()
                             virtualstudio.outputDevice = modelData.text
+                            if (modelData.category === "ASIO"
+                                && inputCombo.model.filter(it => it.category === "ASIO" && it.text === modelData.text)[0]) {
+                                virtualstudio.inputDevice = modelData.text
+                            }
                             virtualstudio.validateDevicesState()
                         }
                     }
@@ -497,6 +501,11 @@ Rectangle {
                             inputCombo.currentIndex = index
                             inputCombo.popup.close()
                             virtualstudio.inputDevice = modelData.text
+                            if (modelData.category === "ASIO"
+                                && outputCombo.model.filter(it => it.category === "ASIO" && it.text === modelData.text)[0]) {
+                                virtualstudio.outputDevice = modelData.text
+                            }
+
                             virtualstudio.validateDevicesState()
                         }
                     }

@@ -2653,9 +2653,10 @@ QVariant VirtualStudio::formatDeviceList(const QStringList& devices,
 
         if (containsCategories) {
             QJsonObject header = QJsonObject();
-            header.insert(QString::fromStdString("text"), uniqueCategories.at(i));
+            header.insert(QString::fromStdString("text"), category);
             header.insert(QString::fromStdString("type"),
                           QString::fromStdString("header"));
+            header.insert(QString::fromStdString("category"), category);
             items.push_back(QVariant(QJsonValue(header)));
         }
 
@@ -2666,6 +2667,7 @@ QVariant VirtualStudio::formatDeviceList(const QStringList& devices,
                 element.insert(QString::fromStdString("type"),
                                QString::fromStdString("element"));
                 element.insert(QString::fromStdString("channels"), channels.at(j));
+                element.insert(QString::fromStdString("category"), category);
                 items.push_back(QVariant(QJsonValue(element)));
             }
         }
