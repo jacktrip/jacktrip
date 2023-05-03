@@ -83,7 +83,10 @@ class AudioInterface
         DEVICE_ERR_INCOMPATIBLE,
         DEVICE_ERR_NO_INPUTS,
         DEVICE_ERR_NO_OUTPUTS,
-        DEVICE_ERR_NO_DEVICES
+        DEVICE_ERR_NO_DEVICES,
+#ifdef _WIN32
+        DEVICE_ERR_SAME_ASIO
+#endif
     };
 
     enum inputMixModeT : int {

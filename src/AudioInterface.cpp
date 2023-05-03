@@ -864,6 +864,12 @@ void AudioInterface::setDevicesErrorMsg(errorMessageT msg)
         mErrorMsg     = "JackTrip couldn't find any audio devices!";
         mErrorHelpUrl = "";
         break;
+#ifdef _WIN32
+    case DEVICE_ERR_SAME_ASIO:
+        mErrorMsg     = "When using ASIO, please select the same device for your input and output.";
+        mErrorHelpUrl = "https://help.jacktrip.org/hc/en-us/articles/4409919243155";
+        break;
+#endif
     default:
         mErrorMsg     = "";
         mErrorHelpUrl = "";
