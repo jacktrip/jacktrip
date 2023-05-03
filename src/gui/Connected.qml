@@ -759,7 +759,7 @@ Item {
     Item {
         id: outputDevice
         visible: showReadyScreen
-        x: bodyMargin * virtualstudio.uiScale; y: 360 * virtualstudio.uiScale
+        x: bodyMargin * virtualstudio.uiScale; y: 320 * virtualstudio.uiScale
         width: Math.min(parent.width / 2, 320 * virtualstudio.uiScale) - x
         height: 100 * virtualstudio.uiScale
         clip: true
@@ -921,17 +921,62 @@ Item {
                 }
             }
         }
+    }
 
-        Text {
-            id: monText
-            width: 24 * virtualstudio.uiScale
-            height: 24
-            anchors.left: inputDeviceMeters.left
-            anchors.verticalCenter: monitorSlider.verticalCenter
-            topPadding: 4 * virtualstudio.uiScale
-            text: "MON"
-            font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale; bold: true }
-            color: textColour
+    Item {
+        id: outputControls
+        visible: showReadyScreen
+        x: outputDevice.x + outputDevice.width; y: 320 * virtualstudio.uiScale
+        width: parent.width - inputDevice.width - 2 * bodyMargin * virtualstudio.uiScale
+
+        Meter {
+            id: outputDeviceMeters
+            x: 0; y: 0
+            width: parent.width
+            height: 100 * virtualstudio.uiScale
+            model: outputMeterModel
+            clipped: outputClipped
+        }
+
+        Slider {
+            id: outputSlider
+            from: 0.0
+            value: virtualstudio ? virtualstudio.outputVolume : 0.5
+            onMoved: { virtualstudio.outputVolume = value }
+            to: 1.0
+            padding: 0
+            y: outputDeviceMeters.y + 36 * virtualstudio.uiScale
+            anchors.left: outputDeviceMeters.left
+            anchors.right: outputStudioText.left
+            anchors.rightMargin: 8 * virtualstudio.uiScale
+
+            background: Rectangle {
+                x: outputSlider.leftPadding
+                y: outputSlider.topPadding + outputSlider.availableHeight / 2 - height / 2
+                implicitWidth: parent.width
+                implicitHeight: 6
+                width: outputSlider.availableWidth
+                height: implicitHeight
+                radius: 4
+                color: sliderTrackColour
+
+                Rectangle {
+                    width: outputSlider.visualPosition * parent.width
+                    height: parent.height
+                    color: sliderActiveTrackColour
+                    radius: 4
+                }
+            }
+
+            handle: Rectangle {
+                x: outputSlider.leftPadding + outputSlider.visualPosition * (outputSlider.availableWidth - width)
+                y: outputSlider.topPadding + outputSlider.availableHeight / 2 - height / 2
+                implicitWidth: 26 * virtualstudio.uiScale
+                implicitHeight: 26 * virtualstudio.uiScale
+                radius: 13 * virtualstudio.uiScale
+                color: outputSlider.pressed ? sliderPressedColour : sliderColour
+                border.color: buttonStroke
+            }
         }
 
         Slider {
@@ -941,10 +986,10 @@ Item {
             onMoved: { virtualstudio.monitorVolume = value }
             to: 1.0
             padding: 0
-            y: inputSlider.y + 36 * virtualstudio.uiScale
-            anchors.left: inputMute.right
-            anchors.leftMargin: 8 * virtualstudio.uiScale
-            anchors.right: inputDeviceMeters.right
+            y: outputSlider.y + 36 * virtualstudio.uiScale
+            anchors.left: outputDeviceMeters.left
+            anchors.right: outputMonText.left
+            anchors.rightMargin: 8 * virtualstudio.uiScale
 
             background: Rectangle {
                 x: monitorSlider.leftPadding
@@ -975,61 +1020,30 @@ Item {
             }
         }
 
-    }
-
-    Item {
-        id: outputControls
-        visible: showReadyScreen
-        x: outputDevice.x + outputDevice.width; y: 360 * virtualstudio.uiScale
-        width: parent.width - inputDevice.width - 2 * bodyMargin * virtualstudio.uiScale
-
-        Meter {
-            id: outputDeviceMeters
-            x: 0; y: 0
-            width: parent.width
-            height: 100 * virtualstudio.uiScale
-            model: outputMeterModel
-            clipped: outputClipped
+        Text {
+            id: outputStudioText
+            width: 40 * virtualstudio.uiScale
+            height: 24
+            horizontalAlignment: Text.AlignRight
+            anchors.right: outputDeviceMeters.right
+            anchors.verticalCenter: outputSlider.verticalCenter
+            topPadding: 4 * virtualstudio.uiScale
+            text: "Studio"
+            font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale; bold: true }
+            color: textColour
         }
 
-        Slider {
-            id: outputSlider
-            from: 0.0
-            value: virtualstudio ? virtualstudio.outputVolume : 0.5
-            onMoved: { virtualstudio.outputVolume = value }
-            to: 1.0
-            padding: 0
-            y: outputDeviceMeters.y + 36 * virtualstudio.uiScale
-            anchors.left: outputDeviceMeters.left
+        Text {
+            id: outputMonText
+            width: 40 * virtualstudio.uiScale
+            height: 24
+            horizontalAlignment: Text.AlignRight
             anchors.right: outputDeviceMeters.right
-
-            background: Rectangle {
-                x: outputSlider.leftPadding
-                y: outputSlider.topPadding + outputSlider.availableHeight / 2 - height / 2
-                implicitWidth: parent.width
-                implicitHeight: 6
-                width: outputSlider.availableWidth
-                height: implicitHeight
-                radius: 4
-                color: sliderTrackColour
-
-                Rectangle {
-                    width: outputSlider.visualPosition * parent.width
-                    height: parent.height
-                    color: sliderActiveTrackColour
-                    radius: 4
-                }
-            }
-
-            handle: Rectangle {
-                x: outputSlider.leftPadding + outputSlider.visualPosition * (outputSlider.availableWidth - width)
-                y: outputSlider.topPadding + outputSlider.availableHeight / 2 - height / 2
-                implicitWidth: 26 * virtualstudio.uiScale
-                implicitHeight: 26 * virtualstudio.uiScale
-                radius: 13 * virtualstudio.uiScale
-                color: outputSlider.pressed ? sliderPressedColour : sliderColour
-                border.color: buttonStroke
-            }
+            anchors.verticalCenter: monitorSlider.verticalCenter
+            topPadding: 4 * virtualstudio.uiScale
+            text: "Self"
+            font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale; bold: true }
+            color: textColour
         }
     }
 
