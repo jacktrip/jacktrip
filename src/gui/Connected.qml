@@ -159,9 +159,9 @@ Item {
     Item {
         id: deviceSettings
         visible: showReadyScreen && isUsingRtAudio
-        x: bodyMargin * virtualstudio.uiScale; y: 200 * virtualstudio.uiScale
+        x: bodyMargin * virtualstudio.uiScale; y: 192 * virtualstudio.uiScale
         width: parent.width - (2 * x)
-        height: 372 * virtualstudio.uiScale
+        height: 384 * virtualstudio.uiScale
         clip: true
 
         Button {
@@ -689,30 +689,6 @@ Item {
                         color: textColour
                     }
 
-                    Text {
-                        id: warningOrErrorMessage
-                        anchors.left: inputLabel.left
-                        anchors.right: parent.right
-                        anchors.rightMargin: 16 * virtualstudio.uiScale
-                        anchors.top: inputMixModeHelpMessage.bottom
-                        anchors.topMargin: 8 * virtualstudio.uiScale
-                        anchors.bottomMargin: 8 * virtualstudio.uiScale
-                        textFormat: Text.RichText
-                        text: (virtualstudio.devicesError || virtualstudio.devicesWarning)
-                            + ((virtualstudio.devicesErrorHelpUrl || virtualstudio.devicesWarningHelpUrl)
-                                ? `&nbsp;<a style="color: ${linkText};" href=${virtualstudio.devicesErrorHelpUrl || virtualstudio.devicesWarningHelpUrl}>Learn More.</a>`
-                                : ""
-                            )
-                        onLinkActivated: link => {
-                            virtualstudio.openLink(link)
-                        }
-                        horizontalAlignment: Text.AlignHLeft
-                        wrapMode: Text.WordWrap
-                        color: warningTextColour
-                        font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
-                        visible: Boolean(virtualstudio.devicesError) || Boolean(virtualstudio.devicesWarning);
-                    }
-
                     Button {
                         id: closePopupButton
                         anchors.right: parent.right
@@ -744,7 +720,7 @@ Item {
                         id: refreshButton
                         text: "Refresh Devices"
                         anchors.right: closePopupButton.left
-                        anchors.rightMargin: rightMargin * virtualstudio.uiScale
+                        anchors.rightMargin: 8 * virtualstudio.uiScale
                         anchors.bottomMargin: rightMargin * virtualstudio.uiScale
                         anchors.bottom: parent.bottom
                         width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
@@ -752,9 +728,9 @@ Item {
                         palette.buttonText: textColour
                         background: Rectangle {
                             radius: 6 * virtualstudio.uiScale
-                            color: refreshButton.down ? buttonPressedColour : (refreshButton.hovered ? buttonHoverColour : buttonColour)
+                            color: refreshButton.down ? browserButtonPressedColour : (refreshButton.hovered ? browserButtonHoverColour : browserButtonColour)
                             border.width: 1
-                            border.color: refreshButton.down ? buttonPressedStroke : (refreshButton.hovered ? buttonHoverStroke : buttonStroke)
+                            border.color: refreshButton.down ? browserButtonPressedStroke : (refreshButton.hovered ? browserButtonHoverStroke : browserButtonStroke)
                         }
 
                         icon {
