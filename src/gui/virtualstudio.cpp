@@ -1609,7 +1609,7 @@ void VirtualStudio::completeConnection()
         settings.beginGroup(QStringLiteral("Audio"));
         m_inMultiplier  = settings.value(QStringLiteral("InMultiplier"), 1).toFloat();
         m_outMultiplier = settings.value(QStringLiteral("OutMultiplier"), 1).toFloat();
-        m_monMultiplier = settings.value(QStringLiteral("MonMultiplier"), 1).toFloat();
+        m_monMultiplier = settings.value(QStringLiteral("MonMultiplier"), 0).toFloat();
         m_inMuted       = settings.value(QStringLiteral("InMuted"), false).toBool();
         m_outMuted      = settings.value(QStringLiteral("OutMuted"), false).toBool();
         m_monMuted      = settings.value(QStringLiteral("MonMuted"), false).toBool();
