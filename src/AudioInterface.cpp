@@ -178,7 +178,9 @@ void AudioInterface::setup(bool /*verbose*/)
     if (inputMixMode == MIXTOMONO) {
         nChansIn = 1;
     }
-
+    if (inputMixMode == MONO) {
+        nChansMon = nChansOut;
+    }
     // Allocate buffer memory to read and write
     mSizeInBytesPerChannel = getSizeInBytesPerChannel();
 
@@ -275,6 +277,9 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
     inputMixModeT inputMixMode = mInputMixMode;
     if (inputMixMode == MIXTOMONO) {
         nChansIn = 1;
+    }
+    if (inputMixMode == MONO) {
+        nChansMon = nChansOut;
     }
     // Allocate the Process Callback
     //-------------------------------------------------------------------
@@ -376,9 +381,13 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
         }
 
         for (int i = 0; i < nChansMon; i++) {
-            if (mInputChans.size() == 2 && mInputMixMode == AudioInterface::MIXTOMONO) {
+            if ((mInputChans.size() == 2 && mInputMixMode == AudioInterface::MIXTOMONO)
+                || (mInputMixMode == AudioInterface::MONO)) {
                 // if using mix-to-mono, in_buffer[0] should already contain the mixed
                 // audio, so copy it to the monitor buffer. See RtAudioInterface.cpp
+
+                // likewise if using mono, we simply copy the input to every monitor
+                // channel
                 std::memcpy(mMonProcessBuffer[i], in_buffer[0],
                             sizeof(sample_t) * n_frames);
             } else {
@@ -786,7 +795,13 @@ void AudioInterface::appendProcessPluginToMonitor(ProcessPlugin* plugin)
     int nChansOut = mOutputChans.size();
     int nChansMon =
         std::min(nChansIn, nChansOut);  // Note: Should be 2 when mixing stereo-to-mono
-
+    inputMixModeT inputMixMode = mInputMixMode;
+    if (inputMixMode == MIXTOMONO) {
+        nChansIn = 1;
+    }
+    if (inputMixMode == MONO) {
+        nChansMon = nChansOut;
+    }
     if (plugin->getNumInputs() > nChansMon) {
         std::cerr
             << "*** AudioInterface.cpp: appendProcessPluginToMonitor: ProcessPlugin "
@@ -820,7 +835,9 @@ void AudioInterface::initPlugins(bool verbose)
     if (inputMixMode == MIXTOMONO) {
         nChansIn = 1;
     }
-
+    if (inputMixMode == MONO) {
+        nChansMon = nChansOut;
+    }
     int nPlugins = mProcessPluginsFromNetwork.size() + mProcessPluginsToNetwork.size()
                    + mProcessPluginsToMonitor.size();
     if (nPlugins > 0) {
