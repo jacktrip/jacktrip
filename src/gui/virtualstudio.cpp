@@ -1100,6 +1100,20 @@ void VirtualStudio::refreshDevices()
         setAudioReady(false);
     }
 
+    refreshRtAudioDevices();
+    validateDevicesState();
+    if (!m_vsAudioInterface.isNull()) {
+        restartAudio();
+    }
+#endif
+}
+
+void VirtualStudio::refreshRtAudioDevices()
+{
+    if (!m_useRtAudio) {
+        return;
+    }
+#ifdef RT_AUDIO
     RtAudioInterface::getDeviceList(&m_inputDeviceList, &m_inputDeviceCategories,
                                     &m_inputDeviceChannels, true);
     RtAudioInterface::getDeviceList(&m_outputDeviceList, &m_outputDeviceCategories,
@@ -1113,10 +1127,6 @@ void VirtualStudio::refreshDevices()
                                                        inputComboModel);
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("outputComboModel"),
                                                        outputComboModel);
-    validateDevicesState();
-    if (!m_vsAudioInterface.isNull()) {
-        restartAudio();
-    }
 #endif
 }
 
@@ -1849,6 +1859,9 @@ void VirtualStudio::processFinished()
     if (m_device->reconnect()) {
         qDebug() << "should reconnect";
         if (m_device->hasTerminated()) {
+            if (m_useRtAudio) {
+                refreshRtAudioDevices();
+            }
             qDebug() << "hasTerminated";
             connectToStudio(m_currentStudio);
         }
