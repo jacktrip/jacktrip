@@ -935,10 +935,9 @@ void AudioInterface::setDevicesWarningMsg(warningMessageT msg)
     switch (msg) {
     case DEVICE_WARN_LATENCY:
         mWarningMsg =
-            "The currently selected devices don't support low latency. You can use them, "
-            "but you "
-            "may experience audio delay. Make sure you have up to date drivers from the "
-            "manufacturer!";
+            "The selected Input and Output devices are Non-ASIO and may cause high "
+            "latency or audio delay. Installing ASIO drivers and using ASIO Input and "
+            "Output devices will lower audio delays for a 'same room experience'.";
 #ifdef _WIN32
         mWarningHelpUrl = "https://help.jacktrip.org/hc/en-us/articles/4409919243155";
 #else
