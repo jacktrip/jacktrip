@@ -200,6 +200,7 @@ Rectangle {
                                 && inputCombo.model.filter(it => it.category === "Low-Latency (ASIO)" && it.text === modelData.text)[0]) {
                                 virtualstudio.inputDevice = modelData.text
                             }
+                            virtualstudio.restartAudio()
                             virtualstudio.validateDevicesState()
                         }
                     }
@@ -505,7 +506,7 @@ Rectangle {
                                 && outputCombo.model.filter(it => it.category === "Low-Latency (ASIO)" && it.text === modelData.text)[0]) {
                                 virtualstudio.outputDevice = modelData.text
                             }
-
+                            virtualstudio.restartAudio()
                             virtualstudio.validateDevicesState()
                         }
                     }

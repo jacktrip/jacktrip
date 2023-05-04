@@ -421,7 +421,6 @@ void VirtualStudio::setInputDevice([[maybe_unused]] const QString& device)
 #ifdef RT_AUDIO
     m_inputDevice = device;
     emit inputDeviceChanged(m_inputDevice, false);
-    emit inputDeviceSelected(m_inputDevice);
 #endif
 }
 
@@ -494,7 +493,6 @@ void VirtualStudio::setOutputDevice([[maybe_unused]] const QString& device)
 #ifdef RT_AUDIO
     m_outputDevice = device;
     emit outputDeviceChanged(m_outputDevice, false);
-    emit outputDeviceSelected(m_outputDevice);
 #endif
 }
 
@@ -2492,12 +2490,9 @@ void VirtualStudio::startAudio()
 
     connect(this, &VirtualStudio::inputDeviceChanged, m_vsAudioInterface.data(),
             &VsAudioInterface::setInputDevice);
-    connect(this, &VirtualStudio::inputDeviceSelected, m_vsAudioInterface.data(),
-            &VsAudioInterface::setInputDevice);
     connect(this, &VirtualStudio::outputDeviceChanged, m_vsAudioInterface.data(),
             &VsAudioInterface::setOutputDevice);
-    connect(this, &VirtualStudio::outputDeviceSelected, m_vsAudioInterface.data(),
-            &VsAudioInterface::setOutputDevice);
+
 #ifdef RT_AUDIO
     connect(this, &VirtualStudio::baseInputChannelChanged, m_vsAudioInterface.data(),
             &VsAudioInterface::setBaseInputChannel);

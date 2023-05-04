@@ -295,8 +295,6 @@ class VirtualStudio : public QObject
     void numInputChannelsChanged(int numChannels, bool shouldRestart = true);
     void inputMixModeChanged(int mode, bool shouldRestart = true);
     void outputDeviceChanged(QString device, bool shouldRestart = true);
-    void inputDeviceSelected(QString device, bool shouldRestart = true);
-    void outputDeviceSelected(QString device, bool shouldRestart = true);
     void baseOutputChannelChanged(int baseChannel, bool shouldRestart = true);
     void numOutputChannelsChanged(int numChannels, bool shouldRestart = true);
     void previousInputChanged();
