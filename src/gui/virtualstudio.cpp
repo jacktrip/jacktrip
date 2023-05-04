@@ -1590,12 +1590,6 @@ void VirtualStudio::completeConnection()
         connect(this, &VirtualStudio::updatedInputMuted, m_inputVolumePlugin,
                 &Volume::muteUpdated);
 
-        // Setup output meter
-        m_outputMeter = new Meter(jackTrip->getNumOutputChannels());
-        jackTrip->appendProcessPluginFromNetwork(m_outputMeter);
-        connect(m_outputMeter, &Meter::onComputedVolumeMeasurements, this,
-                &VirtualStudio::updatedOutputVuMeasurements);
-
         // Setup input meter
         m_inputMeter = new Meter(jackTrip->getNumInputChannels());
         jackTrip->appendProcessPluginToNetwork(m_inputMeter);
@@ -1609,6 +1603,14 @@ void VirtualStudio::completeConnection()
         jackTrip->appendProcessPluginToMonitor(m_monitor);
         connect(this, &VirtualStudio::updatedMonitorVolume, m_monitor,
                 &Monitor::volumeUpdated);
+
+        // Setup output meter
+        // Note: Add this to monitor process to include self-volume
+        m_outputMeter = new Meter(jackTrip->getNumOutputChannels());
+        m_outputMeter->setIsMonitoringMeter(true);
+        jackTrip->appendProcessPluginToMonitor(m_outputMeter);
+        connect(m_outputMeter, &Meter::onComputedVolumeMeasurements, this,
+                &VirtualStudio::updatedOutputVuMeasurements);
 
         // Grab previous levels
         QSettings settings;
