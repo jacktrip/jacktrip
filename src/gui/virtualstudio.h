@@ -252,6 +252,7 @@ class VirtualStudio : public QObject
     void logout();
     void refreshStudios(int index, bool signalRefresh = false);
     void refreshDevices();
+    void updateDeviceList();
     void validateDevicesState();
     void validateInputDevicesState();
     void validateOutputDevicesState();

@@ -739,7 +739,8 @@ Item {
                         }
                         display: AbstractButton.TextBesideIcon
                         onClicked: {
-                            virtualstudio.refreshDevices();
+                            virtualstudio.updateDeviceList();
+                            virtualstudio.validateDevicesState();
                             inputCurrIndex = getCurrentInputDeviceIndex();
                             outputCurrIndex = getCurrentOutputDeviceIndex();
                         }
