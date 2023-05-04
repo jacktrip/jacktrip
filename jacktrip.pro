@@ -211,6 +211,7 @@ HEADERS += src/DataProtocol.h \
            src/Regulator.h \
            src/Reverb.h \
            src/Meter.h \
+           src/Monitor.h \
            src/Volume.h \
            src/Tone.h \
            src/StereoToMono.h \
@@ -284,6 +285,7 @@ SOURCES += src/DataProtocol.cpp \
            src/Regulator.cpp \
            src/Reverb.cpp \
            src/Meter.cpp \
+           src/Monitor.cpp \
            src/StereoToMono.cpp \
            src/Volume.cpp \
            src/Tone.cpp \

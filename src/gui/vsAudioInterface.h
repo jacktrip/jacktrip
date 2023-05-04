@@ -78,6 +78,7 @@ class VsAudioInterface : public QObject
     void startProcess();
     void addInputPlugin(ProcessPlugin* plugin);
     void addOutputPlugin(ProcessPlugin* plugin);
+    void addMonitorPlugin(ProcessPlugin* plugin);
     int getNumInputChannels();
     int getNumOutputChannels();
     void setupPlugins();

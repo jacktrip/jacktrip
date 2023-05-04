@@ -831,8 +831,9 @@ Item {
             padding: 0
             y: inputDeviceMeters.y + 36 * virtualstudio.uiScale
             anchors.left: inputMute.right
+            anchors.right: inputStudioText.left
             anchors.leftMargin: 8 * virtualstudio.uiScale
-            anchors.right: inputDeviceMeters.right
+            anchors.rightMargin: 8 * virtualstudio.uiScale
             opacity: virtualstudio.inputMuted ? 0.3 : 1
 
             background: Rectangle {
@@ -921,6 +922,19 @@ Item {
                 }
             }
         }
+
+        Text {
+            id: inputStudioText
+            width: 40 * virtualstudio.uiScale
+            height: 24
+            horizontalAlignment: Text.AlignRight
+            anchors.right: inputDeviceMeters.right
+            anchors.verticalCenter: inputSlider.verticalCenter
+            topPadding: 4 * virtualstudio.uiScale
+            text: "Studio"
+            font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale; bold: true }
+            color: textColour
+        }
     }
 
     Item {
@@ -947,7 +961,8 @@ Item {
             padding: 0
             y: outputDeviceMeters.y + 36 * virtualstudio.uiScale
             anchors.left: outputDeviceMeters.left
-            anchors.right: outputDeviceMeters.right
+            anchors.right: outputStudioText.left
+            anchors.rightMargin: 8 * virtualstudio.uiScale
 
             background: Rectangle {
                 x: outputSlider.leftPadding
@@ -977,12 +992,79 @@ Item {
                 border.color: buttonStroke
             }
         }
+
+        Slider {
+            id: monitorSlider
+            from: 0.0
+            value: virtualstudio ? virtualstudio.monitorVolume : 0.5
+            onMoved: { virtualstudio.monitorVolume = value }
+            to: 1.0
+            padding: 0
+            y: outputSlider.y + 36 * virtualstudio.uiScale
+            anchors.left: outputDeviceMeters.left
+            anchors.right: outputMonText.left
+            anchors.rightMargin: 8 * virtualstudio.uiScale
+
+            background: Rectangle {
+                x: monitorSlider.leftPadding
+                y: monitorSlider.topPadding + monitorSlider.availableHeight / 2 - height / 2
+                implicitWidth: parent.width
+                implicitHeight: 6
+                width: monitorSlider.availableWidth
+                height: implicitHeight
+                radius: 4
+                color: sliderTrackColour
+
+                Rectangle {
+                    width: monitorSlider.visualPosition * parent.width
+                    height: parent.height
+                    color: sliderActiveTrackColour
+                    radius: 4
+                }
+            }
+
+            handle: Rectangle {
+                x: monitorSlider.leftPadding + monitorSlider.visualPosition * (monitorSlider.availableWidth - width)
+                y: monitorSlider.topPadding + monitorSlider.availableHeight / 2 - height / 2
+                implicitWidth: 26 * virtualstudio.uiScale
+                implicitHeight: 26 * virtualstudio.uiScale
+                radius: 13 * virtualstudio.uiScale
+                color: monitorSlider.pressed ? sliderPressedColour : sliderColour
+                border.color: buttonStroke
+            }
+        }
+
+        Text {
+            id: outputStudioText
+            width: 40 * virtualstudio.uiScale
+            height: 24
+            horizontalAlignment: Text.AlignRight
+            anchors.right: outputDeviceMeters.right
+            anchors.verticalCenter: outputSlider.verticalCenter
+            topPadding: 4 * virtualstudio.uiScale
+            text: "Studio"
+            font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale; bold: true }
+            color: textColour
+        }
+
+        Text {
+            id: outputMonText
+            width: 40 * virtualstudio.uiScale
+            height: 24
+            horizontalAlignment: Text.AlignRight
+            anchors.right: outputDeviceMeters.right
+            anchors.verticalCenter: monitorSlider.verticalCenter
+            topPadding: 4 * virtualstudio.uiScale
+            text: "Self"
+            font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale; bold: true }
+            color: textColour
+        }
     }
 
     Item {
         id: networkStatsHeader
         visible: showReadyScreen
-        x: bodyMargin * virtualstudio.uiScale; y: 410 * virtualstudio.uiScale
+        x: bodyMargin * virtualstudio.uiScale; y: 450 * virtualstudio.uiScale
         width: Math.min(parent.width / 2, 320 * virtualstudio.uiScale) - x
         height: 128 * virtualstudio.uiScale
 
@@ -1017,7 +1099,7 @@ Item {
     Item {
         id: networkStatsText
         visible: showReadyScreen
-        x: networkStatsHeader.x + networkStatsHeader.width; y: 410 * virtualstudio.uiScale
+        x: networkStatsHeader.x + networkStatsHeader.width; y: 450 * virtualstudio.uiScale
         width: parent.width - networkStatsHeader.width - 2 * bodyMargin * virtualstudio.uiScale
         height: 72 * virtualstudio.uiScale
 
