@@ -275,7 +275,11 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
         QStringLiteral("backendComboModel"),
         QVariant::fromValue(QStringList()
                             << QStringLiteral("JACK") << QStringLiteral("RtAudio")));
+#ifdef VS_FTUX
+    m_view.setSource(QUrl(QStringLiteral("qrc:/vs/vsftux.qml")));
+#else
     m_view.setSource(QUrl(QStringLiteral("qrc:/vs/vs.qml")));
+#endif  // VS_FTUX
     m_view.setMinimumSize(QSize(594, 519));
     // m_view.setMaximumSize(QSize(696, 577));
     m_view.setResizeMode(QQuickView::SizeRootObjectToView);
