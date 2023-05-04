@@ -1100,17 +1100,6 @@ void VirtualStudio::refreshDevices()
         setAudioReady(false);
     }
 
-    updateDeviceList();
-    validateDevicesState();
-    if (!m_vsAudioInterface.isNull()) {
-        restartAudio();
-    }
-#endif
-}
-
-void VirtualStudio::updateDeviceList()
-{
-#ifdef RT_AUDIO
     RtAudioInterface::getDeviceList(&m_inputDeviceList, &m_inputDeviceCategories,
                                     &m_inputDeviceChannels, true);
     RtAudioInterface::getDeviceList(&m_outputDeviceList, &m_outputDeviceCategories,
@@ -1124,6 +1113,10 @@ void VirtualStudio::updateDeviceList()
                                                        inputComboModel);
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("outputComboModel"),
                                                        outputComboModel);
+    validateDevicesState();
+    if (!m_vsAudioInterface.isNull()) {
+        restartAudio();
+    }
 #endif
 }
 

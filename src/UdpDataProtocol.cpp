@@ -571,7 +571,6 @@ void UdpDataProtocol::run()
         }
         full_redundant_packet_size = 0x10000;  // max UDP datagram size
         full_redundant_packet      = new int8_t[full_redundant_packet_size];
-        qDebug() << "in receiver mode, pre receive packet";
         full_redundant_packet_size = receivePacket(
             reinterpret_cast<char*>(full_redundant_packet), full_redundant_packet_size);
         // Check that peer has the same audio settings
@@ -676,7 +675,6 @@ void UdpDataProtocol::run()
             //        timeout = cc unused!
 #if defined (MANUAL_POLL)
             waitForReady(60000); //60 seconds
-            qDebug() << "what is this";
             if (receivePacket(reinterpret_cast<char *>(full_redundant_packet), full_redundant_packet_size) > 0) {
                 receivePacketRedundancy(full_redundant_packet, full_redundant_packet_size,
                                         full_packet_size, current_seq_num, last_seq_num,
@@ -709,7 +707,6 @@ void UdpDataProtocol::run()
                 WSAResetEvent(eventArray[index - WSA_WAIT_EVENT_0]);
                 WSAGetOverlappedResult(mSocket, &socketOverlapped, &bytesTransferred, FALSE, &flags);
                 if (bytesTransferred == mControlPacketSize) {
-                    qDebug() << "maybe here?";
                     processControlPacket(reinterpret_cast<char *>(full_redundant_packet));
                 } else if (bytesTransferred > 0 ){
                     receivePacketRedundancy(full_redundant_packet, full_redundant_packet_size,
@@ -726,7 +723,6 @@ void UdpDataProtocol::run()
 #endif
             if (n > 0) {
                 waitTime = 0;
-                qDebug() << "somewhere here";
                 if (receivePacket(reinterpret_cast<char *>(full_redundant_packet), full_redundant_packet_size) > 0) {
                     receivePacketRedundancy(full_redundant_packet, full_redundant_packet_size,
                                             full_packet_size, current_seq_num, last_seq_num,
