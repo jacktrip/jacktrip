@@ -306,7 +306,6 @@ void VsDevice::setReconnect(bool reconnect)
 {
     m_reconnect = reconnect;
     if (reconnect) {
-        qDebug() << "perform reconnect things";
         stopPinger();
         if (m_webSocket != nullptr && m_webSocket->isValid()) {
             m_webSocket->closeSocket();

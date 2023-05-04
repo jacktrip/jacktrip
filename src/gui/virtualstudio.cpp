@@ -1855,22 +1855,18 @@ void VirtualStudio::slotAuthFailed()
 
 void VirtualStudio::processFinished()
 {
-    qDebug() << "in processFinished";
     if (m_device != nullptr && m_device->reconnect()) {
-        qDebug() << "should reconnect";
         if (m_device != nullptr && m_device->hasTerminated()) {
             if (m_useRtAudio) {
                 refreshRtAudioDevices();
                 validateInputDevicesState();
                 validateOutputDevicesState();
             }
-            qDebug() << "hasTerminated";
             connectToStudio(m_currentStudio);
         }
         return;
     }
     // use disconnect function to handle reset of all internal flags and timers
-    qDebug() << "will disconnect";
     disconnect();
 
     // reset network statistics
