@@ -724,6 +724,7 @@ Item {
                         anchors.bottomMargin: rightMargin * virtualstudio.uiScale
                         anchors.bottom: parent.bottom
                         width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+                        enabled: virtualstudio.connectionState == "Connected"
 
                         palette.buttonText: textColour
                         background: Rectangle {
