@@ -1845,13 +1845,17 @@ void VirtualStudio::slotAuthFailed()
 
 void VirtualStudio::processFinished()
 {
+    qDebug() << "in processFinished";
     if (m_device->reconnect()) {
+        qDebug() << "should reconnect";
         if (m_device->hasTerminated()) {
+            qDebug() << "hasTerminated";
             connectToStudio(m_currentStudio);
         }
         return;
     }
     // use disconnect function to handle reset of all internal flags and timers
+    qDebug() << "will disconnect";
     disconnect();
 
     // reset network statistics
