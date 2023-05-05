@@ -421,7 +421,6 @@ void VirtualStudio::setInputDevice([[maybe_unused]] const QString& device)
 #ifdef RT_AUDIO
     m_inputDevice = device;
     emit inputDeviceChanged(m_inputDevice, false);
-    emit inputDeviceSelected(m_inputDevice);
 #endif
 }
 
@@ -494,7 +493,6 @@ void VirtualStudio::setOutputDevice([[maybe_unused]] const QString& device)
 #ifdef RT_AUDIO
     m_outputDevice = device;
     emit outputDeviceChanged(m_outputDevice, false);
-    emit outputDeviceSelected(m_outputDevice);
 #endif
 }
 
@@ -2546,12 +2544,9 @@ void VirtualStudio::startAudio()
 
     connect(this, &VirtualStudio::inputDeviceChanged, m_vsAudioInterface.data(),
             &VsAudioInterface::setInputDevice);
-    connect(this, &VirtualStudio::inputDeviceSelected, m_vsAudioInterface.data(),
-            &VsAudioInterface::setInputDevice);
     connect(this, &VirtualStudio::outputDeviceChanged, m_vsAudioInterface.data(),
             &VsAudioInterface::setOutputDevice);
-    connect(this, &VirtualStudio::outputDeviceSelected, m_vsAudioInterface.data(),
-            &VsAudioInterface::setOutputDevice);
+
 #ifdef RT_AUDIO
     connect(this, &VirtualStudio::baseInputChannelChanged, m_vsAudioInterface.data(),
             &VsAudioInterface::setBaseInputChannel);
@@ -2707,9 +2702,10 @@ QVariant VirtualStudio::formatDeviceList(const QStringList& devices,
 
         if (containsCategories) {
             QJsonObject header = QJsonObject();
-            header.insert(QString::fromStdString("text"), uniqueCategories.at(i));
+            header.insert(QString::fromStdString("text"), category);
             header.insert(QString::fromStdString("type"),
                           QString::fromStdString("header"));
+            header.insert(QString::fromStdString("category"), category);
             items.push_back(QVariant(QJsonValue(header)));
         }
 
@@ -2720,6 +2716,7 @@ QVariant VirtualStudio::formatDeviceList(const QStringList& devices,
                 element.insert(QString::fromStdString("type"),
                                QString::fromStdString("element"));
                 element.insert(QString::fromStdString("channels"), channels.at(j));
+                element.insert(QString::fromStdString("category"), category);
                 items.push_back(QVariant(QJsonValue(element)));
             }
         }
