@@ -1137,6 +1137,20 @@ void VirtualStudio::refreshDevices()
         setAudioReady(false);
     }
 
+    refreshRtAudioDevices();
+    validateDevicesState();
+    if (!m_vsAudioInterface.isNull()) {
+        restartAudio();
+    }
+#endif
+}
+
+void VirtualStudio::refreshRtAudioDevices()
+{
+    if (!m_useRtAudio) {
+        return;
+    }
+#ifdef RT_AUDIO
     RtAudioInterface::getDeviceList(&m_inputDeviceList, &m_inputDeviceCategories,
                                     &m_inputDeviceChannels, true);
     RtAudioInterface::getDeviceList(&m_outputDeviceList, &m_outputDeviceCategories,
@@ -1150,10 +1164,6 @@ void VirtualStudio::refreshDevices()
                                                        inputComboModel);
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("outputComboModel"),
                                                        outputComboModel);
-    validateDevicesState();
-    if (!m_vsAudioInterface.isNull()) {
-        restartAudio();
-    }
 #endif
 }
 
@@ -1181,8 +1191,8 @@ void VirtualStudio::validateInputDevicesState()
     if (m_inputDevice == QStringLiteral("")
         || m_inputDeviceList.indexOf(m_inputDevice) == -1) {
         m_inputDevice = m_inputDeviceList[0];
-        emit inputDeviceChanged(m_inputDevice, false);
     }
+    emit inputDeviceChanged(m_inputDevice, false);
 
     // Given the currently selected input device, reset the available input channel
     // options
@@ -1332,8 +1342,8 @@ void VirtualStudio::validateOutputDevicesState()
     if (m_outputDevice == QStringLiteral("")
         || m_outputDeviceList.indexOf(m_outputDevice) == -1) {
         m_outputDevice = m_outputDeviceList[0];
-        emit outputDeviceChanged(m_outputDevice, false);
     }
+    emit outputDeviceChanged(m_outputDevice, false);
 
     // Given the currently selected output device, reset the available output channel
     // options
@@ -1901,8 +1911,13 @@ void VirtualStudio::slotAuthFailed()
 
 void VirtualStudio::processFinished()
 {
-    if (m_device->reconnect()) {
-        if (m_device->hasTerminated()) {
+    if (m_device != nullptr && m_device->reconnect()) {
+        if (m_device != nullptr && m_device->hasTerminated()) {
+            if (m_useRtAudio) {
+                refreshRtAudioDevices();
+                validateInputDevicesState();
+                validateOutputDevicesState();
+            }
             connectToStudio(m_currentStudio);
         }
         return;
