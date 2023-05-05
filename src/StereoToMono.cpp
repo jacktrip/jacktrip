@@ -37,9 +37,23 @@
 
 #include "StereoToMono.h"
 
-#include <QVector>
+#include <iostream>
 
 #include "jacktrip_types.h"
+#include "stereotomonodsp.h"
+
+//*******************************************************************************
+StereoToMono::StereoToMono(bool verboseFlag)
+{
+    setVerbose(verboseFlag);
+    stereoToMonoP = new stereotomonodsp;
+}
+
+//*******************************************************************************
+StereoToMono::~StereoToMono()
+{
+    delete static_cast<stereotomonodsp*>(stereoToMonoP);
+}
 
 //*******************************************************************************
 void StereoToMono::init(int samplingRate)
@@ -51,7 +65,7 @@ void StereoToMono::init(int samplingRate)
     }
 
     fs = float(fSamplingFreq);
-    stereoToMonoP->init(fs);
+    static_cast<stereotomonodsp*>(stereoToMonoP)->init(fs);
 
     inited = true;
 }
@@ -69,5 +83,5 @@ void StereoToMono::compute(int nframes, float** inputs, float** outputs)
         }
         init(fSamplingFreq);
     }
-    stereoToMonoP->compute(nframes, inputs, outputs);
+    static_cast<stereotomonodsp*>(stereoToMonoP)->compute(nframes, inputs, outputs);
 }

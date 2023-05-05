@@ -7,6 +7,7 @@ set(nogui FALSE)
 set(rtaudio TRUE)
 set(weakjack TRUE)
 set(novs FALSE)
+set(vsftux FALSE)
 set(noupdater FALSE)
 set(psi FALSE)
 set(QtVersion "5")
@@ -35,6 +36,10 @@ if (novs)
   set(QRC_FILE "src/gui/qjacktrip_novs.qrc")
 else ()
   set(QRC_FILE "src/gui/qjacktrip.qrc")
+endif ()
+
+if (vsftux)
+  add_compile_definitions(VS_FTUX)
 endif ()
 
 if (noupdater)
@@ -191,6 +196,7 @@ if (NOT nogui)
       src/gui/vsWebSocket.cpp
       src/gui/vsPermissions.cpp
       src/gui/qjacktrip.qrc
+      src/Monitor.cpp
       src/Volume.cpp
       src/Tone.cpp
       # Need to include this for AUTOMOC to do its thing

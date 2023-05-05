@@ -49,6 +49,7 @@
 
 #include "../JackTrip.h"
 #include "../Meter.h"
+#include "../Monitor.h"
 #include "../Volume.h"
 #include "vsAudioInterface.h"
 #include "vsConstants.h"
@@ -142,6 +143,8 @@ class VirtualStudio : public QObject
         float inputVolume READ inputVolume WRITE setInputVolume NOTIFY updatedInputVolume)
     Q_PROPERTY(float outputVolume READ outputVolume WRITE setOutputVolume NOTIFY
                    updatedOutputVolume)
+    Q_PROPERTY(float monitorVolume READ monitorVolume WRITE setMonitorVolume NOTIFY
+                   updatedMonitorVolume)
     Q_PROPERTY(
         bool inputMuted READ inputMuted WRITE setInputMuted NOTIFY updatedInputMuted)
     Q_PROPERTY(bool audioActivated READ audioActivated WRITE setAudioActivated NOTIFY
@@ -235,8 +238,10 @@ class VirtualStudio : public QObject
     QString failedMessage();
     float inputVolume();
     float outputVolume();
+    float monitorVolume();
     bool inputMuted();
     bool outputMuted();
+    bool monitorMuted();
     Q_INVOKABLE void restartAudio();
     bool audioActivated();
     bool audioReady();
@@ -273,8 +278,10 @@ class VirtualStudio : public QObject
     void updatedOutputVuMeasurements(const float* valuesInDecibels, int numChannels);
     void setInputVolume(float multiplier);
     void setOutputVolume(float multiplier);
+    void setMonitorVolume(float multiplier);
     void setInputMuted(bool muted);
     void setOutputMuted(bool muted);
+    void setMonitorMuted(bool muted);
     void setAudioActivated(bool activated);
     void setAudioReady(bool ready);
     void setWindowState(QString state);
@@ -331,8 +338,10 @@ class VirtualStudio : public QObject
     void studioToJoinChanged();
     void updatedInputVolume(float multiplier);
     void updatedOutputVolume(float multiplier);
+    void updatedMonitorVolume(float multiplier);
     void updatedInputMuted(bool muted);
     void updatedOutputMuted(bool muted);
+    void updatedMonitorMuted(bool muted);
     void audioActivatedChanged();
     void audioReadyChanged();
     void windowStateUpdated();
@@ -436,6 +445,7 @@ class VirtualStudio : public QObject
     Meter* m_inputTestMeter;
     Volume* m_inputVolumePlugin;
     Volume* m_outputVolumePlugin;
+    Monitor* m_monitor;
     QTimer m_inputClipTimer;
     QTimer m_outputClipTimer;
 
@@ -451,8 +461,10 @@ class VirtualStudio : public QObject
 
     float m_inMultiplier  = 1.0;
     float m_outMultiplier = 1.0;
+    float m_monMultiplier = 1.0;
     bool m_inMuted        = false;
     bool m_outMuted       = false;
+    bool m_monMuted       = false;
 
     QSharedPointer<VsAudioInterface> m_vsAudioInterface;
 

@@ -515,10 +515,10 @@ void RtAudioInterface::getDeviceList(QStringList* list, QStringList* categories,
                 categories->append(QStringLiteral("Low-Latency (ASIO)"));
                 break;
             case RtAudio::WINDOWS_WASAPI:
-                categories->append(QStringLiteral("All Devices (Non-ASIO)"));
+                categories->append(QStringLiteral("High-Latency (Non-ASIO)"));
                 break;
             case RtAudio::WINDOWS_DS:
-                categories->append(QStringLiteral("All Devices (Non-ASIO)"));
+                categories->append(QStringLiteral("High-Latency (Non-ASIO)"));
                 break;
             default:
                 categories->append(QStringLiteral(""));
@@ -595,10 +595,10 @@ void RtAudioInterface::getDeviceList(QStringList* list, QStringList* categories,
                     categories->append("Low-Latency (ASIO)");
                     break;
                 case RtAudio::WINDOWS_WASAPI:
-                    categories->append("All Devices (Non-ASIO)");
+                    categories->append("High-Latency (Non-ASIO)");
                     break;
                 case RtAudio::WINDOWS_DS:
-                    categories->append("All Devices (Non-ASIO)");
+                    categories->append("High-Latency (Non-ASIO)");
                     break;
                 default:
                     categories->append("");

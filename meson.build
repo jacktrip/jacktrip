@@ -41,6 +41,7 @@ src = [	'src/DataProtocol.cpp',
 	'src/Compressor.cpp',
 	'src/Limiter.cpp',
 	'src/Meter.cpp',
+	'src/Monitor.cpp',
 	'src/Volume.cpp',
 	'src/Tone.cpp',
 	'src/StereoToMono.cpp',
@@ -53,6 +54,7 @@ moc_h = ['src/DataProtocol.h',
 	'src/JackTrip.h',
 	'src/ProcessPlugin.h',
 	'src/Meter.h',
+	'src/Monitor.h',
 	'src/StereoToMono.h',
 	'src/Volume.h',
 	'src/Tone.h',
@@ -168,6 +170,10 @@ else
 			qt_dep = dependency('qt6', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'QuickControls2', 'Qml', 'Svg', 'NetworkAuth', 'WebSockets'], include_type: 'system')
 		endif
 		qres = ['src/gui/qjacktrip.qrc']
+	endif
+
+	if get_option('vsftux') == true
+		defines += '-DVS_FTUX'
 	endif
 
 	if get_option('noupdater') == true or host_machine.system() == 'linux'

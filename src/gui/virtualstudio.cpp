@@ -275,7 +275,11 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
         QStringLiteral("backendComboModel"),
         QVariant::fromValue(QStringList()
                             << QStringLiteral("JACK") << QStringLiteral("RtAudio")));
+#ifdef VS_FTUX
+    m_view.setSource(QUrl(QStringLiteral("qrc:/vs/vsftux.qml")));
+#else
     m_view.setSource(QUrl(QStringLiteral("qrc:/vs/vs.qml")));
+#endif  // VS_FTUX
     m_view.setMinimumSize(QSize(594, 519));
     // m_view.setMaximumSize(QSize(696, 577));
     m_view.setResizeMode(QQuickView::SizeRootObjectToView);
@@ -615,6 +619,11 @@ float VirtualStudio::outputVolume()
     return m_outMultiplier;
 }
 
+float VirtualStudio::monitorVolume()
+{
+    return m_monMultiplier;
+}
+
 bool VirtualStudio::inputMuted()
 {
     return m_inMuted;
@@ -623,6 +632,11 @@ bool VirtualStudio::inputMuted()
 bool VirtualStudio::outputMuted()
 {
     return m_outMuted;
+}
+
+bool VirtualStudio::monitorMuted()
+{
+    return m_monMuted;
 }
 
 bool VirtualStudio::audioActivated()
@@ -665,6 +679,16 @@ void VirtualStudio::setOutputVolume(float multiplier)
     emit updatedOutputVolume(multiplier);
 }
 
+void VirtualStudio::setMonitorVolume(float multiplier)
+{
+    m_monMultiplier = multiplier;
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("Audio"));
+    settings.setValue(QStringLiteral("MonMultiplier"), m_monMultiplier);
+    settings.endGroup();
+    emit updatedMonitorVolume(multiplier);
+}
+
 void VirtualStudio::setInputMuted(bool muted)
 {
     m_inMuted = muted;
@@ -683,6 +707,16 @@ void VirtualStudio::setOutputMuted(bool muted)
     settings.setValue(QStringLiteral("OutMuted"), m_outMuted ? 1 : 0);
     settings.endGroup();
     emit updatedOutputMuted(muted);
+}
+
+void VirtualStudio::setMonitorMuted(bool muted)
+{
+    m_monMuted = muted;
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("Audio"));
+    settings.setValue(QStringLiteral("MonMuted"), m_monMuted ? 1 : 0);
+    settings.endGroup();
+    emit updatedMonitorMuted(muted);
 }
 
 int VirtualStudio::bufferSize()
@@ -1566,27 +1600,41 @@ void VirtualStudio::completeConnection()
         connect(this, &VirtualStudio::updatedInputMuted, m_inputVolumePlugin,
                 &Volume::muteUpdated);
 
-        // Setup output meter
-        m_outputMeter = new Meter(jackTrip->getNumOutputChannels());
-        jackTrip->appendProcessPluginFromNetwork(m_outputMeter);
-        connect(m_outputMeter, &Meter::onComputedVolumeMeasurements, this,
-                &VirtualStudio::updatedOutputVuMeasurements);
-
         // Setup input meter
         m_inputMeter = new Meter(jackTrip->getNumInputChannels());
         jackTrip->appendProcessPluginToNetwork(m_inputMeter);
         connect(m_inputMeter, &Meter::onComputedVolumeMeasurements, this,
                 &VirtualStudio::updatedInputVuMeasurements);
 
+        // Setup monitor
+        // Note: Constructor determines how many internal monitor buffers to allocate
+        m_monitor = new Monitor(
+            std::max(jackTrip->getNumInputChannels(), jackTrip->getNumOutputChannels()));
+        jackTrip->appendProcessPluginToMonitor(m_monitor);
+        connect(this, &VirtualStudio::updatedMonitorVolume, m_monitor,
+                &Monitor::volumeUpdated);
+
+        // Setup output meter
+        // Note: Add this to monitor process to include self-volume
+        m_outputMeter = new Meter(jackTrip->getNumOutputChannels());
+        m_outputMeter->setIsMonitoringMeter(true);
+        jackTrip->appendProcessPluginToMonitor(m_outputMeter);
+        connect(m_outputMeter, &Meter::onComputedVolumeMeasurements, this,
+                &VirtualStudio::updatedOutputVuMeasurements);
+
         // Grab previous levels
         QSettings settings;
         settings.beginGroup(QStringLiteral("Audio"));
         m_inMultiplier  = settings.value(QStringLiteral("InMultiplier"), 1).toFloat();
         m_outMultiplier = settings.value(QStringLiteral("OutMultiplier"), 1).toFloat();
+        m_monMultiplier = settings.value(QStringLiteral("MonMultiplier"), 0).toFloat();
         m_inMuted       = settings.value(QStringLiteral("InMuted"), false).toBool();
         m_outMuted      = settings.value(QStringLiteral("OutMuted"), false).toBool();
+        m_monMuted      = settings.value(QStringLiteral("MonMuted"), false).toBool();
+
         emit updatedInputVolume(m_inMultiplier);
         emit updatedOutputVolume(m_outMultiplier);
+        emit updatedMonitorVolume(m_monMultiplier);
         emit updatedInputMuted(m_inMuted);
         emit updatedOutputMuted(m_outMuted);
 
@@ -1670,6 +1718,7 @@ void VirtualStudio::disconnect()
     emit connectionStateChanged();
 
     // cleanup
+    m_monitor            = nullptr;
     m_inputMeter         = nullptr;
     m_outputMeter        = nullptr;
     m_inputVolumePlugin  = nullptr;
@@ -2692,6 +2741,7 @@ VirtualStudio::~VirtualStudio()
         delete m_servers.at(i);
     }
 
+    delete m_monitor;
     delete m_inputMeter;
     delete m_outputMeter;
     delete m_outputVolumePlugin;
