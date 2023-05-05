@@ -1,14 +1,27 @@
 - Version: "1.9.0"
-  Date: 2023-04-25
+  Date: 2023-05-05
   Description:
   - (added) buffer strategy 4 to run PLC in audio callback
   - (added) VS Mode - change audio devices while connected
   - (added) universal binary for macOS
+  - (added) tooltips, sliders, and positioning of connected interface
+  - (added) emails for vulnerability reporting
+  - (added) local monitoring
+  - (added) VS mode - Error message when single studio limit reached
   - (updated) regulator thread uses real-time priority
   - (updated) VS mode - use buffer strategy 4
   - (updated) VS mode - Default to PLC
   - (updated) VS Mode - PLC auto queue has 5ms headroom
+  - (updated) Enforcing using the same ASIO device on Windows
+  - (updated) VS Mode - JTL builds hide the yes/no screen on first launch
+  - (updated) GHA - wait for static Qt builds rather than failing
+  - (updated) VS Mode - "all devices" is now "high latency"
+  - (updated) VS Mode - Warning text for non-ASIO Windows devices
+  - (updated) Faust-generate code moved out of headers
   - (fixed) PLC bugs
+  - (fixed) VS Mode - changing devices while connected refreshes device lists
+  - (fixed) play test tone on Linux
+  - (fixed) static openssl on Linux
 - Version: "1.8.1"
   Date: 2023-03-29
   Description:
