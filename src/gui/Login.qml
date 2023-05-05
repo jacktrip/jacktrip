@@ -90,7 +90,7 @@ Item {
             border.color: loginButton.down ? buttonPressedStroke : (loginButton.hovered ? buttonHoverStroke : buttonStroke)
             layer.enabled: !loginButton.down
         }
-        onClicked: { failTextVisible = false; virtualstudio.login() }
+        onClicked: { virtualstudio.showFirstRun = false; failTextVisible = false; virtualstudio.login() }
         anchors.horizontalCenter: parent.horizontalCenter
         y: showBackButton ? 321 * virtualstudio.uiScale : 371 * virtualstudio.uiScale
         width: 263 * virtualstudio.uiScale; height: 64 * virtualstudio.uiScale
@@ -133,7 +133,7 @@ Item {
 
     Button {
         id: classicModeButton
-        visible: !showBackButton
+        visible: !showBackButton && virtualstudio.showFirstRun && virtualstudio.vsFtux
         background: Rectangle {
             radius: 6 * virtualstudio.uiScale
             color: classicModeButton.down ? buttonPressedColour : (classicModeButton.hovered ? buttonHoverColour : backgroundColour)

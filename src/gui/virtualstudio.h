@@ -152,6 +152,7 @@ class VirtualStudio : public QObject
     Q_PROPERTY(QString windowState READ windowState WRITE setWindowState NOTIFY
                    windowStateUpdated)
     Q_PROPERTY(QString apiHost READ apiHost WRITE setApiHost NOTIFY apiHostChanged)
+    Q_PROPERTY(bool vsFtux READ vsFtux CONSTANT)
 
    public:
     explicit VirtualStudio(bool firstRun = false, QObject* parent = nullptr);
@@ -244,6 +245,7 @@ class VirtualStudio : public QObject
     QString windowState();
     QString apiHost();
     void setApiHost(QString host);
+    bool vsFtux();
 
    public slots:
     void toStandard();
@@ -454,6 +456,12 @@ class VirtualStudio : public QObject
     bool m_outMuted       = false;
 
     QSharedPointer<VsAudioInterface> m_vsAudioInterface;
+
+#ifdef VS_FTUX
+    bool m_vsFtux         = true;
+#else
+    bool m_vsFtux         = false;
+#endif
 
 #ifdef RT_AUDIO
     QStringList m_inputDeviceList;
