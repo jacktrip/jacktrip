@@ -159,9 +159,9 @@ Item {
     Item {
         id: deviceSettings
         visible: showReadyScreen && isUsingRtAudio
-        x: bodyMargin * virtualstudio.uiScale; y: 200 * virtualstudio.uiScale
+        x: bodyMargin * virtualstudio.uiScale; y: 192 * virtualstudio.uiScale
         width: parent.width - (2 * x)
-        height: 360 * virtualstudio.uiScale
+        height: 384 * virtualstudio.uiScale
         clip: true
 
         Button {
@@ -287,6 +287,25 @@ Item {
                             background: Rectangle {
                                 color: "transparent"
                             }
+                        }
+                    }
+
+                    Image {
+                        id: headphonesIcon
+                        anchors.left: outputLabel.left
+                        anchors.top: outputLabel.bottom
+                        anchors.topMargin: bottomToolTipMargin * virtualstudio.uiScale
+                        source: "headphones.svg"
+                        sourceSize: Qt.size(28 * virtualstudio.uiScale, 28 * virtualstudio.uiScale)
+                        fillMode: Image.PreserveAspectFit
+                        smooth: true
+
+                        Colorize {
+                            anchors.fill: parent
+                            source: parent
+                            hue: 0
+                            saturation: 0
+                            lightness: virtualstudio.darkMode ? 1 : 0
                         }
                     }
 
@@ -452,6 +471,25 @@ Item {
                             background: Rectangle {
                                 color: "transparent"
                             }
+                        }
+                    }
+
+                    Image {
+                        id: microphoneIcon
+                        anchors.left: inputLabel.left
+                        anchors.top: inputLabel.bottom
+                        anchors.topMargin: bottomToolTipMargin * virtualstudio.uiScale
+                        source: "mic.svg"
+                        sourceSize: Qt.size(32 * virtualstudio.uiScale, 32 * virtualstudio.uiScale)
+                        fillMode: Image.PreserveAspectFit
+                        smooth: true
+
+                        Colorize {
+                            anchors.fill: parent
+                            source: parent
+                            hue: 0
+                            saturation: 0
+                            lightness: virtualstudio.darkMode ? 1 : 0
                         }
                     }
 
@@ -649,30 +687,6 @@ Item {
                         })()
                         font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
                         color: textColour
-                    }
-
-                    Text {
-                        id: warningOrErrorMessage
-                        anchors.left: inputLabel.left
-                        anchors.right: parent.right
-                        anchors.rightMargin: 16 * virtualstudio.uiScale
-                        anchors.top: inputMixModeHelpMessage.bottom
-                        anchors.topMargin: 8 * virtualstudio.uiScale
-                        anchors.bottomMargin: 8 * virtualstudio.uiScale
-                        textFormat: Text.RichText
-                        text: (virtualstudio.devicesError || virtualstudio.devicesWarning)
-                            + ((virtualstudio.devicesErrorHelpUrl || virtualstudio.devicesWarningHelpUrl)
-                                ? `&nbsp;<a style="color: ${linkText};" href=${virtualstudio.devicesErrorHelpUrl || virtualstudio.devicesWarningHelpUrl}>Learn More.</a>`
-                                : ""
-                            )
-                        onLinkActivated: link => {
-                            virtualstudio.openLink(link)
-                        }
-                        horizontalAlignment: Text.AlignHLeft
-                        wrapMode: Text.WordWrap
-                        color: warningTextColour
-                        font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
-                        visible: Boolean(virtualstudio.devicesError) || Boolean(virtualstudio.devicesWarning);
                     }
 
                     Button {
