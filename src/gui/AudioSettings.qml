@@ -196,9 +196,12 @@ Rectangle {
                             outputCombo.currentIndex = index
                             outputCombo.popup.close()
                             virtualstudio.outputDevice = modelData.text
-                            if (modelData.category === "Low-Latency (ASIO)"
-                                && inputCombo.model.filter(it => it.category === "Low-Latency (ASIO)" && it.text === modelData.text)[0]) {
-                                virtualstudio.inputDevice = modelData.text
+                            if (modelData.category === "Low-Latency (ASIO)") {
+                                let inputComboIdx = inputCombo.model.findIndex(it => it.category === "Low-Latency (ASIO)" && it.text === modelData.text);
+                                if (inputComboIdx !== null && inputComboIdx !== undefined) {
+                                    inputCombo.currentIndex = inputComboIdx;
+                                    virtualstudio.inputDevice = modelData.text
+                                }
                             }
                             virtualstudio.restartAudio()
                             virtualstudio.validateDevicesState()
@@ -502,9 +505,12 @@ Rectangle {
                             inputCombo.currentIndex = index
                             inputCombo.popup.close()
                             virtualstudio.inputDevice = modelData.text
-                            if (modelData.category === "Low-Latency (ASIO)"
-                                && outputCombo.model.filter(it => it.category === "Low-Latency (ASIO)" && it.text === modelData.text)[0]) {
-                                virtualstudio.outputDevice = modelData.text
+                            if (modelData.category === "Low-Latency (ASIO)") {
+                                let outputComboIdx = outputCombo.model.findIndex(it => it.category === "Low-Latency (ASIO)" && it.text === modelData.text);
+                                if (outputComboIdx !== null && outputComboIdx !== undefined) {
+                                    outputCombo.currentIndex = outputComboIdx;
+                                    virtualstudio.outputDevice = modelData.text
+                                }
                             }
                             virtualstudio.restartAudio()
                             virtualstudio.validateDevicesState()
