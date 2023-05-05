@@ -37,6 +37,81 @@
 
 #include "Compressor.h"
 
+#include "compressordsp.h"
+
+//*******************************************************************************
+Compressor::Compressor(int numchans,  // xtor
+                       bool verboseIn, float ratioIn, float thresholdDBIn,
+                       float attackMSIn, float releaseMSIn, float makeUpGainDBIn)
+    : mNumChannels(numchans)
+    , ratio(ratioIn)
+    , thresholdDB(thresholdDBIn)
+    , attackMS(attackMSIn)
+    , releaseMS(releaseMSIn)
+    , makeUpGainDB(makeUpGainDBIn)
+{
+    setVerbose(verboseIn);
+    // presets.push_back(std::make_unique<CompressorPreset>(ratio,thresholdDB,attackMS,releaseMS,makeUpGainDB));
+    for (int i = 0; i < mNumChannels; i++) {
+        compressordsp* dsp_ptr = new compressordsp;
+        APIUI* ui_ptr          = new APIUI;
+        compressorP.push_back(dsp_ptr);
+        compressorUIP.push_back(ui_ptr);  // #included in compressordsp.h
+        dsp_ptr->buildUserInterface(ui_ptr);
+    }
+}
+
+//*******************************************************************************
+Compressor::~Compressor()
+{
+    for (int i = 0; i < mNumChannels; i++) {
+        delete static_cast<compressordsp*>(compressorP[i]);
+        delete static_cast<APIUI*>(compressorUIP[i]);
+    }
+    compressorP.clear();
+    compressorUIP.clear();
+}
+
+//*******************************************************************************
+void Compressor::setParamAllChannels(const char pName[], float p)
+{
+    for (int i = 0; i < mNumChannels; i++) {
+        APIUI* ui_ptr = static_cast<APIUI*>(compressorUIP[i]);
+        int ndx       = ui_ptr->getParamIndex(pName);
+        if (ndx >= 0) {
+            ui_ptr->setParamValue(ndx, p);
+            if (verbose) {
+                std::cout << "Compressor.h: parameter " << pName << " set to " << p
+                          << " on audio channel " << i << "\n";
+            }
+        } else {
+            std::cerr << "*** Compressor.h: Could not find parameter named " << pName
+                      << "\n";
+        }
+    }
+}
+
+//*******************************************************************************
+void Compressor::init(int samplingRate)
+{
+    ProcessPlugin::init(samplingRate);
+    if (samplingRate != fSamplingFreq) {
+        std::cerr << "Sampling rate not set by superclass!\n";
+        std::exit(1);
+    }
+    fs = float(fSamplingFreq);
+    for (int i = 0; i < mNumChannels; i++) {
+        static_cast<compressordsp*>(compressorP[i])
+            ->init(fs);  // compression filter parameters depend on sampling rate
+    }
+    setParamAllChannels("Ratio", ratio);
+    setParamAllChannels("Threshold", thresholdDB);
+    setParamAllChannels("Attack", attackMS);
+    setParamAllChannels("Release", releaseMS);
+    setParamAllChannels("MakeUpGain", makeUpGainDB);
+    inited = true;
+}
+
 //*******************************************************************************
 void Compressor::compute(int nframes, float** inputs, float** outputs)
 {
@@ -50,6 +125,7 @@ void Compressor::compute(int nframes, float** inputs, float** outputs)
         init(fSamplingFreq);
     }
     for (int i = 0; i < mNumChannels; i++) {
-        compressorP[i]->compute(nframes, &inputs[i], &outputs[i]);
+        static_cast<compressordsp*>(compressorP[i])
+            ->compute(nframes, &inputs[i], &outputs[i]);
     }
 }

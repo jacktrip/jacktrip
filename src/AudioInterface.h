@@ -161,6 +161,10 @@ class AudioInterface
      * Initialize all ProcessPlugin modules.
      * The audio sampling rate (mSampleRate) must be set at this time.
      */
+    virtual void appendProcessPluginToMonitor(ProcessPlugin* plugin);
+    /** \brief appendProcessPluginFromNetwork():
+     * Appends plugins used for local monitoring
+     */
     void initPlugins(bool verbose = true);
     virtual void connectDefaultPorts() = 0;
     /** \brief Convert a 32bit number (sample_t) into one of the bit resolution
@@ -285,10 +289,14 @@ class AudioInterface
         mProcessPluginsFromNetwork;  ///< Vector of ProcessPlugin<EM>s</EM>
     QVector<ProcessPlugin*>
         mProcessPluginsToNetwork;  ///< Vector of ProcessPlugin<EM>s</EM>
+    QVector<ProcessPlugin*>
+        mProcessPluginsToMonitor;  ///< Vector of ProcessPlugin<EM>s</EM>
     QVarLengthArray<sample_t*>
         mInProcessBuffer;  ///< Vector of Input buffers/channel for ProcessPlugin
     QVarLengthArray<sample_t*>
-        mOutProcessBuffer;       ///< Vector of Output buffers/channel for ProcessPlugin
+        mOutProcessBuffer;  ///< Vector of Output buffers/channel for ProcessPlugin
+    QVarLengthArray<sample_t*>
+        mMonProcessBuffer;       ///< Vector of Monitor buffers/channel for ProcessPlugin
     int8_t* mAudioInputPacket;   ///< Packet containing all the channels to read from the
                                  ///< RingBuffer
     int8_t* mAudioOutputPacket;  ///< Packet containing all the channels to send to the

@@ -483,6 +483,15 @@ void JackTrip::appendProcessPluginFromNetwork(ProcessPlugin* plugin)
 }
 
 //*******************************************************************************
+void JackTrip::appendProcessPluginToMonitor(ProcessPlugin* plugin)
+{
+    if (plugin) {
+        mProcessPluginsToMonitor.append(plugin);  // ownership transferred
+        // mAudioInterface->appendProcessPluginFromNetwork(plugin);
+    }
+}
+
+//*******************************************************************************
 void JackTrip::startProcess(
 #ifdef WAIRTOHUB  // WAIR
     int ID
@@ -661,6 +670,10 @@ void JackTrip::completeConnection()
 
     for (auto& i : mProcessPluginsToNetwork) {
         mAudioInterface->appendProcessPluginToNetwork(i);
+    }
+
+    for (auto& i : mProcessPluginsToMonitor) {
+        mAudioInterface->appendProcessPluginToMonitor(i);
     }
 
     mAudioInterface->initPlugins(true);  // mSampleRate known now, which plugins require

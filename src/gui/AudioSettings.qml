@@ -447,7 +447,7 @@ Rectangle {
                     Text {
                         anchors.centerIn: parent
                         font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale}
-                        text: qsTr("Send audio to the studio (microphone, instrument, mixer, etc.)")
+                        text: qsTr("Audio sent to the studio (microphone, instrument, mixer, etc.)")
                         color: toolTipTextColour
                     }
                 }

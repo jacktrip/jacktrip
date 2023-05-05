@@ -175,6 +175,7 @@ class JackTrip : public QObject
     // void appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plugin);
     virtual void appendProcessPluginToNetwork(ProcessPlugin* plugin);
     virtual void appendProcessPluginFromNetwork(ProcessPlugin* plugin);
+    virtual void appendProcessPluginToMonitor(ProcessPlugin* plugin);
 
     /// \brief Start the processing threads
     virtual void startProcess(
@@ -677,7 +678,8 @@ class JackTrip : public QObject
         mProcessPluginsFromNetwork;  ///< Vector of ProcessPlugin<EM>s</EM>
     QVector<ProcessPlugin*>
         mProcessPluginsToNetwork;  ///< Vector of ProcessPlugin<EM>s</EM>
-
+    QVector<ProcessPlugin*>
+        mProcessPluginsToMonitor;  ///< Vector of ProcessPlugin<EM>s</EM>
     QTimer mTimeoutTimer;
     QTimer mRetryTimer;
     int mRetries;

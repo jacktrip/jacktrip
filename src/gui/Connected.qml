@@ -159,9 +159,9 @@ Item {
     Item {
         id: deviceSettings
         visible: showReadyScreen && isUsingRtAudio
-        x: bodyMargin * virtualstudio.uiScale; y: 200 * virtualstudio.uiScale
+        x: bodyMargin * virtualstudio.uiScale; y: 192 * virtualstudio.uiScale
         width: parent.width - (2 * x)
-        height: 360 * virtualstudio.uiScale
+        height: 384 * virtualstudio.uiScale
         clip: true
 
         Button {
@@ -287,6 +287,25 @@ Item {
                             background: Rectangle {
                                 color: "transparent"
                             }
+                        }
+                    }
+
+                    Image {
+                        id: headphonesIcon
+                        anchors.left: outputLabel.left
+                        anchors.top: outputLabel.bottom
+                        anchors.topMargin: bottomToolTipMargin * virtualstudio.uiScale
+                        source: "headphones.svg"
+                        sourceSize: Qt.size(28 * virtualstudio.uiScale, 28 * virtualstudio.uiScale)
+                        fillMode: Image.PreserveAspectFit
+                        smooth: true
+
+                        Colorize {
+                            anchors.fill: parent
+                            source: parent
+                            hue: 0
+                            saturation: 0
+                            lightness: virtualstudio.darkMode ? 1 : 0
                         }
                     }
 
@@ -445,13 +464,32 @@ Item {
                                 Text {
                                     anchors.centerIn: parent
                                     font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale}
-                                    text: qsTr("Send audio to the studio (microphone, instrument, mixer, etc.)")
+                                    text: qsTr("Audio sent to the studio (microphone, instrument, mixer, etc.)")
                                     color: toolTipTextColour
                                 }
                             }
                             background: Rectangle {
                                 color: "transparent"
                             }
+                        }
+                    }
+
+                    Image {
+                        id: microphoneIcon
+                        anchors.left: inputLabel.left
+                        anchors.top: inputLabel.bottom
+                        anchors.topMargin: bottomToolTipMargin * virtualstudio.uiScale
+                        source: "mic.svg"
+                        sourceSize: Qt.size(32 * virtualstudio.uiScale, 32 * virtualstudio.uiScale)
+                        fillMode: Image.PreserveAspectFit
+                        smooth: true
+
+                        Colorize {
+                            anchors.fill: parent
+                            source: parent
+                            hue: 0
+                            saturation: 0
+                            lightness: virtualstudio.darkMode ? 1 : 0
                         }
                     }
 
@@ -651,30 +689,6 @@ Item {
                         color: textColour
                     }
 
-                    Text {
-                        id: warningOrErrorMessage
-                        anchors.left: inputLabel.left
-                        anchors.right: parent.right
-                        anchors.rightMargin: 16 * virtualstudio.uiScale
-                        anchors.top: inputMixModeHelpMessage.bottom
-                        anchors.topMargin: 8 * virtualstudio.uiScale
-                        anchors.bottomMargin: 8 * virtualstudio.uiScale
-                        textFormat: Text.RichText
-                        text: (virtualstudio.devicesError || virtualstudio.devicesWarning)
-                            + ((virtualstudio.devicesErrorHelpUrl || virtualstudio.devicesWarningHelpUrl)
-                                ? `&nbsp;<a style="color: ${linkText};" href=${virtualstudio.devicesErrorHelpUrl || virtualstudio.devicesWarningHelpUrl}>Learn More.</a>`
-                                : ""
-                            )
-                        onLinkActivated: link => {
-                            virtualstudio.openLink(link)
-                        }
-                        horizontalAlignment: Text.AlignHLeft
-                        wrapMode: Text.WordWrap
-                        color: warningTextColour
-                        font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
-                        visible: Boolean(virtualstudio.devicesError) || Boolean(virtualstudio.devicesWarning);
-                    }
-
                     Button {
                         id: closePopupButton
                         anchors.right: parent.right
@@ -761,8 +775,10 @@ Item {
         visible: showReadyScreen
         x: bodyMargin * virtualstudio.uiScale; y: 320 * virtualstudio.uiScale
         width: Math.min(parent.width / 2, 320 * virtualstudio.uiScale) - x
-        height: 100 * virtualstudio.uiScale
+        height: 136 * virtualstudio.uiScale
         clip: true
+        anchors.top: inputDevice.bottom
+        anchors.topMargin: 2 * virtualstudio.uiScale
 
         Image {
             id: headphones
@@ -831,8 +847,9 @@ Item {
             padding: 0
             y: inputDeviceMeters.y + 36 * virtualstudio.uiScale
             anchors.left: inputMute.right
+            anchors.right: inputStudioText.left
             anchors.leftMargin: 8 * virtualstudio.uiScale
-            anchors.right: inputDeviceMeters.right
+            anchors.rightMargin: 16 * virtualstudio.uiScale
             opacity: virtualstudio.inputMuted ? 0.3 : 1
 
             background: Rectangle {
@@ -921,6 +938,73 @@ Item {
                 }
             }
         }
+
+        Text {
+            id: inputStudioText
+            width: 40 * virtualstudio.uiScale
+            height: 24
+            horizontalAlignment: Text.AlignRight
+            anchors.right: inputDeviceMeters.right
+            anchors.verticalCenter: inputSlider.verticalCenter
+            topPadding: 4 * virtualstudio.uiScale
+            rightPadding: 4 * virtualstudio.uiScale
+            text: "Send"
+            font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale; bold: true }
+            color: textColour
+        }
+
+        Image {
+            id: inputStudioHelpIcon
+            anchors.left: inputStudioText.right
+            anchors.verticalCenter: inputStudioText.verticalCenter
+            anchors.bottomMargin: -8 * virtualstudio.uiScale
+            source: "help.svg"
+            sourceSize: Qt.size(12 * virtualstudio.uiScale, 12 * virtualstudio.uiScale)
+            fillMode: Image.PreserveAspectFit
+            smooth: true
+
+            property bool showToolTip: false
+
+            Colorize {
+                anchors.fill: parent
+                source: parent
+                hue: 0
+                saturation: 0
+                lightness: virtualstudio.darkMode ? 0.8 : 0.2
+            }
+
+            MouseArea {
+                id: inputStudioMouseArea
+                anchors.fill: parent
+                hoverEnabled: true
+                onEntered: inputStudioHelpIcon.showToolTip = true
+                onExited: inputStudioHelpIcon.showToolTip = false
+            }
+
+            ToolTip {
+                visible: inputStudioHelpIcon.showToolTip
+                contentItem: Rectangle {
+                    color: toolTipBackgroundColour
+                    radius: 3
+                    anchors.fill: parent
+                    anchors.bottomMargin: bottomToolTipMargin * virtualstudio.uiScale
+                    anchors.rightMargin: rightToolTipMargin * virtualstudio.uiScale
+                    layer.enabled: true
+                    border.width: 1
+                    border.color: buttonStroke
+
+                    Text {
+                        anchors.centerIn: parent
+                        font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale}
+                        text: qsTr("How loudly other participants hear you")
+                        color: toolTipTextColour
+                    }
+                }
+                background: Rectangle {
+                    color: "transparent"
+                }
+            }
+        }
     }
 
     Item {
@@ -928,6 +1012,8 @@ Item {
         visible: showReadyScreen
         x: outputDevice.x + outputDevice.width; y: 320 * virtualstudio.uiScale
         width: parent.width - inputDevice.width - 2 * bodyMargin * virtualstudio.uiScale
+        anchors.top: inputDevice.bottom
+        anchors.topMargin: 2 * virtualstudio.uiScale
 
         Meter {
             id: outputDeviceMeters
@@ -947,7 +1033,8 @@ Item {
             padding: 0
             y: outputDeviceMeters.y + 36 * virtualstudio.uiScale
             anchors.left: outputDeviceMeters.left
-            anchors.right: outputDeviceMeters.right
+            anchors.right: outputStudioText.left
+            anchors.rightMargin: 16 * virtualstudio.uiScale
 
             background: Rectangle {
                 x: outputSlider.leftPadding
@@ -977,14 +1064,191 @@ Item {
                 border.color: buttonStroke
             }
         }
+
+        Slider {
+            id: monitorSlider
+            from: 0.0
+            value: virtualstudio ? virtualstudio.monitorVolume : 0.5
+            onMoved: { virtualstudio.monitorVolume = value }
+            to: 1.0
+            padding: 0
+            y: outputSlider.y + 36 * virtualstudio.uiScale
+            anchors.left: outputDeviceMeters.left
+            anchors.right: outputMonText.left
+            anchors.rightMargin: 16 * virtualstudio.uiScale
+
+            background: Rectangle {
+                x: monitorSlider.leftPadding
+                y: monitorSlider.topPadding + monitorSlider.availableHeight / 2 - height / 2
+                implicitWidth: parent.width
+                implicitHeight: 6
+                width: monitorSlider.availableWidth
+                height: implicitHeight
+                radius: 4
+                color: sliderTrackColour
+
+                Rectangle {
+                    width: monitorSlider.visualPosition * parent.width
+                    height: parent.height
+                    color: sliderActiveTrackColour
+                    radius: 4
+                }
+            }
+
+            handle: Rectangle {
+                x: monitorSlider.leftPadding + monitorSlider.visualPosition * (monitorSlider.availableWidth - width)
+                y: monitorSlider.topPadding + monitorSlider.availableHeight / 2 - height / 2
+                implicitWidth: 26 * virtualstudio.uiScale
+                implicitHeight: 26 * virtualstudio.uiScale
+                radius: 13 * virtualstudio.uiScale
+                color: monitorSlider.pressed ? sliderPressedColour : sliderColour
+                border.color: buttonStroke
+            }
+        }
+
+        Text {
+            id: outputStudioText
+            width: 40 * virtualstudio.uiScale
+            height: 24
+            horizontalAlignment: Text.AlignRight
+            anchors.right: outputDeviceMeters.right
+            anchors.verticalCenter: outputSlider.verticalCenter
+            topPadding: 4 * virtualstudio.uiScale
+            rightPadding: 4 * virtualstudio.uiScale
+            text: "Studio"
+            font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale; bold: true }
+            color: textColour
+        }
+
+        Image {
+            id: outputStudioHelpIcon
+            anchors.left: outputStudioText.right
+            anchors.verticalCenter: outputStudioText.verticalCenter
+            anchors.bottomMargin: -8 * virtualstudio.uiScale
+            source: "help.svg"
+            sourceSize: Qt.size(12 * virtualstudio.uiScale, 12 * virtualstudio.uiScale)
+            fillMode: Image.PreserveAspectFit
+            smooth: true
+
+            property bool showToolTip: false
+
+            Colorize {
+                anchors.fill: parent
+                source: parent
+                hue: 0
+                saturation: 0
+                lightness: virtualstudio.darkMode ? 0.8 : 0.2
+            }
+
+            MouseArea {
+                id: outputStudioMouseArea
+                anchors.fill: parent
+                hoverEnabled: true
+                onEntered: outputStudioHelpIcon.showToolTip = true
+                onExited: outputStudioHelpIcon.showToolTip = false
+            }
+
+            ToolTip {
+                visible: outputStudioHelpIcon.showToolTip
+                contentItem: Rectangle {
+                    color: toolTipBackgroundColour
+                    radius: 3
+                    anchors.fill: parent
+                    anchors.bottomMargin: bottomToolTipMargin * virtualstudio.uiScale
+                    anchors.rightMargin: rightToolTipMargin * virtualstudio.uiScale
+                    layer.enabled: true
+                    border.width: 1
+                    border.color: buttonStroke
+
+                    Text {
+                        anchors.centerIn: parent
+                        font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale}
+                        text: qsTr("How loudly you hear other participants")
+                        color: toolTipTextColour
+                    }
+                }
+                background: Rectangle {
+                    color: "transparent"
+                }
+            }
+        }
+
+        Text {
+            id: outputMonText
+            width: 40 * virtualstudio.uiScale
+            height: 24
+            horizontalAlignment: Text.AlignRight
+            anchors.right: outputDeviceMeters.right
+            anchors.verticalCenter: monitorSlider.verticalCenter
+            topPadding: 4 * virtualstudio.uiScale
+            rightPadding: 4 * virtualstudio.uiScale
+            text: "Monitor"
+            font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale; bold: true }
+            color: textColour
+        }
+
+        Image {
+            id: outputMonHelpIcon
+            anchors.left: outputMonText.right
+            anchors.verticalCenter: outputMonText.verticalCenter
+            anchors.bottomMargin: -8 * virtualstudio.uiScale
+            source: "help.svg"
+            sourceSize: Qt.size(12 * virtualstudio.uiScale, 12 * virtualstudio.uiScale)
+            fillMode: Image.PreserveAspectFit
+            smooth: true
+
+            property bool showToolTip: false
+
+            Colorize {
+                anchors.fill: parent
+                source: parent
+                hue: 0
+                saturation: 0
+                lightness: virtualstudio.darkMode ? 0.8 : 0.2
+            }
+
+            MouseArea {
+                id: outputMonMouseArea
+                anchors.fill: parent
+                hoverEnabled: true
+                onEntered: outputMonHelpIcon.showToolTip = true
+                onExited: outputMonHelpIcon.showToolTip = false
+            }
+
+            ToolTip {
+                visible: outputMonHelpIcon.showToolTip
+                contentItem: Rectangle {
+                    color: toolTipBackgroundColour
+                    radius: 3
+                    anchors.fill: parent
+                    anchors.bottomMargin: bottomToolTipMargin * virtualstudio.uiScale
+                    anchors.rightMargin: rightToolTipMargin * virtualstudio.uiScale
+                    layer.enabled: true
+                    border.width: 1
+                    border.color: buttonStroke
+
+                    Text {
+                        anchors.centerIn: parent
+                        font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale}
+                        text: qsTr("How loudly you hear yourself")
+                        color: toolTipTextColour
+                    }
+                }
+                background: Rectangle {
+                    color: "transparent"
+                }
+            }
+        }
     }
 
     Item {
         id: networkStatsHeader
         visible: showReadyScreen
-        x: bodyMargin * virtualstudio.uiScale; y: 410 * virtualstudio.uiScale
+        x: bodyMargin * virtualstudio.uiScale; y: 450 * virtualstudio.uiScale
         width: Math.min(parent.width / 2, 320 * virtualstudio.uiScale) - x
         height: 128 * virtualstudio.uiScale
+        anchors.top: outputDevice.bottom
+        anchors.topMargin: 2 * virtualstudio.uiScale
 
         Image {
             id: network
@@ -1017,9 +1281,11 @@ Item {
     Item {
         id: networkStatsText
         visible: showReadyScreen
-        x: networkStatsHeader.x + networkStatsHeader.width; y: 410 * virtualstudio.uiScale
+        x: networkStatsHeader.x + networkStatsHeader.width; y: 450 * virtualstudio.uiScale
         width: parent.width - networkStatsHeader.width - 2 * bodyMargin * virtualstudio.uiScale
         height: 72 * virtualstudio.uiScale
+        anchors.top: outputDevice.bottom
+        anchors.topMargin: 2 * virtualstudio.uiScale
 
         Text {
             id: netstat0
