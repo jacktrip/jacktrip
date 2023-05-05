@@ -1881,6 +1881,8 @@ void VirtualStudio::slotAuthSucceded()
             &VirtualStudio::setOutputVolume);
     connect(m_device, &VsDevice::updatedPlaybackMuteFromServer, this,
             &VirtualStudio::setOutputMuted);
+    connect(m_device, &VsDevice::updatedMonitorVolume, this,
+            &VirtualStudio::setMonitorVolume);
     connect(this, &VirtualStudio::updatedInputVolume, m_device,
             &VsDevice::updateCaptureVolume);
     connect(this, &VirtualStudio::updatedInputMuted, m_device,
@@ -1889,6 +1891,8 @@ void VirtualStudio::slotAuthSucceded()
             &VsDevice::updatePlaybackVolume);
     connect(this, &VirtualStudio::updatedOutputMuted, m_device,
             &VsDevice::updatePlaybackMute);
+    connect(this, &VirtualStudio::updatedMonitorVolume, m_device,
+            &VsDevice::updateMonitorVolume);
 }
 
 void VirtualStudio::slotAuthFailed()

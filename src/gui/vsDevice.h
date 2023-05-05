@@ -86,12 +86,14 @@ class VsDevice : public QObject
     void updatedCaptureMuteFromServer(bool muted);
     void updatedPlaybackVolumeFromServer(float multiplier);
     void updatedPlaybackMuteFromServer(bool muted);
+    void updatedMonitorVolume(float multiplier);
 
    public slots:
     void updateCaptureVolume(float multiplier);
     void updateCaptureMute(bool muted);
     void updatePlaybackVolume(float multiplier);
     void updatePlaybackMute(bool muted);
+    void updateMonitorVolume(float multiplier);
 
    private slots:
     void terminateJackTrip();
@@ -121,6 +123,7 @@ class VsDevice : public QObject
     bool m_captureMute     = false;
     float m_playbackVolume = 1.0;
     bool m_playbackMute    = false;
+    float m_monitorVolume  = 0;
     QTimer* m_sendVolumeTimer;
     bool m_reconnect = false;
 };
