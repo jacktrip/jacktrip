@@ -61,9 +61,6 @@ Item {
     property string meterYellow: "#F5BF4F"
     property string meterRed: "#F21B1B"
 
-    property int inputCurrIndex: getCurrentInputDeviceIndex()
-    property int outputCurrIndex: getCurrentOutputDeviceIndex()
-
     property bool isUsingRtAudio: virtualstudio.audioBackend == "RtAudio"
 
     function getCurrentInputDeviceIndex () {
@@ -122,6 +119,16 @@ Item {
 
         texts[1] = "Your connection quality is <b>" + quality + "</b>."
         return texts;
+    }
+
+    Connections {
+        target: virtualstudio
+        function onInputDeviceChanged() {
+            inputCombo.currentIndex = getCurrentInputDeviceIndex();
+        }
+        function onOutputDeviceChanged() {
+            outputCombo.currentIndex = getCurrentOutputDeviceIndex();
+        }
     }
 
     Image {
@@ -317,7 +324,7 @@ Item {
                         width: parent.width - leftSpacer.width - rightMargin * virtualstudio.uiScale
                         enabled: virtualstudio.connectionState == "Connected"
                         model: outputComboModel
-                        currentIndex: outputCurrIndex
+                        currentIndex: getCurrentOutputDeviceIndex()
                         delegate: ItemDelegate {
                             required property var modelData
                             required property int index
@@ -496,7 +503,7 @@ Item {
                     ComboBox {
                         id: inputCombo
                         model: inputComboModel
-                        currentIndex: inputCurrIndex
+                        currentIndex: getCurrentInputDeviceIndex()
                         anchors.left: outputCombo.left
                         anchors.right: outputCombo.right
                         anchors.verticalCenter: inputLabel.verticalCenter
@@ -741,8 +748,6 @@ Item {
                         display: AbstractButton.TextBesideIcon
                         onClicked: {
                             virtualstudio.validateDevicesState();
-                            inputCurrIndex = getCurrentInputDeviceIndex();
-                            outputCurrIndex = getCurrentOutputDeviceIndex();
                         }
 
                         font {
