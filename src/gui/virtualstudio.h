@@ -458,9 +458,9 @@ class VirtualStudio : public QObject
     QSharedPointer<VsAudioInterface> m_vsAudioInterface;
 
 #ifdef VS_FTUX
-    bool m_vsFtux         = true;
+    bool m_vsFtux = true;
 #else
-    bool m_vsFtux         = false;
+    bool m_vsFtux = false;
 #endif
 
 #ifdef RT_AUDIO
