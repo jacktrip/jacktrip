@@ -879,6 +879,11 @@ void VirtualStudio::setApiHost(QString host)
     emit apiHostChanged();
 }
 
+bool VirtualStudio::vsFtux()
+{
+    return m_vsFtux;
+}
+
 bool VirtualStudio::showWarnings()
 {
     return m_showWarnings;
