@@ -279,7 +279,7 @@ Item {
 
                                 Text {
                                     anchors.centerIn: parent
-                                    font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale}
+                                    font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale}
                                     text: qsTr("How you'll hear the studio audio")
                                     color: toolTipTextColour
                                 }
@@ -789,10 +789,9 @@ Item {
         visible: showReadyScreen
         x: bodyMargin * virtualstudio.uiScale; y: 320 * virtualstudio.uiScale
         width: Math.min(parent.width / 2, 320 * virtualstudio.uiScale) - x
-        height: 136 * virtualstudio.uiScale
+        height: 124 * virtualstudio.uiScale
         clip: true
         anchors.top: inputDevice.bottom
-        anchors.topMargin: 2 * virtualstudio.uiScale
 
         Image {
             id: headphones
@@ -1009,7 +1008,7 @@ Item {
 
                     Text {
                         anchors.centerIn: parent
-                        font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale}
+                        font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale}
                         text: qsTr("How loudly other participants hear you")
                         color: toolTipTextColour
                     }
@@ -1027,7 +1026,6 @@ Item {
         x: outputDevice.x + outputDevice.width; y: 320 * virtualstudio.uiScale
         width: parent.width - inputDevice.width - 2 * bodyMargin * virtualstudio.uiScale
         anchors.top: inputDevice.bottom
-        anchors.topMargin: 2 * virtualstudio.uiScale
 
         Meter {
             id: outputDeviceMeters
@@ -1176,7 +1174,7 @@ Item {
 
                     Text {
                         anchors.centerIn: parent
-                        font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale}
+                        font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale}
                         text: qsTr("How loudly you hear other participants")
                         color: toolTipTextColour
                     }
@@ -1243,7 +1241,7 @@ Item {
 
                     Text {
                         anchors.centerIn: parent
-                        font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale}
+                        font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale}
                         text: qsTr("How loudly you hear yourself")
                         color: toolTipTextColour
                     }
@@ -1262,7 +1260,6 @@ Item {
         width: Math.min(parent.width / 2, 320 * virtualstudio.uiScale) - x
         height: 128 * virtualstudio.uiScale
         anchors.top: outputDevice.bottom
-        anchors.topMargin: 2 * virtualstudio.uiScale
 
         Image {
             id: network
@@ -1299,7 +1296,6 @@ Item {
         width: parent.width - networkStatsHeader.width - 2 * bodyMargin * virtualstudio.uiScale
         height: 72 * virtualstudio.uiScale
         anchors.top: outputDevice.bottom
-        anchors.topMargin: 2 * virtualstudio.uiScale
 
         Text {
             id: netstat0

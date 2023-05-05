@@ -629,7 +629,9 @@ jobs:
             strip $BINFILE
             zip -j $ZIPFILE $BINFILE
             if [[ "${{ matrix.name }}" == "Linux-x64-qmake-gcc-static" ]]; then
-              zip -j $ZIPFILE $BUILD_PATH/org.jacktrip.JackTrip.desktop
+              cp $GITHUB_WORKSPACE/linux/icons/jacktrip.svg $BUILD_PATH/org.jacktrip.JackTrip.svg
+              cp $GITHUB_WORKSPACE/linux/icons/jacktrip_48x48.png $BUILD_PATH/org.jacktrip.JackTrip.png
+              zip -j $ZIPFILE $BUILD_PATH/org.jacktrip.JackTrip.desktop $BUILD_PATH/org.jacktrip.JackTrip.svg $BUILD_PATH/org.jacktrip.JackTrip.png $GITHUB_WORKSPACE/linux/README.md
             fi
             cd $GITHUB_WORKSPACE # we need to be in the root project directory for adding licenses
             zip -r $ZIPFILE LICENSE.md LICENSES
