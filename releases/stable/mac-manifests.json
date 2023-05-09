@@ -1,115 +1,125 @@
 {
-    "app_name": "JackTrip",
-    "releases": [
-        {
-            "version": "1.8.0",
-            "changelog": "Full changelog at https://github.com/jacktrip/jacktrip/releases/tag/v1.8.0",
-            "download": {
-              "date": "2023-03-18T00:00:00Z",
-              "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.8.0-macOS-x64-signed-installer.pkg",
-              "downloadSize": "11771203",
-              "sha256": "dfee21d5e91a35baaf3b58891188f72f2cb894b2bf796ac70350a2ef9d3fb68c"
-            }
-        },
-        {
-            "version": "1.7.1",
-            "changelog": "Video button, bug fixes, Linux build fixes, and Qt upgrades: https://github.com/jacktrip/jacktrip/releases/tag/v1.7.1",
-            "download": {
-                "date": "2023-02-10T00:00:00Z",
-                "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.7.1-macOS-x64-installer.pkg",
-                "downloadSize": 11679783,
-                "sha256": "027d1d3aeb4aaca79b21824371a0bfb915b8c43afe924a8ec2be92df719a431f"
-            }
-        },
-        {
-            "version": "1.7.0",
-            "changelog": "Start/join inactive studios, fix crashes and hanging UI on Windows: https://github.com/jacktrip/jacktrip/releases/tag/v1.7.0",
-            "download": {
-                "date": "2023-01-24T00:00:00Z",
-                "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.7.0-macOS-x64-installer.pkg",
-                "downloadSize": 11530594,
-                "sha256": "0e5731c2ad71aa4bd28ccf9311e312f2386c42b02abbca142777dfb06ea1b427"
-            }
-        },
-        {
-            "version": "1.6.8",
-            "changelog": "Critical bug fix: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.8",
-            "download": {
-                "date": "2022-12-05T00:00:00Z",
-                "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.8-macOS-x64-installer.pkg",
-                "downloadSize": 11517093,
-                "sha256": "5c040b2caa1e7dea97d7f48fd888f532a1c30da7385535b2d4a2805551bc5f71"
-            }
-        },
-        {
-            "version": "1.6.7",
-            "changelog": "Updated Windows networking, enabling all audio devices on Windows, new default device behavior, and fixes: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.7",
-            "download": {
-                "date": "2022-12-02T00:00:00Z",
-                "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.7-macOS-x64-installer.pkg",
-                "downloadSize": 11517151,
-                "sha256": "38c25788895ec404bdb4b6148114cad8af31b65e5189ca08819d1e954e2ef4e7"
-            }
-        },
-        {
-            "version": "1.6.6",
-            "changelog": "Adding volume controls in Virtual Studio, preliminary QT6 support, classic mode GUI updates, and fixes: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.6",
-            "download": {
-                "date": "2022-11-02T00:00:00Z",
-                "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.6-macOS-x64-installer.pkg",
-                "downloadSize": 11481324,
-                "sha256": "e99149ea9bbfb94a2000cfd3848013e44bb8d23e783198005681c2038bcbd313"
-            }
-        },
-        {
-            "version": "1.6.4",
-            "changelog": "Adding volume meters, bugfixes around Windows hanging, device disconnects, and PLC: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.4",
-            "download": {
-                "date": "2022-09-16T00:00:00Z",
-                "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.4-macOS-x64-installer.pkg",
-                "downloadSize": 11554866,
-                "sha256": "e5898f3ff57fc2d734590decb4f82a28ad9208a33cad97152f119716cdcea1a9"
-            }
-        },
-        {
-            "version": "1.6.3",
-            "changelog": "Fixes around Linux desktop file and hub server mode: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.3",
-            "download": {
-                "date": "2022-08-23T00:00:00Z",
-                "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.3-macOS-x64-installer.pkg",
-                "downloadSize": 11533023,
-                "sha256": "0b597c62544e9813949f859cc7b7c13bef893f6896f96b34a19889faf4855116"
-            }
-        },
-        {
-            "version": "1.6.2",
-            "changelog": "Ability to open app via URL schemes, displaying latency stats, and Virtual Studio device support. Learn more here: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.2",
-            "download": {
-                "date": "2022-08-17T00:00:00Z",
-                "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.2-macOS-x64-installer.pkg",
-                "downloadSize": 11536442,
-                "sha256": "450222f4db1922275e07286d0be6ea2df2873a8a39c3b23096bcfbce342b7b3c"
-            }
-        },
-        {
-            "version": "1.6.1",
-            "changelog": "Bugfixes around UDP timeout and 'Logging In' screen navigation. Learn more here: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.1",
-            "download": {
-                "date": "2022-06-21T00:00:00Z",
-                "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.1-macOS-x64-installer.pkg",
-                "downloadSize": 11476305,
-                "sha256": "eaf05c842d6b3ae799208a40b37da1cdb13e3700dcbbd97443c80cad81f4d2ac"
-            }
-        },
-        {
-            "version": "1.6.0",
-            "changelog": "Full integration with JackTrip Virtual Studio. Learn more here: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.0",
-            "download": {
-                "date": "2022-06-01T00:00:00Z",
-                "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.0-macOS-x64-installer.pkg",
-                "downloadSize": 11474299,
-                "sha256": "27259600ecd879106ebbf97754d72d6236075a049eafa0de6271d33f753f13e4"
-            }
-        }
-    ]
+  "app_name": "JackTrip",
+  "releases": [
+    {
+      "version": "1.8.1",
+      "changelog": "Full changelog at https://github.com/jacktrip/jacktrip/releases/tag/v1.8.1",
+      "download": {
+        "date": "2023-04-03T00:00:00Z",
+        "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.8.1-macOS-x64-signed-installer.pkg",
+        "downloadSize": "11754694",
+        "sha256": "d073ff5f2b90b5dd86ccd07c5d30d61d7be776c5e3c0083e6f665f78fea48298"
+      }
+    },
+    {
+      "version": "1.8.0",
+      "changelog": "Full changelog at https://github.com/jacktrip/jacktrip/releases/tag/v1.8.0",
+      "download": {
+        "date": "2023-03-18T00:00:00Z",
+        "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.8.0-macOS-x64-signed-installer.pkg",
+        "downloadSize": "11771203",
+        "sha256": "dfee21d5e91a35baaf3b58891188f72f2cb894b2bf796ac70350a2ef9d3fb68c"
+      }
+    },
+    {
+      "version": "1.7.1",
+      "changelog": "Video button, bug fixes, Linux build fixes, and Qt upgrades: https://github.com/jacktrip/jacktrip/releases/tag/v1.7.1",
+      "download": {
+        "date": "2023-02-10T00:00:00Z",
+        "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.7.1-macOS-x64-installer.pkg",
+        "downloadSize": 11679783,
+        "sha256": "027d1d3aeb4aaca79b21824371a0bfb915b8c43afe924a8ec2be92df719a431f"
+      }
+    },
+    {
+      "version": "1.7.0",
+      "changelog": "Start/join inactive studios, fix crashes and hanging UI on Windows: https://github.com/jacktrip/jacktrip/releases/tag/v1.7.0",
+      "download": {
+        "date": "2023-01-24T00:00:00Z",
+        "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.7.0-macOS-x64-installer.pkg",
+        "downloadSize": 11530594,
+        "sha256": "0e5731c2ad71aa4bd28ccf9311e312f2386c42b02abbca142777dfb06ea1b427"
+      }
+    },
+    {
+      "version": "1.6.8",
+      "changelog": "Critical bug fix: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.8",
+      "download": {
+        "date": "2022-12-05T00:00:00Z",
+        "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.8-macOS-x64-installer.pkg",
+        "downloadSize": 11517093,
+        "sha256": "5c040b2caa1e7dea97d7f48fd888f532a1c30da7385535b2d4a2805551bc5f71"
+      }
+    },
+    {
+      "version": "1.6.7",
+      "changelog": "Updated Windows networking, enabling all audio devices on Windows, new default device behavior, and fixes: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.7",
+      "download": {
+        "date": "2022-12-02T00:00:00Z",
+        "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.7-macOS-x64-installer.pkg",
+        "downloadSize": 11517151,
+        "sha256": "38c25788895ec404bdb4b6148114cad8af31b65e5189ca08819d1e954e2ef4e7"
+      }
+    },
+    {
+      "version": "1.6.6",
+      "changelog": "Adding volume controls in Virtual Studio, preliminary QT6 support, classic mode GUI updates, and fixes: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.6",
+      "download": {
+        "date": "2022-11-02T00:00:00Z",
+        "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.6-macOS-x64-installer.pkg",
+        "downloadSize": 11481324,
+        "sha256": "e99149ea9bbfb94a2000cfd3848013e44bb8d23e783198005681c2038bcbd313"
+      }
+    },
+    {
+      "version": "1.6.4",
+      "changelog": "Adding volume meters, bugfixes around Windows hanging, device disconnects, and PLC: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.4",
+      "download": {
+        "date": "2022-09-16T00:00:00Z",
+        "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.4-macOS-x64-installer.pkg",
+        "downloadSize": 11554866,
+        "sha256": "e5898f3ff57fc2d734590decb4f82a28ad9208a33cad97152f119716cdcea1a9"
+      }
+    },
+    {
+      "version": "1.6.3",
+      "changelog": "Fixes around Linux desktop file and hub server mode: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.3",
+      "download": {
+        "date": "2022-08-23T00:00:00Z",
+        "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.3-macOS-x64-installer.pkg",
+        "downloadSize": 11533023,
+        "sha256": "0b597c62544e9813949f859cc7b7c13bef893f6896f96b34a19889faf4855116"
+      }
+    },
+    {
+      "version": "1.6.2",
+      "changelog": "Ability to open app via URL schemes, displaying latency stats, and Virtual Studio device support. Learn more here: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.2",
+      "download": {
+        "date": "2022-08-17T00:00:00Z",
+        "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.2-macOS-x64-installer.pkg",
+        "downloadSize": 11536442,
+        "sha256": "450222f4db1922275e07286d0be6ea2df2873a8a39c3b23096bcfbce342b7b3c"
+      }
+    },
+    {
+      "version": "1.6.1",
+      "changelog": "Bugfixes around UDP timeout and 'Logging In' screen navigation. Learn more here: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.1",
+      "download": {
+        "date": "2022-06-21T00:00:00Z",
+        "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.1-macOS-x64-installer.pkg",
+        "downloadSize": 11476305,
+        "sha256": "eaf05c842d6b3ae799208a40b37da1cdb13e3700dcbbd97443c80cad81f4d2ac"
+      }
+    },
+    {
+      "version": "1.6.0",
+      "changelog": "Full integration with JackTrip Virtual Studio. Learn more here: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.0",
+      "download": {
+        "date": "2022-06-01T00:00:00Z",
+        "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.0-macOS-x64-installer.pkg",
+        "downloadSize": 11474299,
+        "sha256": "27259600ecd879106ebbf97754d72d6236075a049eafa0de6271d33f753f13e4"
+      }
+    }
+  ]
 }

@@ -1,75 +1,85 @@
 {
-    "app_name": "JackTrip",
-    "releases": [
-        {
-            "version": "1.8.0",
-            "changelog": "Full changelog at https://github.com/jacktrip/jacktrip/releases/tag/v1.8.0",
-            "download": {
-              "date": "2023-03-18T00:00:00Z",
-              "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.8.0-Linux-x64-binary.zip",
-              "downloadSize": "36167636",
-              "sha256": "6f14273ffd5526d576a184f4559adb4124def8760d0b9ba60c43b0fa75b2d1a5"
-            }
-        },
-        {
-            "version": "1.7.1",
-            "changelog": "Video button, bug fixes, Linux build fixes, and Qt upgrades: https://github.com/jacktrip/jacktrip/releases/tag/v1.7.1",
-            "download": {
-                "date": "2023-02-10T00:00:00Z",
-                "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.7.1-Linux-x64-binary.zip",
-                "downloadSize": 34338503,
-                "sha256": "4298e1edd561815630e3c6573660eeea15b199a12742ab1b90d43a6e3522b632"
-            }
-        },
-        {
-            "version": "1.7.0",
-            "changelog": "Start/join inactive studios, fix crashes and hanging UI on Windows: https://github.com/jacktrip/jacktrip/releases/tag/v1.7.0",
-            "download": {
-                "date": "2023-01-24T00:00:00Z",
-                "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.7.0-Linux-x64-binary.zip",
-                "downloadSize": 32554865,
-                "sha256": "13b3781f6dca0713eb135c9352c23cf0f40094603357ee5d5a940868597e8bb8"
-            }
-        },
-        {
-            "version": "1.6.8",
-            "changelog": "Critical bug fix: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.8",
-            "download": {
-                "date": "2022-12-05T00:00:00Z",
-                "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.8-Linux-x64-binary.zip",
-                "downloadSize": 30496801,
-                "sha256": "c2fcbf86f8ad4db862431f9ccf6b52b275b3cf5fc3bc2f7eea7ac803ee7ca590"
-            }
-        },
-        {
-            "version": "1.6.7",
-            "changelog": "Updated Windows networking, enabling all audio devices on Windows, new default device behavior, and fixes: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.7",
-            "download": {
-                "date": "2022-12-02T00:00:00Z",
-                "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.7-Linux-x64-binary.zip",
-                "downloadSize": 30495373,
-                "sha256": "09421562aeeefe40bb15945bf1e8e03b3f905ea383ce0a9ddd1f93f099141cfd"
-            }
-        },
-        {
-            "version": "1.6.6",
-            "changelog": "Adding volume controls in Virtual Studio, preliminary QT6 support, classic mode GUI updates, and fixes: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.6",
-            "download": {
-                "date": "2022-11-02T00:00:00Z",
-                "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.6-Linux-x64-binary.zip",
-                "downloadSize": 29837298,
-                "sha256": "25b15f3208521530b18e2096de722fefe5318149aa296610f8c5eec147586e0a"
-            }
-        },
-        {
-            "version": "1.6.4",
-            "changelog": "Adding volume meters, bugfixes around Windows hanging, device disconnects, and PLC: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.4",
-            "download": {
-                "date": "2022-09-16T00:00:00Z",
-                "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.4-Linux-x64-binary.zip",
-                "downloadSize": 22233485,
-                "sha256": "f1b9585e4eb72c07c735ee6f4dc94ad1d1a4c70474799eb1111bb5a39a99e295"
-            }
-        }
-    ]
+  "app_name": "JackTrip",
+  "releases": [
+    {
+      "version": "1.8.1",
+      "changelog": "Full changelog at https://github.com/jacktrip/jacktrip/releases/tag/v1.8.1",
+      "download": {
+        "date": "2023-04-03T00:00:00Z",
+        "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.8.1-Linux-x64-binary.zip",
+        "downloadSize": "36128967",
+        "sha256": "c0c082942ae2010553ba01c51c23b4ba01d8e5d4f69d3d2d2e56e183156d6f07"
+      }
+    },
+    {
+      "version": "1.8.0",
+      "changelog": "Full changelog at https://github.com/jacktrip/jacktrip/releases/tag/v1.8.0",
+      "download": {
+        "date": "2023-03-18T00:00:00Z",
+        "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.8.0-Linux-x64-binary.zip",
+        "downloadSize": "36167636",
+        "sha256": "6f14273ffd5526d576a184f4559adb4124def8760d0b9ba60c43b0fa75b2d1a5"
+      }
+    },
+    {
+      "version": "1.7.1",
+      "changelog": "Video button, bug fixes, Linux build fixes, and Qt upgrades: https://github.com/jacktrip/jacktrip/releases/tag/v1.7.1",
+      "download": {
+        "date": "2023-02-10T00:00:00Z",
+        "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.7.1-Linux-x64-binary.zip",
+        "downloadSize": 34338503,
+        "sha256": "4298e1edd561815630e3c6573660eeea15b199a12742ab1b90d43a6e3522b632"
+      }
+    },
+    {
+      "version": "1.7.0",
+      "changelog": "Start/join inactive studios, fix crashes and hanging UI on Windows: https://github.com/jacktrip/jacktrip/releases/tag/v1.7.0",
+      "download": {
+        "date": "2023-01-24T00:00:00Z",
+        "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.7.0-Linux-x64-binary.zip",
+        "downloadSize": 32554865,
+        "sha256": "13b3781f6dca0713eb135c9352c23cf0f40094603357ee5d5a940868597e8bb8"
+      }
+    },
+    {
+      "version": "1.6.8",
+      "changelog": "Critical bug fix: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.8",
+      "download": {
+        "date": "2022-12-05T00:00:00Z",
+        "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.8-Linux-x64-binary.zip",
+        "downloadSize": 30496801,
+        "sha256": "c2fcbf86f8ad4db862431f9ccf6b52b275b3cf5fc3bc2f7eea7ac803ee7ca590"
+      }
+    },
+    {
+      "version": "1.6.7",
+      "changelog": "Updated Windows networking, enabling all audio devices on Windows, new default device behavior, and fixes: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.7",
+      "download": {
+        "date": "2022-12-02T00:00:00Z",
+        "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.7-Linux-x64-binary.zip",
+        "downloadSize": 30495373,
+        "sha256": "09421562aeeefe40bb15945bf1e8e03b3f905ea383ce0a9ddd1f93f099141cfd"
+      }
+    },
+    {
+      "version": "1.6.6",
+      "changelog": "Adding volume controls in Virtual Studio, preliminary QT6 support, classic mode GUI updates, and fixes: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.6",
+      "download": {
+        "date": "2022-11-02T00:00:00Z",
+        "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.6-Linux-x64-binary.zip",
+        "downloadSize": 29837298,
+        "sha256": "25b15f3208521530b18e2096de722fefe5318149aa296610f8c5eec147586e0a"
+      }
+    },
+    {
+      "version": "1.6.4",
+      "changelog": "Adding volume meters, bugfixes around Windows hanging, device disconnects, and PLC: https://github.com/jacktrip/jacktrip/releases/tag/v1.6.4",
+      "download": {
+        "date": "2022-09-16T00:00:00Z",
+        "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.6.4-Linux-x64-binary.zip",
+        "downloadSize": 22233485,
+        "sha256": "f1b9585e4eb72c07c735ee6f4dc94ad1d1a4c70474799eb1111bb5a39a99e295"
+      }
+    }
+  ]
 }
