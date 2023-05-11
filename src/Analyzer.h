@@ -78,7 +78,7 @@ class Analyzer : public ProcessPlugin
     uint32_t updateFftInputBuffer();
     bool checkForAudioFeedback();
 
-    int mInterval = 1000;
+    int mInterval = 100;
 
     float fs;
     int mNumChannels;
@@ -88,6 +88,8 @@ class Analyzer : public ProcessPlugin
 
     float** mAnalysisBuffers = nullptr;
     uint32_t mAnalysisBuffersSize = 0;
+    uint32_t mAnalysisBufferSamples = 0;
+
     float* mSumBuffer = nullptr;
     void* mFftP;
 

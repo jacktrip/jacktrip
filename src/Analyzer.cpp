@@ -258,13 +258,13 @@ void Analyzer::onTick()
     //     return;
     // }
 
-    uint32_t samples = updateFftInputBuffer();    
+    uint32_t samples = updateFftInputBuffer();
+    mRingBufferHead = (mRingBufferHead + samples) % mRingBufferSize; 
     // mMutex.unlock();
 
+    int fftChans = static_cast<fftdsp*>(mFftP)->getNumOutputs();
     if (samples > mAnalysisBuffersSize) {
-        mAnalysisBuffersSize = samples;
-
-        int fftChans = static_cast<fftdsp*>(mFftP)->getNumOutputs();
+        mAnalysisBuffersSize = samples;        
         for (int i = 0; i < fftChans; i++) {
             if (mAnalysisBuffers[i]) {
                 delete mAnalysisBuffers[i];
@@ -273,8 +273,8 @@ void Analyzer::onTick()
         }
     }
 
-    static_cast<fftdsp*>(mFftP)->compute(samples, &mFftBuffer, mAnalysisBuffers);
-    mRingBufferHead = (mRingBufferHead + samples) % mRingBufferSize;
+    static_cast<fftdsp*>(mFftP)->compute(samples, &mFftBuffer, mAnalysisBuffers);    
+    mAnalysisBufferSamples = samples;
 
     updateSpectra();
     updateSpectraDifferentials();
@@ -310,7 +310,7 @@ void Analyzer::updateSpectra() {
     float* currentSpectra = mSpectra[0];
     for (uint32_t i = 0; i < fftChans; i++) {
         // take the last sample from each bin
-        currentSpectra[i] = mAnalysisBuffers[i][mAnalysisBuffersSize - 1];
+        currentSpectra[i] = mAnalysisBuffers[i][mAnalysisBufferSamples - 1];
     }
 
     // shift all buffers by 1 forward
