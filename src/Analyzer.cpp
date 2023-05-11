@@ -110,7 +110,7 @@ void Analyzer::compute(int nframes, float** inputs, float** outputs)
         init(fSamplingFreq);
     }
 
-    if (!mMutex->tryLock()) {
+    if (!mMutex.tryLock()) {
         return;
     }
 
@@ -138,7 +138,7 @@ void Analyzer::compute(int nframes, float** inputs, float** outputs)
     addFramesToQueue(nframes, mSumBuffer);
     hasProcessedAudio = true;
 
-    mMutex->unlock();
+    mMutex.unlock();
 }
 
 //*******************************************************************************
