@@ -71,7 +71,14 @@ class Analyzer : public ProcessPlugin
    private:
 
     void addFramesToQueue(int nframes, float* samples);
+    void resizeRingBuffer();
     void onTick();
+    void updateSpectra();
+    void updateSpectraDifferentials();
+    uint32_t updateFftInputBuffer();
+    bool checkForAudioFeedback();
+
+    int mInterval = 1000;
 
     float fs;
     int mNumChannels;
@@ -96,6 +103,10 @@ class Analyzer : public ProcessPlugin
     bool hasProcessedAudio = false;
 
     QMutex mMutex;
+
+    int mNumSpectra = 10;
+    float** mSpectra = nullptr;
+    float** mSpectraDifferentials = nullptr;
 };
 
 #endif

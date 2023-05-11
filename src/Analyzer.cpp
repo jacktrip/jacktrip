@@ -47,34 +47,40 @@
 Analyzer::Analyzer(int numchans, bool verboseFlag) : mNumChannels(numchans)
 {
     setVerbose(verboseFlag);
-    mFftP = new fftdsp;
 
+    // generate FFT Faust object
+    mFftP = new fftdsp;
     int fftChans = static_cast<fftdsp *>(mFftP)->getNumOutputs();
+    
+    // allocate a buffer for the summation of all inputs
     mSumBuffer = new float[mSumBufferSize];
     std::memset(mSumBuffer, 0, sizeof(float)*mSumBufferSize);
 
+    // allocate a ring buffer of mRingBuffersize bytes
     mRingBufferSize = 1 << 10;
     mRingBuffer = new float[mRingBufferSize];
     mRingBufferHead = 0;
     mRingBufferTail = 0;
     std::memset(mRingBuffer, 0, sizeof(float) * mRingBufferSize);
 
+    // allocate a buffer for input to the FFT object
     mFftBufferSize = mRingBufferSize;
     mFftBuffer = new float[mFftBufferSize];
     std::memset(mFftBuffer, 0, sizeof(float)*mFftBufferSize);
 
+    // allocate buffer for output from the FFT object
     mAnalysisBuffers = new float*[fftChans];
     for (int i = 0; i < fftChans; i++) {
         mAnalysisBuffers[i] = new float[mAnalysisBuffersSize];
     }
 
-    /* Start timer */
-    int timeout_ms = 50;
-    connect(&mTimer, &QTimer::timeout, this, &Analyzer::onTick);
-    mTimer.setTimerType(Qt::PreciseTimer);
-    mTimer.setInterval(timeout_ms);
-    mTimer.setSingleShot(false);
-    mTimer.start();
+    // allocate buffers for holding on to past spectra
+    mSpectra = new float*[mNumSpectra];
+    mSpectraDifferentials = new float*[mNumSpectra];
+    for (int i = 0; i < mNumSpectra; i++) {
+        mSpectra[i] = new float[fftChans];
+        mSpectraDifferentials[i] = new float[fftChans];
+    }
 }
 
 //*******************************************************************************
@@ -94,6 +100,14 @@ void Analyzer::init(int samplingRate)
     fs = float(fSamplingFreq);
 
     static_cast<fftdsp*>(mFftP)->init(fs);
+
+    /* Start timer */
+    connect(&mTimer, &QTimer::timeout, this, &Analyzer::onTick);
+    mTimer.setTimerType(Qt::PreciseTimer);
+    mTimer.setInterval(mInterval);
+    mTimer.setSingleShot(false);
+    mTimer.start();
+
     inited = true;
 }
 
@@ -110,9 +124,10 @@ void Analyzer::compute(int nframes, float** inputs, float** outputs)
         init(fSamplingFreq);
     }
 
-    if (!mMutex.tryLock()) {
-        return;
-    }
+    // if (!mMutex.tryLock()) {
+    //     std::cout << "[main] Mutex is Locked! Skipping for now!" << std::endl;
+    //     return;
+    // }
 
     int fftChans = static_cast<fftdsp*>(mFftP)->getNumOutputs();
     
@@ -138,7 +153,7 @@ void Analyzer::compute(int nframes, float** inputs, float** outputs)
     addFramesToQueue(nframes, mSumBuffer);
     hasProcessedAudio = true;
 
-    mMutex.unlock();
+    // mMutex.unlock();
 }
 
 //*******************************************************************************
@@ -175,33 +190,7 @@ void Analyzer::addFramesToQueue(int nframes, float* samples)
     }
     
     if (reallocateRingBuffer) {
-        // need to reallocate buffer to the next larger size up (power of 2)
-        // before we write data to the buffer
-        uint32_t newRingBufferSize = mRingBufferSize << 1;     // next power of 2
-        float* newRingBuffer = new float[newRingBufferSize];   // allocate a new buffer
-
-        uint32_t itemsCopied = 0;
-        if (mRingBufferHead <= mRingBufferTail) {
-            // if the current head comes before the current tail
-            std::memcpy(newRingBuffer, &mRingBuffer[mRingBufferHead], sizeof(float)*(mRingBufferTail - mRingBufferHead));
-            itemsCopied += mRingBufferTail - mRingBufferHead;
-        } else {
-            // if the current head comes after the current tail, use two memcpy operations due to wraparound
-            std::memcpy(newRingBuffer, &mRingBuffer[mRingBufferHead], sizeof(float)*(mRingBufferSize - mRingBufferHead));
-            std::memcpy(&newRingBuffer[mRingBufferSize - mRingBufferHead], mRingBuffer, sizeof(float)*mRingBufferTail);
-
-            itemsCopied += mRingBufferSize - mRingBufferHead;
-            itemsCopied += mRingBufferTail;
-        }
-
-        delete mRingBuffer;
-
-        // update instance variables
-        mRingBufferSize = newRingBufferSize;
-        mRingBufferHead = 0;
-        mRingBufferTail = itemsCopied;
-        mRingBuffer = newRingBuffer;
-
+        resizeRingBuffer();
         // recompute newRingBufferTail
         newRingBufferTail = (mRingBufferTail + (uint32_t) nframes) % mRingBufferSize;
     }
@@ -221,9 +210,39 @@ void Analyzer::addFramesToQueue(int nframes, float* samples)
 }
 
 //*******************************************************************************
+void Analyzer::resizeRingBuffer()
+{
+    // need to reallocate buffer to the next larger size up (power of 2)
+    // before we write data to the buffer
+    uint32_t newRingBufferSize = mRingBufferSize << 1;     // next power of 2
+    float* newRingBuffer = new float[newRingBufferSize];   // allocate a new buffer
+
+    uint32_t itemsCopied = 0;
+    if (mRingBufferHead <= mRingBufferTail) {
+        // if the current head comes before the current tail
+        std::memcpy(newRingBuffer, &mRingBuffer[mRingBufferHead], sizeof(float)*(mRingBufferTail - mRingBufferHead));
+        itemsCopied += mRingBufferTail - mRingBufferHead;
+    } else {
+        // if the current head comes after the current tail, use two memcpy operations due to wraparound
+        std::memcpy(newRingBuffer, &mRingBuffer[mRingBufferHead], sizeof(float)*(mRingBufferSize - mRingBufferHead));
+        std::memcpy(&newRingBuffer[mRingBufferSize - mRingBufferHead], mRingBuffer, sizeof(float)*mRingBufferTail);
+
+        itemsCopied += mRingBufferSize - mRingBufferHead;
+        itemsCopied += mRingBufferTail;
+    }
+
+    delete mRingBuffer;
+
+    // update instance variables
+    mRingBufferSize = newRingBufferSize;
+    mRingBufferHead = 0;
+    mRingBufferTail = itemsCopied;
+    mRingBuffer = newRingBuffer;
+}
+
+//*******************************************************************************
 void Analyzer::onTick()
 {   
-    QMutexLocker locker(&mMutex);
     if (!hasProcessedAudio) {
         return;
     }
@@ -234,10 +253,44 @@ void Analyzer::onTick()
         mFftBuffer = new float[mFftBufferSize];
     }
 
-    std::memset(mFftBuffer, 0, sizeof(float)*mFftBufferSize);
+    // if (!mMutex.tryLock()) {
+    //     std::cout << "[onTick] Mutex is Locked! Skipping for now!" << std::endl;
+    //     return;
+    // }
 
+    uint32_t samples = updateFftInputBuffer();    
+    // mMutex.unlock();
+
+    if (samples > mAnalysisBuffersSize) {
+        mAnalysisBuffersSize = samples;
+
+        int fftChans = static_cast<fftdsp*>(mFftP)->getNumOutputs();
+        for (int i = 0; i < fftChans; i++) {
+            if (mAnalysisBuffers[i]) {
+                delete mAnalysisBuffers[i];
+            }
+            mAnalysisBuffers[i] = new float[mAnalysisBuffersSize];
+        }
+    }
+
+    static_cast<fftdsp*>(mFftP)->compute(samples, &mFftBuffer, mAnalysisBuffers);
+    mRingBufferHead = (mRingBufferHead + samples) % mRingBufferSize;
+
+    updateSpectra();
+    updateSpectraDifferentials();
+    bool detectedFeedback = checkForAudioFeedback();
+
+    if (detectedFeedback) {
+        // TODO: alert UI
+        std::cout << "FEEDBACK DETECTED!!!" << std::endl;
+    }
+}
+
+//*******************************************************************************
+uint32_t Analyzer::updateFftInputBuffer() {
     // copy samples from mRingBuffer into mFftBuffer
     uint32_t samples = 0;
+    std::memset(mFftBuffer, 0, sizeof(float)*mFftBufferSize);
     if (mRingBufferHead <= mRingBufferTail) {
         std::memcpy(mFftBuffer, &mRingBuffer[mRingBufferHead], sizeof(float)*(mRingBufferTail - mRingBufferHead));
         samples = mRingBufferTail - mRingBufferHead;
@@ -247,18 +300,44 @@ void Analyzer::onTick()
         samples += mRingBufferSize - mRingBufferHead;
         samples += mRingBufferTail;
     }
+    return samples;
+}
 
+//*******************************************************************************
+void Analyzer::updateSpectra() {
     int fftChans = static_cast<fftdsp*>(mFftP)->getNumOutputs();
-    if (samples > mAnalysisBuffersSize) {
-        mAnalysisBuffersSize = samples;
-        for (int i = 0; i < fftChans; i++) {
-            if (mAnalysisBuffers[i]) {
-                delete mAnalysisBuffers[i];
-            }
-            mAnalysisBuffers[i] = new float[mAnalysisBuffersSize];
-        }
+
+    float* currentSpectra = mSpectra[0];
+    for (uint32_t i = 0; i < fftChans; i++) {
+        // take the last sample from each bin
+        currentSpectra[i] = mAnalysisBuffers[i][mAnalysisBuffersSize - 1];
     }
 
-    mRingBufferHead = (mRingBufferHead + samples) % mRingBufferSize;
-    static_cast<fftdsp*>(mFftP)->compute(samples, &mFftBuffer, mAnalysisBuffers);
+    // shift all buffers by 1 forward
+    for (int i = 0; i < mNumSpectra - 1; i++) {
+        mSpectra[i] = mSpectra[i + 1];
+    }
+    mSpectra[mNumSpectra - 1] = currentSpectra;
+}
+
+//*******************************************************************************
+void Analyzer::updateSpectraDifferentials() {
+    int fftChans = static_cast<fftdsp*>(mFftP)->getNumOutputs();
+
+    // compute spectra differentials
+    for (uint32_t i = 0; i < fftChans; i++) {
+        // set the first spectra differential to 0
+        mSpectraDifferentials[0][i] = 0;
+    }
+
+    for (int i = 1; i < mNumSpectra; i++) {
+        for (uint32_t j = 0; j < fftChans; j++) {
+            mSpectraDifferentials[i][j] = mSpectra[i][j] - mSpectra[i-1][j];
+        }
+    }
+}
+
+//*******************************************************************************
+bool Analyzer::checkForAudioFeedback() {
+
 }
