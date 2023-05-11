@@ -43,6 +43,7 @@
 #include <QObject>
 #include <QTimer>
 #include <vector>
+#include <QMutex>
 
 #include "ProcessPlugin.h"
 
@@ -93,6 +94,8 @@ class Analyzer : public ProcessPlugin
 
     QTimer mTimer;
     bool hasProcessedAudio = false;
+
+    QMutex mMutex;
 };
 
 #endif

@@ -38,6 +38,7 @@
 
 #include "Analyzer.h"
 #include <iostream>
+#include <QMutexLocker>
 
 #include "jacktrip_types.h"
 #include "fftdsp.h"
@@ -60,15 +61,15 @@ Analyzer::Analyzer(int numchans, bool verboseFlag) : mNumChannels(numchans)
 
     mFftBufferSize = mRingBufferSize;
     mFftBuffer = new float[mFftBufferSize];
-    std::memset(mFftBuffer, 0, sizeof(float) * mFftBufferSize);
+    std::memset(mFftBuffer, 0, sizeof(float)*mFftBufferSize);
 
-    mAnalysisBuffers = new float*[mAnalysisBuffersSize];
+    mAnalysisBuffers = new float*[fftChans];
     for (int i = 0; i < fftChans; i++) {
         mAnalysisBuffers[i] = new float[mAnalysisBuffersSize];
     }
 
     /* Start timer */
-    int timeout_ms = 100;
+    int timeout_ms = 50;
     connect(&mTimer, &QTimer::timeout, this, &Analyzer::onTick);
     mTimer.setTimerType(Qt::PreciseTimer);
     mTimer.setInterval(timeout_ms);
@@ -109,8 +110,12 @@ void Analyzer::compute(int nframes, float** inputs, float** outputs)
         init(fSamplingFreq);
     }
 
-    int fftChans = static_cast<fftdsp*>(mFftP)->getNumOutputs();
+    if (!mMutex->tryLock()) {
+        return;
+    }
 
+    int fftChans = static_cast<fftdsp*>(mFftP)->getNumOutputs();
+    
     /* if we neeed to increase the buffer size, update mSumBuffer */
     if (mSumBufferSize < nframes) {
         mSumBufferSize = nframes;
@@ -132,6 +137,8 @@ void Analyzer::compute(int nframes, float** inputs, float** outputs)
 
     addFramesToQueue(nframes, mSumBuffer);
     hasProcessedAudio = true;
+
+    mMutex->unlock();
 }
 
 //*******************************************************************************
@@ -154,20 +161,20 @@ void Analyzer::addFramesToQueue(int nframes, float* samples)
 
     uint32_t newRingBufferTail = (mRingBufferTail + (uint32_t) nframes) % mRingBufferSize;
     // check if we have enough space in the buffer, if not reallocate it
-    bool needsReallocation = false;
+    bool reallocateRingBuffer = false;
     if (mRingBufferHead <= mRingBufferTail) {
         // if the current head comes before the current tail
         if (nframes >= (mRingBufferSize - mRingBufferTail) + mRingBufferHead) {
-            needsReallocation = true;
+            reallocateRingBuffer = true;
         }
     } else {
         // if the current tail comes after the current head
         if (nframes >= mRingBufferHead - mRingBufferTail) {
-            needsReallocation = true;
+            reallocateRingBuffer = true;
         }
     }
     
-    if (needsReallocation) {
+    if (reallocateRingBuffer) {
         // need to reallocate buffer to the next larger size up (power of 2)
         // before we write data to the buffer
         uint32_t newRingBufferSize = mRingBufferSize << 1;     // next power of 2
@@ -176,12 +183,12 @@ void Analyzer::addFramesToQueue(int nframes, float* samples)
         uint32_t itemsCopied = 0;
         if (mRingBufferHead <= mRingBufferTail) {
             // if the current head comes before the current tail
-            std::memcpy(newRingBuffer, &mRingBuffer[mRingBufferHead], mRingBufferTail - mRingBufferHead);
+            std::memcpy(newRingBuffer, &mRingBuffer[mRingBufferHead], sizeof(float)*(mRingBufferTail - mRingBufferHead));
             itemsCopied += mRingBufferTail - mRingBufferHead;
         } else {
             // if the current head comes after the current tail, use two memcpy operations due to wraparound
-            std::memcpy(newRingBuffer, &mRingBuffer[mRingBufferHead], mRingBufferSize - mRingBufferHead);
-            std::memcpy(&newRingBuffer[mRingBufferSize - mRingBufferHead], mRingBuffer, mRingBufferTail);
+            std::memcpy(newRingBuffer, &mRingBuffer[mRingBufferHead], sizeof(float)*(mRingBufferSize - mRingBufferHead));
+            std::memcpy(&newRingBuffer[mRingBufferSize - mRingBufferHead], mRingBuffer, sizeof(float)*mRingBufferTail);
 
             itemsCopied += mRingBufferSize - mRingBufferHead;
             itemsCopied += mRingBufferTail;
@@ -201,38 +208,49 @@ void Analyzer::addFramesToQueue(int nframes, float* samples)
 
     if (newRingBufferTail >= mRingBufferTail) {
         // we don't cross the overflow boundary
-        std::memcpy(&mRingBuffer[mRingBufferTail], samples, nframes);
+        std::memcpy(&mRingBuffer[mRingBufferTail], samples, sizeof(float)*nframes);
     } else {
         // we cross the overflow boundary - first fill to the end of the buffer
-        std::memcpy(&mRingBuffer[mRingBufferTail], samples, mRingBufferSize - mRingBufferTail);
+        std::memcpy(&mRingBuffer[mRingBufferTail], samples, sizeof(float)*(mRingBufferSize - mRingBufferTail));
 
         // then finish copying data starting from where we left off and copying it to the start of the buffer
-        std::memcpy(mRingBuffer, &samples[mRingBufferSize - mRingBufferTail], nframes - (mRingBufferSize - mRingBufferTail));
+        std::memcpy(mRingBuffer, &samples[mRingBufferSize - mRingBufferTail], sizeof(float)*(nframes - (mRingBufferSize - mRingBufferTail)));
     }
 
     mRingBufferTail = newRingBufferTail;
 }
 
+//*******************************************************************************
 void Analyzer::onTick()
-{    
+{   
+    QMutexLocker locker(&mMutex);
     if (!hasProcessedAudio) {
         return;
     }
 
-    // TODO: How do we make this thread safe? Preferably without a mutex
+    if (mFftBufferSize < mRingBufferSize) {
+        delete mFftBuffer;
+        mFftBufferSize = mRingBufferSize;
+        mFftBuffer = new float[mFftBufferSize];
+    }
+
+    std::memset(mFftBuffer, 0, sizeof(float)*mFftBufferSize);
+
+    // copy samples from mRingBuffer into mFftBuffer
     uint32_t samples = 0;
     if (mRingBufferHead <= mRingBufferTail) {
-        std::memcpy(mFftBuffer, &mSumBuffer[mRingBufferHead], mRingBufferTail - mRingBufferHead);
+        std::memcpy(mFftBuffer, &mRingBuffer[mRingBufferHead], sizeof(float)*(mRingBufferTail - mRingBufferHead));
         samples = mRingBufferTail - mRingBufferHead;
     } else {
-        std::memcpy(mFftBuffer, &mSumBuffer[mRingBufferHead], mRingBufferSize - mRingBufferHead);
-        std::memcpy(&mFftBuffer[mRingBufferSize - mRingBufferHead], mRingBuffer, mRingBufferTail);
+        std::memcpy(mFftBuffer, &mRingBuffer[mRingBufferHead], sizeof(float)*(mRingBufferSize - mRingBufferHead));
+        std::memcpy(&mFftBuffer[mRingBufferSize - mRingBufferHead], mRingBuffer, sizeof(float)*mRingBufferTail);
         samples += mRingBufferSize - mRingBufferHead;
         samples += mRingBufferTail;
     }
 
     int fftChans = static_cast<fftdsp*>(mFftP)->getNumOutputs();
     if (samples > mAnalysisBuffersSize) {
+        mAnalysisBuffersSize = samples;
         for (int i = 0; i < fftChans; i++) {
             if (mAnalysisBuffers[i]) {
                 delete mAnalysisBuffers[i];
@@ -241,5 +259,6 @@ void Analyzer::onTick()
         }
     }
 
+    mRingBufferHead = (mRingBufferHead + samples) % mRingBufferSize;
     static_cast<fftdsp*>(mFftP)->compute(samples, &mFftBuffer, mAnalysisBuffers);
 }
