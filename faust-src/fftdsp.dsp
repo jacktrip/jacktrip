@@ -6,5 +6,5 @@ declare description "FFT Faust Plugin for JackTrip, using FFT window of 512 and 
 
 import("stdfaust.lib");
 
-fftWindowSize = 4; // window is 128 samples long
+fftWindowSize = 128; // window is 128 samples long
 process = an.rtocv(fftWindowSize) : an.fft(fftWindowSize) : an.c_select_pos_freqs(fftWindowSize) : an.c_magsq(fftWindowSize/2+1);

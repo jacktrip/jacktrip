@@ -41,6 +41,7 @@
 #define __ANALYZER_H__
 
 #include <QObject>
+#include <QTimer>
 #include <vector>
 
 #include "ProcessPlugin.h"
@@ -67,15 +68,31 @@ class Analyzer : public ProcessPlugin
     void updateNumChannels(int nChansIn, int nChansOut) override;
 
    private:
+
+    void addFramesToQueue(int nframes, float* samples);
+    void onTick();
+
     float fs;
     int mNumChannels;
-    int mBufSize = 0;
-    int mFftSize = 128;
-    int mSampleCount = 0;
+    uint32_t mSumBufferSize = 0;
+    uint32_t mFftSize = 128;
+    uint32_t mSampleCount = 0;
 
     float** mAnalysisBuffers = nullptr;
-    float* mMeasuringBuffer = nullptr;
+    uint32_t mAnalysisBuffersSize = 0;
+    float* mSumBuffer = nullptr;
     void* mFftP;
+
+    float* mRingBuffer = nullptr;
+    uint32_t mRingBufferSize = 0;
+    uint32_t mRingBufferHead = 0;
+    uint32_t mRingBufferTail = 0;
+
+    float* mFftBuffer = nullptr;
+    uint32_t mFftBufferSize = 0;
+
+    QTimer mTimer;
+    bool hasProcessedAudio = false;
 };
 
 #endif
