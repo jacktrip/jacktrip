@@ -181,16 +181,6 @@ void Analyzer::compute(int nframes, float** inputs, float** outputs)
 }
 
 //*******************************************************************************
-void Analyzer::updateNumChannels(int nChansIn, int nChansOut)
-{
-    if (outgoingPluginToNetwork) {
-        mNumChannels = nChansIn;
-    } else {
-        mNumChannels = nChansOut;
-    }
-}
-
-//*******************************************************************************
 void Analyzer::addFramesToQueue(int nframes, float* samples)
 {
     if (nframes > mRingBufferSize) {
@@ -201,26 +191,24 @@ void Analyzer::addFramesToQueue(int nframes, float* samples)
     }
 
     uint32_t newRingBufferTail = (mRingBufferTail + (uint32_t)nframes) % mRingBufferSize;
-    // check if we have enough space in the buffer, if not reallocate it
-    bool reallocateRingBuffer = false;
-    if (mRingBufferHead <= mRingBufferTail) {
-        // if the current head comes before the current tail
-        if (nframes >= (mRingBufferSize - mRingBufferTail) + mRingBufferHead) {
-            reallocateRingBuffer = true;
-        }
-    } else {
-        // if the current tail comes after the current head
-        if (nframes >= mRingBufferHead - mRingBufferTail) {
-            reallocateRingBuffer = true;
-        }
-    }
 
-    if (reallocateRingBuffer) {
+    // check if we have enough space in the buffer, if not reallocate it
+    if ((mRingBufferHead <= mRingBufferTail)
+        && (nframes >= (mRingBufferSize - mRingBufferTail) + mRingBufferHead)) {
+        // if the current head comes before the current tail and nframes
+        // would cause the new tail to wrap around to the current head, reallocate
         resizeRingBuffer();
-        // recompute newRingBufferTail
+        newRingBufferTail = (mRingBufferTail + (uint32_t)nframes) % mRingBufferSize;
+    } else if ((mRingBufferHead > mRingBufferTail)
+               && nframes >= mRingBufferHead - mRingBufferTail) {
+        // if the current head is after the current tail and nframes
+        // would cause the current tail to be past the current head, reallocate
+        resizeRingBuffer();
         newRingBufferTail = (mRingBufferTail + (uint32_t)nframes) % mRingBufferSize;
     }
 
+    // mRingBuffer is large enough at this point, so we should be able to safely add
+    // nframes samples
     if (newRingBufferTail >= mRingBufferTail) {
         // we don't cross the overflow boundary
         std::memcpy(&mRingBuffer[mRingBufferTail], samples, sizeof(float) * nframes);
@@ -235,6 +223,7 @@ void Analyzer::addFramesToQueue(int nframes, float* samples)
                     sizeof(float) * (nframes - (mRingBufferSize - mRingBufferTail)));
     }
 
+    // update the tail
     mRingBufferTail = newRingBufferTail;
 }
 
@@ -266,7 +255,8 @@ void Analyzer::resizeRingBuffer()
 
     delete mRingBuffer;
 
-    // update instance variables
+    // update instance variables. Note that resizing sets the head to 0
+    // and the itemsCopied samples lie at the start of the newly allocated buffer
     mRingBufferSize = newRingBufferSize;
     mRingBufferHead = 0;
     mRingBufferTail = itemsCopied;
@@ -276,22 +266,27 @@ void Analyzer::resizeRingBuffer()
 //*******************************************************************************
 void Analyzer::onTick()
 {
+    // cannot process audio if the no samples have been added to the ring buffer yet
     if (!hasProcessedAudio) {
         return;
     }
 
+    // reallocate fftBuffer if needed
     if (mFftBufferSize < mRingBufferSize) {
         delete mFftBuffer;
         mFftBufferSize = mRingBufferSize;
         mFftBuffer     = new float[mFftBufferSize];
     }
 
-    // wrap any accesses to mRingBuffer in a lock
+    // wrap any accesses to mRingBuffer in a lock. Copy from mRingBuffer to the
+    // mFftBuffer, then update the head to indicate that we can overwrite those samples in
+    // the ring buffer
     mRingBufferMutex.lock();
     uint32_t samples = updateFftInputBuffer();
     mRingBufferHead  = (mRingBufferHead + samples) % mRingBufferSize;
     mRingBufferMutex.unlock();
 
+    // reallocate the analysis buffers if necessary
     int fftChans = static_cast<fftdsp*>(mFftP)->getNumOutputs();
     if (samples > mAnalysisBuffersSize) {
         mAnalysisBuffersSize = samples;
@@ -303,13 +298,20 @@ void Analyzer::onTick()
         }
     }
 
+    // run Faust and output results to mAnalysisBuffers. With this, the relevant data in
+    // mAnalysisBuffers should be on all (N/2 + 1) faust output channels x the # of
+    // samples. Note that samples may be less than mAnalysisBuffersSize, so the most
+    // up-to-date spectra would be mAnalysisBuffersSize[:][samples - 1], and NOT
+    // mAnalysisBuffersSize[:][mAnalysisBuffersSize - 1]
     static_cast<fftdsp*>(mFftP)->compute(samples, &mFftBuffer, mAnalysisBuffers);
     mAnalysisBufferSamples = samples;
 
+    // update instance spectra and differentials buffers
     updateSpectra();
     updateSpectraDifferentials();
-    bool detectedFeedback = checkForAudioFeedback();
 
+    // check for audio feedback loops
+    bool detectedFeedback = checkForAudioFeedback();
     if (detectedFeedback) {
         emit signalFeedbackDetected(mIsMonitoringAnalyzer);
     }
@@ -343,7 +345,8 @@ void Analyzer::updateSpectra()
 
     float* currentSpectra = mSpectra[0];
     for (uint32_t i = 0; i < fftChans; i++) {
-        // take the last sample from each bin
+        // take the last sample from each bin. NOTE: use mAnalysisBufferSamples - 1, NOT
+        // mAnalysisBuffersSize - 1
         currentSpectra[i] = mAnalysisBuffers[i][mAnalysisBufferSamples - 1];
     }
 
@@ -497,6 +500,16 @@ bool Analyzer::testSpectralPeakGrowing()
     }
 
     return false;
+}
+
+//*******************************************************************************
+void Analyzer::updateNumChannels(int nChansIn, int nChansOut)
+{
+    if (outgoingPluginToNetwork) {
+        mNumChannels = nChansIn;
+    } else {
+        mNumChannels = nChansOut;
+    }
 }
 
 //*******************************************************************************
