@@ -143,10 +143,8 @@ void Analyzer::compute(int nframes, float** inputs, float** outputs)
         init(fSamplingFreq);
     }
 
-    int fftChans = static_cast<fftdsp*>(mFftP)->getNumOutputs();
-
     /* if we neeed to increase the buffer size, update mSumBuffer */
-    if (mSumBufferSize < nframes) {
+    if (mSumBufferSize < (uint32_t) nframes) {
         mSumBufferSize = nframes;
 
         // reallocate mSumBuffer
@@ -183,7 +181,7 @@ void Analyzer::compute(int nframes, float** inputs, float** outputs)
 //*******************************************************************************
 void Analyzer::addFramesToQueue(int nframes, float* samples)
 {
-    if (nframes > mRingBufferSize) {
+    if ((uint32_t) nframes > mRingBufferSize) {
         // this edge case isn't handled by the following code, and shouldn't happen
         // anyways
         std::cout << "Skipping addFramesToQueue" << std::endl;
@@ -194,13 +192,13 @@ void Analyzer::addFramesToQueue(int nframes, float* samples)
 
     // check if we have enough space in the buffer, if not reallocate it
     if ((mRingBufferHead <= mRingBufferTail)
-        && (nframes >= (mRingBufferSize - mRingBufferTail) + mRingBufferHead)) {
+        && ((uint32_t) nframes >= (mRingBufferSize - mRingBufferTail) + mRingBufferHead)) {
         // if the current head comes before the current tail and nframes
         // would cause the new tail to wrap around to the current head, reallocate
         resizeRingBuffer();
         newRingBufferTail = (mRingBufferTail + (uint32_t)nframes) % mRingBufferSize;
     } else if ((mRingBufferHead > mRingBufferTail)
-               && nframes >= mRingBufferHead - mRingBufferTail) {
+               && (uint32_t) nframes >= mRingBufferHead - mRingBufferTail) {
         // if the current head is after the current tail and nframes
         // would cause the current tail to be past the current head, reallocate
         resizeRingBuffer();
@@ -344,7 +342,7 @@ void Analyzer::updateSpectra()
     int fftChans = static_cast<fftdsp*>(mFftP)->getNumOutputs();
 
     float* currentSpectra = mSpectra[0];
-    for (uint32_t i = 0; i < fftChans; i++) {
+    for (int i = 0; i < fftChans; i++) {
         // take the last sample from each bin. NOTE: use mAnalysisBufferSamples - 1, NOT
         // mAnalysisBuffersSize - 1
         currentSpectra[i] = mAnalysisBuffers[i][mAnalysisBufferSamples - 1];
@@ -363,13 +361,13 @@ void Analyzer::updateSpectraDifferentials()
     int fftChans = static_cast<fftdsp*>(mFftP)->getNumOutputs();
 
     // compute spectra differentials
-    for (uint32_t i = 0; i < fftChans; i++) {
+    for (int i = 0; i < fftChans; i++) {
         // set the first spectra differential to 0
         mSpectraDifferentials[0][i] = 0;
     }
 
     for (int i = 1; i < mNumSpectra; i++) {
-        for (uint32_t j = 0; j < fftChans; j++) {
+        for (int j = 0; j < fftChans; j++) {
             mSpectraDifferentials[i][j] = mSpectra[i][j] - mSpectra[i - 1][j];
         }
     }
@@ -490,11 +488,11 @@ bool Analyzer::testSpectralPeakGrowing()
         }
     }
 
-    if (numPositiveDifferentials == mNumSpectra && numLargeDifferentials >= 1) {
+    if (numPositiveDifferentials == (uint32_t) mNumSpectra && numLargeDifferentials >= 1) {
         return true;
     }
 
-    if (numPositiveDifferentials >= (int)(mNumSpectra * 0.75)
+    if (numPositiveDifferentials >= (uint32_t)(mNumSpectra * 0.75)
         && numLargeDifferentials >= 2) {
         return true;
     }
