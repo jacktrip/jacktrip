@@ -1544,33 +1544,33 @@ void VirtualStudio::completeConnection()
     m_connectionState = QStringLiteral("Preparing audio...");
     emit connectionStateChanged();
     try {
-        std::string input  = "";
-        std::string output = "";
-        int buffer_size    = 0;
+        std::string input     = "";
+        std::string output    = "";
+        int buffer_size       = 0;
+        int inputMixMode      = -1;
+        int baseInputChannel  = 0;
+        int numInputChannels  = 2;
+        int baseOutputChannel = 0;
+        int numOutputChannels = 2;
 #ifdef RT_AUDIO
         if (m_useRtAudio) {
-            input       = m_inputDevice.toStdString();
-            output      = m_outputDevice.toStdString();
-            buffer_size = m_bufferSize;
+            input             = m_inputDevice.toStdString();
+            output            = m_outputDevice.toStdString();
+            buffer_size       = m_bufferSize;
+            inputMixMode      = m_inputMixMode;
+            baseInputChannel  = m_baseInputChannel;
+            numInputChannels  = m_numInputChannels;
+            baseOutputChannel = m_baseOutputChannel;
+            numOutputChannels = m_numOutputChannels;
         }
-        int inputMixMode = m_inputMixMode;
-#else
-        int inputMixMode = -1;
 #endif
         int bufferStrategy = m_bufferStrategy;
         if (bufferStrategy == 2) {
             bufferStrategy = 3;
         }
         JackTrip* jackTrip =
-            m_device->initJackTrip(m_useRtAudio, input, output,
-#ifdef RT_AUDIO
-                                   m_baseInputChannel, m_numInputChannels,
-                                   m_baseOutputChannel, m_numOutputChannels,
-#else
-                                   0, 2, 0,
-                                   2,  // default to 2 channels for input and 2 channels
-                                       // for output starting at channel 0
-#endif
+            m_device->initJackTrip(m_useRtAudio, input, output, baseInputChannel,
+                                   numInputChannels, baseOutputChannel, numOutputChannels,
                                    inputMixMode, buffer_size, bufferStrategy, studioInfo);
         if (jackTrip == 0) {
             processError("Could not bind port");
