@@ -87,6 +87,24 @@ Analyzer::Analyzer(int numchans, bool verboseFlag) : mNumChannels(numchans)
 //*******************************************************************************
 Analyzer::~Analyzer()
 {
+    int fftChans = static_cast<fftdsp*>(mFftP)->getNumOutputs();
+    for (int i = 0; i < fftChans; i++) {
+        delete mAnalysisBuffers[i];
+    }
+
+    for (int i = 0; i < mNumSpectra; i++) {
+        delete mSpectra[i];
+        delete mSpectraDifferentials[i];
+    }
+
+    delete mAnalysisBuffers;
+    delete mSpectra;
+    delete mSpectraDifferentials;
+
+    delete mSumBuffer;
+    delete mRingBuffer;
+    delete mFftBuffer;
+
     delete static_cast<fftdsp*>(mFftP);
 }
 
