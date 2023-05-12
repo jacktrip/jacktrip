@@ -87,31 +87,35 @@ class Analyzer : public ProcessPlugin
     float fs;
     int mNumChannels;
     bool mIsMonitoringAnalyzer = false;
+    bool hasProcessedAudio = false;
+    QTimer mTimer;
 
-    uint32_t mSumBufferSize = 0;
-    uint32_t mFftSize       = 128;
-    uint32_t mSampleCount   = 0;
+    void* mFftP;                        // Faust plugin
+    uint32_t mFftSize       = 128;      // FFT size parameter
 
-    float** mAnalysisBuffers        = nullptr;
-    uint32_t mAnalysisBuffersSize   = 0;
-    uint32_t mAnalysisBufferSamples = 0;
-
+    // mSumBuffer is used to hold the sum of all input channels
     float* mSumBuffer = nullptr;
-    void* mFftP;
+    uint32_t mSumBufferSize = 0;
 
+    // mRingBuffer is the buffer shared between the audio process callback thread and the
+    // onTick thread. The main thread writes to mRingBuffer and the onTick thread reads from
+    // it
     float* mRingBuffer       = nullptr;
     uint32_t mRingBufferSize = 0;
     uint32_t mRingBufferHead = 0;
     uint32_t mRingBufferTail = 0;
+    QMutex mRingBufferMutex;
 
+    // mFftBuffer is the buffer used for the faust plugin inputs
     float* mFftBuffer       = nullptr;
     uint32_t mFftBufferSize = 0;
 
-    QTimer mTimer;
-    bool hasProcessedAudio = false;
+    // mAnalysisBuffers is the buffer used for the faust plugin outputs
+    float** mAnalysisBuffers        = nullptr;
+    uint32_t mAnalysisBuffersSize   = 0;
+    uint32_t mAnalysisBufferSamples = 0;
 
-    QMutex mMutex;
-
+    // mSpectra and mSpectra store a history of the spectral analyses
     int mNumSpectra               = 10;
     float** mSpectra              = nullptr;
     float** mSpectraDifferentials = nullptr;

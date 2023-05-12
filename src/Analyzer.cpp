@@ -143,11 +143,6 @@ void Analyzer::compute(int nframes, float** inputs, float** outputs)
         init(fSamplingFreq);
     }
 
-    // if (!mMutex.tryLock()) {
-    //     std::cout << "[main] Mutex is Locked! Skipping for now!" << std::endl;
-    //     return;
-    // }
-
     int fftChans = static_cast<fftdsp*>(mFftP)->getNumOutputs();
 
     /* if we neeed to increase the buffer size, update mSumBuffer */
@@ -174,10 +169,16 @@ void Analyzer::compute(int nframes, float** inputs, float** outputs)
         }
     }
 
+    // wrap any accesses to mRingBuffer in a lock
+    if (!mRingBufferMutex.tryLock()) {
+        // use tryLock here because we don't want the compute() function to hang - that
+        // might cause the process callback to stall, leading to audible blips
+        return;
+    }
     addFramesToQueue(nframes, mSumBuffer);
-    hasProcessedAudio = true;
+    mRingBufferMutex.unlock();
 
-    // mMutex.unlock();
+    hasProcessedAudio = true;
 }
 
 //*******************************************************************************
@@ -286,14 +287,11 @@ void Analyzer::onTick()
         mFftBuffer     = new float[mFftBufferSize];
     }
 
-    // if (!mMutex.tryLock()) {
-    //     std::cout << "[onTick] Mutex is Locked! Skipping for now!" << std::endl;
-    //     return;
-    // }
-
+    // wrap any accesses to mRingBuffer in a lock
+    mRingBufferMutex.lock();
     uint32_t samples = updateFftInputBuffer();
     mRingBufferHead  = (mRingBufferHead + samples) % mRingBufferSize;
-    // mMutex.unlock();
+    mRingBufferMutex.unlock();
 
     int fftChans = static_cast<fftdsp*>(mFftP)->getNumOutputs();
     if (samples > mAnalysisBuffersSize) {
