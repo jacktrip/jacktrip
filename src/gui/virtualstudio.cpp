@@ -1587,12 +1587,6 @@ void VirtualStudio::completeConnection()
 
         setAudioActivated(false);
 
-        // Setup input analyzer
-        m_inputAnalyzerPlugin = new Analyzer(jackTrip->getNumInputChannels());
-        jackTrip->appendProcessPluginToNetwork(m_inputAnalyzerPlugin);
-        connect(m_inputAnalyzerPlugin, &Analyzer::signalFeedbackDetected, this,
-                &VirtualStudio::detectedFeedbackLoop);
-
         // Setup output volume
         m_outputVolumePlugin = new Volume(jackTrip->getNumOutputChannels());
         jackTrip->appendProcessPluginFromNetwork(m_outputVolumePlugin);
@@ -1609,6 +1603,12 @@ void VirtualStudio::completeConnection()
         connect(this, &VirtualStudio::updatedInputMuted, m_inputVolumePlugin,
                 &Volume::muteUpdated);
 
+        // Setup input analyzer
+        m_inputAnalyzerPlugin = new Analyzer(jackTrip->getNumInputChannels());
+        jackTrip->appendProcessPluginToNetwork(m_inputAnalyzerPlugin);
+        connect(m_inputAnalyzerPlugin, &Analyzer::signalFeedbackDetected, this,
+                &VirtualStudio::detectedFeedbackLoop);
+
         // Setup input meter
         m_inputMeter = new Meter(jackTrip->getNumInputChannels());
         jackTrip->appendProcessPluginToNetwork(m_inputMeter);
@@ -1622,6 +1622,13 @@ void VirtualStudio::completeConnection()
         jackTrip->appendProcessPluginToMonitor(m_monitor);
         connect(this, &VirtualStudio::updatedMonitorVolume, m_monitor,
                 &Monitor::volumeUpdated);
+
+        // Setup output analyzer
+        m_outputAnalyzerPlugin = new Analyzer(jackTrip->getNumOutputChannels());
+        m_outputAnalyzerPlugin->setIsMonitoringAnalyzer(true);
+        jackTrip->appendProcessPluginToMonitor(m_outputAnalyzerPlugin);
+        connect(m_outputAnalyzerPlugin, &Analyzer::signalFeedbackDetected, this,
+                &VirtualStudio::detectedFeedbackLoop);
 
         // Setup output meter
         // Note: Add this to monitor process to include self-volume
@@ -2168,9 +2175,13 @@ void VirtualStudio::updatedOutputVuMeasurements(const float* valuesInDecibels,
                                                        QVariant::fromValue(uiValues));
 }
 
-void VirtualStudio::detectedFeedbackLoop()
+void VirtualStudio::detectedFeedbackLoop(bool fromMonitor)
 {
-    setInputMuted(true);
+    if (!fromMonitor) {
+        setInputMuted(true);
+    } else {
+        setMonitorVolume(0);
+    }
 }
 
 void VirtualStudio::setupAuthenticator()

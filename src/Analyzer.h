@@ -66,6 +66,7 @@ class Analyzer : public ProcessPlugin
     const char* getName() const override { return "Analyzer"; };
 
     void updateNumChannels(int nChansIn, int nChansOut) override;
+    void setIsMonitoringAnalyzer(bool isMonitoringAnalyzer);
 
    private:
     void addFramesToQueue(int nframes, float* samples);
@@ -85,6 +86,8 @@ class Analyzer : public ProcessPlugin
 
     float fs;
     int mNumChannels;
+    bool mIsMonitoringAnalyzer = false;
+
     uint32_t mSumBufferSize = 0;
     uint32_t mFftSize       = 128;
     uint32_t mSampleCount   = 0;
@@ -114,7 +117,7 @@ class Analyzer : public ProcessPlugin
     float** mSpectraDifferentials = nullptr;
 
    signals:
-    void signalFeedbackDetected();
+    void signalFeedbackDetected(bool monitorFeedback);
 };
 
 #endif

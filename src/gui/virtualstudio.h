@@ -287,7 +287,7 @@ class VirtualStudio : public QObject
     void setMonitorMuted(bool muted);
     void setAudioActivated(bool activated);
     void setAudioReady(bool ready);
-    void detectedFeedbackLoop();
+    void detectedFeedbackLoop(bool fromMonitor);
     void setWindowState(QString state);
     void exit();
 
@@ -443,6 +443,7 @@ class VirtualStudio : public QObject
     bool m_audioReady     = false;
 
     Analyzer* m_inputAnalyzerPlugin;
+    Analyzer* m_outputAnalyzerPlugin;
     Meter* m_inputMeter;
     Meter* m_outputMeter;
     Meter* m_inputTestMeter;

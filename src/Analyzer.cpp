@@ -147,7 +147,12 @@ void Analyzer::compute(int nframes, float** inputs, float** outputs)
     for (int i = 0; i < nframes; i++) {
         mSumBuffer[i] = 0;
         for (int ch = 0; ch < mNumChannels; ch++) {
-            mSumBuffer[i] += inputs[ch][i];
+            if (!mIsMonitoringAnalyzer) {
+                mSumBuffer[i] += inputs[ch][i];
+            } else {
+                mSumBuffer[i] += outputs[ch][i];
+            }
+            
         }
     }
 
@@ -291,7 +296,7 @@ void Analyzer::onTick()
     bool detectedFeedback = checkForAudioFeedback();
 
     if (detectedFeedback) {
-        emit signalFeedbackDetected();
+        emit signalFeedbackDetected(mIsMonitoringAnalyzer);
     }
 }
 
@@ -387,7 +392,7 @@ bool Analyzer::testSpectralPeakAboveThreshold()
     // ballpark range.
 
     // the exact threshold can be adjusted using the mThresholdMultiplier
-    float threshold = mThresholdMultiplier * (mFftSize / 2) * (mFftSize / 2);
+    float threshold = 10;
 
     float peak = 0.0f;
     for (int i = 0; i < fftChans; i++) {
@@ -399,6 +404,7 @@ bool Analyzer::testSpectralPeakAboveThreshold()
     return peak > threshold;
 }
 
+//*******************************************************************************
 bool Analyzer::testSpectralPeakAbnormallyHigh()
 {
     // this test checks if the peak of the latest spectra is substantially higher than
@@ -429,6 +435,7 @@ bool Analyzer::testSpectralPeakAbnormallyHigh()
     return peak / median > threshold;
 }
 
+//*******************************************************************************
 bool Analyzer::testSpectralPeakGrowing()
 {
     // this test checks if the peak of the spectra has a history of growth over the last
@@ -475,4 +482,10 @@ bool Analyzer::testSpectralPeakGrowing()
 
     return numPositiveDifferentials >= (int)(mNumSpectra / 2)
            && numLargeDifferentials >= 1;
+}
+
+//*******************************************************************************
+void Analyzer::setIsMonitoringAnalyzer(bool isMonitoringAnalyzer)
+{
+    mIsMonitoringAnalyzer = isMonitoringAnalyzer;
 }
