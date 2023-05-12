@@ -87,19 +87,19 @@ class Analyzer : public ProcessPlugin
     float fs;
     int mNumChannels;
     bool mIsMonitoringAnalyzer = false;
-    bool hasProcessedAudio = false;
+    bool hasProcessedAudio     = false;
     QTimer mTimer;
 
-    void* mFftP;                        // Faust plugin
-    uint32_t mFftSize       = 128;      // FFT size parameter
+    void* mFftP;              // Faust plugin
+    uint32_t mFftSize = 128;  // FFT size parameter
 
     // mSumBuffer is used to hold the sum of all input channels
-    float* mSumBuffer = nullptr;
+    float* mSumBuffer       = nullptr;
     uint32_t mSumBufferSize = 0;
 
     // mRingBuffer is the buffer shared between the audio process callback thread and the
-    // onTick thread. The main thread writes to mRingBuffer and the onTick thread reads from
-    // it
+    // onTick thread. The main thread writes to mRingBuffer and the onTick thread reads
+    // from it
     float* mRingBuffer       = nullptr;
     uint32_t mRingBufferSize = 0;
     uint32_t mRingBufferHead = 0;

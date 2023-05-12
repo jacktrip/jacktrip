@@ -165,7 +165,6 @@ void Analyzer::compute(int nframes, float** inputs, float** outputs)
             } else {
                 mSumBuffer[i] += outputs[ch][i];
             }
-            
         }
     }
 
@@ -492,7 +491,8 @@ bool Analyzer::testSpectralPeakGrowing()
         return true;
     }
 
-    if (numPositiveDifferentials >= (int)(mNumSpectra * 0.75) && numLargeDifferentials >= 2) {
+    if (numPositiveDifferentials >= (int)(mNumSpectra * 0.75)
+        && numLargeDifferentials >= 2) {
         return true;
     }
 
