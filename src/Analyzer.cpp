@@ -282,8 +282,7 @@ void Analyzer::onTick()
     bool detectedFeedback = checkForAudioFeedback();
 
     if (detectedFeedback) {
-        // TODO: alert UI
-        std::cout << "FEEDBACK DETECTED!!!" << std::endl;
+        emit signalFeedbackDetected();
     }
 }
 
@@ -400,7 +399,7 @@ bool Analyzer::testSpectralPeakAbnormallyHigh() {
     }
     std::sort(latestSpectraSorted.begin(), latestSpectraSorted.end(), std::less<float>());
 
-    float threshold = mThresholdMultiplier * 1000; // 3 orders of magnitude
+    float threshold = mThresholdMultiplier * 10; // 2 orders of magnitude
 
     float peak = 0.0f;
     for (int i = 0; i < fftChans; i++) {
@@ -453,10 +452,10 @@ bool Analyzer::testSpectralPeakGrowing() {
             numPositiveDifferentials++;
         }
 
-        if (differentials[i] > 100 * mThresholdMultiplier) {
+        if (differentials[i] > 10 * mThresholdMultiplier) {
             numLargeDifferentials++;
         }
     }
 
-    return numPositiveDifferentials >= (int) (mNumSpectra / 2) && numLargeDifferentials >= 2;
+    return numPositiveDifferentials >= (int) (mNumSpectra / 2) && numLargeDifferentials >= 1;
 }
