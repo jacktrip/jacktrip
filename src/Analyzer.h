@@ -36,14 +36,13 @@
  * \license MIT
  */
 
-
 #ifndef __ANALYZER_H__
 #define __ANALYZER_H__
 
+#include <QMutex>
 #include <QObject>
 #include <QTimer>
 #include <vector>
-#include <QMutex>
 
 #include "ProcessPlugin.h"
 
@@ -69,7 +68,6 @@ class Analyzer : public ProcessPlugin
     void updateNumChannels(int nChansIn, int nChansOut) override;
 
    private:
-
     void addFramesToQueue(int nframes, float* samples);
     void resizeRingBuffer();
     void onTick();
@@ -82,28 +80,28 @@ class Analyzer : public ProcessPlugin
     bool testSpectralPeakAbnormallyHigh();
     bool testSpectralPeakGrowing();
 
-    int mInterval = 100;
+    int mInterval              = 100;
     float mThresholdMultiplier = 0.5;
 
     float fs;
     int mNumChannels;
     uint32_t mSumBufferSize = 0;
-    uint32_t mFftSize = 128;
-    uint32_t mSampleCount = 0;
+    uint32_t mFftSize       = 128;
+    uint32_t mSampleCount   = 0;
 
-    float** mAnalysisBuffers = nullptr;
-    uint32_t mAnalysisBuffersSize = 0;
+    float** mAnalysisBuffers        = nullptr;
+    uint32_t mAnalysisBuffersSize   = 0;
     uint32_t mAnalysisBufferSamples = 0;
 
     float* mSumBuffer = nullptr;
     void* mFftP;
 
-    float* mRingBuffer = nullptr;
+    float* mRingBuffer       = nullptr;
     uint32_t mRingBufferSize = 0;
     uint32_t mRingBufferHead = 0;
     uint32_t mRingBufferTail = 0;
 
-    float* mFftBuffer = nullptr;
+    float* mFftBuffer       = nullptr;
     uint32_t mFftBufferSize = 0;
 
     QTimer mTimer;
@@ -111,13 +109,12 @@ class Analyzer : public ProcessPlugin
 
     QMutex mMutex;
 
-    int mNumSpectra = 10;
-    float** mSpectra = nullptr;
+    int mNumSpectra               = 10;
+    float** mSpectra              = nullptr;
     float** mSpectraDifferentials = nullptr;
 
-
-    signals:
-      void signalFeedbackDetected();
+   signals:
+    void signalFeedbackDetected();
 };
 
 #endif

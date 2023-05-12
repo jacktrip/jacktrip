@@ -37,11 +37,12 @@
  */
 
 #include "Analyzer.h"
-#include <iostream>
-#include <QMutexLocker>
 
-#include "jacktrip_types.h"
+#include <QMutexLocker>
+#include <iostream>
+
 #include "fftdsp.h"
+#include "jacktrip_types.h"
 
 //*******************************************************************************
 Analyzer::Analyzer(int numchans, bool verboseFlag) : mNumChannels(numchans)
@@ -49,24 +50,24 @@ Analyzer::Analyzer(int numchans, bool verboseFlag) : mNumChannels(numchans)
     setVerbose(verboseFlag);
 
     // generate FFT Faust object
-    mFftP = new fftdsp;
-    int fftChans = static_cast<fftdsp *>(mFftP)->getNumOutputs();
-    
+    mFftP        = new fftdsp;
+    int fftChans = static_cast<fftdsp*>(mFftP)->getNumOutputs();
+
     // allocate a buffer for the summation of all inputs
     mSumBuffer = new float[mSumBufferSize];
-    std::memset(mSumBuffer, 0, sizeof(float)*mSumBufferSize);
+    std::memset(mSumBuffer, 0, sizeof(float) * mSumBufferSize);
 
     // allocate a ring buffer of mRingBuffersize bytes
     mRingBufferSize = 1 << 10;
-    mRingBuffer = new float[mRingBufferSize];
+    mRingBuffer     = new float[mRingBufferSize];
     mRingBufferHead = 0;
     mRingBufferTail = 0;
     std::memset(mRingBuffer, 0, sizeof(float) * mRingBufferSize);
 
     // allocate a buffer for input to the FFT object
     mFftBufferSize = mRingBufferSize;
-    mFftBuffer = new float[mFftBufferSize];
-    std::memset(mFftBuffer, 0, sizeof(float)*mFftBufferSize);
+    mFftBuffer     = new float[mFftBufferSize];
+    std::memset(mFftBuffer, 0, sizeof(float) * mFftBufferSize);
 
     // allocate buffer for output from the FFT object
     mAnalysisBuffers = new float*[fftChans];
@@ -75,10 +76,10 @@ Analyzer::Analyzer(int numchans, bool verboseFlag) : mNumChannels(numchans)
     }
 
     // allocate buffers for holding on to past spectra
-    mSpectra = new float*[mNumSpectra];
+    mSpectra              = new float*[mNumSpectra];
     mSpectraDifferentials = new float*[mNumSpectra];
     for (int i = 0; i < mNumSpectra; i++) {
-        mSpectra[i] = new float[fftChans];
+        mSpectra[i]              = new float[fftChans];
         mSpectraDifferentials[i] = new float[fftChans];
     }
 }
@@ -130,11 +131,11 @@ void Analyzer::compute(int nframes, float** inputs, float** outputs)
     // }
 
     int fftChans = static_cast<fftdsp*>(mFftP)->getNumOutputs();
-    
+
     /* if we neeed to increase the buffer size, update mSumBuffer */
     if (mSumBufferSize < nframes) {
         mSumBufferSize = nframes;
-        
+
         // reallocate mSumBuffer
         if (mSumBuffer) {
             delete mSumBuffer;
@@ -146,7 +147,7 @@ void Analyzer::compute(int nframes, float** inputs, float** outputs)
     for (int i = 0; i < nframes; i++) {
         mSumBuffer[i] = 0;
         for (int ch = 0; ch < mNumChannels; ch++) {
-            mSumBuffer[i]+= inputs[ch][i];
+            mSumBuffer[i] += inputs[ch][i];
         }
     }
 
@@ -170,12 +171,13 @@ void Analyzer::updateNumChannels(int nChansIn, int nChansOut)
 void Analyzer::addFramesToQueue(int nframes, float* samples)
 {
     if (nframes > mRingBufferSize) {
-        // this edge case isn't handled by the following code, and shouldn't happen anyways
+        // this edge case isn't handled by the following code, and shouldn't happen
+        // anyways
         std::cout << "Skipping addFramesToQueue" << std::endl;
         return;
     }
 
-    uint32_t newRingBufferTail = (mRingBufferTail + (uint32_t) nframes) % mRingBufferSize;
+    uint32_t newRingBufferTail = (mRingBufferTail + (uint32_t)nframes) % mRingBufferSize;
     // check if we have enough space in the buffer, if not reallocate it
     bool reallocateRingBuffer = false;
     if (mRingBufferHead <= mRingBufferTail) {
@@ -189,22 +191,25 @@ void Analyzer::addFramesToQueue(int nframes, float* samples)
             reallocateRingBuffer = true;
         }
     }
-    
+
     if (reallocateRingBuffer) {
         resizeRingBuffer();
         // recompute newRingBufferTail
-        newRingBufferTail = (mRingBufferTail + (uint32_t) nframes) % mRingBufferSize;
+        newRingBufferTail = (mRingBufferTail + (uint32_t)nframes) % mRingBufferSize;
     }
 
     if (newRingBufferTail >= mRingBufferTail) {
         // we don't cross the overflow boundary
-        std::memcpy(&mRingBuffer[mRingBufferTail], samples, sizeof(float)*nframes);
+        std::memcpy(&mRingBuffer[mRingBufferTail], samples, sizeof(float) * nframes);
     } else {
         // we cross the overflow boundary - first fill to the end of the buffer
-        std::memcpy(&mRingBuffer[mRingBufferTail], samples, sizeof(float)*(mRingBufferSize - mRingBufferTail));
+        std::memcpy(&mRingBuffer[mRingBufferTail], samples,
+                    sizeof(float) * (mRingBufferSize - mRingBufferTail));
 
-        // then finish copying data starting from where we left off and copying it to the start of the buffer
-        std::memcpy(mRingBuffer, &samples[mRingBufferSize - mRingBufferTail], sizeof(float)*(nframes - (mRingBufferSize - mRingBufferTail)));
+        // then finish copying data starting from where we left off and copying it to the
+        // start of the buffer
+        std::memcpy(mRingBuffer, &samples[mRingBufferSize - mRingBufferTail],
+                    sizeof(float) * (nframes - (mRingBufferSize - mRingBufferTail)));
     }
 
     mRingBufferTail = newRingBufferTail;
@@ -215,18 +220,22 @@ void Analyzer::resizeRingBuffer()
 {
     // need to reallocate buffer to the next larger size up (power of 2)
     // before we write data to the buffer
-    uint32_t newRingBufferSize = mRingBufferSize << 1;     // next power of 2
-    float* newRingBuffer = new float[newRingBufferSize];   // allocate a new buffer
+    uint32_t newRingBufferSize = mRingBufferSize << 1;          // next power of 2
+    float* newRingBuffer       = new float[newRingBufferSize];  // allocate a new buffer
 
     uint32_t itemsCopied = 0;
     if (mRingBufferHead <= mRingBufferTail) {
         // if the current head comes before the current tail
-        std::memcpy(newRingBuffer, &mRingBuffer[mRingBufferHead], sizeof(float)*(mRingBufferTail - mRingBufferHead));
+        std::memcpy(newRingBuffer, &mRingBuffer[mRingBufferHead],
+                    sizeof(float) * (mRingBufferTail - mRingBufferHead));
         itemsCopied += mRingBufferTail - mRingBufferHead;
     } else {
-        // if the current head comes after the current tail, use two memcpy operations due to wraparound
-        std::memcpy(newRingBuffer, &mRingBuffer[mRingBufferHead], sizeof(float)*(mRingBufferSize - mRingBufferHead));
-        std::memcpy(&newRingBuffer[mRingBufferSize - mRingBufferHead], mRingBuffer, sizeof(float)*mRingBufferTail);
+        // if the current head comes after the current tail, use two memcpy operations due
+        // to wraparound
+        std::memcpy(newRingBuffer, &mRingBuffer[mRingBufferHead],
+                    sizeof(float) * (mRingBufferSize - mRingBufferHead));
+        std::memcpy(&newRingBuffer[mRingBufferSize - mRingBufferHead], mRingBuffer,
+                    sizeof(float) * mRingBufferTail);
 
         itemsCopied += mRingBufferSize - mRingBufferHead;
         itemsCopied += mRingBufferTail;
@@ -238,12 +247,12 @@ void Analyzer::resizeRingBuffer()
     mRingBufferSize = newRingBufferSize;
     mRingBufferHead = 0;
     mRingBufferTail = itemsCopied;
-    mRingBuffer = newRingBuffer;
+    mRingBuffer     = newRingBuffer;
 }
 
 //*******************************************************************************
 void Analyzer::onTick()
-{   
+{
     if (!hasProcessedAudio) {
         return;
     }
@@ -251,7 +260,7 @@ void Analyzer::onTick()
     if (mFftBufferSize < mRingBufferSize) {
         delete mFftBuffer;
         mFftBufferSize = mRingBufferSize;
-        mFftBuffer = new float[mFftBufferSize];
+        mFftBuffer     = new float[mFftBufferSize];
     }
 
     // if (!mMutex.tryLock()) {
@@ -260,12 +269,12 @@ void Analyzer::onTick()
     // }
 
     uint32_t samples = updateFftInputBuffer();
-    mRingBufferHead = (mRingBufferHead + samples) % mRingBufferSize; 
+    mRingBufferHead  = (mRingBufferHead + samples) % mRingBufferSize;
     // mMutex.unlock();
 
     int fftChans = static_cast<fftdsp*>(mFftP)->getNumOutputs();
     if (samples > mAnalysisBuffersSize) {
-        mAnalysisBuffersSize = samples;        
+        mAnalysisBuffersSize = samples;
         for (int i = 0; i < fftChans; i++) {
             if (mAnalysisBuffers[i]) {
                 delete mAnalysisBuffers[i];
@@ -274,7 +283,7 @@ void Analyzer::onTick()
         }
     }
 
-    static_cast<fftdsp*>(mFftP)->compute(samples, &mFftBuffer, mAnalysisBuffers);    
+    static_cast<fftdsp*>(mFftP)->compute(samples, &mFftBuffer, mAnalysisBuffers);
     mAnalysisBufferSamples = samples;
 
     updateSpectra();
@@ -287,16 +296,20 @@ void Analyzer::onTick()
 }
 
 //*******************************************************************************
-uint32_t Analyzer::updateFftInputBuffer() {
+uint32_t Analyzer::updateFftInputBuffer()
+{
     // copy samples from mRingBuffer into mFftBuffer
     uint32_t samples = 0;
-    std::memset(mFftBuffer, 0, sizeof(float)*mFftBufferSize);
+    std::memset(mFftBuffer, 0, sizeof(float) * mFftBufferSize);
     if (mRingBufferHead <= mRingBufferTail) {
-        std::memcpy(mFftBuffer, &mRingBuffer[mRingBufferHead], sizeof(float)*(mRingBufferTail - mRingBufferHead));
+        std::memcpy(mFftBuffer, &mRingBuffer[mRingBufferHead],
+                    sizeof(float) * (mRingBufferTail - mRingBufferHead));
         samples = mRingBufferTail - mRingBufferHead;
     } else {
-        std::memcpy(mFftBuffer, &mRingBuffer[mRingBufferHead], sizeof(float)*(mRingBufferSize - mRingBufferHead));
-        std::memcpy(&mFftBuffer[mRingBufferSize - mRingBufferHead], mRingBuffer, sizeof(float)*mRingBufferTail);
+        std::memcpy(mFftBuffer, &mRingBuffer[mRingBufferHead],
+                    sizeof(float) * (mRingBufferSize - mRingBufferHead));
+        std::memcpy(&mFftBuffer[mRingBufferSize - mRingBufferHead], mRingBuffer,
+                    sizeof(float) * mRingBufferTail);
         samples += mRingBufferSize - mRingBufferHead;
         samples += mRingBufferTail;
     }
@@ -304,7 +317,8 @@ uint32_t Analyzer::updateFftInputBuffer() {
 }
 
 //*******************************************************************************
-void Analyzer::updateSpectra() {
+void Analyzer::updateSpectra()
+{
     int fftChans = static_cast<fftdsp*>(mFftP)->getNumOutputs();
 
     float* currentSpectra = mSpectra[0];
@@ -321,7 +335,8 @@ void Analyzer::updateSpectra() {
 }
 
 //*******************************************************************************
-void Analyzer::updateSpectraDifferentials() {
+void Analyzer::updateSpectraDifferentials()
+{
     int fftChans = static_cast<fftdsp*>(mFftP)->getNumOutputs();
 
     // compute spectra differentials
@@ -332,14 +347,14 @@ void Analyzer::updateSpectraDifferentials() {
 
     for (int i = 1; i < mNumSpectra; i++) {
         for (uint32_t j = 0; j < fftChans; j++) {
-            mSpectraDifferentials[i][j] = mSpectra[i][j] - mSpectra[i-1][j];
+            mSpectraDifferentials[i][j] = mSpectra[i][j] - mSpectra[i - 1][j];
         }
     }
 }
 
 //*******************************************************************************
-bool Analyzer::checkForAudioFeedback() {
-
+bool Analyzer::checkForAudioFeedback()
+{
     if (!testSpectralPeakAboveThreshold()) {
         return false;
     }
@@ -356,23 +371,24 @@ bool Analyzer::checkForAudioFeedback() {
 }
 
 //*******************************************************************************
-bool Analyzer::testSpectralPeakAboveThreshold() {
-
+bool Analyzer::testSpectralPeakAboveThreshold()
+{
     // this test checks if the peak of the latest spectra is above a certain threshold
 
     float* latestSpectra = mSpectra[mNumSpectra - 1];
-    int fftChans = static_cast<fftdsp*>(mFftP)->getNumOutputs();
+    int fftChans         = static_cast<fftdsp*>(mFftP)->getNumOutputs();
 
-    // For a PURE sinusoidal wave, the DFT would yield a complex number with a magnitude of N/2.
-    // Since here we are using the magnitude squared, we would expect to see the feedback frequency
-    // have a peak of about N^2/4.
+    // For a PURE sinusoidal wave, the DFT would yield a complex number with a magnitude
+    // of N/2. Since here we are using the magnitude squared, we would expect to see the
+    // feedback frequency have a peak of about N^2/4.
 
-    // Obviously, real world feedback isn't a pure sinusoidal wave, but feedback primarily centers
-    // around a specific frequency which we might reasonably expect to be in that ballpark range.
+    // Obviously, real world feedback isn't a pure sinusoidal wave, but feedback primarily
+    // centers around a specific frequency which we might reasonably expect to be in that
+    // ballpark range.
 
     // the exact threshold can be adjusted using the mThresholdMultiplier
     float threshold = mThresholdMultiplier * (mFftSize / 2) * (mFftSize / 2);
-    
+
     float peak = 0.0f;
     for (int i = 0; i < fftChans; i++) {
         if (latestSpectra[i] > peak) {
@@ -383,15 +399,15 @@ bool Analyzer::testSpectralPeakAboveThreshold() {
     return peak > threshold;
 }
 
-bool Analyzer::testSpectralPeakAbnormallyHigh() {
-
+bool Analyzer::testSpectralPeakAbnormallyHigh()
+{
     // this test checks if the peak of the latest spectra is substantially higher than
-    // the other frequencies in the sample. As a heuristic we are checking if the peak is more
-    // than a few orders of magnitude above the median frequency - in other words if the
-    // peak / median exceeds a certain threshold
+    // the other frequencies in the sample. As a heuristic we are checking if the peak is
+    // more than a few orders of magnitude above the median frequency - in other words if
+    // the peak / median exceeds a certain threshold
 
     float* latestSpectra = mSpectra[mNumSpectra - 1];
-    int fftChans = static_cast<fftdsp*>(mFftP)->getNumOutputs();
+    int fftChans         = static_cast<fftdsp*>(mFftP)->getNumOutputs();
 
     std::vector<float> latestSpectraSorted;
     for (int i = 0; i < fftChans; i++) {
@@ -399,7 +415,7 @@ bool Analyzer::testSpectralPeakAbnormallyHigh() {
     }
     std::sort(latestSpectraSorted.begin(), latestSpectraSorted.end(), std::less<float>());
 
-    float threshold = mThresholdMultiplier * 10; // 2 orders of magnitude
+    float threshold = mThresholdMultiplier * 10;  // 2 orders of magnitude
 
     float peak = 0.0f;
     for (int i = 0; i < fftChans; i++) {
@@ -413,19 +429,19 @@ bool Analyzer::testSpectralPeakAbnormallyHigh() {
     return peak / median > threshold;
 }
 
-bool Analyzer::testSpectralPeakGrowing() {
-
-    // this test checks if the peak of the spectra has a history of growth over the last few
-    // samples. This likely indicates a positive feedback loop
+bool Analyzer::testSpectralPeakGrowing()
+{
+    // this test checks if the peak of the spectra has a history of growth over the last
+    // few samples. This likely indicates a positive feedback loop
 
     float* latestSpectra = mSpectra[mNumSpectra - 1];
-    int fftChans = static_cast<fftdsp*>(mFftP)->getNumOutputs();
+    int fftChans         = static_cast<fftdsp*>(mFftP)->getNumOutputs();
 
-    float peak = 0.0f;
+    float peak    = 0.0f;
     int peakIndex = 0;
     for (int i = 0; i < fftChans; i++) {
         if (latestSpectra[i] > peak) {
-            peak = latestSpectra[i];
+            peak      = latestSpectra[i];
             peakIndex = i;
         }
     }
@@ -446,7 +462,7 @@ bool Analyzer::testSpectralPeakGrowing() {
     }
 
     uint32_t numPositiveDifferentials = 0;
-    uint32_t numLargeDifferentials = 0;
+    uint32_t numLargeDifferentials    = 0;
     for (int i = 0; i < mNumSpectra; i++) {
         if (differentials[i] > 0) {
             numPositiveDifferentials++;
@@ -457,5 +473,6 @@ bool Analyzer::testSpectralPeakGrowing() {
         }
     }
 
-    return numPositiveDifferentials >= (int) (mNumSpectra / 2) && numLargeDifferentials >= 1;
+    return numPositiveDifferentials >= (int)(mNumSpectra / 2)
+           && numLargeDifferentials >= 1;
 }

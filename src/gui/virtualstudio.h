@@ -47,8 +47,8 @@
 #include <QVector>
 #include <QtNetworkAuth>
 
-#include "../JackTrip.h"
 #include "../Analyzer.h"
+#include "../JackTrip.h"
 #include "../Meter.h"
 #include "../Monitor.h"
 #include "../Volume.h"
