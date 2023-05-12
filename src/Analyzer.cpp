@@ -213,12 +213,12 @@ void Analyzer::addFramesToQueue(int nframes, float* samples)
     } else {
         // we cross the overflow boundary - first fill to the end of the buffer
         memcpy(&mRingBuffer[mRingBufferTail], samples,
-                    sizeof(float) * (mRingBufferSize - mRingBufferTail));
+               sizeof(float) * (mRingBufferSize - mRingBufferTail));
 
         // then finish copying data starting from where we left off and copying it to the
         // start of the buffer
         memcpy(mRingBuffer, &samples[mRingBufferSize - mRingBufferTail],
-                    sizeof(float) * (nframes - (mRingBufferSize - mRingBufferTail)));
+               sizeof(float) * (nframes - (mRingBufferSize - mRingBufferTail)));
     }
 
     // update the tail
@@ -237,15 +237,15 @@ void Analyzer::resizeRingBuffer()
     if (mRingBufferHead <= mRingBufferTail) {
         // if the current head comes before the current tail
         memcpy(newRingBuffer, &mRingBuffer[mRingBufferHead],
-                    sizeof(float) * (mRingBufferTail - mRingBufferHead));
+               sizeof(float) * (mRingBufferTail - mRingBufferHead));
         itemsCopied += mRingBufferTail - mRingBufferHead;
     } else {
         // if the current head comes after the current tail, use two memcpy operations due
         // to wraparound
         memcpy(newRingBuffer, &mRingBuffer[mRingBufferHead],
-                    sizeof(float) * (mRingBufferSize - mRingBufferHead));
+               sizeof(float) * (mRingBufferSize - mRingBufferHead));
         memcpy(&newRingBuffer[mRingBufferSize - mRingBufferHead], mRingBuffer,
-                    sizeof(float) * mRingBufferTail);
+               sizeof(float) * mRingBufferTail);
 
         itemsCopied += mRingBufferSize - mRingBufferHead;
         itemsCopied += mRingBufferTail;
@@ -323,13 +323,13 @@ uint32_t Analyzer::updateFftInputBuffer()
     memset(mFftBuffer, 0, sizeof(float) * mFftBufferSize);
     if (mRingBufferHead <= mRingBufferTail) {
         memcpy(mFftBuffer, &mRingBuffer[mRingBufferHead],
-                    sizeof(float) * (mRingBufferTail - mRingBufferHead));
+               sizeof(float) * (mRingBufferTail - mRingBufferHead));
         samples = mRingBufferTail - mRingBufferHead;
     } else {
         memcpy(mFftBuffer, &mRingBuffer[mRingBufferHead],
-                    sizeof(float) * (mRingBufferSize - mRingBufferHead));
+               sizeof(float) * (mRingBufferSize - mRingBufferHead));
         memcpy(&mFftBuffer[mRingBufferSize - mRingBufferHead], mRingBuffer,
-                    sizeof(float) * mRingBufferTail);
+               sizeof(float) * mRingBufferTail);
         samples += mRingBufferSize - mRingBufferHead;
         samples += mRingBufferTail;
     }
