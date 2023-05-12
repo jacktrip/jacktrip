@@ -401,16 +401,8 @@ bool Analyzer::testSpectralPeakAboveThreshold()
     float* latestSpectra = mSpectra[mNumSpectra - 1];
     int fftChans         = static_cast<fftdsp*>(mFftP)->getNumOutputs();
 
-    // For a PURE sinusoidal wave, the DFT would yield a complex number with a magnitude
-    // of N/2. Since here we are using the magnitude squared, we would expect to see the
-    // feedback frequency have a peak of about N^2/4.
-
-    // Obviously, real world feedback isn't a pure sinusoidal wave, but feedback primarily
-    // centers around a specific frequency which we might reasonably expect to be in that
-    // ballpark range.
-
     // the exact threshold can be adjusted using the mThresholdMultiplier
-    float threshold = 10;
+    float threshold = 10 * mThresholdMultiplier;
 
     float peak = 0.0f;
     for (int i = 0; i < fftChans; i++) {
@@ -439,7 +431,7 @@ bool Analyzer::testSpectralPeakAbnormallyHigh()
     }
     std::sort(latestSpectraSorted.begin(), latestSpectraSorted.end(), std::less<float>());
 
-    float threshold = mThresholdMultiplier * 10;  // 2 orders of magnitude
+    float threshold = mThresholdMultiplier * 10;
 
     float peak = 0.0f;
     for (int i = 0; i < fftChans; i++) {
