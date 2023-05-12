@@ -40,11 +40,9 @@
 #define __TONE_H__
 
 #include <QObject>
-#include <iostream>
 #include <vector>
 
 #include "ProcessPlugin.h"
-#include "tonedsp.h"
 
 /** \brief The Tone plugin plays some arbitrary sample audio
  */
@@ -54,26 +52,10 @@ class Tone : public ProcessPlugin
 
    public:
     /// \brief The class constructor sets the number of channels to measure
-    Tone(int numchans, bool verboseFlag = false) : mNumChannels(numchans)
-    {
-        setVerbose(verboseFlag);
-        for (int i = 0; i < mNumChannels; i++) {
-            toneP.push_back(new tonedsp);
-            toneUIP.push_back(new APIUI);  // #included in tonedsp.h
-            toneP[i]->buildUserInterface(toneUIP[i]);
-        }
-    }
+    Tone(int numchans, bool verboseFlag = false);
 
     /// \brief The class destructor
-    virtual ~Tone()
-    {
-        for (int i = 0; i < mNumChannels; i++) {
-            delete toneP[i];
-            delete toneUIP[i];
-        }
-        toneP.clear();
-        toneUIP.clear();
-    }
+    virtual ~Tone();
 
     void init(int samplingRate) override;
     int getNumInputs() override { return (mNumChannels); }
@@ -87,8 +69,8 @@ class Tone : public ProcessPlugin
     void triggerPlayback();
 
    private:
-    std::vector<tonedsp*> toneP;
-    std::vector<APIUI*> toneUIP;
+    std::vector<void*> toneP;
+    std::vector<void*> toneUIP;
     float fs;
     int mNumChannels;
 };

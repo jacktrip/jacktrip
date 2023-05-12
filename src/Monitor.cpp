@@ -30,45 +30,45 @@
 //*****************************************************************
 
 /**
- * \file Tone.cpp
- * \author Nelson Wang
- * \date October 2022
+ * \file Monitor.cpp
+ * \author Dominick Hing
+ * \date May 2023
  * \license MIT
  */
 
-#include "Tone.h"
+#include "Monitor.h"
 
 #include <iostream>
 
 #include "jacktrip_types.h"
-#include "tonedsp.h"
+#include "monitordsp.h"
 
 //*******************************************************************************
-Tone::Tone(int numchans, bool verboseFlag) : mNumChannels(numchans)
+Monitor::Monitor(int numchans, bool verboseFlag) : mNumChannels(numchans)
 {
     setVerbose(verboseFlag);
     for (int i = 0; i < mNumChannels; i++) {
-        tonedsp* dsp_ptr = new tonedsp;
-        APIUI* ui_ptr    = new APIUI;
-        toneP.push_back(dsp_ptr);
-        toneUIP.push_back(ui_ptr);
+        monitordsp* dsp_ptr = new monitordsp;
+        APIUI* ui_ptr       = new APIUI;
+        monitorP.push_back(dsp_ptr);
+        monitorUIP.push_back(ui_ptr);  // #included in monitordsp.h
         dsp_ptr->buildUserInterface(ui_ptr);
     }
 }
 
 //*******************************************************************************
-Tone::~Tone()
+Monitor::~Monitor()
 {
     for (int i = 0; i < mNumChannels; i++) {
-        delete static_cast<tonedsp*>(toneP[i]);
-        delete static_cast<APIUI*>(toneUIP[i]);
+        delete static_cast<monitordsp*>(monitorP[i]);
+        delete static_cast<APIUI*>(monitorUIP[i]);
     }
-    toneP.clear();
-    toneUIP.clear();
+    monitorP.clear();
+    monitorUIP.clear();
 }
 
 //*******************************************************************************
-void Tone::init(int samplingRate)
+void Monitor::init(int samplingRate)
 {
     ProcessPlugin::init(samplingRate);
     if (samplingRate != fSamplingFreq) {
@@ -78,33 +78,58 @@ void Tone::init(int samplingRate)
     fs = float(fSamplingFreq);
 
     for (int i = 0; i < mNumChannels; i++) {
-        static_cast<tonedsp*>(toneP[i])->init(
-            fs);  // compression filter parameters depend on sampling rate
+        static_cast<monitordsp*>(monitorP[i])
+            ->init(fs);  // compression filter parameters depend on sampling rate
+        APIUI* ui_ptr = static_cast<APIUI*>(monitorUIP[i]);
+        int ndx       = ui_ptr->getParamIndex("Volume");
+        ui_ptr->setParamValue(ndx, mVolMultiplier);
+        ndx = ui_ptr->getParamIndex("Mute");
+        ui_ptr->setParamValue(ndx, 0);
     }
     inited = true;
 }
 
 //*******************************************************************************
-void Tone::compute(int nframes, float** inputs, float** outputs)
+void Monitor::compute(int nframes, float** inputs, float** outputs)
 {
     if (not inited) {
-        std::cerr << "*** Tone " << this << ": init never called! Doing it now.\n";
+        std::cerr << "*** Monitor " << this << ": init never called! Doing it now.\n";
         if (fSamplingFreq <= 0) {
             fSamplingFreq = 48000;
-            std::cout << "Tone " << this
+            std::cout << "Monitor " << this
                       << ": *** HAD TO GUESS the sampling rate (chose 48000 Hz) ***\n";
         }
         init(fSamplingFreq);
     }
 
+    if (mBufSize < nframes) {
+        if (mOutBufferInput) {
+            delete mOutBufferInput;
+        }
+
+        if (mInBufferInput) {
+            delete mInBufferInput;
+        }
+
+        mBufSize        = nframes;
+        mOutBufferInput = new float[mBufSize];
+        mInBufferInput  = new float[mBufSize];
+    }
+
+    std::vector<float*> buffer{mInBufferInput, mOutBufferInput};
     for (int i = 0; i < mNumChannels; i++) {
+        // copy inputs and outputs into a separate memory buffer
+        memcpy(mInBufferInput, inputs[i], nframes * sizeof(float));
+        memcpy(mOutBufferInput, outputs[i], nframes * sizeof(float));
+
         /* Run the signal through Faust  */
-        static_cast<tonedsp*>(toneP[i])->compute(nframes, &inputs[i], &outputs[i]);
+        static_cast<monitordsp*>(monitorP[i])
+            ->compute(nframes, buffer.data(), &outputs[i]);
     }
 }
 
 //*******************************************************************************
-void Tone::updateNumChannels(int nChansIn, int nChansOut)
+void Monitor::updateNumChannels(int nChansIn, int nChansOut)
 {
     if (outgoingPluginToNetwork) {
         mNumChannels = nChansIn;
@@ -113,12 +138,16 @@ void Tone::updateNumChannels(int nChansIn, int nChansOut)
     }
 }
 
-void Tone::triggerPlayback()
+//*******************************************************************************
+void Monitor::volumeUpdated(float multiplier)
 {
+    // maps 0.0-1.0 to a -40 dB to 0 dB range
+    // update if volumedsp.dsp and/or volumedsp.h
+    // change their ranges
+    mVolMultiplier = 40.0 * multiplier - 40.0;
     for (int i = 0; i < mNumChannels; i++) {
-        APIUI* ui_ptr = static_cast<APIUI*>(toneUIP[i]);
-        int ndx       = ui_ptr->getParamIndex("gate");
-        int v         = ui_ptr->getParamValue(ndx);
-        ui_ptr->setParamValue(ndx, v + 1);
+        APIUI* ui_ptr = static_cast<APIUI*>(monitorUIP[i]);
+        int ndx       = ui_ptr->getParamIndex("Volume");
+        ui_ptr->setParamValue(ndx, mVolMultiplier);
     }
 }

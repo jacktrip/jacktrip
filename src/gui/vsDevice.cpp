@@ -58,6 +58,8 @@ VsDevice::VsDevice(QOAuth2AuthorizationCodeFlow* authenticator, bool testMode,
     m_playbackVolume =
         (float)settings.value(QStringLiteral("OutMultiplier"), 1.0).toDouble();
     m_playbackMute = settings.value(QStringLiteral("OutMuted"), false).toBool();
+    m_monitorVolume =
+        (float)settings.value(QStringLiteral("MonMultiplier"), 0).toDouble();
     settings.endGroup();
 
     m_sendVolumeTimer = new QTimer(this);
@@ -76,7 +78,7 @@ VsDevice::VsDevice(QOAuth2AuthorizationCodeFlow* authenticator, bool testMode,
         {QLatin1String("captureMute"), m_captureMute},
         {QLatin1String("playbackVolume"), (int)(m_playbackVolume * 100.0)},
         {QLatin1String("playbackMute"), m_playbackMute},
-    };
+        {QLatin1String("monitorVolume"), (int)(m_monitorVolume * 100.0)}};
     QJsonDocument request = QJsonDocument(json);
 
     QNetworkReply* reply = m_authenticator->put(
@@ -112,6 +114,12 @@ VsDevice::VsDevice(QOAuth2AuthorizationCodeFlow* authenticator, bool testMode,
                 deviceState.object()[QStringLiteral("playbackMute")].toBool();
             emit updatedPlaybackVolumeFromServer(m_playbackVolume);
             emit updatedPlaybackMuteFromServer(m_playbackMute);
+
+            // monitor volume
+            m_monitorVolume =
+                (float)(deviceState.object()[QStringLiteral("monitorVolume")].toDouble()
+                        / 100.0);
+            emit updatedMonitorVolume(m_monitorVolume);
         }
 
         QSettings settings;
@@ -120,6 +128,7 @@ VsDevice::VsDevice(QOAuth2AuthorizationCodeFlow* authenticator, bool testMode,
         settings.setValue(QStringLiteral("InMuted"), m_captureMute);
         settings.setValue(QStringLiteral("OutMultiplier"), m_playbackVolume);
         settings.setValue(QStringLiteral("OutMuted"), m_playbackMute);
+        settings.setValue(QStringLiteral("MonMultiplier"), m_monitorVolume);
         settings.endGroup();
 
         reply->deleteLater();
@@ -306,7 +315,6 @@ void VsDevice::setReconnect(bool reconnect)
 {
     m_reconnect = reconnect;
     if (reconnect) {
-        qDebug() << "perform reconnect things";
         stopPinger();
         if (m_webSocket != nullptr && m_webSocket->isValid()) {
             m_webSocket->closeSocket();
@@ -352,7 +360,7 @@ void VsDevice::sendLevels()
         {QLatin1String("captureMute"), m_captureMute},
         {QLatin1String("playbackVolume"), (int)(m_playbackVolume * 100.0)},
         {QLatin1String("playbackMute"), m_playbackMute},
-    };
+        {QLatin1String("monitorVolume"), (int)(m_monitorVolume * 100.0)}};
     QJsonDocument request = QJsonDocument(json);
     QNetworkReply* reply  = m_authenticator->put(
          QStringLiteral("https://%1/api/devices/%2").arg(m_apiHost, m_appID),
@@ -540,6 +548,20 @@ void VsDevice::updatePlaybackMute(bool muted)
     }
 }
 
+// updateMonitorVolume sets VsDevice's monitor to the provided float
+void VsDevice::updateMonitorVolume(float multiplier)
+{
+    if (multiplier == m_monitorVolume) {
+        return;
+    }
+
+    m_monitorVolume = multiplier;
+
+    if (m_sendVolumeTimer) {
+        m_sendVolumeTimer->start(200);
+    }
+}
+
 // terminateJackTrip is a slot intended to be triggered on jacktrip process signals
 void VsDevice::terminateJackTrip()
 {
@@ -590,6 +612,13 @@ void VsDevice::onTextMessageReceived(const QString& message)
     if (newMute != m_playbackMute) {
         m_playbackMute = newMute;
         emit updatedPlaybackMuteFromServer(m_playbackMute);
+    }
+
+    // monitor volume
+    newVolume = (float)(newState["monitorVolume"].toDouble() / 100.0);
+    if (newVolume != m_monitorVolume) {
+        m_monitorVolume = newVolume;
+        emit updatedMonitorVolume(m_monitorVolume);
     }
 
     reconcileAgentConfig(newState);

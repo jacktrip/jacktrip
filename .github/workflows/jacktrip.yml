@@ -70,6 +70,7 @@ jobs:
             # qt-arch: 'win64_msvc2019_64' # specify when using shared (official) qt libraries (Windows)
             static-qt-version: 5.15.9 # if set, it will enable static Qt build
             qt-static-cache-key: 'v34' # required for static qt; update this to force rebuilding static Qt
+            wait-for-static-qt: false # if true, the job will wait for the static qt cache to be available; set to false for the first job on the given platform to build static qt and true for subsequent jobs using static qt for the given platofrm
             jacktrip-path: jacktrip # needed for binary upload
             binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
             # bundle-path: bundle # directory relative to build path; triggers application bundle creation and upload (macOS)
@@ -110,6 +111,7 @@ jobs:
             weakjack: false
             static-qt-version: 5.15.9
             qt-static-cache-key: 'v34' # we use the same key as the main Linux build
+            wait-for-static-qt: true
             jacktrip-path: jacktrip
             binary-path: binary
             build-system: qmake
@@ -389,6 +391,25 @@ jobs:
           cache: true
           cache-key-prefix: $${{ runner.os }}-QtCache-${{ env.QT_VERSION }}-${{ matrix.build-system }}_${{matrix.qt-cache-key}}
           modules: 'qtnetworkauth'
+      - name: wait for static Qt build
+        if: matrix.wait-for-static-qt == true
+        shell: bash
+        env: 
+          CACHE_STRING: ${{ runner.os }}-QtStaticCache-${{ matrix.static-qt-version }}_${{ matrix.qt-static-cache-key }} # should match the key in "cache static Qt" step
+        run: |
+          check_cache () {
+            curl -sL -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -H "X-GitHub-Api-Version: 2022-11-28" https://api.github.com/repos/$GITHUB_REPOSITORY/actions/caches | grep $CACHE_STRING >/dev/null
+            return $? # function returns 0 if cache is available
+          } 
+          if ! check_cache; then 
+            echo "Static Qt cache not found for key" $CACHE_STRING 
+            echo "Waiting for static Qt build"
+            while ! check_cache; do 
+              echo -n "."
+              sleep 60
+            done
+            echo "" "Static Qt cache is now available!"
+          fi
       - name: cache static Qt
         id: cache-static-qt
         if: matrix.static-qt-version
@@ -414,8 +435,9 @@ jobs:
       - name: build static Qt on Linux
         if: matrix.static-qt-version && steps.cache-static-qt.outputs.cache-hit != 'true' && matrix.name == 'Linux-x64-qmake-gcc-static'
         run: |
-          # Note that other static Linux runners will fail on first run. This is intentional to prevent two runners
-          # from trying to build and update the same cache item. Just re-run the failed jobs after cache is populated.
+          # Note that other static Linux runners should wait for the first static build to finish if cache is not available. 
+          # If that doesn't work for some reason, then the job will fail. This is intentional to prevent two runners
+          # from building and updating the same cache item. If the job fails that happens, re-run if after cache is populated.
           # Build static openssl
           OPENSSL_SRC_URL="https://github.com/openssl/openssl/releases/download/openssl-${OPENSSL_FULL_VERSION}/openssl-${OPENSSL_FULL_VERSION}.tar.gz"
           mkdir $OPENSSL_BUILD_PATH
@@ -514,6 +536,9 @@ jobs:
           if [[ "${{ matrix.novs }}" == true ]]; then 
             CONFIG_STRING="novs $CONFIG_STRING"
           fi
+          if [[ "${{  needs.check-secrets.outputs.should_run }}" == "true" ]]; then 
+            CONFIG_STRING="vsftux $CONFIG_STRING"
+          fi
           if [[ "${{ matrix.weakjack }}" == true ]]; then 
             CONFIG_STRING="weakjack $CONFIG_STRING"
           fi
@@ -604,7 +629,9 @@ jobs:
             strip $BINFILE
             zip -j $ZIPFILE $BINFILE
             if [[ "${{ matrix.name }}" == "Linux-x64-qmake-gcc-static" ]]; then
-              zip -j $ZIPFILE $BUILD_PATH/org.jacktrip.JackTrip.desktop
+              cp $GITHUB_WORKSPACE/linux/icons/jacktrip.svg $BUILD_PATH/org.jacktrip.JackTrip.svg
+              cp $GITHUB_WORKSPACE/linux/icons/jacktrip_48x48.png $BUILD_PATH/org.jacktrip.JackTrip.png
+              zip -j $ZIPFILE $BUILD_PATH/org.jacktrip.JackTrip.desktop $BUILD_PATH/org.jacktrip.JackTrip.svg $BUILD_PATH/org.jacktrip.JackTrip.png $GITHUB_WORKSPACE/linux/README.md
             fi
             cd $GITHUB_WORKSPACE # we need to be in the root project directory for adding licenses
             zip -r $ZIPFILE LICENSE.md LICENSES

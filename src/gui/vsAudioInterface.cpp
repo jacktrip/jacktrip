@@ -327,6 +327,11 @@ void VsAudioInterface::addOutputPlugin(ProcessPlugin* plugin)
     m_audioInterface->appendProcessPluginFromNetwork(plugin);
 }
 
+void VsAudioInterface::addMonitorPlugin(ProcessPlugin* plugin)
+{
+    m_audioInterface->appendProcessPluginToMonitor(plugin);
+}
+
 void VsAudioInterface::setInputDevice(QString deviceName, bool shouldRestart)
 {
     m_inputDeviceName = deviceName.toStdString();

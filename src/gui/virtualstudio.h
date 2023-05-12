@@ -49,6 +49,7 @@
 
 #include "../JackTrip.h"
 #include "../Meter.h"
+#include "../Monitor.h"
 #include "../Volume.h"
 #include "vsAudioInterface.h"
 #include "vsConstants.h"
@@ -104,6 +105,8 @@ class VirtualStudio : public QObject
                    devicesWarningHelpUrlChanged)
     Q_PROPERTY(QString devicesErrorHelpUrl READ devicesErrorHelpUrl NOTIFY
                    devicesErrorHelpUrlChanged)
+    Q_PROPERTY(
+        QString connectedErrorMsg READ connectedErrorMsg NOTIFY connectedErrorMsgChanged)
 
     Q_PROPERTY(
         int bufferSize READ bufferSize WRITE setBufferSize NOTIFY bufferSizeChanged)
@@ -140,6 +143,8 @@ class VirtualStudio : public QObject
         float inputVolume READ inputVolume WRITE setInputVolume NOTIFY updatedInputVolume)
     Q_PROPERTY(float outputVolume READ outputVolume WRITE setOutputVolume NOTIFY
                    updatedOutputVolume)
+    Q_PROPERTY(float monitorVolume READ monitorVolume WRITE setMonitorVolume NOTIFY
+                   updatedMonitorVolume)
     Q_PROPERTY(
         bool inputMuted READ inputMuted WRITE setInputMuted NOTIFY updatedInputMuted)
     Q_PROPERTY(bool audioActivated READ audioActivated WRITE setAudioActivated NOTIFY
@@ -150,6 +155,7 @@ class VirtualStudio : public QObject
     Q_PROPERTY(QString windowState READ windowState WRITE setWindowState NOTIFY
                    windowStateUpdated)
     Q_PROPERTY(QString apiHost READ apiHost WRITE setApiHost NOTIFY apiHostChanged)
+    Q_PROPERTY(bool vsFtux READ vsFtux CONSTANT)
 
    public:
     explicit VirtualStudio(bool firstRun = false, QObject* parent = nullptr);
@@ -194,6 +200,8 @@ class VirtualStudio : public QObject
     QString devicesError();
     QString devicesWarningHelpUrl();
     QString devicesErrorHelpUrl();
+    QString connectedErrorMsg();
+    void setConnectedErrorMsg(const QString& msg);
     int bufferSize();
     void setBufferSize(int index);
     int bufferStrategy();
@@ -231,8 +239,10 @@ class VirtualStudio : public QObject
     QString failedMessage();
     float inputVolume();
     float outputVolume();
+    float monitorVolume();
     bool inputMuted();
     bool outputMuted();
+    bool monitorMuted();
     Q_INVOKABLE void restartAudio();
     bool audioActivated();
     bool audioReady();
@@ -240,6 +250,7 @@ class VirtualStudio : public QObject
     QString windowState();
     QString apiHost();
     void setApiHost(QString host);
+    bool vsFtux();
 
    public slots:
     void toStandard();
@@ -248,6 +259,7 @@ class VirtualStudio : public QObject
     void logout();
     void refreshStudios(int index, bool signalRefresh = false);
     void refreshDevices();
+    void refreshRtAudioDevices();
     void validateDevicesState();
     void validateInputDevicesState();
     void validateOutputDevicesState();
@@ -268,8 +280,10 @@ class VirtualStudio : public QObject
     void updatedOutputVuMeasurements(const float* valuesInDecibels, int numChannels);
     void setInputVolume(float multiplier);
     void setOutputVolume(float multiplier);
+    void setMonitorVolume(float multiplier);
     void setInputMuted(bool muted);
     void setOutputMuted(bool muted);
+    void setMonitorMuted(bool muted);
     void setAudioActivated(bool activated);
     void setAudioReady(bool ready);
     void setWindowState(QString state);
@@ -291,8 +305,6 @@ class VirtualStudio : public QObject
     void numInputChannelsChanged(int numChannels, bool shouldRestart = true);
     void inputMixModeChanged(int mode, bool shouldRestart = true);
     void outputDeviceChanged(QString device, bool shouldRestart = true);
-    void inputDeviceSelected(QString device, bool shouldRestart = true);
-    void outputDeviceSelected(QString device, bool shouldRestart = true);
     void baseOutputChannelChanged(int baseChannel, bool shouldRestart = true);
     void numOutputChannelsChanged(int numChannels, bool shouldRestart = true);
     void previousInputChanged();
@@ -301,6 +313,7 @@ class VirtualStudio : public QObject
     void devicesErrorChanged();
     void devicesWarningHelpUrlChanged();
     void devicesErrorHelpUrlChanged();
+    void connectedErrorMsgChanged();
     void triggerPlayOutputAudio();
     void bufferSizeChanged();
     void bufferStrategyChanged();
@@ -325,8 +338,10 @@ class VirtualStudio : public QObject
     void studioToJoinChanged();
     void updatedInputVolume(float multiplier);
     void updatedOutputVolume(float multiplier);
+    void updatedMonitorVolume(float multiplier);
     void updatedInputMuted(bool muted);
     void updatedOutputMuted(bool muted);
+    void updatedMonitorMuted(bool muted);
     void audioActivatedChanged();
     void audioReadyChanged();
     void windowStateUpdated();
@@ -430,6 +445,7 @@ class VirtualStudio : public QObject
     Meter* m_inputTestMeter;
     Volume* m_inputVolumePlugin;
     Volume* m_outputVolumePlugin;
+    Monitor* m_monitor;
     QTimer m_inputClipTimer;
     QTimer m_outputClipTimer;
 
@@ -438,16 +454,25 @@ class VirtualStudio : public QObject
     QString m_devicesWarningHelpUrl = QStringLiteral("");
     QString m_devicesErrorHelpUrl   = QStringLiteral("");
     QString m_windowState           = QStringLiteral("login");
+    QString m_connectedErrorMsg     = QStringLiteral("");
 
     float m_meterMax = 0.0;
     float m_meterMin = -64.0;
 
     float m_inMultiplier  = 1.0;
     float m_outMultiplier = 1.0;
+    float m_monMultiplier = 1.0;
     bool m_inMuted        = false;
     bool m_outMuted       = false;
+    bool m_monMuted       = false;
 
     QSharedPointer<VsAudioInterface> m_vsAudioInterface;
+
+#ifdef VS_FTUX
+    bool m_vsFtux = true;
+#else
+    bool m_vsFtux = false;
+#endif
 
 #ifdef RT_AUDIO
     QStringList m_inputDeviceList;

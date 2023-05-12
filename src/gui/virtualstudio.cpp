@@ -275,7 +275,11 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
         QStringLiteral("backendComboModel"),
         QVariant::fromValue(QStringList()
                             << QStringLiteral("JACK") << QStringLiteral("RtAudio")));
+#ifdef VS_FTUX
+    m_view.setSource(QUrl(QStringLiteral("qrc:/vs/vsftux.qml")));
+#else
     m_view.setSource(QUrl(QStringLiteral("qrc:/vs/vs.qml")));
+#endif  // VS_FTUX
     m_view.setMinimumSize(QSize(594, 519));
     // m_view.setMaximumSize(QSize(696, 577));
     m_view.setResizeMode(QQuickView::SizeRootObjectToView);
@@ -417,7 +421,6 @@ void VirtualStudio::setInputDevice([[maybe_unused]] const QString& device)
 #ifdef RT_AUDIO
     m_inputDevice = device;
     emit inputDeviceChanged(m_inputDevice, false);
-    emit inputDeviceSelected(m_inputDevice);
 #endif
 }
 
@@ -490,7 +493,6 @@ void VirtualStudio::setOutputDevice([[maybe_unused]] const QString& device)
 #ifdef RT_AUDIO
     m_outputDevice = device;
     emit outputDeviceChanged(m_outputDevice, false);
-    emit outputDeviceSelected(m_outputDevice);
 #endif
 }
 
@@ -594,6 +596,17 @@ QString VirtualStudio::devicesErrorHelpUrl()
     return m_devicesErrorHelpUrl;
 }
 
+QString VirtualStudio::connectedErrorMsg()
+{
+    return m_connectedErrorMsg;
+}
+
+void VirtualStudio::setConnectedErrorMsg(const QString& msg)
+{
+    m_connectedErrorMsg = msg;
+    emit connectedErrorMsgChanged();
+}
+
 float VirtualStudio::inputVolume()
 {
     return m_inMultiplier;
@@ -604,6 +617,11 @@ float VirtualStudio::outputVolume()
     return m_outMultiplier;
 }
 
+float VirtualStudio::monitorVolume()
+{
+    return m_monMultiplier;
+}
+
 bool VirtualStudio::inputMuted()
 {
     return m_inMuted;
@@ -612,6 +630,11 @@ bool VirtualStudio::inputMuted()
 bool VirtualStudio::outputMuted()
 {
     return m_outMuted;
+}
+
+bool VirtualStudio::monitorMuted()
+{
+    return m_monMuted;
 }
 
 bool VirtualStudio::audioActivated()
@@ -654,6 +677,16 @@ void VirtualStudio::setOutputVolume(float multiplier)
     emit updatedOutputVolume(multiplier);
 }
 
+void VirtualStudio::setMonitorVolume(float multiplier)
+{
+    m_monMultiplier = multiplier;
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("Audio"));
+    settings.setValue(QStringLiteral("MonMultiplier"), m_monMultiplier);
+    settings.endGroup();
+    emit updatedMonitorVolume(multiplier);
+}
+
 void VirtualStudio::setInputMuted(bool muted)
 {
     m_inMuted = muted;
@@ -672,6 +705,16 @@ void VirtualStudio::setOutputMuted(bool muted)
     settings.setValue(QStringLiteral("OutMuted"), m_outMuted ? 1 : 0);
     settings.endGroup();
     emit updatedOutputMuted(muted);
+}
+
+void VirtualStudio::setMonitorMuted(bool muted)
+{
+    m_monMuted = muted;
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("Audio"));
+    settings.setValue(QStringLiteral("MonMuted"), m_monMuted ? 1 : 0);
+    settings.endGroup();
+    emit updatedMonitorMuted(muted);
 }
 
 int VirtualStudio::bufferSize()
@@ -832,6 +875,11 @@ void VirtualStudio::setApiHost(QString host)
 {
     m_apiHost = host;
     emit apiHostChanged();
+}
+
+bool VirtualStudio::vsFtux()
+{
+    return m_vsFtux;
 }
 
 bool VirtualStudio::showWarnings()
@@ -1089,6 +1137,20 @@ void VirtualStudio::refreshDevices()
         setAudioReady(false);
     }
 
+    refreshRtAudioDevices();
+    validateDevicesState();
+    if (!m_vsAudioInterface.isNull()) {
+        restartAudio();
+    }
+#endif
+}
+
+void VirtualStudio::refreshRtAudioDevices()
+{
+    if (!m_useRtAudio) {
+        return;
+    }
+#ifdef RT_AUDIO
     RtAudioInterface::getDeviceList(&m_inputDeviceList, &m_inputDeviceCategories,
                                     &m_inputDeviceChannels, true);
     RtAudioInterface::getDeviceList(&m_outputDeviceList, &m_outputDeviceCategories,
@@ -1102,10 +1164,6 @@ void VirtualStudio::refreshDevices()
                                                        inputComboModel);
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("outputComboModel"),
                                                        outputComboModel);
-    validateDevicesState();
-    if (!m_vsAudioInterface.isNull()) {
-        restartAudio();
-    }
 #endif
 }
 
@@ -1133,8 +1191,8 @@ void VirtualStudio::validateInputDevicesState()
     if (m_inputDevice == QStringLiteral("")
         || m_inputDeviceList.indexOf(m_inputDevice) == -1) {
         m_inputDevice = m_inputDeviceList[0];
-        emit inputDeviceChanged(m_inputDevice, false);
     }
+    emit inputDeviceChanged(m_inputDevice, false);
 
     // Given the currently selected input device, reset the available input channel
     // options
@@ -1284,8 +1342,8 @@ void VirtualStudio::validateOutputDevicesState()
     if (m_outputDevice == QStringLiteral("")
         || m_outputDeviceList.indexOf(m_outputDevice) == -1) {
         m_outputDevice = m_outputDeviceList[0];
-        emit outputDeviceChanged(m_outputDevice, false);
     }
+    emit outputDeviceChanged(m_outputDevice, false);
 
     // Given the currently selected output device, reset the available output channel
     // options
@@ -1486,33 +1544,33 @@ void VirtualStudio::completeConnection()
     m_connectionState = QStringLiteral("Preparing audio...");
     emit connectionStateChanged();
     try {
-        std::string input  = "";
-        std::string output = "";
-        int buffer_size    = 0;
+        std::string input     = "";
+        std::string output    = "";
+        int buffer_size       = 0;
+        int inputMixMode      = -1;
+        int baseInputChannel  = 0;
+        int numInputChannels  = 2;
+        int baseOutputChannel = 0;
+        int numOutputChannels = 2;
 #ifdef RT_AUDIO
         if (m_useRtAudio) {
-            input       = m_inputDevice.toStdString();
-            output      = m_outputDevice.toStdString();
-            buffer_size = m_bufferSize;
+            input             = m_inputDevice.toStdString();
+            output            = m_outputDevice.toStdString();
+            buffer_size       = m_bufferSize;
+            inputMixMode      = m_inputMixMode;
+            baseInputChannel  = m_baseInputChannel;
+            numInputChannels  = m_numInputChannels;
+            baseOutputChannel = m_baseOutputChannel;
+            numOutputChannels = m_numOutputChannels;
         }
-        int inputMixMode = m_inputMixMode;
-#else
-        int inputMixMode = -1;
 #endif
         int bufferStrategy = m_bufferStrategy;
         if (bufferStrategy == 2) {
             bufferStrategy = 3;
         }
         JackTrip* jackTrip =
-            m_device->initJackTrip(m_useRtAudio, input, output,
-#ifdef RT_AUDIO
-                                   m_baseInputChannel, m_numInputChannels,
-                                   m_baseOutputChannel, m_numOutputChannels,
-#else
-                                   0, 2, 0,
-                                   2,  // default to 2 channels for input and 2 channels
-                                       // for output starting at channel 0
-#endif
+            m_device->initJackTrip(m_useRtAudio, input, output, baseInputChannel,
+                                   numInputChannels, baseOutputChannel, numOutputChannels,
                                    inputMixMode, buffer_size, bufferStrategy, studioInfo);
         if (jackTrip == 0) {
             processError("Could not bind port");
@@ -1545,27 +1603,41 @@ void VirtualStudio::completeConnection()
         connect(this, &VirtualStudio::updatedInputMuted, m_inputVolumePlugin,
                 &Volume::muteUpdated);
 
-        // Setup output meter
-        m_outputMeter = new Meter(jackTrip->getNumOutputChannels());
-        jackTrip->appendProcessPluginFromNetwork(m_outputMeter);
-        connect(m_outputMeter, &Meter::onComputedVolumeMeasurements, this,
-                &VirtualStudio::updatedOutputVuMeasurements);
-
         // Setup input meter
         m_inputMeter = new Meter(jackTrip->getNumInputChannels());
         jackTrip->appendProcessPluginToNetwork(m_inputMeter);
         connect(m_inputMeter, &Meter::onComputedVolumeMeasurements, this,
                 &VirtualStudio::updatedInputVuMeasurements);
 
+        // Setup monitor
+        // Note: Constructor determines how many internal monitor buffers to allocate
+        m_monitor = new Monitor(
+            std::max(jackTrip->getNumInputChannels(), jackTrip->getNumOutputChannels()));
+        jackTrip->appendProcessPluginToMonitor(m_monitor);
+        connect(this, &VirtualStudio::updatedMonitorVolume, m_monitor,
+                &Monitor::volumeUpdated);
+
+        // Setup output meter
+        // Note: Add this to monitor process to include self-volume
+        m_outputMeter = new Meter(jackTrip->getNumOutputChannels());
+        m_outputMeter->setIsMonitoringMeter(true);
+        jackTrip->appendProcessPluginToMonitor(m_outputMeter);
+        connect(m_outputMeter, &Meter::onComputedVolumeMeasurements, this,
+                &VirtualStudio::updatedOutputVuMeasurements);
+
         // Grab previous levels
         QSettings settings;
         settings.beginGroup(QStringLiteral("Audio"));
         m_inMultiplier  = settings.value(QStringLiteral("InMultiplier"), 1).toFloat();
         m_outMultiplier = settings.value(QStringLiteral("OutMultiplier"), 1).toFloat();
+        m_monMultiplier = settings.value(QStringLiteral("MonMultiplier"), 0).toFloat();
         m_inMuted       = settings.value(QStringLiteral("InMuted"), false).toBool();
         m_outMuted      = settings.value(QStringLiteral("OutMuted"), false).toBool();
+        m_monMuted      = settings.value(QStringLiteral("MonMuted"), false).toBool();
+
         emit updatedInputVolume(m_inMultiplier);
         emit updatedOutputVolume(m_outMultiplier);
+        emit updatedMonitorVolume(m_monMultiplier);
         emit updatedInputMuted(m_inMuted);
         emit updatedOutputMuted(m_outMuted);
 
@@ -1621,6 +1693,7 @@ void VirtualStudio::disconnect()
 {
     m_connectionState = QStringLiteral("Disconnecting...");
     emit connectionStateChanged();
+    setConnectedErrorMsg("");
     m_retryPeriodTimer.stop();
     m_retryPeriod = false;
 
@@ -1648,6 +1721,7 @@ void VirtualStudio::disconnect()
     emit connectionStateChanged();
 
     // cleanup
+    m_monitor            = nullptr;
     m_inputMeter         = nullptr;
     m_outputMeter        = nullptr;
     m_inputVolumePlugin  = nullptr;
@@ -1680,9 +1754,21 @@ void VirtualStudio::manageStudio(int studioIndex, bool start)
             request.toJson());
         connect(reply, &QNetworkReply::finished, this, [&, reply]() {
             if (reply->error() != QNetworkReply::NoError) {
-                m_connectionState = QStringLiteral("Unable to Start Studio");
+                m_connectionState      = QStringLiteral("Unable to Start Studio");
+                QJsonDocument errorDoc = QJsonDocument::fromJson(reply->readAll());
+                if (!errorDoc.isNull()) {
+                    QJsonObject errorObj = errorDoc.object();
+                    if (errorObj.contains("error")) {
+                        QString errorMessage = errorObj.value("error").toString();
+                        if (errorMessage.contains(
+                                "Only one studio may be running at a time")) {
+                            setConnectedErrorMsg("one-studio-limit-reached");
+                        }
+                    }
+                }
                 emit connectionStateChanged();
             } else {
+                setConnectedErrorMsg("");
                 QByteArray response       = reply->readAll();
                 QJsonDocument serverState = QJsonDocument::fromJson(response);
                 if (serverState.object()[QStringLiteral("status")].toString()
@@ -1803,6 +1889,8 @@ void VirtualStudio::slotAuthSucceded()
             &VirtualStudio::setOutputVolume);
     connect(m_device, &VsDevice::updatedPlaybackMuteFromServer, this,
             &VirtualStudio::setOutputMuted);
+    connect(m_device, &VsDevice::updatedMonitorVolume, this,
+            &VirtualStudio::setMonitorVolume);
     connect(this, &VirtualStudio::updatedInputVolume, m_device,
             &VsDevice::updateCaptureVolume);
     connect(this, &VirtualStudio::updatedInputMuted, m_device,
@@ -1811,6 +1899,8 @@ void VirtualStudio::slotAuthSucceded()
             &VsDevice::updatePlaybackVolume);
     connect(this, &VirtualStudio::updatedOutputMuted, m_device,
             &VsDevice::updatePlaybackMute);
+    connect(this, &VirtualStudio::updatedMonitorVolume, m_device,
+            &VsDevice::updateMonitorVolume);
 }
 
 void VirtualStudio::slotAuthFailed()
@@ -1821,8 +1911,13 @@ void VirtualStudio::slotAuthFailed()
 
 void VirtualStudio::processFinished()
 {
-    if (m_device->reconnect()) {
-        if (m_device->hasTerminated()) {
+    if (m_device != nullptr && m_device->reconnect()) {
+        if (m_device != nullptr && m_device->hasTerminated()) {
+            if (m_useRtAudio) {
+                refreshRtAudioDevices();
+                validateInputDevicesState();
+                validateOutputDevicesState();
+            }
             connectToStudio(m_currentStudio);
         }
         return;
@@ -2464,12 +2559,9 @@ void VirtualStudio::startAudio()
 
     connect(this, &VirtualStudio::inputDeviceChanged, m_vsAudioInterface.data(),
             &VsAudioInterface::setInputDevice);
-    connect(this, &VirtualStudio::inputDeviceSelected, m_vsAudioInterface.data(),
-            &VsAudioInterface::setInputDevice);
     connect(this, &VirtualStudio::outputDeviceChanged, m_vsAudioInterface.data(),
             &VsAudioInterface::setOutputDevice);
-    connect(this, &VirtualStudio::outputDeviceSelected, m_vsAudioInterface.data(),
-            &VsAudioInterface::setOutputDevice);
+
 #ifdef RT_AUDIO
     connect(this, &VirtualStudio::baseInputChannelChanged, m_vsAudioInterface.data(),
             &VsAudioInterface::setBaseInputChannel);
@@ -2625,9 +2717,10 @@ QVariant VirtualStudio::formatDeviceList(const QStringList& devices,
 
         if (containsCategories) {
             QJsonObject header = QJsonObject();
-            header.insert(QString::fromStdString("text"), uniqueCategories.at(i));
+            header.insert(QString::fromStdString("text"), category);
             header.insert(QString::fromStdString("type"),
                           QString::fromStdString("header"));
+            header.insert(QString::fromStdString("category"), category);
             items.push_back(QVariant(QJsonValue(header)));
         }
 
@@ -2638,6 +2731,7 @@ QVariant VirtualStudio::formatDeviceList(const QStringList& devices,
                 element.insert(QString::fromStdString("type"),
                                QString::fromStdString("element"));
                 element.insert(QString::fromStdString("channels"), channels.at(j));
+                element.insert(QString::fromStdString("category"), category);
                 items.push_back(QVariant(QJsonValue(element)));
             }
         }
@@ -2653,6 +2747,7 @@ VirtualStudio::~VirtualStudio()
         delete m_servers.at(i);
     }
 
+    delete m_monitor;
     delete m_inputMeter;
     delete m_outputMeter;
     delete m_outputVolumePlugin;

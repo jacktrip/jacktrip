@@ -30,41 +30,55 @@
 //*****************************************************************
 
 /**
- * \file StereoToMono.h
+ * \file Monitor.h
  * \author Dominick Hing
- * \date February 2023
+ * \date May 2023
  * \license MIT
  */
 
-#ifndef __STEREOTOMONO_H__
-#define __STEREOTOMONO_H__
+#ifndef __MONITOR_H__
+#define __MONITOR_H__
 
 #include <QObject>
+#include <vector>
 
 #include "ProcessPlugin.h"
 
-/** \brief The Meter class measures the live audio loudness level
+/** \brief The Monitor plugin adds a portion of the input signal multiplied by a
+ *  constant factor to the output signal
  */
-class StereoToMono : public ProcessPlugin
+class Monitor : public ProcessPlugin
 {
     Q_OBJECT;
 
    public:
-    /// \brief The class constructor sets the number of channels to measure
-    StereoToMono(bool verboseFlag = false);
+    /// \brief The class constructor sets the number of channels to use
+    Monitor(int numchans, bool verboseFlag = false);
 
     /// \brief The class destructor
-    virtual ~StereoToMono();
+    virtual ~Monitor();
 
     void init(int samplingRate) override;
-    int getNumInputs() override { return 2; }
-    int getNumOutputs() override { return 2; }
+    int getNumInputs() override { return (mNumChannels); }
+    int getNumOutputs() override { return (mNumChannels); }
     void compute(int nframes, float** inputs, float** outputs) override;
-    const char* getName() const override { return "Stereo-to-Mono"; };
+    const char* getName() const override { return "Monitor"; };
+
+    void updateNumChannels(int nChansIn, int nChansOut) override;
+
+   public slots:
+    void volumeUpdated(float multiplier);
 
    private:
+    std::vector<void*> monitorP;
+    std::vector<void*> monitorUIP;
     float fs;
-    void* stereoToMonoP;
+    int mNumChannels;
+    float mVolMultiplier = 0.0;
+
+    float* mOutBufferInput = nullptr;
+    float* mInBufferInput  = nullptr;
+    int mBufSize           = 0;
 };
 
 #endif

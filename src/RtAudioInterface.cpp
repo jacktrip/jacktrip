@@ -238,6 +238,9 @@ void RtAudioInterface::setup(bool verbose)
         if (api_in != "asio") {
             AudioInterface::setDevicesWarningMsg(AudioInterface::DEVICE_WARN_LATENCY);
             AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_NONE);
+        } else if (api_in == "asio" && index_in != index_out) {
+            AudioInterface::setDevicesWarningMsg(AudioInterface::DEVICE_WARN_NONE);
+            AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_SAME_ASIO);
         }
 #endif
     } else {
@@ -515,10 +518,10 @@ void RtAudioInterface::getDeviceList(QStringList* list, QStringList* categories,
                 categories->append(QStringLiteral("Low-Latency (ASIO)"));
                 break;
             case RtAudio::WINDOWS_WASAPI:
-                categories->append(QStringLiteral("All Devices (Non-ASIO)"));
+                categories->append(QStringLiteral("High-Latency (Non-ASIO)"));
                 break;
             case RtAudio::WINDOWS_DS:
-                categories->append(QStringLiteral("All Devices (Non-ASIO)"));
+                categories->append(QStringLiteral("High-Latency (Non-ASIO)"));
                 break;
             default:
                 categories->append(QStringLiteral(""));
@@ -595,10 +598,10 @@ void RtAudioInterface::getDeviceList(QStringList* list, QStringList* categories,
                     categories->append("Low-Latency (ASIO)");
                     break;
                 case RtAudio::WINDOWS_WASAPI:
-                    categories->append("All Devices (Non-ASIO)");
+                    categories->append("High-Latency (Non-ASIO)");
                     break;
                 case RtAudio::WINDOWS_DS:
-                    categories->append("All Devices (Non-ASIO)");
+                    categories->append("High-Latency (Non-ASIO)");
                     break;
                 default:
                     categories->append("");

@@ -38,7 +38,37 @@
 
 #include "Meter.h"
 
+#include <iostream>
+
 #include "jacktrip_types.h"
+#include "meterdsp.h"
+
+//*******************************************************************************
+Meter::Meter(int numchans, bool verboseFlag) : mNumChannels(numchans)
+{
+    setVerbose(verboseFlag);
+    for (int i = 0; i < mNumChannels; i++) {
+        meterP.push_back(new meterdsp);
+    }
+}
+
+//*******************************************************************************
+Meter::~Meter()
+{
+    for (int i = 0; i < mNumChannels; i++) {
+        delete static_cast<meterdsp*>(meterP[i]);
+    }
+    meterP.clear();
+    if (mValues) {
+        delete mValues;
+    }
+    if (mOutValues) {
+        delete mOutValues;
+    }
+    if (mBuffer) {
+        delete mBuffer;
+    }
+}
 
 //*******************************************************************************
 void Meter::init(int samplingRate)
@@ -51,7 +81,7 @@ void Meter::init(int samplingRate)
 
     fs = float(fSamplingFreq);
     for (int i = 0; i < mNumChannels; i++) {
-        meterP[i]->init(fs);
+        static_cast<meterdsp*>(meterP[i])->init(fs);
     }
 
     /* Set meter values to the default floor */
@@ -69,14 +99,8 @@ void Meter::init(int samplingRate)
 }
 
 //*******************************************************************************
-void Meter::compute(int nframes, float** inputs, float** /*_*/)
+void Meter::compute(int nframes, float** inputs, float** outputs)
 {
-    // Note that the second parameter is unused. This is because all of the ProcessPlugins
-    // require the same function signature for the compute() function and is normally used
-    // for the faust plugin output. However, this plugin is not supposed to modify the
-    // signal itself like the other plugins (e.g. Limiter) do, so we don't want to write
-    // to this buffer. We just need to report the VU meter output
-
     if (not inited) {
         std::cerr << "*** Meter " << this << ": init never called! Doing it now.\n";
         if (fSamplingFreq <= 0) {
@@ -85,6 +109,15 @@ void Meter::compute(int nframes, float** inputs, float** /*_*/)
                       << ": *** HAD TO GUESS the sampling rate (chose 48000 Hz) ***\n";
         }
         init(fSamplingFreq);
+    }
+
+    // Will measure inputs by default unless mMeasureOutputBuffer = true,
+    // in which case the plugin will measure from the outputs. This is useful when
+    // measuring with a monitor, since AudioInterface.cpp expects monitoring plugins
+    // to behave differently than input and output chain plugins
+    float** measuringBuffer = inputs;
+    if (mIsMonitoringMeter) {
+        measuringBuffer = outputs;
     }
 
     if (mBufSize < nframes) {
@@ -97,7 +130,8 @@ void Meter::compute(int nframes, float** inputs, float** /*_*/)
 
     for (int i = 0; i < mNumChannels; i++) {
         /* Run the signal through Faust  */
-        meterP[i]->compute(nframes, &inputs[i], &mBuffer);
+        static_cast<meterdsp*>(meterP[i])->compute(nframes, &measuringBuffer[i],
+                                                   &mBuffer);
 
         /* Use the existing value of mValues[i] as
            the threshold - this will be reset to the default floor of -80dB

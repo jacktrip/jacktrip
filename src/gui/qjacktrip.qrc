@@ -6,6 +6,7 @@
   </qresource>
   <qresource prefix="vs">
     <file>vs.qml</file>
+    <file>vsftux.qml</file>
     <file>FirstLaunch.qml</file>
     <file>Login.qml</file>
     <file>Studio.qml</file>

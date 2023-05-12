@@ -38,9 +38,34 @@
 
 #include "Volume.h"
 
-#include <QVector>
+#include <iostream>
 
 #include "jacktrip_types.h"
+#include "volumedsp.h"
+
+//*******************************************************************************
+Volume::Volume(int numchans, bool verboseFlag) : mNumChannels(numchans)
+{
+    setVerbose(verboseFlag);
+    for (int i = 0; i < mNumChannels; i++) {
+        volumedsp* dsp_ptr = new volumedsp;
+        APIUI* ui_ptr      = new APIUI;
+        volumeP.push_back(dsp_ptr);
+        volumeUIP.push_back(ui_ptr);  // #included in volumedsp.h
+        dsp_ptr->buildUserInterface(ui_ptr);
+    }
+}
+
+//*******************************************************************************
+Volume::~Volume()
+{
+    for (int i = 0; i < mNumChannels; i++) {
+        delete static_cast<volumedsp*>(volumeP[i]);
+        delete static_cast<APIUI*>(volumeUIP[i]);
+    }
+    volumeP.clear();
+    volumeUIP.clear();
+}
 
 //*******************************************************************************
 void Volume::init(int samplingRate)
@@ -53,11 +78,13 @@ void Volume::init(int samplingRate)
     fs = float(fSamplingFreq);
 
     for (int i = 0; i < mNumChannels; i++) {
-        volumeP[i]->init(fs);  // compression filter parameters depend on sampling rate
-        int ndx = volumeUIP[i]->getParamIndex("Volume");
-        volumeUIP[i]->setParamValue(ndx, mVolMultiplier);
-        ndx = volumeUIP[i]->getParamIndex("Mute");
-        volumeUIP[i]->setParamValue(ndx, isMuted ? 1 : 0);
+        static_cast<volumedsp*>(volumeP[i])
+            ->init(fs);  // compression filter parameters depend on sampling rate
+        APIUI* ui_ptr = static_cast<APIUI*>(volumeUIP[i]);
+        int ndx       = ui_ptr->getParamIndex("Volume");
+        ui_ptr->setParamValue(ndx, mVolMultiplier);
+        ndx = ui_ptr->getParamIndex("Mute");
+        ui_ptr->setParamValue(ndx, isMuted ? 1 : 0);
     }
     inited = true;
 }
@@ -77,7 +104,7 @@ void Volume::compute(int nframes, float** inputs, float** outputs)
 
     for (int i = 0; i < mNumChannels; i++) {
         /* Run the signal through Faust  */
-        volumeP[i]->compute(nframes, &inputs[i], &outputs[i]);
+        static_cast<volumedsp*>(volumeP[i])->compute(nframes, &inputs[i], &outputs[i]);
     }
 }
 
@@ -98,8 +125,9 @@ void Volume::volumeUpdated(float multiplier)
     // change their ranges
     mVolMultiplier = 40.0 * multiplier - 40.0;
     for (int i = 0; i < mNumChannels; i++) {
-        int ndx = volumeUIP[i]->getParamIndex("Volume");
-        volumeUIP[i]->setParamValue(ndx, mVolMultiplier);
+        APIUI* ui_ptr = static_cast<APIUI*>(volumeUIP[i]);
+        int ndx       = ui_ptr->getParamIndex("Volume");
+        ui_ptr->setParamValue(ndx, mVolMultiplier);
     }
 }
 
@@ -107,7 +135,8 @@ void Volume::muteUpdated(bool muted)
 {
     isMuted = muted;
     for (int i = 0; i < mNumChannels; i++) {
-        int ndx = volumeUIP[i]->getParamIndex("Mute");
-        volumeUIP[i]->setParamValue(ndx, isMuted ? 1 : 0);
+        APIUI* ui_ptr = static_cast<APIUI*>(volumeUIP[i]);
+        int ndx       = ui_ptr->getParamIndex("Mute");
+        ui_ptr->setParamValue(ndx, isMuted ? 1 : 0);
     }
 }

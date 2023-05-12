@@ -41,11 +41,9 @@
 
 #include <QObject>
 #include <QTimer>
-#include <iostream>
 #include <vector>
 
 #include "ProcessPlugin.h"
-#include "meterdsp.h"
 
 /** \brief The Meter class measures the live audio loudness level
  */
@@ -55,33 +53,10 @@ class Meter : public ProcessPlugin
 
    public:
     /// \brief The class constructor sets the number of channels to measure
-    Meter(int numchans, bool verboseFlag = false) : mNumChannels(numchans)
-    {
-        setVerbose(verboseFlag);
-        for (int i = 0; i < mNumChannels; i++) {
-            meterP.push_back(new meterdsp);
-            // meterUIP.push_back(new APIUI);
-            // meterP[i]->buildUserInterface(meterUIP[i]);
-        }
-    }
+    Meter(int numchans, bool verboseFlag = false);
 
     /// \brief The class destructor
-    virtual ~Meter()
-    {
-        for (int i = 0; i < mNumChannels; i++) {
-            delete meterP[i];
-        }
-        meterP.clear();
-        if (mValues) {
-            delete mValues;
-        }
-        if (mOutValues) {
-            delete mOutValues;
-        }
-        if (mBuffer) {
-            delete mBuffer;
-        }
-    }
+    virtual ~Meter();
 
     void init(int samplingRate) override;
     int getNumInputs() override { return (mNumChannels); }
@@ -91,13 +66,21 @@ class Meter : public ProcessPlugin
 
     void updateNumChannels(int nChansIn, int nChansOut) override;
 
+    void setIsMonitoringMeter(bool isMonitoringMeter)
+    {
+        mIsMonitoringMeter = isMonitoringMeter;
+    };
+    bool getIsMonitoringMeter() { return mIsMonitoringMeter; };
+
    private:
     void setupValues();
 
     float fs;
+    bool mIsMonitoringMeter = false;
+
     int mNumChannels;
     float threshold = -80.0;
-    std::vector<meterdsp*> meterP;
+    std::vector<void*> meterP;
     bool hasProcessedAudio = false;
 
     QTimer mTimer;
