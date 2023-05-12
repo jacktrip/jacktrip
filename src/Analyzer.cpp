@@ -144,7 +144,7 @@ void Analyzer::compute(int nframes, float** inputs, float** outputs)
     }
 
     /* if we neeed to increase the buffer size, update mSumBuffer */
-    if (mSumBufferSize < (uint32_t) nframes) {
+    if (mSumBufferSize < (uint32_t)nframes) {
         mSumBufferSize = nframes;
 
         // reallocate mSumBuffer
@@ -181,7 +181,7 @@ void Analyzer::compute(int nframes, float** inputs, float** outputs)
 //*******************************************************************************
 void Analyzer::addFramesToQueue(int nframes, float* samples)
 {
-    if ((uint32_t) nframes > mRingBufferSize) {
+    if ((uint32_t)nframes > mRingBufferSize) {
         // this edge case isn't handled by the following code, and shouldn't happen
         // anyways
         std::cout << "Skipping addFramesToQueue" << std::endl;
@@ -192,13 +192,13 @@ void Analyzer::addFramesToQueue(int nframes, float* samples)
 
     // check if we have enough space in the buffer, if not reallocate it
     if ((mRingBufferHead <= mRingBufferTail)
-        && ((uint32_t) nframes >= (mRingBufferSize - mRingBufferTail) + mRingBufferHead)) {
+        && ((uint32_t)nframes >= (mRingBufferSize - mRingBufferTail) + mRingBufferHead)) {
         // if the current head comes before the current tail and nframes
         // would cause the new tail to wrap around to the current head, reallocate
         resizeRingBuffer();
         newRingBufferTail = (mRingBufferTail + (uint32_t)nframes) % mRingBufferSize;
     } else if ((mRingBufferHead > mRingBufferTail)
-               && (uint32_t) nframes >= mRingBufferHead - mRingBufferTail) {
+               && (uint32_t)nframes >= mRingBufferHead - mRingBufferTail) {
         // if the current head is after the current tail and nframes
         // would cause the current tail to be past the current head, reallocate
         resizeRingBuffer();
@@ -488,7 +488,7 @@ bool Analyzer::testSpectralPeakGrowing()
         }
     }
 
-    if (numPositiveDifferentials == (uint32_t) mNumSpectra && numLargeDifferentials >= 1) {
+    if (numPositiveDifferentials == (uint32_t)mNumSpectra && numLargeDifferentials >= 1) {
         return true;
     }
 
