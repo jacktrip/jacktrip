@@ -480,8 +480,15 @@ bool Analyzer::testSpectralPeakGrowing()
         }
     }
 
-    return numPositiveDifferentials >= (int)(mNumSpectra / 2)
-           && numLargeDifferentials >= 1;
+    if (numPositiveDifferentials == mNumSpectra && numLargeDifferentials >= 1) {
+        return true;
+    }
+
+    if (numPositiveDifferentials >= (int)(mNumSpectra * 0.75) && numLargeDifferentials >= 2) {
+        return true;
+    }
+
+    return false;
 }
 
 //*******************************************************************************
