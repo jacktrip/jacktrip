@@ -171,6 +171,7 @@ void Analyzer::addFramesToQueue(int nframes, float* samples)
 {
     if (nframes > mRingBufferSize) {
         // this edge case isn't handled by the following code, and shouldn't happen anyways
+        std::cout << "Skipping addFramesToQueue" << std::endl;
         return;
     }
 
@@ -340,4 +341,122 @@ void Analyzer::updateSpectraDifferentials() {
 //*******************************************************************************
 bool Analyzer::checkForAudioFeedback() {
 
+    if (!testSpectralPeakAboveThreshold()) {
+        return false;
+    }
+
+    if (!testSpectralPeakAbnormallyHigh()) {
+        return false;
+    }
+
+    if (!testSpectralPeakGrowing()) {
+        return false;
+    }
+
+    return true;
+}
+
+//*******************************************************************************
+bool Analyzer::testSpectralPeakAboveThreshold() {
+
+    // this test checks if the peak of the latest spectra is above a certain threshold
+
+    float* latestSpectra = mSpectra[mNumSpectra - 1];
+    int fftChans = static_cast<fftdsp*>(mFftP)->getNumOutputs();
+
+    // For a PURE sinusoidal wave, the DFT would yield a complex number with a magnitude of N/2.
+    // Since here we are using the magnitude squared, we would expect to see the feedback frequency
+    // have a peak of about N^2/4.
+
+    // Obviously, real world feedback isn't a pure sinusoidal wave, but feedback primarily centers
+    // around a specific frequency which we might reasonably expect to be in that ballpark range.
+
+    // the exact threshold can be adjusted using the mThresholdMultiplier
+    float threshold = mThresholdMultiplier * (mFftSize / 2) * (mFftSize / 2);
+    
+    float peak = 0.0f;
+    for (int i = 0; i < fftChans; i++) {
+        if (latestSpectra[i] > peak) {
+            peak = latestSpectra[i];
+        }
+    }
+
+    return peak > threshold;
+}
+
+bool Analyzer::testSpectralPeakAbnormallyHigh() {
+
+    // this test checks if the peak of the latest spectra is substantially higher than
+    // the other frequencies in the sample. As a heuristic we are checking if the peak is more
+    // than a few orders of magnitude above the median frequency - in other words if the
+    // peak / median exceeds a certain threshold
+
+    float* latestSpectra = mSpectra[mNumSpectra - 1];
+    int fftChans = static_cast<fftdsp*>(mFftP)->getNumOutputs();
+
+    std::vector<float> latestSpectraSorted;
+    for (int i = 0; i < fftChans; i++) {
+        latestSpectraSorted.push_back(latestSpectra[i]);
+    }
+    std::sort(latestSpectraSorted.begin(), latestSpectraSorted.end(), std::less<float>());
+
+    float threshold = mThresholdMultiplier * 1000; // 3 orders of magnitude
+
+    float peak = 0.0f;
+    for (int i = 0; i < fftChans; i++) {
+        if (latestSpectra[i] > peak) {
+            peak = latestSpectra[i];
+        }
+    }
+
+    float median = latestSpectraSorted[(int)(fftChans / 2)];
+
+    return peak / median > threshold;
+}
+
+bool Analyzer::testSpectralPeakGrowing() {
+
+    // this test checks if the peak of the spectra has a history of growth over the last few
+    // samples. This likely indicates a positive feedback loop
+
+    float* latestSpectra = mSpectra[mNumSpectra - 1];
+    int fftChans = static_cast<fftdsp*>(mFftP)->getNumOutputs();
+
+    float peak = 0.0f;
+    int peakIndex = 0;
+    for (int i = 0; i < fftChans; i++) {
+        if (latestSpectra[i] > peak) {
+            peak = latestSpectra[i];
+            peakIndex = i;
+        }
+    }
+
+    std::vector<float> valueVsTime;
+    std::vector<float> valueVsTimeSorted;
+    std::vector<float> differentials;
+    for (int i = 0; i < mNumSpectra; i++) {
+        valueVsTime.push_back(mSpectra[i][peakIndex]);
+        valueVsTimeSorted.push_back(mSpectra[i][peakIndex]);
+        differentials.push_back(mSpectraDifferentials[i][peakIndex]);
+    }
+    std::sort(valueVsTimeSorted.begin(), valueVsTimeSorted.end(), std::less<float>());
+
+    // test that the current value is the largest value
+    if (valueVsTimeSorted[mNumSpectra - 1] != valueVsTime[mNumSpectra - 1]) {
+        return false;
+    }
+
+    uint32_t numPositiveDifferentials = 0;
+    uint32_t numLargeDifferentials = 0;
+    for (int i = 0; i < mNumSpectra; i++) {
+        if (differentials[i] > 0) {
+            numPositiveDifferentials++;
+        }
+
+        if (differentials[i] > 100 * mThresholdMultiplier) {
+            numLargeDifferentials++;
+        }
+    }
+
+    return numPositiveDifferentials >= (int) (mNumSpectra / 2) && numLargeDifferentials >= 2;
 }

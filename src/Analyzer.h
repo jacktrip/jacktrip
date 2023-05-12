@@ -78,7 +78,12 @@ class Analyzer : public ProcessPlugin
     uint32_t updateFftInputBuffer();
     bool checkForAudioFeedback();
 
+    bool testSpectralPeakAboveThreshold();
+    bool testSpectralPeakAbnormallyHigh();
+    bool testSpectralPeakGrowing();
+
     int mInterval = 100;
+    float mThresholdMultiplier = 0.5;
 
     float fs;
     int mNumChannels;
