@@ -48,6 +48,7 @@
 #include <QtNetworkAuth>
 
 #include "../JackTrip.h"
+#include "../Analyzer.h"
 #include "../Meter.h"
 #include "../Monitor.h"
 #include "../Volume.h"
@@ -286,6 +287,7 @@ class VirtualStudio : public QObject
     void setMonitorMuted(bool muted);
     void setAudioActivated(bool activated);
     void setAudioReady(bool ready);
+    void detectedFeedbackLoop();
     void setWindowState(QString state);
     void exit();
 
@@ -440,6 +442,7 @@ class VirtualStudio : public QObject
     bool m_audioActivated = false;
     bool m_audioReady     = false;
 
+    Analyzer* m_inputAnalyzerPlugin;
     Meter* m_inputMeter;
     Meter* m_outputMeter;
     Meter* m_inputTestMeter;

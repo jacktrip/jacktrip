@@ -1587,6 +1587,11 @@ void VirtualStudio::completeConnection()
 
         setAudioActivated(false);
 
+        // Setup input analyzer
+        m_inputAnalyzerPlugin = new Analyzer(jackTrip->getNumInputChannels());
+        jackTrip->appendProcessPluginToNetwork(m_inputAnalyzerPlugin);
+        connect(m_inputAnalyzerPlugin, &Analyzer::signalFeedbackDetected, this, &VirtualStudio::detectedFeedbackLoop);
+
         // Setup output volume
         m_outputVolumePlugin = new Volume(jackTrip->getNumOutputChannels());
         jackTrip->appendProcessPluginFromNetwork(m_outputVolumePlugin);
@@ -2160,6 +2165,11 @@ void VirtualStudio::updatedOutputVuMeasurements(const float* valuesInDecibels,
 #endif
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("outputMeterModel"),
                                                        QVariant::fromValue(uiValues));
+}
+
+void VirtualStudio::detectedFeedbackLoop()
+{
+    setInputMuted(true);
 }
 
 void VirtualStudio::setupAuthenticator()
