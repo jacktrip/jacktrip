@@ -38,4 +38,68 @@
 #ifndef VSAUTH_H
 #define VSAUTH_H
 
-#endif
+#include <QEventLoop>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonParseError>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QSettings>
+#include <QString>
+#include <QTimer>
+#include <iostream>
+
+#include "vsAuth.h"
+
+class VsAuth : public QObject
+{
+    Q_OBJECT
+
+   public:
+    explicit VsAuth();
+
+    void grant();
+    void refreshAccessToken(){};
+    void initDeviceAuthorizationCodeFlow();
+
+    bool processDeviceCodeNetworkReply(QNetworkReply* reply);
+    bool processPollingOAuthTokenNetworkReply(QNetworkReply* reply);
+    void startPolling();
+    void stopPolling();
+    void onPollingTimerTick();
+    void onDeviceCodeExpired();
+    void cleanupDeviceCodeFlow();
+
+    bool authenticated();
+    QString accessToken();
+
+   signals:
+    void deviceCodeFlowInitialized();
+
+   private:
+    QString m_clientId;
+    QString m_audience;
+    QString m_authorizationServerHost;
+
+    // state used specifically in the device code flow
+    QString m_deviceCode;
+    QString m_userCode;
+    QString m_verificationUri;
+    QString m_verificationUriComplete;
+    int m_pollingInterval            = -1;  // seconds
+    int m_deviceCodeValidityDuration = -1;  // seconds
+
+    QTimer m_tokenPollingTimer;
+    QTimer m_deviceFlowExpirationTimer;
+
+    // authentication state variables
+    bool m_isAuthenticated;
+    bool m_authenticationError;
+    QString m_refreshToken;
+    QString m_accessToken;
+    QString m_idToken;
+
+    QScopedPointer<QNetworkAccessManager> m_netManager;
+};
+
+#endif  // VSAUTH

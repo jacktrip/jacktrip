@@ -41,10 +41,11 @@
 #include <QString>
 
 const QString AUTH_AUTHORIZE_URI = QStringLiteral("https://auth.jacktrip.org/authorize");
-const QString AUTH_TOKEN_URI = QStringLiteral("https://auth.jacktrip.org/oauth/token");
-const QString AUTH_AUDIENCE  = QStringLiteral("https://api.jacktrip.org");
-const QString AUTH_CLIENT_ID = QStringLiteral("cROUJag0UVKDaJ6jRAKRzlVjKVFNU39I");
-const QString PROD_API_HOST  = QStringLiteral("app.jacktrip.org");
-const QString TEST_API_HOST  = QStringLiteral("test.jacktrip.org");
+const QString AUTH_TOKEN_URI   = QStringLiteral("https://auth.jacktrip.org/oauth/token");
+const QString AUTH_AUDIENCE    = QStringLiteral("https://api.jacktrip.org");
+const QString AUTH_CLIENT_ID   = QStringLiteral("cROUJag0UVKDaJ6jRAKRzlVjKVFNU39I");
+const QString PROD_API_HOST    = QStringLiteral("app.jacktrip.org");
+const QString TEST_API_HOST    = QStringLiteral("test.jacktrip.org");
+const QString AUTH_SERVER_HOST = QStringLiteral("auth.jacktrip.org");
 
 #endif  // VSCONSTANTS_H
