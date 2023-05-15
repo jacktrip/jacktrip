@@ -30,12 +30,12 @@
 //*****************************************************************
 
 /**
- * \file vsAuth.cpp
+ * \file vsDeviceCodeFlow.cpp
  * \author Dominick Hing
  * \date May 2023
  */
 
-#include "./vsAuth.h"
+#include "./vsDeviceCodeFlow.h"
 #include "./vsConstants.h"
 
 VsAuth::VsAuth()

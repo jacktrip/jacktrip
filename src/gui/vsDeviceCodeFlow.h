@@ -30,7 +30,7 @@
 //*****************************************************************
 
 /**
- * \file vsAuth.h
+ * \file vsDeviceCodeFlow.h
  * \author Dominick Hing
  * \date May 2023
  */
@@ -49,7 +49,7 @@
 #include <QTimer>
 #include <iostream>
 
-#include "vsAuth.h"
+#include "vsDeviceCodeFlow.h"
 
 class VsAuth : public QObject
 {

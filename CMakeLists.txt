@@ -185,7 +185,7 @@ if (NOT nogui)
   if (NOT novs)
     set (qjacktrip_SRC ${qjacktrip_SRC}
       src/gui/virtualstudio.cpp
-      src/gui/vsAuth.cpp
+      src/gui/vsDeviceCodeFlow.cpp
       src/gui/vsInit.cpp
       src/gui/vsQuickView.cpp
       src/gui/vsServerInfo.cpp
