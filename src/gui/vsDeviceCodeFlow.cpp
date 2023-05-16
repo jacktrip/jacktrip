@@ -42,7 +42,6 @@ VsAuth::VsAuth()
     : m_clientId(AUTH_CLIENT_ID)
     , m_audience(AUTH_AUDIENCE)
     , m_authorizationServerHost(AUTH_SERVER_HOST)
-    , m_isAuthenticated(false)
     , m_authenticationError(false)
     , m_netManager(new QNetworkAccessManager(this))
 {
@@ -89,6 +88,9 @@ void VsAuth::initDeviceAuthorizationCodeFlow()
         bool success = processDeviceCodeNetworkReply(reply);
         if (success) {
             emit deviceCodeFlowInitialized();
+            emit receivedDeviceCode(m_deviceCode);
+        } else if (m_authenticationError) {
+            emit deviceCodeFlowError();
         }
         reply->deleteLater();
     });
@@ -137,7 +139,9 @@ void VsAuth::onPollingTimerTick()
     QNetworkReply* reply = m_netManager->post(request, data.toUtf8());
     connect(reply, &QNetworkReply::finished, this, [=]() {
         bool success = processPollingOAuthTokenNetworkReply(reply);
-        if (!success) {
+        if (m_authenticationError) {
+            emit deviceCodeFlowError();
+        } else if (!success) {
             m_tokenPollingTimer.start();
         } else {
             stopPolling();
@@ -149,6 +153,8 @@ void VsAuth::onPollingTimerTick()
 
 void VsAuth::onDeviceCodeExpired()
 {
+    emit deviceCodeFlowTimedOut();
+    
     std::cout << "Device Code has expired." << std::endl;
     stopPolling();
     cleanupDeviceCodeFlow();
@@ -160,7 +166,7 @@ bool VsAuth::processDeviceCodeNetworkReply(QNetworkReply* reply)
 
     // Error: failed to get device code
     if (reply->error()) {
-        std::cout << "Error when refreshing access token: " << buffer.toStdString()
+        std::cout << "Failed to get device code: " << buffer.toStdString()
                   << std::endl;
         m_authenticationError = true;
         return false;
@@ -195,12 +201,9 @@ bool VsAuth::processDeviceCodeNetworkReply(QNetworkReply* reply)
 bool VsAuth::processPollingOAuthTokenNetworkReply(QNetworkReply* reply)
 {
     QByteArray buffer = reply->readAll();
-    std::cout << "URL: " << m_verificationUriComplete.toStdString() << std::endl;
-    // Error: failed to get device code
+
+    // Error: failed to get device code (this is expected)
     if (reply->error()) {
-        std::cout << "Error when refreshing access token: " << buffer.toStdString()
-                  << std::endl;
-        m_authenticationError = true;
         return false;
     }
 
@@ -208,9 +211,8 @@ bool VsAuth::processPollingOAuthTokenNetworkReply(QNetworkReply* reply)
     QJsonParseError parseError;
     QJsonDocument data = QJsonDocument::fromJson(buffer, &parseError);
     if (parseError.error) {
-        std::cout << "Error parsing JSON for Device Code: "
+        std::cout << "Error parsing JSON for access token: "
                   << parseError.errorString().toStdString() << std::endl;
-        m_authenticationError = true;
         return false;
     }
 
@@ -219,9 +221,10 @@ bool VsAuth::processPollingOAuthTokenNetworkReply(QNetworkReply* reply)
     m_idToken = object.value(QLatin1String("id_token")).toString();
     m_accessToken = object.value(QLatin1String("access_token")).toString();
     m_refreshToken = object.value(QLatin1String("refresh_token")).toString();
-    m_isAuthenticated     = true;
     m_authenticationError = false;
 
+    emit receivedAccessToken(m_accessToken);
+    emit receivedRefreshToken(m_refreshToken);
     return true;
 }
 
@@ -234,11 +237,6 @@ void VsAuth::cleanupDeviceCodeFlow()
 
     m_pollingInterval            = -1;
     m_deviceCodeValidityDuration = -1;
-}
-
-bool VsAuth::authenticated()
-{
-    return m_isAuthenticated;
 }
 
 QString VsAuth::accessToken()

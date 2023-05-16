@@ -75,6 +75,11 @@ class VsAuth : public QObject
 
    signals:
     void deviceCodeFlowInitialized();
+    void deviceCodeFlowError();
+    void receivedDeviceCode(QString code);
+    void receivedAccessToken(QString accessToken);
+    void receivedRefreshToken(QString refreshToken);
+    void deviceCodeFlowTimedOut();
 
    private:
     QString m_clientId;
@@ -93,7 +98,6 @@ class VsAuth : public QObject
     QTimer m_deviceFlowExpirationTimer;
 
     // authentication state variables
-    bool m_isAuthenticated;
     bool m_authenticationError;
     QString m_refreshToken;
     QString m_accessToken;
