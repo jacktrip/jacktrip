@@ -953,11 +953,39 @@ void VirtualStudio::setTestMode(bool test)
         qDebug() << "Not allowed";
         return;
     }
+
     m_testMode = test;
+
+    // clear existing auth state
+    m_auth->logout();
+
+    // Clear existing registers - any existing instance data will be overwritten
+    // when m_auth->authenticate finishes and slotAuthSucceeded() is called again
     QSettings settings;
     settings.beginGroup(QStringLiteral("VirtualStudio"));
     settings.setValue(QStringLiteral("TestMode"), m_testMode);
+    settings.remove(QStringLiteral("RefreshToken"));
+    settings.remove(QStringLiteral("UserId"));
+    settings.remove(QStringLiteral("ShowInactive"));
+    settings.remove(QStringLiteral("ShowSelfHosted"));
+    settings.remove(QStringLiteral("ShowDeviceSetup"));
+    settings.remove(QStringLiteral("ShowWarnings"));
     settings.endGroup();
+
+    // deregister app
+    if (m_device != nullptr) {
+        m_device->removeApp();
+    }
+
+    // stop timers, clear data, etc.
+    m_refreshTimer.stop();
+    m_heartbeatTimer.stop();
+    m_userMetadata = QJsonObject();
+    m_userId.clear();
+
+    // re-run authentication. This should not require another browser flow since
+    // we're starting with the existing refresh token
+    m_auth->authenticate(m_refreshToken);
     emit testModeChanged();
 }
 
@@ -1499,7 +1527,7 @@ void VirtualStudio::connectToStudio(int studioIndex)
 
     m_studioSocket = new VsWebSocket(
         QUrl(QStringLiteral("wss://%1/api/servers/%2?auth_code=%3")
-                 .arg(m_apiHost, studioInfo->id(), m_auth->accessToken())),
+                 .arg(m_api->getApiHost(), studioInfo->id(), m_auth->accessToken())),
         m_auth->accessToken(), QString(), QString());
     connect(m_studioSocket, &VsWebSocket::textMessageReceived, this,
             [&](QString message) {
@@ -1729,7 +1757,7 @@ void VirtualStudio::manageStudio(int studioIndex, bool start)
     QUrl url;
     if (!start) {
         url = QUrl(QStringLiteral("https://%1/studios/%2")
-                       .arg(m_apiHost,
+                       .arg(m_api->getApiHost(),
                             static_cast<VsServerInfo*>(m_servers.at(studioIndex))->id()));
     } else {
         QString expiration =
@@ -1777,19 +1805,19 @@ void VirtualStudio::launchVideo(int studioIndex)
     }
     QUrl url = QUrl(
         QStringLiteral("https://%1/studios/%2/live")
-            .arg(m_apiHost, static_cast<VsServerInfo*>(m_servers.at(studioIndex))->id()));
+            .arg(m_api->getApiHost(), static_cast<VsServerInfo*>(m_servers.at(studioIndex))->id()));
     QDesktopServices::openUrl(url);
 }
 
 void VirtualStudio::createStudio()
 {
-    QUrl url = QUrl(QStringLiteral("https://%1/studios/create").arg(m_apiHost));
+    QUrl url = QUrl(QStringLiteral("https://%1/studios/create").arg(m_api->getApiHost()));
     QDesktopServices::openUrl(url);
 }
 
 void VirtualStudio::editProfile()
 {
-    QUrl url = QUrl(QStringLiteral("https://%1/profile").arg(m_apiHost));
+    QUrl url = QUrl(QStringLiteral("https://%1/profile").arg(m_api->getApiHost()));
     QDesktopServices::openUrl(url);
 }
 
@@ -1823,13 +1851,14 @@ void VirtualStudio::exit()
     }
 }
 
-void VirtualStudio::slotAuthSucceded()
+void VirtualStudio::slotAuthSucceeded()
 {
     // Determine which API host to use
     m_apiHost = PROD_API_HOST;
     if (m_testMode) {
         m_apiHost = TEST_API_HOST;
     }
+    m_api->setApiHost(m_apiHost);
 
     m_refreshToken = m_auth->refreshToken();
     emit hasRefreshTokenChanged();
@@ -1850,19 +1879,11 @@ void VirtualStudio::slotAuthSucceded()
         }
     }
 
-    if (m_userId.isEmpty()) {
-        getUserId();
-    } else {
-        getSubscriptions();
-        getServerList(true, false);
-    }
-
-    if (m_regions.isEmpty()) {
-        getRegions();
-    }
-    if (m_userMetadata.isEmpty() && !m_userId.isEmpty()) {
-        getUserMetadata();
-    }
+    getUserId();
+    getSubscriptions();
+    getServerList(true, false);
+    getRegions();
+    getUserMetadata();
 
     // attempt to join studio if requested
     if (!m_studioToJoin.isEmpty()) {
@@ -2156,7 +2177,7 @@ void VirtualStudio::setupAuthenticator()
         connect(m_auth.data(), &VsAuth::updatedDeviceVerificationUrl, this,
                 &VirtualStudio::launchBrowser);
         connect(m_auth.data(), &VsAuth::authSucceeded, this,
-                &VirtualStudio::slotAuthSucceded);
+                &VirtualStudio::slotAuthSucceeded);
         connect(m_auth.data(), &VsAuth::authFailed, this, &VirtualStudio::slotAuthFailed);
     }
 }
@@ -2377,32 +2398,16 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
 
 void VirtualStudio::getUserId()
 {
-    QNetworkReply* reply = m_api->getAuth0UserInfo();
-    connect(reply, &QNetworkReply::finished, this, [=]() {
-        if (reply->error() != QNetworkReply::NoError) {
-            std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
-            emit authFailed();
-            reply->deleteLater();
-            return;
-        }
+    m_userId = m_auth->userId();
+    if (m_userId.isEmpty()) {
+        emit authFailed();
+        return;
+    }
 
-        QByteArray response    = reply->readAll();
-        QJsonDocument userInfo = QJsonDocument::fromJson(response);
-        m_userId               = userInfo.object()[QStringLiteral("sub")].toString();
-
-        QSettings settings;
-        settings.beginGroup(QStringLiteral("VirtualStudio"));
-        settings.setValue(QStringLiteral("UserId"), m_userId);
-        settings.endGroup();
-        getSubscriptions();
-        getServerList(true, false);
-
-        if (m_userMetadata.isEmpty() && !m_userId.isEmpty()) {
-            getUserMetadata();
-        }
-
-        reply->deleteLater();
-    });
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("VirtualStudio"));
+    settings.setValue(QStringLiteral("UserId"), m_userId);
+    settings.endGroup();
 }
 
 void VirtualStudio::getSubscriptions()

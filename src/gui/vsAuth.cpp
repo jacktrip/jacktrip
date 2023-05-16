@@ -62,7 +62,8 @@ void VsAuth::authenticate(QString currentRefreshToken)
     if (currentRefreshToken.isEmpty()) {
         m_deviceCodeFlow->grant();
     } else {
-        refreshAccessToken(currentRefreshToken);
+        m_refreshToken = currentRefreshToken;
+        refreshAccessToken(m_refreshToken);
     }
 }
 

@@ -351,7 +351,7 @@ class VirtualStudio : public QObject
     void apiHostChanged();
 
    private slots:
-    void slotAuthSucceded();
+    void slotAuthSucceeded();
     void slotAuthFailed();
     void processFinished();
     void processError(const QString& errorMessage);
