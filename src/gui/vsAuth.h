@@ -73,7 +73,6 @@ class VsAuth : public QObject
     QString accessToken() { return m_accessToken; };
     QString refreshToken() { return m_refreshToken; };
 
-
    signals:
     void updatedAuthenticationStage(QString authenticationStage);
     void updatedDeviceCode(QString deviceCode);

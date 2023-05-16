@@ -172,7 +172,7 @@ void VsAuth::handleAuthSucceeded(QString userId, QString accessToken)
 void VsAuth::handleAuthFailed()
 {
     std::cout << "Failed Authentication!" << std::endl;
-    
+
     m_userId              = QStringLiteral("");
     m_deviceCode          = QStringLiteral("");
     m_accessToken         = QStringLiteral("");

@@ -47,6 +47,8 @@
 
 #include "../JackTrip.h"
 #include "../jacktrip_globals.h"
+#include "vsApi.h"
+#include "vsAuth.h"
 #include "vsConstants.h"
 #include "vsPinger.h"
 #include "vsServerInfo.h"
@@ -58,8 +60,7 @@ class VsDevice : public QObject
 
    public:
     // Constructor
-    explicit VsDevice(QOAuth2AuthorizationCodeFlow* authenticator, bool testMode,
-                      QObject* parent = nullptr);
+    explicit VsDevice(VsAuth* auth, VsApi* api, QObject* parent = nullptr);
 
     // Public functions
     void registerApp();
@@ -106,6 +107,8 @@ class VsDevice : public QObject
     int selectBindPort();
     QString randomString(int stringLength);
 
+    VsAuth* m_auth     = nullptr;
+    VsApi* m_api       = nullptr;
     VsPinger* m_pinger = NULL;
 
     QString m_appID;
@@ -113,11 +116,9 @@ class VsDevice : public QObject
     QString m_token;
     QString m_apiPrefix;
     QString m_apiSecret;
-    QString m_apiHost = PROD_API_HOST;
     QJsonObject m_deviceAgentConfig;
     VsWebSocket* m_webSocket = NULL;
     QScopedPointer<JackTrip> m_jackTrip;
-    QOAuth2AuthorizationCodeFlow* m_authenticator;
     QRandomGenerator m_randomizer;
     float m_captureVolume  = 1.0;
     bool m_captureMute     = false;

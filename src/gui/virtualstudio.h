@@ -41,6 +41,7 @@
 #include <QEventLoop>
 #include <QList>
 #include <QMutex>
+#include <QNetworkAccessManager>
 #include <QScopedPointer>
 #include <QSharedPointer>
 #include <QTimer>
@@ -51,7 +52,9 @@
 #include "../Meter.h"
 #include "../Monitor.h"
 #include "../Volume.h"
+#include "vsApi.h"
 #include "vsAudioInterface.h"
+#include "vsAuth.h"
 #include "vsConstants.h"
 #include "vsDevice.h"
 #include "vsQuickView.h"
@@ -391,7 +394,9 @@ class VirtualStudio : public QObject
     QString m_userId;
     VsQuickView m_view;
     QSharedPointer<QJackTrip> m_standardWindow;
-    QScopedPointer<QOAuth2AuthorizationCodeFlow> m_authenticator;
+    QScopedPointer<VsAuth> m_auth;
+    QScopedPointer<VsApi> m_api;
+    QScopedPointer<QNetworkAccessManager> m_networkAccessManager;
 
     QList<QObject*> m_servers;
     QStringList m_subscribedServers;

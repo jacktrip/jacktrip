@@ -80,7 +80,9 @@ QNetworkReply* VsApi::postDevice(const QByteArray& data)
 
 QNetworkReply* VsApi::postDeviceHeartbeat(const QString& deviceId, const QByteArray& data)
 {
-    return post(QUrl(QString("https://%1/api/devices/%2/heartbeat").arg(m_apiHost, deviceId)), data);
+    return post(
+        QUrl(QString("https://%1/api/devices/%2/heartbeat").arg(m_apiHost, deviceId)),
+        data);
 }
 
 QNetworkReply* VsApi::updateServer(const QString& serverId, const QByteArray& data)
@@ -95,7 +97,8 @@ QNetworkReply* VsApi::updateDevice(const QString& deviceId, const QByteArray& da
 
 QNetworkReply* VsApi::deleteDevice(const QString& deviceId)
 {
-    return deleteResource(QUrl(QString("https://%1/api/devices/%2").arg(m_apiHost, deviceId)));
+    return deleteResource(
+        QUrl(QString("https://%1/api/devices/%2").arg(m_apiHost, deviceId)));
 }
 
 QNetworkReply* VsApi::get(const QUrl& url)
@@ -107,7 +110,6 @@ QNetworkReply* VsApi::get(const QUrl& url)
     QNetworkReply* reply = m_networkAccessManager->get(request);
     return reply;
 }
-
 
 QNetworkReply* VsApi::post(const QUrl& url, const QByteArray& data)
 {
