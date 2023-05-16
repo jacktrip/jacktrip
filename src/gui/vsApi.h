@@ -57,18 +57,28 @@ class VsApi : public QObject
     VsApi(QNetworkAccessManager* networkAccessManager);
     void setAccessToken(QString token) { m_accessToken = token; };
     void setApiHost(QString host) { m_apiHost = host; }
+    QString getApiHost() { return m_apiHost; }
 
     QNetworkReply* getAuth0UserInfo();
     QNetworkReply* getUser(const QString& userId);
     QNetworkReply* getServers();
     QNetworkReply* getSubscriptions(const QString& userId);
     QNetworkReply* getRegions(const QString& userId);
+    QNetworkReply* getDevice(const QString& deviceId);
+
+    QNetworkReply* postDevice(const QByteArray& data);
+    QNetworkReply* postDeviceHeartbeat(const QString& deviceId, const QByteArray& data);
 
     QNetworkReply* updateServer(const QString& serverId, const QByteArray& data);
+    QNetworkReply* updateDevice(const QString& deviceId, const QByteArray& data);
+
+    QNetworkReply* deleteDevice(const QString& deviceId);
 
    private:
     QNetworkReply* get(const QUrl& url);
     QNetworkReply* put(const QUrl& url, const QByteArray& data);
+    QNetworkReply* post(const QUrl& url, const QByteArray& data);
+    QNetworkReply* deleteResource(const QUrl& url);
 
     QString m_accessToken;
     QString m_apiHost;

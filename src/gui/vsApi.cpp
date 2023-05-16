@@ -68,9 +68,34 @@ QNetworkReply* VsApi::getRegions(const QString& userId)
     return get(QUrl(QString("https://%1/api/users/%2/regions").arg(m_apiHost, userId)));
 }
 
+QNetworkReply* VsApi::getDevice(const QString& deviceId)
+{
+    return get(QUrl(QString("https://%1/api/devices/%2").arg(m_apiHost, deviceId)));
+}
+
+QNetworkReply* VsApi::postDevice(const QByteArray& data)
+{
+    return post(QUrl(QString("https://%1/api/devices").arg(m_apiHost)), data);
+}
+
+QNetworkReply* VsApi::postDeviceHeartbeat(const QString& deviceId, const QByteArray& data)
+{
+    return post(QUrl(QString("https://%1/api/devices/%2/heartbeat").arg(m_apiHost, deviceId)), data);
+}
+
 QNetworkReply* VsApi::updateServer(const QString& serverId, const QByteArray& data)
 {
     return put(QUrl(QString("https://%1/api/servers/%2").arg(m_apiHost, serverId)), data);
+}
+
+QNetworkReply* VsApi::updateDevice(const QString& deviceId, const QByteArray& data)
+{
+    return put(QUrl(QString("https://%1/api/devices/%2").arg(m_apiHost, deviceId)), data);
+}
+
+QNetworkReply* VsApi::deleteDevice(const QString& deviceId)
+{
+    return deleteResource(QUrl(QString("https://%1/api/devices/%2").arg(m_apiHost, deviceId)));
 }
 
 QNetworkReply* VsApi::get(const QUrl& url)
@@ -83,12 +108,36 @@ QNetworkReply* VsApi::get(const QUrl& url)
     return reply;
 }
 
+
+QNetworkReply* VsApi::post(const QUrl& url, const QByteArray& data)
+{
+    QNetworkRequest request = QNetworkRequest(url);
+    request.setRawHeader(QByteArray("Authorization"),
+                         QString("Bearer %1").arg(m_accessToken).toUtf8());
+    request.setRawHeader(QByteArray("Content-Type"),
+                         QString("application/json").toUtf8());
+
+    QNetworkReply* reply = m_networkAccessManager->post(request, data);
+    return reply;
+}
+
 QNetworkReply* VsApi::put(const QUrl& url, const QByteArray& data)
 {
     QNetworkRequest request = QNetworkRequest(url);
     request.setRawHeader(QByteArray("Authorization"),
                          QString("Bearer %1").arg(m_accessToken).toUtf8());
-
+    request.setRawHeader(QByteArray("Content-Type"),
+                         QString("application/json").toUtf8());
     QNetworkReply* reply = m_networkAccessManager->put(request, data);
+    return reply;
+}
+
+QNetworkReply* VsApi::deleteResource(const QUrl& url)
+{
+    QNetworkRequest request = QNetworkRequest(url);
+    request.setRawHeader(QByteArray("Authorization"),
+                         QString("Bearer %1").arg(m_accessToken).toUtf8());
+
+    QNetworkReply* reply = m_networkAccessManager->deleteResource(request);
     return reply;
 }
