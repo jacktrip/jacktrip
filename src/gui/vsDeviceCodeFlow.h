@@ -76,9 +76,8 @@ class VsDeviceCodeFlow : public QObject
    signals:
     void deviceCodeFlowInitialized(QString code, QString verificationUrl);
     void deviceCodeFlowError();
-    void receivedAccessToken(QString accessToken);
-    void receivedRefreshToken(QString refreshToken);
     void deviceCodeFlowTimedOut();
+    void onCompletedCodeFlow(QString accessToken, QString refreshToken);
 
    private:
     QString m_clientId;

@@ -70,18 +70,24 @@ class VsAuth : public QObject
     QString deviceCode() { return m_deviceCode; };
     bool isAuthenticated() { return m_isAuthenticated; };
     QString userId() { return m_userId; };
+    QString accessToken() { return m_accessToken; };
+    QString refreshToken() { return m_refreshToken; };
+
 
    signals:
     void updatedAuthenticationStage(QString authenticationStage);
     void updatedDeviceCode(QString deviceCode);
+    void updatedDeviceVerificationUrl(QUrl verificationUrl);
     void updatedIsAuthenticated(bool isAuthenticated);
     void updatedUserId(QString userId);
+    void authSucceeded();
+    void authFailed();
 
    private slots:
-    void authSucceeded(QString userId, QString accessToken);
-    void authFailed();
+    void handleAuthSucceeded(QString userId, QString accessToken);
+    void handleAuthFailed();
     void initializedCodeFlow(QString code, QString verificationUrl);
-    void codeFlowCompleted(QString accessToken);
+    void codeFlowCompleted(QString accessToken, QString refreshToken);
 
    private:
     void fetchUserInfo(QString accessToken);
@@ -95,6 +101,7 @@ class VsAuth : public QObject
     bool m_isAuthenticated = false;
     QString m_userId;
     QString m_accessToken;
+    QString m_refreshToken;
 
     VsQuickView* m_view;
     QNetworkAccessManager* m_networkAccessManager;

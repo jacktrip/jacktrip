@@ -50,8 +50,8 @@ VsAuth::VsAuth(VsQuickView* view, QNetworkAccessManager* networkAccessManager, V
     connect(m_deviceCodeFlow.data(), &VsDeviceCodeFlow::deviceCodeFlowInitialized, this,
             &VsAuth::initializedCodeFlow);
     connect(m_deviceCodeFlow.data(), &VsDeviceCodeFlow::deviceCodeFlowError, this,
-            &VsAuth::authFailed);
-    connect(m_deviceCodeFlow.data(), &VsDeviceCodeFlow::receivedAccessToken, this,
+            &VsAuth::handleAuthFailed);
+    connect(m_deviceCodeFlow.data(), &VsDeviceCodeFlow::onCompletedCodeFlow, this,
             &VsAuth::codeFlowCompleted);
 
     m_view->engine()->rootContext()->setContextProperty(QStringLiteral("auth"), this);
@@ -75,6 +75,7 @@ void VsAuth::initializedCodeFlow(QString code, QString verificationUrl)
 
     emit updatedAuthenticationStage(m_authenticationStage);
     emit updatedDeviceCode(m_deviceCode);
+    emit updatedDeviceVerificationUrl(verificationUrl);
 }
 
 void VsAuth::fetchUserInfo(QString accessToken)
@@ -83,7 +84,7 @@ void VsAuth::fetchUserInfo(QString accessToken)
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
-            authFailed();
+            handleAuthFailed();
             reply->deleteLater();
             return;
         }
@@ -92,7 +93,7 @@ void VsAuth::fetchUserInfo(QString accessToken)
         QJsonDocument userInfo = QJsonDocument::fromJson(response);
         QString userId         = userInfo.object()[QStringLiteral("sub")].toString();
 
-        authSucceeded(userId, accessToken);
+        handleAuthSucceeded(userId, accessToken);
     });
 }
 
@@ -117,7 +118,7 @@ void VsAuth::refreshAccessToken(QString refreshToken)
         if (reply->error()) {
             std::cout << "Failed to get new access token: " << buffer.toStdString()
                       << std::endl;
-            authFailed();
+            handleAuthFailed();
             reply->deleteLater();
             return;
         }
@@ -128,7 +129,7 @@ void VsAuth::refreshAccessToken(QString refreshToken)
         if (parseError.error) {
             std::cout << "Error parsing JSON for Access Token: "
                       << parseError.errorString().toStdString() << std::endl;
-            authFailed();
+            handleAuthFailed();
             reply->deleteLater();
             return;
         }
@@ -142,16 +143,17 @@ void VsAuth::refreshAccessToken(QString refreshToken)
     });
 }
 
-void VsAuth::codeFlowCompleted(QString accessToken)
+void VsAuth::codeFlowCompleted(QString accessToken, QString refreshToken)
 {
+    m_refreshToken = refreshToken;
     m_api->setAccessToken(accessToken);
     fetchUserInfo(accessToken);
 }
 
-void VsAuth::authSucceeded(QString userId, QString accessToken)
+void VsAuth::handleAuthSucceeded(QString userId, QString accessToken)
 {
     std::cout << "Successful Authentication!" << std::endl;
-    std::cout << "User ID: " << m_userId.toStdString();
+    std::cout << "User ID: " << userId.toStdString() << std::endl;
 
     m_userId              = userId;
     m_deviceCode          = QStringLiteral("");
@@ -163,9 +165,11 @@ void VsAuth::authSucceeded(QString userId, QString accessToken)
     emit updatedAuthenticationStage(m_authenticationStage);
     emit updatedDeviceCode(m_deviceCode);
     emit updatedIsAuthenticated(m_isAuthenticated);
+
+    emit authSucceeded();
 }
 
-void VsAuth::authFailed()
+void VsAuth::handleAuthFailed()
 {
     std::cout << "Failed Authentication!" << std::endl;
     
@@ -179,6 +183,8 @@ void VsAuth::authFailed()
     emit updatedAuthenticationStage(m_authenticationStage);
     emit updatedDeviceCode(m_deviceCode);
     emit updatedIsAuthenticated(m_isAuthenticated);
+
+    emit authFailed();
 }
 
 void VsAuth::logout()

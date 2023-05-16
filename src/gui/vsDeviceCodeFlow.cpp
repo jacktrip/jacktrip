@@ -224,8 +224,7 @@ bool VsDeviceCodeFlow::processPollingOAuthTokenNetworkReply(QNetworkReply* reply
     m_refreshToken        = object.value(QLatin1String("refresh_token")).toString();
     m_authenticationError = false;
 
-    emit receivedAccessToken(m_accessToken);
-    emit receivedRefreshToken(m_refreshToken);
+    emit onCompletedCodeFlow(m_accessToken, m_refreshToken);
     return true;
 }
 
