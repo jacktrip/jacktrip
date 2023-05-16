@@ -39,32 +39,34 @@
 
 VsAuth::VsAuth(VsQuickView* view, QNetworkAccessManager* networkAccessManager, VsApi* api)
 {
-    m_view = view;
+    m_view                 = view;
     m_networkAccessManager = networkAccessManager;
-    m_api = api;
+    m_api                  = api;
     m_deviceCodeFlow.reset(new VsDeviceCodeFlow(networkAccessManager));
 
-    connect(m_deviceCodeFlow.data(), &VsDeviceCodeFlow::deviceCodeFlowInitialized, this, &VsAuth::initializedCodeFlow);
-    connect(m_deviceCodeFlow.data(), &VsDeviceCodeFlow::deviceCodeFlowError, this, &VsAuth::authFailed);
-    connect(m_deviceCodeFlow.data(), &VsDeviceCodeFlow::receivedAccessToken, this, &VsAuth::codeFlowCompleted);
+    connect(m_deviceCodeFlow.data(), &VsDeviceCodeFlow::deviceCodeFlowInitialized, this,
+            &VsAuth::initializedCodeFlow);
+    connect(m_deviceCodeFlow.data(), &VsDeviceCodeFlow::deviceCodeFlowError, this,
+            &VsAuth::authFailed);
+    connect(m_deviceCodeFlow.data(), &VsDeviceCodeFlow::receivedAccessToken, this,
+            &VsAuth::codeFlowCompleted);
 
     m_view->engine()->rootContext()->setContextProperty(QStringLiteral("auth"), this);
 }
 
-void VsAuth::init(QString currentRefreshToken)
+void VsAuth::authenticate(QString currentRefreshToken)
 {
-  
-  std::cout << "Granting" << std::endl;
-  if (currentRefreshToken.isEmpty()) {
-    m_deviceCodeFlow->grant();
-  } else {
-    m_deviceCodeFlow->grant();
-  }
+    std::cout << "Granting" << std::endl;
+    if (currentRefreshToken.isEmpty()) {
+        m_deviceCodeFlow->grant();
+    } else {
+        // m_deviceCodeFlow->grant();
+    }
 }
 
 void VsAuth::initializedCodeFlow(QString code, QString verificationUrl)
 {
-    m_deviceCode = code;
+    m_deviceCode          = code;
     m_authenticationStage = QStringLiteral("device flow");
 
     std::cout << "Verify at: " << verificationUrl.toStdString() << std::endl;
@@ -73,47 +75,77 @@ void VsAuth::initializedCodeFlow(QString code, QString verificationUrl)
     emit updatedDeviceCode(m_deviceCode);
 }
 
-void VsAuth::fetchUserInfo() {
+void VsAuth::fetchUserInfo(QString accessToken)
+{
     QNetworkReply* reply = m_api->getAuth0UserInfo();
     connect(reply, &QNetworkReply::finished, this, [=]() {
+        if (reply->error() != QNetworkReply::NoError) {
+            std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
+            authFailed();
+            reply->deleteLater();
+            return;
+        }
 
-      if (reply->error() != QNetworkReply::NoError) {
-          std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
-          authFailed();
-          reply->deleteLater();
-          return;
-      }
+        QByteArray response    = reply->readAll();
+        QJsonDocument userInfo = QJsonDocument::fromJson(response);
+        QString userId         = userInfo.object()[QStringLiteral("sub")].toString();
 
-      QByteArray response    = reply->readAll();
-      QJsonDocument userInfo = QJsonDocument::fromJson(response);
-      m_userId               = userInfo.object()[QStringLiteral("sub")].toString();
-
-      authSucceeded();
+        authSucceeded(userId, accessToken);
     });
+}
+
+void VsAuth::refreshAccessToken()
+{
+    
 }
 
 void VsAuth::codeFlowCompleted(QString accessToken)
 {
-  m_api->setAccessToken(accessToken);
-  fetchUserInfo();
+    fetchUserInfo(accessToken);
 }
 
-void VsAuth::authSucceeded()
+void VsAuth::authSucceeded(QString userId, QString accessToken)
 {
+    m_userId              = userId;
+    m_deviceCode          = QStringLiteral("");
+    m_accessToken         = accessToken;
+    m_authenticationStage = QStringLiteral("success");
+    m_isAuthenticated     = true;
 
+    emit updatedUserId(m_userId);
+    emit updatedAuthenticationStage(m_authenticationStage);
+    emit updatedDeviceCode(m_deviceCode);
+    emit updatedIsAuthenticated(m_isAuthenticated);
 }
 
 void VsAuth::authFailed()
 {
-  m_userId = QStringLiteral("");
-  m_deviceCode = QStringLiteral("");
-  m_accessToken = QStringLiteral("");
-  m_authenticationStage = QStringLiteral("failed");
-  m_isAuthenticated = false;
+    m_userId              = QStringLiteral("");
+    m_deviceCode          = QStringLiteral("");
+    m_accessToken         = QStringLiteral("");
+    m_authenticationStage = QStringLiteral("failed");
+    m_isAuthenticated     = false;
 
-  emit updatedUserId(m_userId);
-  emit updatedAuthenticationStage(m_authenticationStage);
-  emit updatedDeviceCode(m_deviceCode);
-  emit updatedIsAuthenticated(m_isAuthenticated);
+    emit updatedUserId(m_userId);
+    emit updatedAuthenticationStage(m_authenticationStage);
+    emit updatedDeviceCode(m_deviceCode);
+    emit updatedIsAuthenticated(m_isAuthenticated);
 }
 
+void VsAuth::logout()
+{
+    if (!m_isAuthenticated) {
+        std::cout << "Warning: attempting to logout while not authenticated" << std::endl;
+    }
+
+    m_userId              = QStringLiteral("");
+    m_deviceCode          = QStringLiteral("");
+    m_accessToken         = QStringLiteral("");
+    m_authenticationStage = QStringLiteral("unauthenticated");
+    m_isAuthenticated     = false;
+
+    emit updatedUserId(m_userId);
+    emit updatedAuthenticationStage(m_authenticationStage);
+    emit updatedDeviceCode(m_deviceCode);
+    emit updatedIsAuthenticated(m_isAuthenticated);
+}
