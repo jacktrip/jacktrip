@@ -35,8 +35,8 @@
  * \date May 2023
  */
 
-#ifndef VSAUTH_H
-#define VSAUTH_H
+#ifndef VSDEVICECODEFLOW_H
+#define VSDEVICECODEFLOW_H
 
 #include <QEventLoop>
 #include <QJsonDocument>
@@ -51,12 +51,12 @@
 
 #include "vsDeviceCodeFlow.h"
 
-class VsAuth : public QObject
+class VsDeviceCodeFlow : public QObject
 {
     Q_OBJECT
 
    public:
-    explicit VsAuth();
+    explicit VsDeviceCodeFlow(QNetworkAccessManager* networkAccessManager);
 
     void grant();
     void refreshAccessToken(){};
@@ -106,4 +106,4 @@ class VsAuth : public QObject
     QScopedPointer<QNetworkAccessManager> m_netManager;
 };
 
-#endif  // VSAUTH
+#endif  // VSDEVICECODEFLOW

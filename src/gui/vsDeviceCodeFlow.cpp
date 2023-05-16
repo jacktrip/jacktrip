@@ -36,28 +36,31 @@
  */
 
 #include "./vsDeviceCodeFlow.h"
+
 #include "./vsConstants.h"
 
-VsAuth::VsAuth()
+VsDeviceCodeFlow::VsDeviceCodeFlow(QNetworkAccessManager* networkAccessManager)
     : m_clientId(AUTH_CLIENT_ID)
     , m_audience(AUTH_AUDIENCE)
     , m_authorizationServerHost(AUTH_SERVER_HOST)
     , m_authenticationError(false)
-    , m_netManager(new QNetworkAccessManager(this))
+    , m_netManager(networkAccessManager)
 {
 }
 
-void VsAuth::grant()
+void VsDeviceCodeFlow::grant()
 {
     // Set as single shot
     m_tokenPollingTimer.setSingleShot(true);
     m_deviceFlowExpirationTimer.setSingleShot(true);
 
     // start polling when the device flow has been initialized
-    connect(this, &VsAuth::deviceCodeFlowInitialized, this, &VsAuth::startPolling);
-    connect(&m_tokenPollingTimer, &QTimer::timeout, this, &VsAuth::onPollingTimerTick);
+    connect(this, &VsDeviceCodeFlow::deviceCodeFlowInitialized, this,
+            &VsDeviceCodeFlow::startPolling);
+    connect(&m_tokenPollingTimer, &QTimer::timeout, this,
+            &VsDeviceCodeFlow::onPollingTimerTick);
     connect(&m_deviceFlowExpirationTimer, &QTimer::timeout, this,
-            &VsAuth::onDeviceCodeExpired);
+            &VsDeviceCodeFlow::onDeviceCodeExpired);
 
     if (m_refreshToken != QStringLiteral("")) {
         // refreshAccessToken();
@@ -67,7 +70,7 @@ void VsAuth::grant()
     }
 }
 
-void VsAuth::initDeviceAuthorizationCodeFlow()
+void VsDeviceCodeFlow::initDeviceAuthorizationCodeFlow()
 {
     // form initial request for device authorization code
     QNetworkRequest request = QNetworkRequest(
@@ -96,7 +99,7 @@ void VsAuth::initDeviceAuthorizationCodeFlow()
     });
 }
 
-void VsAuth::startPolling()
+void VsDeviceCodeFlow::startPolling()
 {
     if (m_pollingInterval <= 0 || m_deviceCodeValidityDuration <= 0) {
         std::cout << "Could not start polling. This should not print and indicates a bug."
@@ -111,7 +114,7 @@ void VsAuth::startPolling()
     m_deviceFlowExpirationTimer.start();
 }
 
-void VsAuth::stopPolling()
+void VsDeviceCodeFlow::stopPolling()
 {
     if (m_tokenPollingTimer.isActive()) {
         m_tokenPollingTimer.stop();
@@ -121,7 +124,7 @@ void VsAuth::stopPolling()
     }
 }
 
-void VsAuth::onPollingTimerTick()
+void VsDeviceCodeFlow::onPollingTimerTick()
 {
     // form request to /oauth/token
     QNetworkRequest request = QNetworkRequest(
@@ -151,23 +154,22 @@ void VsAuth::onPollingTimerTick()
     });
 }
 
-void VsAuth::onDeviceCodeExpired()
+void VsDeviceCodeFlow::onDeviceCodeExpired()
 {
     emit deviceCodeFlowTimedOut();
-    
+
     std::cout << "Device Code has expired." << std::endl;
     stopPolling();
     cleanupDeviceCodeFlow();
 }
 
-bool VsAuth::processDeviceCodeNetworkReply(QNetworkReply* reply)
+bool VsDeviceCodeFlow::processDeviceCodeNetworkReply(QNetworkReply* reply)
 {
     QByteArray buffer = reply->readAll();
 
     // Error: failed to get device code
     if (reply->error()) {
-        std::cout << "Failed to get device code: " << buffer.toStdString()
-                  << std::endl;
+        std::cout << "Failed to get device code: " << buffer.toStdString() << std::endl;
         m_authenticationError = true;
         return false;
     }
@@ -198,7 +200,7 @@ bool VsAuth::processDeviceCodeNetworkReply(QNetworkReply* reply)
     return true;
 }
 
-bool VsAuth::processPollingOAuthTokenNetworkReply(QNetworkReply* reply)
+bool VsDeviceCodeFlow::processPollingOAuthTokenNetworkReply(QNetworkReply* reply)
 {
     QByteArray buffer = reply->readAll();
 
@@ -217,10 +219,10 @@ bool VsAuth::processPollingOAuthTokenNetworkReply(QNetworkReply* reply)
     }
 
     // get fields
-    QJsonObject object = data.object();
-    m_idToken = object.value(QLatin1String("id_token")).toString();
-    m_accessToken = object.value(QLatin1String("access_token")).toString();
-    m_refreshToken = object.value(QLatin1String("refresh_token")).toString();
+    QJsonObject object    = data.object();
+    m_idToken             = object.value(QLatin1String("id_token")).toString();
+    m_accessToken         = object.value(QLatin1String("access_token")).toString();
+    m_refreshToken        = object.value(QLatin1String("refresh_token")).toString();
     m_authenticationError = false;
 
     emit receivedAccessToken(m_accessToken);
@@ -228,7 +230,7 @@ bool VsAuth::processPollingOAuthTokenNetworkReply(QNetworkReply* reply)
     return true;
 }
 
-void VsAuth::cleanupDeviceCodeFlow()
+void VsDeviceCodeFlow::cleanupDeviceCodeFlow()
 {
     m_deviceCode              = QStringLiteral("");
     m_userCode                = QStringLiteral("");
@@ -239,7 +241,7 @@ void VsAuth::cleanupDeviceCodeFlow()
     m_deviceCodeValidityDuration = -1;
 }
 
-QString VsAuth::accessToken()
+QString VsDeviceCodeFlow::accessToken()
 {
     return m_accessToken;
 }
