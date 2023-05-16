@@ -37,7 +37,10 @@
 
 #include "vsAuth.h"
 
+#include "./vsConstants.h"
+
 VsAuth::VsAuth(VsQuickView* view, QNetworkAccessManager* networkAccessManager, VsApi* api)
+    : m_clientId(AUTH_CLIENT_ID), m_authorizationServerHost(AUTH_SERVER_HOST)
 {
     m_view                 = view;
     m_networkAccessManager = networkAccessManager;
@@ -56,11 +59,10 @@ VsAuth::VsAuth(VsQuickView* view, QNetworkAccessManager* networkAccessManager, V
 
 void VsAuth::authenticate(QString currentRefreshToken)
 {
-    std::cout << "Granting" << std::endl;
     if (currentRefreshToken.isEmpty()) {
         m_deviceCodeFlow->grant();
     } else {
-        // m_deviceCodeFlow->grant();
+        refreshAccessToken(currentRefreshToken);
     }
 }
 
@@ -94,18 +96,63 @@ void VsAuth::fetchUserInfo(QString accessToken)
     });
 }
 
-void VsAuth::refreshAccessToken()
+void VsAuth::refreshAccessToken(QString refreshToken)
 {
-    
+    QNetworkRequest request = QNetworkRequest(
+        QUrl(QString("https://%1/oauth/token").arg(m_authorizationServerHost)));
+
+    request.setRawHeader(QByteArray("Content-Type"),
+                         QByteArray("application/x-www-form-urlencoded"));
+
+    QString data = QString("grant_type=refresh_token&client_id=%1&refresh_token=%2")
+                       .arg(m_clientId, refreshToken);
+
+    // send request
+    QNetworkReply* reply = m_networkAccessManager->post(request, data.toUtf8());
+
+    connect(reply, &QNetworkReply::finished, this, [=]() {
+        QByteArray buffer = reply->readAll();
+
+        // Error: failed to get device code
+        if (reply->error()) {
+            std::cout << "Failed to get new access token: " << buffer.toStdString()
+                      << std::endl;
+            authFailed();
+            reply->deleteLater();
+            return;
+        }
+
+        // parse JSON from string response
+        QJsonParseError parseError;
+        QJsonDocument data = QJsonDocument::fromJson(buffer, &parseError);
+        if (parseError.error) {
+            std::cout << "Error parsing JSON for Access Token: "
+                      << parseError.errorString().toStdString() << std::endl;
+            authFailed();
+            reply->deleteLater();
+            return;
+        }
+
+        // get fields
+        QJsonObject object  = data.object();
+        QString accessToken = object.value(QLatin1String("access_token")).toString();
+        m_api->setAccessToken(accessToken);
+        fetchUserInfo(accessToken);
+        reply->deleteLater();
+    });
 }
 
 void VsAuth::codeFlowCompleted(QString accessToken)
 {
+    m_api->setAccessToken(accessToken);
     fetchUserInfo(accessToken);
 }
 
 void VsAuth::authSucceeded(QString userId, QString accessToken)
 {
+    std::cout << "Successful Authentication!" << std::endl;
+    std::cout << "User ID: " << m_userId.toStdString();
+
     m_userId              = userId;
     m_deviceCode          = QStringLiteral("");
     m_accessToken         = accessToken;
@@ -120,6 +167,8 @@ void VsAuth::authSucceeded(QString userId, QString accessToken)
 
 void VsAuth::authFailed()
 {
+    std::cout << "Failed Authentication!" << std::endl;
+    
     m_userId              = QStringLiteral("");
     m_deviceCode          = QStringLiteral("");
     m_accessToken         = QStringLiteral("");

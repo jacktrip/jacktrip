@@ -52,16 +52,17 @@ class VsAuth : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString authenticationStage READ authenticationStage NOTIFY updatedAuthenticationStage);
+    Q_PROPERTY(QString authenticationStage READ authenticationStage NOTIFY
+                   updatedAuthenticationStage);
     Q_PROPERTY(QString deviceCode READ deviceCode NOTIFY updatedDeviceCode);
     Q_PROPERTY(bool isAuthenticated READ isAuthenticated NOTIFY updatedIsAuthenticated);
     Q_PROPERTY(QString userId READ userId NOTIFY updatedUserId);
 
    public:
     VsAuth(VsQuickView* view, QNetworkAccessManager* networkAccessManager, VsApi* api);
-    
+
     void authenticate(QString currentRefreshToken);
-    void refreshAccessToken();
+    void refreshAccessToken(QString refreshToken);
     void logout();
 
     // getter methods
@@ -69,7 +70,6 @@ class VsAuth : public QObject
     QString deviceCode() { return m_deviceCode; };
     bool isAuthenticated() { return m_isAuthenticated; };
     QString userId() { return m_userId; };
-    
 
    signals:
     void updatedAuthenticationStage(QString authenticationStage);
@@ -84,22 +84,22 @@ class VsAuth : public QObject
     void codeFlowCompleted(QString accessToken);
 
    private:
-
     void fetchUserInfo(QString accessToken);
 
+    QString m_clientId;
+    QString m_authorizationServerHost;
+
     QString m_authenticationStage = QStringLiteral("unauthenticated");
-    QString m_deviceCode = QString("");
+    QString m_deviceCode          = QString("");
 
     bool m_isAuthenticated = false;
     QString m_userId;
     QString m_accessToken;
-    
 
     VsQuickView* m_view;
     QNetworkAccessManager* m_networkAccessManager;
     VsApi* m_api;
     QScopedPointer<VsDeviceCodeFlow> m_deviceCodeFlow;
-    
 };
 
 #endif
