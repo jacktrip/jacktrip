@@ -1603,12 +1603,6 @@ void VirtualStudio::completeConnection()
         connect(this, &VirtualStudio::updatedInputMuted, m_inputVolumePlugin,
                 &Volume::muteUpdated);
 
-        // Setup input analyzer
-        m_inputAnalyzerPlugin = new Analyzer(jackTrip->getNumInputChannels());
-        jackTrip->appendProcessPluginToNetwork(m_inputAnalyzerPlugin);
-        connect(m_inputAnalyzerPlugin, &Analyzer::signalFeedbackDetected, this,
-                &VirtualStudio::detectedFeedbackLoop);
-
         // Setup input meter
         m_inputMeter = new Meter(jackTrip->getNumInputChannels());
         jackTrip->appendProcessPluginToNetwork(m_inputMeter);
@@ -2175,13 +2169,10 @@ void VirtualStudio::updatedOutputVuMeasurements(const float* valuesInDecibels,
                                                        QVariant::fromValue(uiValues));
 }
 
-void VirtualStudio::detectedFeedbackLoop(bool fromMonitor)
+void VirtualStudio::detectedFeedbackLoop()
 {
-    if (!fromMonitor) {
-        setInputMuted(true);
-    } else {
-        setMonitorVolume(0);
-    }
+    setInputMuted(true);
+    setMonitorVolume(0);
 }
 
 void VirtualStudio::setupAuthenticator()

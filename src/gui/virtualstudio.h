@@ -287,7 +287,7 @@ class VirtualStudio : public QObject
     void setMonitorMuted(bool muted);
     void setAudioActivated(bool activated);
     void setAudioReady(bool ready);
-    void detectedFeedbackLoop(bool fromMonitor);
+    void detectedFeedbackLoop();
     void setWindowState(QString state);
     void exit();
 

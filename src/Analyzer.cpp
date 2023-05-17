@@ -311,7 +311,7 @@ void Analyzer::onTick()
     // check for audio feedback loops
     bool detectedFeedback = checkForAudioFeedback();
     if (detectedFeedback) {
-        emit signalFeedbackDetected(mIsMonitoringAnalyzer);
+        emit signalFeedbackDetected();
     }
 }
 

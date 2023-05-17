@@ -121,7 +121,7 @@ class Analyzer : public ProcessPlugin
     float** mSpectraDifferentials = nullptr;
 
    signals:
-    void signalFeedbackDetected(bool monitorFeedback);
+    void signalFeedbackDetected();
 };
 
 #endif
