@@ -87,7 +87,8 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     if (m_testMode) {
         m_api->setApiHost(TEST_API_HOST);
     }
-
+    m_auth.reset(new VsAuth(&m_view, m_networkAccessManager.data(), m_api.data()));
+    
     // Load our font for our qml interface
     QFontDatabase::addApplicationFont(QStringLiteral(":/vs/Poppins-Regular.ttf"));
     QFontDatabase::addApplicationFont(QStringLiteral(":/vs/Poppins-Bold.ttf"));
@@ -2172,14 +2173,11 @@ void VirtualStudio::updatedOutputVuMeasurements(const float* valuesInDecibels,
 
 void VirtualStudio::setupAuthenticator()
 {
-    if (m_auth.isNull()) {
-        m_auth.reset(new VsAuth(&m_view, m_networkAccessManager.data(), m_api.data()));
-        connect(m_auth.data(), &VsAuth::updatedDeviceVerificationUrl, this,
-                &VirtualStudio::launchBrowser);
-        connect(m_auth.data(), &VsAuth::authSucceeded, this,
-                &VirtualStudio::slotAuthSucceeded);
-        connect(m_auth.data(), &VsAuth::authFailed, this, &VirtualStudio::slotAuthFailed);
-    }
+    connect(m_auth.data(), &VsAuth::updatedVerificationUrl, this,
+            &VirtualStudio::launchBrowser);
+    connect(m_auth.data(), &VsAuth::authSucceeded, this,
+            &VirtualStudio::slotAuthSucceeded);
+    connect(m_auth.data(), &VsAuth::authFailed, this, &VirtualStudio::slotAuthFailed);
 }
 
 void VirtualStudio::sendHeartbeat()

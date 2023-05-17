@@ -4,7 +4,23 @@ import QtQuick.Controls 2.12
 Item {
     width: parent.width; height: parent.height
     clip: true
-    
+
+    state: auth.authenticationStage
+    states: [
+        State {
+            name: "unauthenticated"
+        },
+        State {
+            name: "polling"
+        },
+        State {
+            name: "success"
+        },
+        State {
+            name: "failed"
+        }
+    ]
+
     Rectangle {
         width: parent.width; height: parent.height
         color: backgroundColour
@@ -26,13 +42,6 @@ Item {
     property string buttonTextPressed: virtualstudio.darkMode ? "#323030" : "#D00A0A"
     property string shadowColour: virtualstudio.darkMode ? "40000000" : "#80A1A1A1"
     
-    onFailTextVisibleChanged: {
-        authFailedText.visible = failTextVisible;
-        loginButton.visible = failTextVisible || !virtualstudio.hasRefreshToken;
-        backButton.visible = failTextVisible || !virtualstudio.hasRefreshToken;
-        loggingInText.visible = !failTextVisible && virtualstudio.hasRefreshToken;
-    }
-    
     Image {
         id: loginLogo
         source: "logo.svg"
@@ -41,6 +50,7 @@ Item {
         sourceSize: Qt.size(loginLogo.width,loginLogo.height)
         fillMode: Image.PreserveAspectFit
         smooth: true
+        visible: loginScreen.state === "unauthenticated"
     }
 
     Image {
@@ -48,6 +58,7 @@ Item {
         anchors.bottom: loginLogo.bottom
         x: parent.width / 2 - (88 * virtualstudio.uiScale)
         width: 238 * virtualstudio.uiScale; height: 56 * virtualstudio.uiScale
+        visible: loginScreen.state === "unauthenticated" || loginScreen.state === "failed"
     }
 
     Text {
@@ -57,6 +68,7 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         y: 208 * virtualstudio.uiScale
         color: textColour
+        visible: loginScreen.state === "unauthenticated" || loginScreen.state === "failed"
     }
 
     Text {
@@ -66,7 +78,18 @@ Item {
         font.pixelSize: 18 * virtualstudio.fontScale * virtualstudio.uiScale
         anchors.horizontalCenter: parent.horizontalCenter
         y: 282 * virtualstudio.uiScale
-        visible: virtualstudio.hasRefreshToken
+        visible: loginScreen.state === "unauthenticated" && virtualstudio.hasRefreshToken
+        color: textColour
+    }
+
+    Text {
+        id: authSucceededText
+        text: "Log in Succeeded!"
+        font.family: "Poppins"
+        font.pixelSize: 18 * virtualstudio.fontScale * virtualstudio.uiScale
+        anchors.horizontalCenter: parent.horizontalCenter
+        y: 282 * virtualstudio.uiScale
+        visible: loginScreen.state === "success"
         color: textColour
     }
 
@@ -74,11 +97,65 @@ Item {
         id: authFailedText
         text: "Log in failed. Please try again."
         font.family: "Poppins"
-        font.pixelSize: 16 * virtualstudio.fontScale * virtualstudio.uiScale
+        font.pixelSize: 18 * virtualstudio.fontScale * virtualstudio.uiScale
         anchors.horizontalCenter: parent.horizontalCenter
-        y: 272 * virtualstudio.uiScale
-        visible: failTextVisible
+        y: 282 * virtualstudio.uiScale
+        visible: loginScreen.state === "failed"
         color: textColour
+    }
+
+    Text {
+        id: deviceVerificationHeader
+        text: "Authorize Application"
+        font.family: "Poppins"
+        font.pixelSize: 20 * virtualstudio.fontScale * virtualstudio.uiScale
+        anchors.horizontalCenter: parent.horizontalCenter
+        y: 140 * virtualstudio.uiScale
+        visible: loginScreen.state === "polling"
+        color: textColour
+        horizontalAlignment: Text.AlignHCenter
+    }
+
+    Text {
+        id: deviceVerificationExplanation
+        text: "To authorize this application, please enter the following one-time code at <u><b>https://auth.jacktrip.org/activate</b></u> and sign in through your browser."
+        font.family: "Poppins"
+        font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
+        anchors.horizontalCenter: parent.horizontalCenter
+        y: 200 * virtualstudio.uiScale
+        width: 500 * virtualstudio.uiScale;
+        visible: loginScreen.state === "polling"
+        color: textColour
+        wrapMode: Text.WordWrap
+        horizontalAlignment: Text.AlignHCenter
+    }
+
+    Text {
+        id: deviceVerificationCode
+        text: auth.verificationCode;
+        font.family: "Poppins"
+        font.pixelSize: 20 * virtualstudio.fontScale * virtualstudio.uiScale
+        anchors.horizontalCenter: parent.horizontalCenter
+        y: 300 * virtualstudio.uiScale
+        width: 500 * virtualstudio.uiScale;
+        visible: loginScreen.state === "polling"
+        color: textColour
+        wrapMode: Text.WordWrap
+        horizontalAlignment: Text.AlignHCenter
+    }
+
+    Text {
+        id: deviceVerificationFollowUp
+        text: "Once you've authorized this application, you'll automatically be moved to the next screen"
+        font.family: "Poppins"
+        font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
+        anchors.horizontalCenter: parent.horizontalCenter
+        y: 480 * virtualstudio.uiScale
+        width: 500 * virtualstudio.uiScale;
+        visible: loginScreen.state === "polling"
+        color: textColour
+        wrapMode: Text.WordWrap
+        horizontalAlignment: Text.AlignHCenter
     }
 
     Button {
@@ -103,12 +180,12 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             color: loginButton.down ? buttonTextPressed : (loginButton.hovered ? buttonTextHover : buttonTextColour)
         }
-        visible: !virtualstudio.hasRefreshToken
+        visible: !virtualstudio.hasRefreshToken && loginScreen.state === "unauthenticated"
     }
 
     Button {
         id: backButton
-        visible: showBackButton
+        visible: !virtualstudio.hasRefreshToken && loginScreen.state === "unauthenticated"
         background: Rectangle {
             radius: 6 * virtualstudio.uiScale
             color: backButton.down ? buttonPressedColour : (backButton.hovered ? buttonHoverColour : buttonColour)
@@ -130,6 +207,29 @@ Item {
         }
     }
 
+    Button {
+        id: openVerificationUrlButton
+        visible: loginScreen.state === "polling"
+        background: Rectangle {
+            radius: 6 * virtualstudio.uiScale
+            color: openVerificationUrlButton.down ? buttonPressedColour : (openVerificationUrlButton.hovered ? buttonHoverColour : buttonColour)
+            border.width: 1
+            border.color: openVerificationUrlButton.down ? buttonPressedStroke : (openVerificationUrlButton.hovered ? buttonHoverStroke : buttonStroke)
+            layer.enabled: !openVerificationUrlButton.down
+        }
+        onClicked: { virtualstudio.openLink(auth.deviceVerificationUrl); }
+        anchors.horizontalCenter: parent.horizontalCenter
+        y: 380 * virtualstudio.uiScale
+        width: 216 * virtualstudio.uiScale; height: 48 * virtualstudio.uiScale
+        Text {
+            text: "Open Browser"
+            font.family: "Poppins"
+            font.pixelSize: 12 * virtualstudio.fontScale * virtualstudio.uiScale
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.verticalCenter: parent.verticalCenter
+            color: openVerificationUrlButton.down ? buttonTextPressed : (openVerificationUrlButton.hovered ? buttonTextHover : buttonTextColour)
+        }
+    }
 
     Button {
         id: classicModeButton
@@ -151,6 +251,13 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.verticalCenter: parent.verticalCenter
             color: classicModeButton.down ? buttonTextPressed : (classicModeButton.hovered ? buttonTextHover : textColour)
+        }
+    }
+
+    Connections {
+        target: auth
+        function onUpdatedAuthenticationStage (stage) {
+            loginScreen.state = stage;
         }
     }
 }

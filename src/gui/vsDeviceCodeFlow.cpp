@@ -90,7 +90,7 @@ void VsDeviceCodeFlow::initDeviceAuthorizationCodeFlow()
     connect(reply, &QNetworkReply::finished, this, [=]() {
         bool success = processDeviceCodeNetworkReply(reply);
         if (success) {
-            emit deviceCodeFlowInitialized(m_deviceCode, m_verificationUriComplete);
+            emit deviceCodeFlowInitialized(m_userCode, m_verificationUri);
         } else if (m_authenticationError) {
             emit deviceCodeFlowError();
         }

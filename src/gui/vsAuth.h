@@ -54,7 +54,8 @@ class VsAuth : public QObject
 
     Q_PROPERTY(QString authenticationStage READ authenticationStage NOTIFY
                    updatedAuthenticationStage);
-    Q_PROPERTY(QString deviceCode READ deviceCode NOTIFY updatedDeviceCode);
+    Q_PROPERTY(QString verificationCode READ deviceCode NOTIFY updatedVerificationCode);
+    Q_PROPERTY(QString verificationUrl READ deviceVerificationUrl NOTIFY updatedVerificationUrl);
     Q_PROPERTY(bool isAuthenticated READ isAuthenticated NOTIFY updatedIsAuthenticated);
     Q_PROPERTY(QString userId READ userId NOTIFY updatedUserId);
 
@@ -67,7 +68,8 @@ class VsAuth : public QObject
 
     // getter methods
     QString authenticationStage() { return m_authenticationStage; };
-    QString deviceCode() { return m_deviceCode; };
+    QString deviceCode() { return m_verificationCode; };
+    QString deviceVerificationUrl() { return m_verificationUrl; };
     bool isAuthenticated() { return m_isAuthenticated; };
     QString userId() { return m_userId; };
     QString accessToken() { return m_accessToken; };
@@ -75,8 +77,8 @@ class VsAuth : public QObject
 
    signals:
     void updatedAuthenticationStage(QString authenticationStage);
-    void updatedDeviceCode(QString deviceCode);
-    void updatedDeviceVerificationUrl(QUrl verificationUrl);
+    void updatedVerificationCode(QString deviceCode);
+    void updatedVerificationUrl(QUrl verificationUrl);
     void updatedIsAuthenticated(bool isAuthenticated);
     void updatedUserId(QString userId);
     void authSucceeded();
@@ -95,7 +97,8 @@ class VsAuth : public QObject
     QString m_authorizationServerHost;
 
     QString m_authenticationStage = QStringLiteral("unauthenticated");
-    QString m_deviceCode          = QString("");
+    QString m_verificationCode          = QString("");
+    QString m_verificationUrl;
 
     bool m_isAuthenticated = false;
     QString m_userId;

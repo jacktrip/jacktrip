@@ -69,14 +69,15 @@ void VsAuth::authenticate(QString currentRefreshToken)
 
 void VsAuth::initializedCodeFlow(QString code, QString verificationUrl)
 {
-    m_deviceCode          = code;
-    m_authenticationStage = QStringLiteral("device flow");
-
-    std::cout << "Verify at: " << verificationUrl.toStdString() << std::endl;
+    m_verificationCode          = code;
+    m_verificationUrl     = verificationUrl;
+    m_authenticationStage = QStringLiteral("polling");
+    
+    std::cout << "Verify at: " << m_verificationUrl.toStdString() << std::endl;
 
     emit updatedAuthenticationStage(m_authenticationStage);
-    emit updatedDeviceCode(m_deviceCode);
-    emit updatedDeviceVerificationUrl(verificationUrl);
+    emit updatedVerificationCode(m_verificationCode);
+    emit updatedVerificationUrl(m_verificationUrl);
 }
 
 void VsAuth::fetchUserInfo(QString accessToken)
@@ -157,14 +158,14 @@ void VsAuth::handleAuthSucceeded(QString userId, QString accessToken)
     std::cout << "User ID: " << userId.toStdString() << std::endl;
 
     m_userId              = userId;
-    m_deviceCode          = QStringLiteral("");
+    m_verificationCode          = QStringLiteral("");
     m_accessToken         = accessToken;
     m_authenticationStage = QStringLiteral("success");
     m_isAuthenticated     = true;
 
     emit updatedUserId(m_userId);
     emit updatedAuthenticationStage(m_authenticationStage);
-    emit updatedDeviceCode(m_deviceCode);
+    emit updatedVerificationCode(m_verificationCode);
     emit updatedIsAuthenticated(m_isAuthenticated);
 
     emit authSucceeded();
@@ -175,14 +176,14 @@ void VsAuth::handleAuthFailed()
     std::cout << "Failed Authentication!" << std::endl;
 
     m_userId              = QStringLiteral("");
-    m_deviceCode          = QStringLiteral("");
+    m_verificationCode          = QStringLiteral("");
     m_accessToken         = QStringLiteral("");
     m_authenticationStage = QStringLiteral("failed");
     m_isAuthenticated     = false;
 
     emit updatedUserId(m_userId);
     emit updatedAuthenticationStage(m_authenticationStage);
-    emit updatedDeviceCode(m_deviceCode);
+    emit updatedVerificationCode(m_verificationCode);
     emit updatedIsAuthenticated(m_isAuthenticated);
 
     emit authFailed();
@@ -195,13 +196,13 @@ void VsAuth::logout()
     }
 
     m_userId              = QStringLiteral("");
-    m_deviceCode          = QStringLiteral("");
+    m_verificationCode          = QStringLiteral("");
     m_accessToken         = QStringLiteral("");
     m_authenticationStage = QStringLiteral("unauthenticated");
     m_isAuthenticated     = false;
 
     emit updatedUserId(m_userId);
     emit updatedAuthenticationStage(m_authenticationStage);
-    emit updatedDeviceCode(m_deviceCode);
+    emit updatedVerificationCode(m_verificationCode);
     emit updatedIsAuthenticated(m_isAuthenticated);
 }
