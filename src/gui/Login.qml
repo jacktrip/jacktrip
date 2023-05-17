@@ -175,6 +175,28 @@ Item {
         horizontalAlignment: Text.AlignHCenter
     }
 
+    Text {
+        id: cancelDeviceVerification
+        text: "Cancel"
+        font.family: "Poppins"
+        font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
+        font.underline: true;
+        anchors.horizontalCenter: parent.horizontalCenter
+        y: 560 * virtualstudio.uiScale
+        visible: loginScreen.state === "polling"
+        color: textColour
+        wrapMode: Text.WordWrap
+        horizontalAlignment: Text.AlignHCenter
+        
+        MouseArea {
+            anchors.fill: parent
+            onClicked: () => {
+                auth.cancelAuthenticationFlow();
+            }
+            cursorShape: Qt.PointingHandCursor
+        }
+    }
+
     Button {
         id: loginButton
         background: Rectangle {

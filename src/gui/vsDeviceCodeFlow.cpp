@@ -162,6 +162,12 @@ void VsDeviceCodeFlow::onDeviceCodeExpired()
     cleanupDeviceCodeFlow();
 }
 
+void VsDeviceCodeFlow::cancelCodeFlow()
+{
+    stopPolling();
+    cleanupDeviceCodeFlow();
+}
+
 bool VsDeviceCodeFlow::processDeviceCodeNetworkReply(QNetworkReply* reply)
 {
     QByteArray buffer = reply->readAll();
@@ -232,7 +238,7 @@ void VsDeviceCodeFlow::cleanupDeviceCodeFlow()
 {
     m_deviceCode              = QStringLiteral("");
     m_userCode                = QStringLiteral("");
-    m_verificationUri         = QStringLiteral("");
+    m_verificationUri         = QStringLiteral("https://auth.jacktrip.org/activate");
     m_verificationUriComplete = QStringLiteral("");
 
     m_pollingInterval            = -1;

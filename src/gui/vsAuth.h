@@ -64,8 +64,11 @@ class VsAuth : public QObject
     VsAuth(VsQuickView* view, QNetworkAccessManager* networkAccessManager, VsApi* api);
 
     void authenticate(QString currentRefreshToken);
-    void refreshAccessToken(QString refreshToken);
+    void refreshAccessToken(QString refreshToken);    
     void logout();
+
+   public slots:
+    void cancelAuthenticationFlow();
 
     // getter methods
     QString authenticationStage() { return m_authenticationStage; };

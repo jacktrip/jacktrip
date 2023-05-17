@@ -68,6 +68,7 @@ class VsDeviceCodeFlow : public QObject
     void stopPolling();
     void onPollingTimerTick();
     void onDeviceCodeExpired();
+    void cancelCodeFlow();
     void cleanupDeviceCodeFlow();
 
     bool authenticated();

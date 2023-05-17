@@ -189,6 +189,23 @@ void VsAuth::handleAuthFailed()
     emit authFailed();
 }
 
+void VsAuth::cancelAuthenticationFlow()
+{
+    m_deviceCodeFlow->cancelCodeFlow();
+
+    m_userId              = QStringLiteral("");
+    m_verificationCode    = QStringLiteral("");
+    m_accessToken         = QStringLiteral("");
+    m_authenticationStage = QStringLiteral("unauthenticated");
+    m_isAuthenticated     = false;
+
+    emit updatedUserId(m_userId);
+    emit updatedAuthenticationStage(m_authenticationStage);
+    emit updatedVerificationCode(m_verificationCode);
+    emit updatedIsAuthenticated(m_isAuthenticated);
+
+}
+
 void VsAuth::logout()
 {
     if (!m_isAuthenticated) {
