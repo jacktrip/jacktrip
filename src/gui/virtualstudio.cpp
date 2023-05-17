@@ -1099,7 +1099,9 @@ void VirtualStudio::toVirtualStudio()
 void VirtualStudio::login()
 {
     setupAuthenticator();
-    m_auth->authenticate(m_refreshToken);
+
+    // Important! When the user presses "log in", always use a fresh device flow
+    m_auth->authenticate(QString(""));
 }
 
 void VirtualStudio::logout()

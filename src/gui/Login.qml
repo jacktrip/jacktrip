@@ -180,12 +180,12 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             color: loginButton.down ? buttonTextPressed : (loginButton.hovered ? buttonTextHover : buttonTextColour)
         }
-        visible: !virtualstudio.hasRefreshToken && loginScreen.state === "unauthenticated"
+        visible: (!virtualstudio.hasRefreshToken && loginScreen.state === "unauthenticated") || loginScreen.state === "failed"
     }
 
     Button {
         id: backButton
-        visible: !virtualstudio.hasRefreshToken && loginScreen.state === "unauthenticated"
+        visible: (!virtualstudio.hasRefreshToken && loginScreen.state === "unauthenticated") || loginScreen.state === "failed"
         background: Rectangle {
             radius: 6 * virtualstudio.uiScale
             color: backButton.down ? buttonPressedColour : (backButton.hovered ? buttonHoverColour : buttonColour)
