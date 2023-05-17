@@ -85,11 +85,11 @@ Item {
 
     Text {
         id: authSucceededText
-        text: "Log in Succeeded!"
+        text: "Success!"
         font.family: "Poppins"
         font.pixelSize: 18 * virtualstudio.fontScale * virtualstudio.uiScale
         anchors.horizontalCenter: parent.horizontalCenter
-        y: 282 * virtualstudio.uiScale
+        y: 348 * virtualstudio.uiScale
         visible: loginScreen.state === "success"
         color: textColour
     }
@@ -103,6 +103,16 @@ Item {
         y: 282 * virtualstudio.uiScale
         visible: loginScreen.state === "failed"
         color: textColour
+    }
+
+    Image {
+        id: successIcon
+        source: "check.svg"
+        width: 96 * virtualstudio.uiScale
+        height: 96 * virtualstudio.uiScale
+        y: 240 * virtualstudio.uiScale
+        anchors.horizontalCenter: parent.horizontalCenter
+        visible: loginScreen.state === "success"
     }
 
     Text {
