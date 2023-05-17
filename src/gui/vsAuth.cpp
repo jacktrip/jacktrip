@@ -69,10 +69,10 @@ void VsAuth::authenticate(QString currentRefreshToken)
 
 void VsAuth::initializedCodeFlow(QString code, QString verificationUrl)
 {
-    m_verificationCode          = code;
+    m_verificationCode    = code;
     m_verificationUrl     = verificationUrl;
     m_authenticationStage = QStringLiteral("polling");
-    
+
     std::cout << "Verify at: " << m_verificationUrl.toStdString() << std::endl;
 
     emit updatedAuthenticationStage(m_authenticationStage);
@@ -158,7 +158,7 @@ void VsAuth::handleAuthSucceeded(QString userId, QString accessToken)
     std::cout << "User ID: " << userId.toStdString() << std::endl;
 
     m_userId              = userId;
-    m_verificationCode          = QStringLiteral("");
+    m_verificationCode    = QStringLiteral("");
     m_accessToken         = accessToken;
     m_authenticationStage = QStringLiteral("success");
     m_isAuthenticated     = true;
@@ -176,7 +176,7 @@ void VsAuth::handleAuthFailed()
     std::cout << "Failed Authentication!" << std::endl;
 
     m_userId              = QStringLiteral("");
-    m_verificationCode          = QStringLiteral("");
+    m_verificationCode    = QStringLiteral("");
     m_accessToken         = QStringLiteral("");
     m_authenticationStage = QStringLiteral("failed");
     m_isAuthenticated     = false;
@@ -196,7 +196,7 @@ void VsAuth::logout()
     }
 
     m_userId              = QStringLiteral("");
-    m_verificationCode          = QStringLiteral("");
+    m_verificationCode    = QStringLiteral("");
     m_accessToken         = QStringLiteral("");
     m_authenticationStage = QStringLiteral("unauthenticated");
     m_isAuthenticated     = false;

@@ -88,7 +88,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
         m_api->setApiHost(TEST_API_HOST);
     }
     m_auth.reset(new VsAuth(&m_view, m_networkAccessManager.data(), m_api.data()));
-    
+
     // Load our font for our qml interface
     QFontDatabase::addApplicationFont(QStringLiteral(":/vs/Poppins-Regular.ttf"));
     QFontDatabase::addApplicationFont(QStringLiteral(":/vs/Poppins-Bold.ttf"));
@@ -1804,9 +1804,10 @@ void VirtualStudio::launchVideo(int studioIndex)
         // We're here from a connected screen. Use our current studio.
         studioIndex = m_currentStudio;
     }
-    QUrl url = QUrl(
-        QStringLiteral("https://%1/studios/%2/live")
-            .arg(m_api->getApiHost(), static_cast<VsServerInfo*>(m_servers.at(studioIndex))->id()));
+    QUrl url =
+        QUrl(QStringLiteral("https://%1/studios/%2/live")
+                 .arg(m_api->getApiHost(),
+                      static_cast<VsServerInfo*>(m_servers.at(studioIndex))->id()));
     QDesktopServices::openUrl(url);
 }
 
