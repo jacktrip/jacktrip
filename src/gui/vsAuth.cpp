@@ -55,6 +55,8 @@ VsAuth::VsAuth(VsQuickView* view, QNetworkAccessManager* networkAccessManager, V
             &VsAuth::codeFlowCompleted);
 
     m_view->engine()->rootContext()->setContextProperty(QStringLiteral("auth"), this);
+
+    m_verificationUrl = QStringLiteral("https://auth.jacktrip.org/activate");
 }
 
 void VsAuth::authenticate(QString currentRefreshToken)
@@ -72,8 +74,6 @@ void VsAuth::initializedCodeFlow(QString code, QString verificationUrl)
     m_verificationCode    = code;
     m_verificationUrl     = verificationUrl;
     m_authenticationStage = QStringLiteral("polling");
-
-    std::cout << "Verify at: " << m_verificationUrl.toStdString() << std::endl;
 
     emit updatedAuthenticationStage(m_authenticationStage);
     emit updatedVerificationCode(m_verificationCode);

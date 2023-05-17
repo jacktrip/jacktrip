@@ -2176,8 +2176,6 @@ void VirtualStudio::updatedOutputVuMeasurements(const float* valuesInDecibels,
 
 void VirtualStudio::setupAuthenticator()
 {
-    connect(m_auth.data(), &VsAuth::updatedVerificationUrl, this,
-            &VirtualStudio::launchBrowser);
     connect(m_auth.data(), &VsAuth::authSucceeded, this,
             &VirtualStudio::slotAuthSucceeded);
     connect(m_auth.data(), &VsAuth::authFailed, this, &VirtualStudio::slotAuthFailed);

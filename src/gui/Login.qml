@@ -26,7 +26,6 @@ Item {
         color: backgroundColour
     }
 
-    property bool failTextVisible: false
     property bool showBackButton: true
     
     property string backgroundColour: virtualstudio.darkMode ? "#272525" : "#FAFBFB"
@@ -41,6 +40,8 @@ Item {
     property string buttonTextHover: virtualstudio.darkMode ? "#242222" : "#D00A0A"
     property string buttonTextPressed: virtualstudio.darkMode ? "#323030" : "#D00A0A"
     property string shadowColour: virtualstudio.darkMode ? "40000000" : "#80A1A1A1"
+    property string linkTextColour: virtualstudio.darkMode ? "#8B8D8D" : "#272525"
+    property string disabledButtonText: "#D3D4D4"
     
     Image {
         id: loginLogo
@@ -118,7 +119,16 @@ Item {
 
     Text {
         id: deviceVerificationExplanation
-        text: "To authorize this application, please enter the following one-time code at <u><b>https://auth.jacktrip.org/activate</b></u> and sign in through your browser."
+        text: `To sign in to your Virtual Studio account, please enter the following one-time code at `
+            + `<a style="color: ${linkTextColour}" href='${auth.verificationUrl}'><u><b>${
+                    ((completeUrl) => {
+                        if (completeUrl.indexOf("?") === -1) {
+                            return completeUrl;
+                        }
+                        return completeUrl.substring(0, auth.verificationUrl.indexOf("?"))
+                    })(auth.verificationUrl)
+                }</b></u></a>`
+            + ` and sign in through your browser.`
         font.family: "Poppins"
         font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
         anchors.horizontalCenter: parent.horizontalCenter
@@ -128,18 +138,25 @@ Item {
         color: textColour
         wrapMode: Text.WordWrap
         horizontalAlignment: Text.AlignHCenter
+        textFormat: Text.RichText
+        onLinkActivated: link => {
+            if (!Boolean(auth.verificationCode)) {
+                return;
+            }
+            virtualstudio.openLink(link)
+        }
     }
 
     Text {
         id: deviceVerificationCode
-        text: auth.verificationCode;
+        text: auth.verificationCode || "Loading...";
         font.family: "Poppins"
         font.pixelSize: 20 * virtualstudio.fontScale * virtualstudio.uiScale
         anchors.horizontalCenter: parent.horizontalCenter
         y: 300 * virtualstudio.uiScale
         width: 500 * virtualstudio.uiScale;
         visible: loginScreen.state === "polling"
-        color: textColour
+        color: Boolean(auth.verificationCode) ? textColour : disabledButtonText
         wrapMode: Text.WordWrap
         horizontalAlignment: Text.AlignHCenter
     }
@@ -167,7 +184,11 @@ Item {
             border.color: loginButton.down ? buttonPressedStroke : (loginButton.hovered ? buttonHoverStroke : buttonStroke)
             layer.enabled: !loginButton.down
         }
-        onClicked: { virtualstudio.showFirstRun = false; failTextVisible = false; virtualstudio.login() }
+        onClicked: {
+            loginScreen.state = "polling"; // Hack - transition to 'polling' before auth state actually changes for improved UX
+            virtualstudio.showFirstRun = false;
+            virtualstudio.login()
+        }
         anchors.horizontalCenter: parent.horizontalCenter
         y: showBackButton ? 321 * virtualstudio.uiScale : 371 * virtualstudio.uiScale
         width: 263 * virtualstudio.uiScale; height: 64 * virtualstudio.uiScale
@@ -210,6 +231,7 @@ Item {
     Button {
         id: openVerificationUrlButton
         visible: loginScreen.state === "polling"
+        enabled: Boolean(auth.verificationCode)
         background: Rectangle {
             radius: 6 * virtualstudio.uiScale
             color: openVerificationUrlButton.down ? buttonPressedColour : (openVerificationUrlButton.hovered ? buttonHoverColour : buttonColour)
@@ -217,7 +239,7 @@ Item {
             border.color: openVerificationUrlButton.down ? buttonPressedStroke : (openVerificationUrlButton.hovered ? buttonHoverStroke : buttonStroke)
             layer.enabled: !openVerificationUrlButton.down
         }
-        onClicked: { virtualstudio.openLink(auth.deviceVerificationUrl); }
+        onClicked: { virtualstudio.openLink(auth.verificationUrl); }
         anchors.horizontalCenter: parent.horizontalCenter
         y: 380 * virtualstudio.uiScale
         width: 216 * virtualstudio.uiScale; height: 48 * virtualstudio.uiScale
@@ -227,7 +249,9 @@ Item {
             font.pixelSize: 12 * virtualstudio.fontScale * virtualstudio.uiScale
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.verticalCenter: parent.verticalCenter
-            color: openVerificationUrlButton.down ? buttonTextPressed : (openVerificationUrlButton.hovered ? buttonTextHover : buttonTextColour)
+            color: !Boolean(auth.verificationCode)
+                ? disabledButtonText
+                : openVerificationUrlButton.down ? buttonTextPressed : (openVerificationUrlButton.hovered ? buttonTextHover : buttonTextColour)
         }
     }
 

@@ -16,7 +16,7 @@ Rectangle {
         State {
             name: "start"
             PropertyChanges { target: startScreen; x: 0 }
-            PropertyChanges { target: loginScreen; x: window.width; failTextVisible: loginScreen.failTextVisible }
+            PropertyChanges { target: loginScreen; x: window.width; }
             PropertyChanges { target: setupScreen; x: window.width }
             PropertyChanges { target: browseScreen; x: window.width }
             PropertyChanges { target: settingsScreen; x: window.width }
@@ -27,7 +27,7 @@ Rectangle {
         State {
             name: "login"
             PropertyChanges { target: startScreen; x: -startScreen.width }
-            PropertyChanges { target: loginScreen; x: 0; failTextVisible: false }
+            PropertyChanges { target: loginScreen; x: 0; }
             PropertyChanges { target: setupScreen; x: window.width }
             PropertyChanges { target: browseScreen; x: window.width }
             PropertyChanges { target: settingsScreen; x: window.width }
@@ -134,9 +134,6 @@ Rectangle {
             } else {
                 virtualstudio.windowState = "browse";
             }
-        }
-        function onAuthFailed() {
-            loginScreen.failTextVisible = true;
         }
         function onConnected() {
             virtualstudio.windowState = "connected";
