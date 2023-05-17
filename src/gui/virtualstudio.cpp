@@ -2378,6 +2378,7 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
                 }
             }
             if (firstLoad) {
+                QThread::msleep(400);  // Hack - purely for UX
                 emit authSucceeded();
                 m_refreshTimer.setInterval(10000);
                 m_refreshTimer.start();

@@ -203,7 +203,6 @@ void VsAuth::cancelAuthenticationFlow()
     emit updatedAuthenticationStage(m_authenticationStage);
     emit updatedVerificationCode(m_verificationCode);
     emit updatedIsAuthenticated(m_isAuthenticated);
-
 }
 
 void VsAuth::logout()

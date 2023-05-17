@@ -163,7 +163,7 @@ Item {
 
     Text {
         id: deviceVerificationFollowUp
-        text: "Once you've authorized this application, you'll automatically be moved to the next screen"
+        text: "Once you've authorized this application, you'll automatically be moved to the next screen."
         font.family: "Poppins"
         font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
         anchors.horizontalCenter: parent.horizontalCenter

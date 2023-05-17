@@ -62,12 +62,7 @@ void VsDeviceCodeFlow::grant()
     connect(&m_deviceFlowExpirationTimer, &QTimer::timeout, this,
             &VsDeviceCodeFlow::onDeviceCodeExpired);
 
-    if (m_refreshToken != QStringLiteral("")) {
-        // refreshAccessToken();
-        initDeviceAuthorizationCodeFlow();
-    } else {
-        initDeviceAuthorizationCodeFlow();
-    }
+    initDeviceAuthorizationCodeFlow();
 }
 
 void VsDeviceCodeFlow::initDeviceAuthorizationCodeFlow()
