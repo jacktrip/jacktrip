@@ -85,8 +85,10 @@ void VsDeviceCodeFlow::initDeviceAuthorizationCodeFlow()
     connect(reply, &QNetworkReply::finished, this, [=]() {
         bool success = processDeviceCodeNetworkReply(reply);
         if (success) {
+            // notify success along with user code and verification URL
             emit deviceCodeFlowInitialized(m_userCode, m_verificationUriComplete);
         } else if (m_authenticationError) {
+            // notify failure
             emit deviceCodeFlowError();
         }
         reply->deleteLater();
@@ -101,6 +103,7 @@ void VsDeviceCodeFlow::startPolling()
         return;
     }
 
+    // poll on a regular interval, up until the expiration of the code
     m_tokenPollingTimer.setInterval(m_pollingInterval * 1000);
     m_deviceFlowExpirationTimer.setInterval(m_deviceCodeValidityDuration * 1000);
 
@@ -137,10 +140,16 @@ void VsDeviceCodeFlow::onPollingTimerTick()
     connect(reply, &QNetworkReply::finished, this, [=]() {
         bool success = processPollingOAuthTokenNetworkReply(reply);
         if (m_authenticationError) {
+            // shouldn't happen
             emit deviceCodeFlowError();
         } else if (!success) {
+            // restart timer (single-shot) - we expect this to be called at least once
+            // on timeout this tick handler will get re-called
             m_tokenPollingTimer.start();
         } else {
+            // flow successfully completed
+            emit onCompletedCodeFlow(m_accessToken, m_refreshToken);
+            // cleanup
             stopPolling();
             cleanupDeviceCodeFlow();
         }
@@ -225,7 +234,7 @@ bool VsDeviceCodeFlow::processPollingOAuthTokenNetworkReply(QNetworkReply* reply
     m_refreshToken        = object.value(QLatin1String("refresh_token")).toString();
     m_authenticationError = false;
 
-    emit onCompletedCodeFlow(m_accessToken, m_refreshToken);
+    // return true if success
     return true;
 }
 

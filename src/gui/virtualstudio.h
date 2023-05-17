@@ -368,8 +368,6 @@ class VirtualStudio : public QObject
     void updatedDevicesWarningHelpUrl(const QString& url);
 
    private:
-    void setupAuthenticator();
-
     void sendHeartbeat();
     void getServerList(bool firstLoad = false, bool signalRefresh = false,
                        int index = -1);

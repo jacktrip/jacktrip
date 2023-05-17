@@ -62,8 +62,10 @@ VsAuth::VsAuth(VsQuickView* view, QNetworkAccessManager* networkAccessManager, V
 void VsAuth::authenticate(QString currentRefreshToken)
 {
     if (currentRefreshToken.isEmpty()) {
+        // if no refresh token, initialize device flow
         m_deviceCodeFlow->grant();
     } else {
+        // otherwise, use refresh token to gain a new access token
         m_refreshToken = currentRefreshToken;
         refreshAccessToken(m_refreshToken);
     }
@@ -86,7 +88,7 @@ void VsAuth::fetchUserInfo(QString accessToken)
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
-            handleAuthFailed();
+            handleAuthFailed();  // handle failure
             reply->deleteLater();
             return;
         }
@@ -120,7 +122,7 @@ void VsAuth::refreshAccessToken(QString refreshToken)
         if (reply->error()) {
             std::cout << "Failed to get new access token: " << buffer.toStdString()
                       << std::endl;
-            handleAuthFailed();
+            handleAuthFailed();  // handle failure
             reply->deleteLater();
             return;
         }
@@ -131,16 +133,16 @@ void VsAuth::refreshAccessToken(QString refreshToken)
         if (parseError.error) {
             std::cout << "Error parsing JSON for Access Token: "
                       << parseError.errorString().toStdString() << std::endl;
-            handleAuthFailed();
+            handleAuthFailed();  // handle failure
             reply->deleteLater();
             return;
         }
 
-        // get fields
+        // received access token
         QJsonObject object  = data.object();
         QString accessToken = object.value(QLatin1String("access_token")).toString();
-        m_api->setAccessToken(accessToken);
-        fetchUserInfo(accessToken);
+        m_api->setAccessToken(accessToken);  // set access token
+        fetchUserInfo(accessToken);          // get user ID from Auth0
         reply->deleteLater();
     });
 }
@@ -154,7 +156,9 @@ void VsAuth::codeFlowCompleted(QString accessToken, QString refreshToken)
 
 void VsAuth::handleAuthSucceeded(QString userId, QString accessToken)
 {
-    std::cout << "Successful Authentication!" << std::endl;
+    // Success case: we got our access token (either through the refresh token or device
+    // code flow), and fetched the user ID
+    std::cout << "Successfully authenticated Virtual Studio user" << std::endl;
     std::cout << "User ID: " << userId.toStdString() << std::endl;
 
     m_userId              = userId;
@@ -168,12 +172,16 @@ void VsAuth::handleAuthSucceeded(QString userId, QString accessToken)
     emit updatedVerificationCode(m_verificationCode);
     emit updatedIsAuthenticated(m_isAuthenticated);
 
+    // notify UI and virtual studio class of success
     emit authSucceeded();
 }
 
 void VsAuth::handleAuthFailed()
 {
-    std::cout << "Failed Authentication!" << std::endl;
+    // this might get called because there was an error getting the access token,
+    // or there was an issue fetching the user ID. We need both to say
+    // that authentication succeeded
+    std::cout << "Failed to authenticate user" << std::endl;
 
     m_userId              = QStringLiteral("");
     m_verificationCode    = QStringLiteral("");
@@ -186,6 +194,7 @@ void VsAuth::handleAuthFailed()
     emit updatedVerificationCode(m_verificationCode);
     emit updatedIsAuthenticated(m_isAuthenticated);
 
+    // notify UI and virtual studio class of failure
     emit authFailed();
 }
 
@@ -211,6 +220,7 @@ void VsAuth::logout()
         std::cout << "Warning: attempting to logout while not authenticated" << std::endl;
     }
 
+    // reset auth state
     m_userId              = QStringLiteral("");
     m_verificationCode    = QStringLiteral("");
     m_accessToken         = QStringLiteral("");

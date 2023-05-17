@@ -127,6 +127,7 @@ Rectangle {
         target: virtualstudio
         function onAuthSucceeded() {
             if (virtualstudio.windowState !== "login") {
+                // can happen on settings screen when switching between prod and test
                 return;
             }
             if (virtualstudio.showDeviceSetup) {

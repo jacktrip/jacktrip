@@ -80,14 +80,21 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     settings.endGroup();
     m_previousUiScale = m_uiScale;
 
+    // use a singleton QNetworkAccessManager
     m_networkAccessManager.reset(new QNetworkAccessManager);
-    m_api.reset(new VsApi(m_networkAccessManager.data()));
 
+    // instantiate API
+    m_api.reset(new VsApi(m_networkAccessManager.data()));
     m_api->setApiHost(PROD_API_HOST);
     if (m_testMode) {
         m_api->setApiHost(TEST_API_HOST);
     }
+
+    // instantiate auth
     m_auth.reset(new VsAuth(&m_view, m_networkAccessManager.data(), m_api.data()));
+    connect(m_auth.data(), &VsAuth::authSucceeded, this,
+            &VirtualStudio::slotAuthSucceeded);
+    connect(m_auth.data(), &VsAuth::authFailed, this, &VirtualStudio::slotAuthFailed);
 
     // Load our font for our qml interface
     QFontDatabase::addApplicationFont(QStringLiteral(":/vs/Poppins-Regular.ttf"));
@@ -1091,15 +1098,12 @@ void VirtualStudio::toVirtualStudio()
 {
     if (!m_refreshToken.isEmpty()) {
         // Attempt to refresh our virtual studio auth token
-        setupAuthenticator();
         m_auth->authenticate(m_refreshToken);
     }
 }
 
 void VirtualStudio::login()
 {
-    setupAuthenticator();
-
     // Important! When the user presses "log in", always use a fresh device flow
     m_auth->authenticate(QString(""));
 }
@@ -2172,13 +2176,6 @@ void VirtualStudio::updatedOutputVuMeasurements(const float* valuesInDecibels,
 #endif
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("outputMeterModel"),
                                                        QVariant::fromValue(uiValues));
-}
-
-void VirtualStudio::setupAuthenticator()
-{
-    connect(m_auth.data(), &VsAuth::authSucceeded, this,
-            &VirtualStudio::slotAuthSucceeded);
-    connect(m_auth.data(), &VsAuth::authFailed, this, &VirtualStudio::slotAuthFailed);
 }
 
 void VirtualStudio::sendHeartbeat()
