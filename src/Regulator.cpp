@@ -105,15 +105,14 @@ constexpr double AutoInitValFactor =
 constexpr int WindowDivisor = 8;     // for faster auto tracking
 constexpr int MaxFPP        = 1024;  // tested up to this FPP
 //*******************************************************************************
-Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen,
-                     bool use_worker_thread, int bqLen)
+Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen)
     : RingBuffer(0, 0)
     , mNumChannels(rcvChannels)
     , mAudioBitRes(bit_res)
     , mFPP(FPP)
     , mMsecTolerance((double)qLen)  // handle non-auto mode, expects positive qLen
     , mAuto(false)
-    , mUseWorkerThread(use_worker_thread)
+    , mUseWorkerThread(false)
     , m_b_BroadcastQueueLength(bqLen)
     , mRegulatorThreadPtr(NULL)
     , mRegulatorWorkerPtr(NULL)
@@ -159,13 +158,9 @@ Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen,
 
     if (gVerboseFlag)
         cout << "mHist = " << mHist << " at " << mFPP << "\n";
-    mBytes      = mFPP * mNumChannels * mBitResolutionMode;
-    mPullQueue  = new int8_t[mBytes * 2];
-    mXfrBuffer  = mPullQueue;
-    mPacketCnt  = 0;  // burg initialization
-    mLastPacket = nullptr;
-    mNextPacket.store(mLastPacket, std::memory_order_release);
-    mWorkerUnderruns = 0;
+    mBytes     = mFPP * mNumChannels * mBitResolutionMode;
+    mXfrBuffer = new int8_t[mBytes];
+    mPacketCnt = 0;  // burg initialization
     mFadeUp.resize(mFPP, 0.0);
     mFadeDown.resize(mFPP, 0.0);
     for (int i = 0; i < mFPP; i++) {
@@ -217,14 +212,25 @@ Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen,
                  << m_b_BroadcastQueueLength;
         // have not implemented the mJackTrip->queueLengthChanged functionality
     }
-    if (mUseWorkerThread) {
-        mRegulatorThreadPtr = new QThread();
-        mRegulatorThreadPtr->setObjectName("RegulatorThread");
-        RegulatorWorker* workerPtr = new RegulatorWorker(this);
-        workerPtr->moveToThread(mRegulatorThreadPtr);
-        mRegulatorThreadPtr->start();
-        mRegulatorWorkerPtr = workerPtr;
+}
+
+void Regulator::enableWorkerThread(QThread* thread_ptr)
+{
+    if (thread_ptr == nullptr) {
+        // create owned regulator thread (client mode)
+        if (mRegulatorThreadPtr == nullptr) {
+            mRegulatorThreadPtr = new QThread();
+            mRegulatorThreadPtr->setObjectName("RegulatorThread");
+            mRegulatorThreadPtr->start();
+        }
+        thread_ptr = mRegulatorThreadPtr;
     }
+    if (mRegulatorWorkerPtr != nullptr) {
+        delete mRegulatorWorkerPtr;
+    }
+    mRegulatorWorkerPtr = new RegulatorWorker(this, mBytes);
+    mRegulatorWorkerPtr->moveToThread(thread_ptr);
+    mUseWorkerThread = true;
 }
 
 void Regulator::changeGlobal(double x)
@@ -257,7 +263,7 @@ void Regulator::printParams(){
 
 Regulator::~Regulator()
 {
-    delete[] mPullQueue;
+    delete[] mXfrBuffer;
     delete[] mZeros;
     delete[] mAssembledPacket;
     delete pushStat;
@@ -269,14 +275,14 @@ Regulator::~Regulator()
     };
     if (m_b_BroadcastQueueLength)
         delete m_b_BroadcastRingBuffer;
-    if (mRegulatorWorkerPtr != nullptr)
-        delete mRegulatorWorkerPtr;
     if (mRegulatorThreadPtr != nullptr) {
         // Stop the Regulator thread
         mRegulatorThreadPtr->quit();
         mRegulatorThreadPtr->wait();
         delete mRegulatorThreadPtr;
     }
+    if (mRegulatorWorkerPtr != nullptr)
+        delete mRegulatorWorkerPtr;
 }
 
 void Regulator::setFPPratio()
@@ -385,13 +391,6 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
 };
 
 //*******************************************************************************
-void Regulator::pullPacket(int8_t* buf)
-{  // only for mBufferStrategy == 4, not using workerThread
-    pullPacket();
-    memcpy(buf, mXfrBuffer, mBytes);
-}
-
-//*******************************************************************************
 void Regulator::pullPacket()
 {
     QMutexLocker locker(&mMutex);
@@ -454,13 +453,7 @@ ZERO_OUTPUT:
     memcpy(mXfrBuffer, mZeros, mBytes);
 
 OUTPUT:
-    // swap positions of mXfrBuffer and mNextPacket
-    mNextPacket.store(mXfrBuffer, std::memory_order_release);
-    if (mXfrBuffer == mPullQueue) {
-        mXfrBuffer = mPullQueue + mBytes;
-    } else {
-        mXfrBuffer = mPullQueue;
-    }
+    return;
 };
 
 //*******************************************************************************
@@ -809,24 +802,17 @@ void StdDev::tick()
 
 void Regulator::readSlotNonBlocking(int8_t* ptrToReadSlot)
 {
-    if (mUseWorkerThread) {
-        // use separate worker thread for PLC
-        const void* ptrToPacket = mNextPacket.load(std::memory_order_acquire);
-        if (ptrToPacket == mLastPacket) {
-            mWorkerUnderruns++;
-            ::memset(ptrToReadSlot, 0, mBytes);
-            if (ptrToPacket == nullptr) {
-                // first time run
-                mRegulatorWorkerPtr->startPullingNextPacket();
-            }
-        } else {
-            ::memcpy(ptrToReadSlot, ptrToPacket, mBytes);
-            mLastPacket = ptrToPacket;
-            mRegulatorWorkerPtr->startPullingNextPacket();
-        }
-    } else {
+    if (!mUseWorkerThread) {
         // use jack callback thread to perform PLC
-        pullPacket(ptrToReadSlot);
+        pullPacket();
+        memcpy(ptrToReadSlot, mXfrBuffer, mBytes);
+        return;
+    }
+
+    // use separate worker thread for PLC
+    if (!mRegulatorWorkerPtr->pop(ptrToReadSlot)) {
+        // use silence for underruns
+        ::memset(ptrToReadSlot, 0, mBytes);
     }
 }
 
@@ -846,9 +832,8 @@ bool Regulator::getStats(RingBuffer::IOStat* stat, bool reset)
         mBroadcastSkew    = 0;
     }
 
-    if (mUseWorkerThread) {
-        cout << "PLC worker underruns: " << mWorkerUnderruns << endl;
-        mWorkerUnderruns = 0;
+    if (mUseWorkerThread && mRegulatorWorkerPtr != nullptr) {
+        mRegulatorWorkerPtr->getStats();
     }
 
     // hijack  of  struct IOStat {

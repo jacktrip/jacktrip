@@ -227,6 +227,7 @@ class JackTrip : public QObject
     {
         mBufferStrategy = BufferStrategy;
     }
+    void setRegulatorThread(QThread* ptr) { mRegulatorThreadPtr = ptr; }
     /// \brief Sets (override) Audio Bit Resolution after construction
     virtual void setAudioBitResolution(
         AudioInterface::audioBitResolutionT AudioBitResolution)
@@ -633,6 +634,7 @@ class JackTrip : public QObject
 #endif                       // endwhere
     int mBufferQueueLength;  ///< Audio Buffer from network queue length
     int mBufferStrategy;
+    QThread* mRegulatorThreadPtr;
     int mBroadcastQueueLength;
     uint32_t mSampleRate;                             ///< Sample Rate
     uint32_t mDeviceID;                               ///< RTAudio DeviceID

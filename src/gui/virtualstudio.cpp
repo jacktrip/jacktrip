@@ -1590,14 +1590,10 @@ void VirtualStudio::completeConnection()
             numOutputChannels = m_numOutputChannels;
         }
 #endif
-        int bufferStrategy = m_bufferStrategy;
-        if (bufferStrategy == 2) {
-            bufferStrategy = 3;
-        }
-        JackTrip* jackTrip =
-            m_device->initJackTrip(m_useRtAudio, input, output, baseInputChannel,
-                                   numInputChannels, baseOutputChannel, numOutputChannels,
-                                   inputMixMode, buffer_size, bufferStrategy, studioInfo);
+        JackTrip* jackTrip = m_device->initJackTrip(
+            m_useRtAudio, input, output, baseInputChannel, numInputChannels,
+            baseOutputChannel, numOutputChannels, inputMixMode, buffer_size,
+            m_bufferStrategy, studioInfo);
         if (jackTrip == 0) {
             processError("Could not bind port");
             return;

@@ -111,8 +111,7 @@ class UdpHubListener : public QObject
     void stopCheck();
 
    signals:
-    void Listening();
-    void ClientAddressSet();
+    void signalStarted();
     void signalRemoveThread(int id);
     void signalStopped();
     void signalError(const QString& errorMessage);
@@ -190,6 +189,9 @@ class UdpHubListener : public QObject
 
     int mIOStatTimeout;
     QSharedPointer<std::ostream> mIOStatStream;
+
+    /// thread used to pull packets from Regulator (if mBufferStrategy==3)
+    QThread* mRegulatorThreadPtr;
 
     int mBufferStrategy;
     int mBroadcastQueue;
