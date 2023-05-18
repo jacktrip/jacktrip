@@ -141,7 +141,7 @@ Item {
         font.family: "Poppins"
         font.pixelSize: 20 * virtualstudio.fontScale * virtualstudio.uiScale
         anchors.horizontalCenter: parent.horizontalCenter
-        y: 140 * virtualstudio.uiScale
+        y: 88 * virtualstudio.uiScale
         visible: loginScreen.state === "polling"
         color: textColour
         horizontalAlignment: Text.AlignHCenter
@@ -149,7 +149,7 @@ Item {
 
     Text {
         id: deviceVerificationExplanation
-        text: `To sign in to your Virtual Studio account, please enter the following one-time code at `
+        text: `To log in to your Virtual Studio account, please enter the following one-time code at `
             + `<a style="color: ${linkTextColour}" href='${auth.verificationUrl}'><u><b>${
                     ((completeUrl) => {
                         if (completeUrl.indexOf("?") === -1) {
@@ -162,7 +162,7 @@ Item {
         font.family: "Poppins"
         font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
         anchors.horizontalCenter: parent.horizontalCenter
-        y: 200 * virtualstudio.uiScale
+        y: 160 * virtualstudio.uiScale
         width: 500 * virtualstudio.uiScale;
         visible: loginScreen.state === "polling"
         color: textColour
@@ -184,7 +184,7 @@ Item {
         font.pixelSize: 20 * virtualstudio.fontScale * virtualstudio.uiScale
         font.letterSpacing: Boolean(auth.verificationCode) ? 8 : 1
         anchors.horizontalCenter: parent.horizontalCenter
-        y: 300 * virtualstudio.uiScale
+        y: 280 * virtualstudio.uiScale
         width: 360 * virtualstudio.uiScale;
         visible: loginScreen.state === "polling"
         color: Boolean(auth.verificationCode) ? textColour : disabledButtonText
@@ -240,7 +240,7 @@ Item {
         font.family: "Poppins"
         font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
         anchors.horizontalCenter: parent.horizontalCenter
-        y: 480 * virtualstudio.uiScale
+        y: 475 * virtualstudio.uiScale
         width: 500 * virtualstudio.uiScale;
         visible: loginScreen.state === "polling"
         color: textColour
@@ -255,7 +255,7 @@ Item {
         font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
         font.underline: true;
         anchors.horizontalCenter: parent.horizontalCenter
-        y: 560 * virtualstudio.uiScale
+        y: 535 * virtualstudio.uiScale
         visible: loginScreen.state === "polling"
         color: textColour
         wrapMode: Text.WordWrap
@@ -336,7 +336,7 @@ Item {
         }
         onClicked: { virtualstudio.openLink(auth.verificationUrl); }
         anchors.horizontalCenter: parent.horizontalCenter
-        y: 380 * virtualstudio.uiScale
+        y: 370 * virtualstudio.uiScale
         width: 216 * virtualstudio.uiScale; height: 48 * virtualstudio.uiScale
         Text {
             text: "Open Browser"
