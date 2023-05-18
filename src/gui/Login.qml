@@ -1,6 +1,7 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
 import QtGraphicalEffects 1.12
+import VS 1.0
 
 Item {
     width: parent.width; height: parent.height
@@ -28,7 +29,8 @@ Item {
     }
 
     property bool showBackButton: true
-    
+    property bool codeCopied: false
+
     property string backgroundColour: virtualstudio.darkMode ? "#272525" : "#FAFBFB"
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
     property string buttonColour: virtualstudio.darkMode ? "#FAFBFB" : "#F0F1F1"
@@ -42,8 +44,15 @@ Item {
     property string buttonTextPressed: virtualstudio.darkMode ? "#323030" : "#D00A0A"
     property string shadowColour: virtualstudio.darkMode ? "40000000" : "#80A1A1A1"
     property string linkTextColour: virtualstudio.darkMode ? "#8B8D8D" : "#272525"
+    property string toolTipTextColour: codeCopied ? "#FAFBFB" : textColour
+    property string toolTipBackgroundColour: codeCopied ? "#57B147" : (virtualstudio.darkMode ? "#323232" : "#F3F3F3")
+    property string tooltipStroke: virtualstudio.darkMode ? "#80827D7D" : "#34979797"
     property string disabledButtonText: "#D3D4D4"
-    
+
+    Clipboard {
+        id: clipboard
+    }
+
     Image {
         id: loginLogo
         source: "logo.svg"
@@ -173,13 +182,56 @@ Item {
         text: auth.verificationCode || "Loading...";
         font.family: "Poppins"
         font.pixelSize: 20 * virtualstudio.fontScale * virtualstudio.uiScale
+        font.letterSpacing: Boolean(auth.verificationCode) ? 8 : 1
         anchors.horizontalCenter: parent.horizontalCenter
         y: 300 * virtualstudio.uiScale
-        width: 500 * virtualstudio.uiScale;
+        width: 360 * virtualstudio.uiScale;
         visible: loginScreen.state === "polling"
         color: Boolean(auth.verificationCode) ? textColour : disabledButtonText
         wrapMode: Text.WordWrap
         horizontalAlignment: Text.AlignHCenter
+
+        Timer {
+            id: copiedResetTimer
+            interval: 2000; running: false; repeat: false
+            onTriggered: codeCopied = false;
+        }
+
+        MouseArea {
+            id: deviceVerificationCodeMouseArea
+            anchors.fill: parent
+            cursorShape: Qt.PointingHandCursor
+            hoverEnabled: true
+            onClicked: () => {
+                codeCopied = true;
+                clipboard.setText(auth.verificationCode);
+                copiedResetTimer.restart()
+            }
+        }
+
+        ToolTip {
+            parent: deviceVerificationCode
+            visible: loginScreen.state === "polling" && deviceVerificationCodeMouseArea.containsMouse
+            delay: 100
+            contentItem: Rectangle {
+                color: toolTipBackgroundColour
+                radius: 3
+                anchors.fill: parent
+                layer.enabled: true
+                border.width: 1
+                border.color: tooltipStroke
+
+                Text {
+                    anchors.centerIn: parent
+                    font { family: "Poppins"; pixelSize: 8 * virtualstudio.fontScale * virtualstudio.uiScale}
+                    text: codeCopied ? qsTr("📋 Copied code to clipboard") : qsTr("📋 Copy code to Clipboard")
+                    color: toolTipTextColour
+                }
+            }
+            background: Rectangle {
+                color: "transparent"
+            }
+        }
     }
 
     Text {
