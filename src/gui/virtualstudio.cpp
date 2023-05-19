@@ -1096,16 +1096,12 @@ void VirtualStudio::toStandard()
 
 void VirtualStudio::toVirtualStudio()
 {
-    if (!m_refreshToken.isEmpty()) {
-        // Attempt to refresh our virtual studio auth token
-        m_auth->authenticate(m_refreshToken);
-    }
+    m_auth->authenticate(m_refreshToken);
 }
 
 void VirtualStudio::login()
 {
-    // Important! When the user presses "log in", always use a fresh device flow
-    m_auth->authenticate(QString(""));
+    m_auth->authenticate(QString(m_refreshToken));
 }
 
 void VirtualStudio::logout()
@@ -1147,6 +1143,9 @@ void VirtualStudio::logout()
     m_userMetadata = QJsonObject();
     m_userId.clear();
     emit hasRefreshTokenChanged();
+
+    // reset window state
+    setWindowState(QStringLiteral("login"));
 }
 
 void VirtualStudio::refreshStudios(int index, bool signalRefresh)
@@ -2375,9 +2374,6 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
                 }
             }
             if (firstLoad) {
-#ifndef _WIN32  // Hack - purely for UX
-                QThread::msleep(400);
-#endif
                 emit authSucceeded();
                 m_refreshTimer.setInterval(10000);
                 m_refreshTimer.start();
