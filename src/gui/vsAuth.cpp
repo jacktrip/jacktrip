@@ -170,6 +170,7 @@ void VsAuth::handleAuthSucceeded(QString userId, QString accessToken)
     emit updatedUserId(m_userId);
     emit updatedAuthenticationStage(m_authenticationStage);
     emit updatedVerificationCode(m_verificationCode);
+    emit updatedAccessToken(m_accessToken);
     emit updatedIsAuthenticated(m_isAuthenticated);
 
     // notify UI and virtual studio class of success
@@ -192,6 +193,7 @@ void VsAuth::handleAuthFailed()
     emit updatedUserId(m_userId);
     emit updatedAuthenticationStage(m_authenticationStage);
     emit updatedVerificationCode(m_verificationCode);
+    emit updatedAccessToken(m_accessToken);
     emit updatedIsAuthenticated(m_isAuthenticated);
 
     // notify UI and virtual studio class of failure
@@ -211,6 +213,7 @@ void VsAuth::cancelAuthenticationFlow()
     emit updatedUserId(m_userId);
     emit updatedAuthenticationStage(m_authenticationStage);
     emit updatedVerificationCode(m_verificationCode);
+    emit updatedAccessToken(m_accessToken);
     emit updatedIsAuthenticated(m_isAuthenticated);
 }
 
@@ -230,5 +233,6 @@ void VsAuth::logout()
     emit updatedUserId(m_userId);
     emit updatedAuthenticationStage(m_authenticationStage);
     emit updatedVerificationCode(m_verificationCode);
+    emit updatedAccessToken(m_accessToken);
     emit updatedIsAuthenticated(m_isAuthenticated);
 }

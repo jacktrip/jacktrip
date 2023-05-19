@@ -1,6 +1,7 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
 import QtGraphicalEffects 1.12
+import QtWebEngine 1.10
 
 Item {
     width: parent.width; height: parent.height
@@ -1522,6 +1523,22 @@ Item {
             font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             text: "This studio is shutting down, please wait to start it again."
             wrapMode: Text.WordWrap
+        }
+    }
+
+    Item {
+        id: webengine
+        visible: auth.isAuthenticated && Boolean(auth.accessToken) && showReadyScreen
+        width: parent.width
+        height: parent.height
+        x: 0
+        y: 0
+
+        property string studioId: virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].id : ""
+
+        WebEngineView {
+            anchors.fill: parent
+            url: `http://localhost:3000/studios?accessToken=${auth.accessToken}`
         }
     }
 }

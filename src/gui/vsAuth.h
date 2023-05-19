@@ -59,6 +59,7 @@ class VsAuth : public QObject
         QString verificationUrl READ deviceVerificationUrl NOTIFY updatedVerificationUrl);
     Q_PROPERTY(bool isAuthenticated READ isAuthenticated NOTIFY updatedIsAuthenticated);
     Q_PROPERTY(QString userId READ userId NOTIFY updatedUserId);
+    Q_PROPERTY(QString accessToken READ accessToken NOTIFY updatedAccessToken)
 
    public:
     VsAuth(VsQuickView* view, QNetworkAccessManager* networkAccessManager, VsApi* api);
@@ -85,6 +86,7 @@ class VsAuth : public QObject
     void updatedVerificationUrl(QUrl verificationUrl);
     void updatedIsAuthenticated(bool isAuthenticated);
     void updatedUserId(QString userId);
+    void updatedAccessToken(QString accessToken);
     void authSucceeded();
     void authFailed();
 
