@@ -95,6 +95,15 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     connect(m_auth.data(), &VsAuth::authSucceeded, this,
             &VirtualStudio::slotAuthSucceeded);
     connect(m_auth.data(), &VsAuth::authFailed, this, &VirtualStudio::slotAuthFailed);
+    connect(m_auth.data(), &VsAuth::refreshTokenFailed, this, [=]() {
+        m_auth->authenticate(QStringLiteral(""));  // retry without using refresh token
+    });
+    connect(m_auth.data(), &VsAuth::fetchUserInfoFailed, this, [=]() {
+        login();  // retry
+    });
+    connect(m_auth.data(), &VsAuth::deviceCodeExpired, this, [=]() {
+        login();  // retry
+    });
 
     // Load our font for our qml interface
     QFontDatabase::addApplicationFont(QStringLiteral(":/vs/Poppins-Regular.ttf"));
@@ -1096,12 +1105,16 @@ void VirtualStudio::toStandard()
 
 void VirtualStudio::toVirtualStudio()
 {
-    m_auth->authenticate(m_refreshToken);
+    login();
 }
 
 void VirtualStudio::login()
 {
-    m_auth->authenticate(QString(m_refreshToken));
+    if (m_refreshToken.isEmpty()) {
+        m_auth->authenticate(QStringLiteral(""));
+    } else {
+        m_auth->authenticate(m_refreshToken);
+    }
 }
 
 void VirtualStudio::logout()

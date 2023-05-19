@@ -53,6 +53,8 @@ VsAuth::VsAuth(VsQuickView* view, QNetworkAccessManager* networkAccessManager, V
             &VsAuth::handleAuthFailed);
     connect(m_deviceCodeFlow.data(), &VsDeviceCodeFlow::onCompletedCodeFlow, this,
             &VsAuth::codeFlowCompleted);
+    connect(m_deviceCodeFlow.data(), &VsDeviceCodeFlow::deviceCodeFlowTimedOut, this,
+            &VsAuth::codeExpired);
 
     m_view->engine()->rootContext()->setContextProperty(QStringLiteral("auth"), this);
 
@@ -89,6 +91,7 @@ void VsAuth::fetchUserInfo(QString accessToken)
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
             handleAuthFailed();  // handle failure
+            emit fetchUserInfoFailed();
             reply->deleteLater();
             return;
         }
@@ -123,6 +126,7 @@ void VsAuth::refreshAccessToken(QString refreshToken)
             std::cout << "Failed to get new access token: " << buffer.toStdString()
                       << std::endl;
             handleAuthFailed();  // handle failure
+            emit refreshTokenFailed();
             reply->deleteLater();
             return;
         }
@@ -134,6 +138,7 @@ void VsAuth::refreshAccessToken(QString refreshToken)
             std::cout << "Error parsing JSON for Access Token: "
                       << parseError.errorString().toStdString() << std::endl;
             handleAuthFailed();  // handle failure
+            emit refreshTokenFailed();
             reply->deleteLater();
             return;
         }
@@ -152,6 +157,11 @@ void VsAuth::codeFlowCompleted(QString accessToken, QString refreshToken)
     m_refreshToken = refreshToken;
     m_api->setAccessToken(accessToken);
     fetchUserInfo(accessToken);
+}
+
+void VsAuth::codeExpired()
+{
+    emit deviceCodeExpired();
 }
 
 void VsAuth::handleAuthSucceeded(QString userId, QString accessToken)

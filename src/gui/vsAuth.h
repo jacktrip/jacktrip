@@ -87,12 +87,16 @@ class VsAuth : public QObject
     void updatedUserId(QString userId);
     void authSucceeded();
     void authFailed();
+    void refreshTokenFailed();
+    void fetchUserInfoFailed();
+    void deviceCodeExpired();
 
    private slots:
     void handleAuthSucceeded(QString userId, QString accessToken);
     void handleAuthFailed();
     void initializedCodeFlow(QString code, QString verificationUrl);
     void codeFlowCompleted(QString accessToken, QString refreshToken);
+    void codeExpired();
 
    private:
     void fetchUserInfo(QString accessToken);

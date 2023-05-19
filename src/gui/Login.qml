@@ -30,6 +30,7 @@ Item {
 
     property bool showBackButton: true
     property bool codeCopied: false
+    property bool hasFailedAtLeastOnce: false
 
     property string backgroundColour: virtualstudio.darkMode ? "#272525" : "#FAFBFB"
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
@@ -48,6 +49,7 @@ Item {
     property string toolTipBackgroundColour: codeCopied ? "#57B147" : (virtualstudio.darkMode ? "#323232" : "#F3F3F3")
     property string tooltipStroke: virtualstudio.darkMode ? "#80827D7D" : "#34979797"
     property string disabledButtonText: "#D3D4D4"
+    property string errorTextColour: "#DB0A0A"
 
     Clipboard {
         id: clipboard
@@ -84,13 +86,13 @@ Item {
 
     Text {
         id: authFailedText
-        text: "Log in failed. Please try again."
+        text: "There was an error trying to sign in. Please try again."
         font.family: "Poppins"
-        font.pixelSize: 18 * virtualstudio.fontScale * virtualstudio.uiScale
+        font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
         anchors.horizontalCenter: parent.horizontalCenter
-        y: 282 * virtualstudio.uiScale
-        visible: loginScreen.state === "failed"
-        color: textColour
+        y: backButton.visible ? 600 * virtualstudio.uiScale : 560 * virtualstudio.uiScale
+        visible: (loginScreen.state === "failed" || hasFailedAtLeastOnce) && loginScreen.state !== "success"
+        color: errorTextColour
     }
 
     Image {
@@ -242,14 +244,14 @@ Item {
         font.underline: true;
         anchors.horizontalCenter: parent.horizontalCenter
         y: 560 * virtualstudio.uiScale
-        visible: showBackButton && (!virtualstudio.hasRefreshToken) || loginScreen.state === "failed"
+        visible: showBackButton
         color: textColour
         wrapMode: Text.WordWrap
         horizontalAlignment: Text.AlignHCenter
         
         MouseArea {
             anchors.fill: parent
-            onClicked: () => { virtualstudio.windowState = "start" }
+            onClicked: () => { if (!auth.isAuthenticated) { virtualstudio.windowState = "start"; } }
             cursorShape: Qt.PointingHandCursor
         }
     }
@@ -281,6 +283,9 @@ Item {
         target: auth
         function onUpdatedAuthenticationStage (stage) {
             loginScreen.state = stage;
+            if (stage === "failed") {
+                hasFailedAtLeastOnce = true;
+            }
         }
     }
 }
