@@ -299,27 +299,23 @@ Item {
         visible: (!virtualstudio.hasRefreshToken && loginScreen.state === "unauthenticated") || loginScreen.state === "failed"
     }
 
-    Button {
+    Text {
         id: backButton
-        visible: (!virtualstudio.hasRefreshToken && loginScreen.state === "unauthenticated") || loginScreen.state === "failed"
-        background: Rectangle {
-            radius: 6 * virtualstudio.uiScale
-            color: backButton.down ? buttonPressedColour : (backButton.hovered ? buttonHoverColour : buttonColour)
-            border.width: 1
-            border.color: backButton.down ? buttonPressedStroke : (backButton.hovered ? buttonHoverStroke : buttonStroke)
-            layer.enabled: !backButton.down
-        }
-        onClicked: { virtualstudio.windowState = "start" }
+        text: "Back"
+        font.family: "Poppins"
+        font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
+        font.underline: true;
         anchors.horizontalCenter: parent.horizontalCenter
-        y: 401 * virtualstudio.uiScale
-        width: 263 * virtualstudio.uiScale; height: 64 * virtualstudio.uiScale
-        Text {
-            text: "Back"
-            font.family: "Poppins"
-            font.pixelSize: 18 * virtualstudio.fontScale * virtualstudio.uiScale
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.verticalCenter: parent.verticalCenter
-            color: backButton.down ? buttonTextPressed : (backButton.hovered ? buttonTextHover : buttonTextColour)
+        y: 520 * virtualstudio.uiScale
+        visible: showBackButton && (!virtualstudio.hasRefreshToken && loginScreen.state === "unauthenticated") || loginScreen.state === "failed"
+        color: textColour
+        wrapMode: Text.WordWrap
+        horizontalAlignment: Text.AlignHCenter
+        
+        MouseArea {
+            anchors.fill: parent
+            onClicked: () => { virtualstudio.windowState = "start" }
+            cursorShape: Qt.PointingHandCursor
         }
     }
 
