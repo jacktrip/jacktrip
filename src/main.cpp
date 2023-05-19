@@ -50,6 +50,7 @@
 #include <QQuickView>
 #include <QSettings>
 #include <QTextStream>
+#include <QtWebEngine>
 
 #include "JTApplication.h"
 #include "gui/virtualstudio.h"
@@ -285,6 +286,7 @@ int main(int argc, char* argv[])
 #ifndef NO_VS
     QString deeplink;
     QSharedPointer<VirtualStudio> vs;
+    QtWebEngine::initialize();
 #ifdef _WIN32
     QScopedPointer<VsInit> vsInit;
 #endif

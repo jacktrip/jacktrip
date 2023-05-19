@@ -63,6 +63,7 @@ class VsAuth : public QObject
     Q_PROPERTY(bool attemptingRefreshToken READ attemptingRefreshToken NOTIFY
                    updatedAttemptingRefreshToken);
     Q_PROPERTY(QString userId READ userId NOTIFY updatedUserId);
+    Q_PROPERTY(QString accessToken READ accessToken NOTIFY updatedAccessToken)
 
    public:
     VsAuth(VsQuickView* view, QNetworkAccessManager* networkAccessManager, VsApi* api);
@@ -94,6 +95,7 @@ class VsAuth : public QObject
     void updatedUserId(QString userId);
     void updatedAuthenticationMethod(QString grant);
     void updatedAttemptingRefreshToken(bool attemptingRefreshToken);
+    void updatedAccessToken(QString accessToken);
     void authSucceeded();
     void authFailed();
     void refreshTokenFailed();

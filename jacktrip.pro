@@ -35,6 +35,7 @@ nogui {
     QT += quickcontrols2
     QT += svg
     QT += websockets
+    QT += webengine
     vsftux {
       DEFINES += VS_FTUX
     }
