@@ -133,6 +133,9 @@ else
 	else
 		src += [
 			'src/gui/virtualstudio.cpp',
+			'src/gui/vsAuth.cpp',
+			'src/gui/vsApi.cpp',
+			'src/gui/vsDeviceCodeFlow.cpp',
 			'src/gui/vsInit.cpp',
 			'src/gui/vsDevice.cpp',
 			'src/gui/vsAudioInterface.cpp',
@@ -146,6 +149,9 @@ else
 		]
 		moc_h += [
 			'src/gui/virtualstudio.h',
+			'src/gui/vsApi.h',
+			'src/gui/vsAuth.h',
+			'src/gui/vsDeviceCodeFlow.h',
 			'src/gui/vsInit.h',
 			'src/gui/vsDevice.h',
 			'src/gui/vsAudioInterface.h',

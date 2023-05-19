@@ -80,6 +80,22 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     settings.endGroup();
     m_previousUiScale = m_uiScale;
 
+    // use a singleton QNetworkAccessManager
+    m_networkAccessManager.reset(new QNetworkAccessManager);
+
+    // instantiate API
+    m_api.reset(new VsApi(m_networkAccessManager.data()));
+    m_api->setApiHost(PROD_API_HOST);
+    if (m_testMode) {
+        m_api->setApiHost(TEST_API_HOST);
+    }
+
+    // instantiate auth
+    m_auth.reset(new VsAuth(&m_view, m_networkAccessManager.data(), m_api.data()));
+    connect(m_auth.data(), &VsAuth::authSucceeded, this,
+            &VirtualStudio::slotAuthSucceeded);
+    connect(m_auth.data(), &VsAuth::authFailed, this, &VirtualStudio::slotAuthFailed);
+
     // Load our font for our qml interface
     QFontDatabase::addApplicationFont(QStringLiteral(":/vs/Poppins-Regular.ttf"));
     QFontDatabase::addApplicationFont(QStringLiteral(":/vs/Poppins-Bold.ttf"));
@@ -945,11 +961,39 @@ void VirtualStudio::setTestMode(bool test)
         qDebug() << "Not allowed";
         return;
     }
+
     m_testMode = test;
+
+    // clear existing auth state
+    m_auth->logout();
+
+    // Clear existing registers - any existing instance data will be overwritten
+    // when m_auth->authenticate finishes and slotAuthSucceeded() is called again
     QSettings settings;
     settings.beginGroup(QStringLiteral("VirtualStudio"));
     settings.setValue(QStringLiteral("TestMode"), m_testMode);
+    settings.remove(QStringLiteral("RefreshToken"));
+    settings.remove(QStringLiteral("UserId"));
+    settings.remove(QStringLiteral("ShowInactive"));
+    settings.remove(QStringLiteral("ShowSelfHosted"));
+    settings.remove(QStringLiteral("ShowDeviceSetup"));
+    settings.remove(QStringLiteral("ShowWarnings"));
     settings.endGroup();
+
+    // deregister app
+    if (m_device != nullptr) {
+        m_device->removeApp();
+    }
+
+    // stop timers, clear data, etc.
+    m_refreshTimer.stop();
+    m_heartbeatTimer.stop();
+    m_userMetadata = QJsonObject();
+    m_userId.clear();
+
+    // re-run authentication. This should not require another browser flow since
+    // we're starting with the existing refresh token
+    m_auth->authenticate(m_refreshToken);
     emit testModeChanged();
 }
 
@@ -989,11 +1033,12 @@ QString VirtualStudio::failedMessage()
 
 void VirtualStudio::joinStudio()
 {
-    if (!m_authenticated || m_studioToJoin.isEmpty() || m_servers.isEmpty()) {
+    bool authenticated = m_auth->isAuthenticated();
+    if (!authenticated || m_studioToJoin.isEmpty() || m_servers.isEmpty()) {
         // No servers yet. Making sure we have them.
         // getServerList emits refreshFinished which
         // will come back to this function.
-        if (m_authenticated && !m_studioToJoin.isEmpty() && m_servers.isEmpty()) {
+        if (authenticated && !m_studioToJoin.isEmpty() && m_servers.isEmpty()) {
             getServerList(true, true);
         }
         return;
@@ -1053,32 +1098,14 @@ void VirtualStudio::toVirtualStudio()
 {
     if (!m_refreshToken.isEmpty()) {
         // Attempt to refresh our virtual studio auth token
-        setupAuthenticator();
-
-        // Something about this is required for refreshing auth tokens:
-        // https://bugreports.qt.io/browse/QTBUG-84866
-        m_authenticator->setModifyParametersFunction([](QAbstractOAuth2::Stage stage,
-                                                        QVariantMap* parameters) {
-            if (stage == QAbstractOAuth2::Stage::RequestingAccessToken) {
-                QByteArray code = parameters->value(QStringLiteral("code")).toByteArray();
-                (*parameters)[QStringLiteral("code")] = QUrl::fromPercentEncoding(code);
-            } else if (stage == QAbstractOAuth2::Stage::RequestingAuthorization) {
-                parameters->insert(QStringLiteral("audience"), AUTH_AUDIENCE);
-            }
-            if (!parameters->contains("client_id")) {
-                parameters->insert("client_id", AUTH_CLIENT_ID);
-            }
-        });
-
-        m_authenticator->setRefreshToken(m_refreshToken);
-        m_authenticator->refreshAccessToken();
+        m_auth->authenticate(m_refreshToken);
     }
 }
 
 void VirtualStudio::login()
 {
-    setupAuthenticator();
-    m_authenticator->grant();
+    // Important! When the user presses "log in", always use a fresh device flow
+    m_auth->authenticate(QString(""));
 }
 
 void VirtualStudio::logout()
@@ -1101,8 +1128,7 @@ void VirtualStudio::logout()
     logoutURL.setQuery(query);
     launchBrowser(logoutURL);
 
-    m_authenticator->setToken(QLatin1String(""));
-    m_authenticator->setRefreshToken(QLatin1String(""));
+    m_auth->logout();
 
     QSettings settings;
     settings.beginGroup(QStringLiteral("VirtualStudio"));
@@ -1508,8 +1534,8 @@ void VirtualStudio::connectToStudio(int studioIndex)
 
     m_studioSocket = new VsWebSocket(
         QUrl(QStringLiteral("wss://%1/api/servers/%2?auth_code=%3")
-                 .arg(m_apiHost, studioInfo->id(), m_authenticator->token())),
-        m_authenticator->token(), QString(), QString());
+                 .arg(m_api->getApiHost(), studioInfo->id(), m_auth->accessToken())),
+        m_auth->accessToken(), QString(), QString());
     connect(m_studioSocket, &VsWebSocket::textMessageReceived, this,
             [&](QString message) {
                 handleWebsocketMessage(message);
@@ -1738,7 +1764,7 @@ void VirtualStudio::manageStudio(int studioIndex, bool start)
     QUrl url;
     if (!start) {
         url = QUrl(QStringLiteral("https://%1/studios/%2")
-                       .arg(m_apiHost,
+                       .arg(m_api->getApiHost(),
                             static_cast<VsServerInfo*>(m_servers.at(studioIndex))->id()));
     } else {
         QString expiration =
@@ -1747,10 +1773,8 @@ void VirtualStudio::manageStudio(int studioIndex, bool start)
                             {QLatin1String("expiresAt"), expiration}};
         QJsonDocument request = QJsonDocument(json);
 
-        QNetworkReply* reply = m_authenticator->put(
-            QStringLiteral("https://%1/api/servers/%2")
-                .arg(m_apiHost,
-                     static_cast<VsServerInfo*>(m_servers.at(studioIndex))->id()),
+        QNetworkReply* reply = m_api->updateServer(
+            (static_cast<VsServerInfo*>(m_servers.at(studioIndex)))->id(),
             request.toJson());
         connect(reply, &QNetworkReply::finished, this, [&, reply]() {
             if (reply->error() != QNetworkReply::NoError) {
@@ -1786,21 +1810,22 @@ void VirtualStudio::launchVideo(int studioIndex)
         // We're here from a connected screen. Use our current studio.
         studioIndex = m_currentStudio;
     }
-    QUrl url = QUrl(
-        QStringLiteral("https://%1/studios/%2/live")
-            .arg(m_apiHost, static_cast<VsServerInfo*>(m_servers.at(studioIndex))->id()));
+    QUrl url =
+        QUrl(QStringLiteral("https://%1/studios/%2/live")
+                 .arg(m_api->getApiHost(),
+                      static_cast<VsServerInfo*>(m_servers.at(studioIndex))->id()));
     QDesktopServices::openUrl(url);
 }
 
 void VirtualStudio::createStudio()
 {
-    QUrl url = QUrl(QStringLiteral("https://%1/studios/create").arg(m_apiHost));
+    QUrl url = QUrl(QStringLiteral("https://%1/studios/create").arg(m_api->getApiHost()));
     QDesktopServices::openUrl(url);
 }
 
 void VirtualStudio::editProfile()
 {
-    QUrl url = QUrl(QStringLiteral("https://%1/profile").arg(m_apiHost));
+    QUrl url = QUrl(QStringLiteral("https://%1/profile").arg(m_api->getApiHost()));
     QDesktopServices::openUrl(url);
 }
 
@@ -1834,16 +1859,16 @@ void VirtualStudio::exit()
     }
 }
 
-void VirtualStudio::slotAuthSucceded()
+void VirtualStudio::slotAuthSucceeded()
 {
     // Determine which API host to use
     m_apiHost = PROD_API_HOST;
     if (m_testMode) {
         m_apiHost = TEST_API_HOST;
     }
+    m_api->setApiHost(m_apiHost);
 
-    m_authenticated = true;
-    m_refreshToken  = m_authenticator->refreshToken();
+    m_refreshToken = m_auth->refreshToken();
     emit hasRefreshTokenChanged();
     QSettings settings;
     settings.setValue(QStringLiteral("UiMode"), QJackTrip::VIRTUAL_STUDIO);
@@ -1852,7 +1877,7 @@ void VirtualStudio::slotAuthSucceded()
     settings.endGroup();
     m_vsModeActive = true;
 
-    m_device = new VsDevice(m_authenticator.data(), m_testMode);
+    m_device = new VsDevice(m_auth.data(), m_api.data());
     m_device->registerApp();
 
     if (m_showDeviceSetup) {
@@ -1862,19 +1887,11 @@ void VirtualStudio::slotAuthSucceded()
         }
     }
 
-    if (m_userId.isEmpty()) {
-        getUserId();
-    } else {
-        getSubscriptions();
-        getServerList(true, false);
-    }
-
-    if (m_regions.isEmpty()) {
-        getRegions();
-    }
-    if (m_userMetadata.isEmpty() && !m_userId.isEmpty()) {
-        getUserMetadata();
-    }
+    getUserId();
+    getSubscriptions();
+    getServerList(true, false);
+    getRegions();
+    getUserMetadata();
 
     // attempt to join studio if requested
     if (!m_studioToJoin.isEmpty()) {
@@ -1905,7 +1922,6 @@ void VirtualStudio::slotAuthSucceded()
 
 void VirtualStudio::slotAuthFailed()
 {
-    m_authenticated = false;
     emit authFailed();
 }
 
@@ -2162,57 +2178,6 @@ void VirtualStudio::updatedOutputVuMeasurements(const float* valuesInDecibels,
                                                        QVariant::fromValue(uiValues));
 }
 
-void VirtualStudio::setupAuthenticator()
-{
-    if (m_authenticator.isNull()) {
-        // Set up our authorization flow
-        m_authenticator.reset(new QOAuth2AuthorizationCodeFlow);
-        m_authenticator->setScope(
-            QStringLiteral("openid profile email offline_access read:servers"));
-        connect(m_authenticator.data(),
-                &QOAuth2AuthorizationCodeFlow::authorizeWithBrowser, this,
-                &VirtualStudio::launchBrowser);
-
-        const quint16 port = 52424;
-
-        m_authenticator->setAuthorizationUrl(AUTH_AUTHORIZE_URI);
-        m_authenticator->setClientIdentifier(AUTH_CLIENT_ID);
-        m_authenticator->setAccessTokenUrl(AUTH_TOKEN_URI);
-
-        m_authenticator->setModifyParametersFunction([](QAbstractOAuth2::Stage stage,
-                                                        QVariantMap* parameters) {
-            if (stage == QAbstractOAuth2::Stage::RequestingAccessToken) {
-                QByteArray code = parameters->value(QStringLiteral("code")).toByteArray();
-                (*parameters)[QStringLiteral("code")] = QUrl::fromPercentEncoding(code);
-            } else if (stage == QAbstractOAuth2::Stage::RequestingAuthorization) {
-                parameters->insert(QStringLiteral("audience"),
-                                   QStringLiteral("https://api.jacktrip.org"));
-            }
-        });
-
-        QOAuthHttpServerReplyHandler* replyHandler =
-            new QOAuthHttpServerReplyHandler(port, this);
-        replyHandler->setCallbackText(QStringLiteral(
-            "<div id=\"container\" style=\"width:100%; max-width:1200px; height: auto; "
-            "margin: 100px auto; text-align:center;\">\n"
-            "<img src=\"https://files.jacktrip.org/logos/jacktrip_icon.svg\" "
-            "alt=\"JackTrip\">\n"
-            "<h1 style=\"font-size: 30px; font-weight: 600; padding-top:20px;\">Virtual "
-            "Studio Login Successful</h1>\n"
-            "<p style=\"font-size: 21px; font-weight:300;\">You may close this window "
-            "and return to the JackTrip application.</p>\n"
-            "<p style=\"font-size: 21px; font-weight:300;\">Alternatively, "
-            "&nbsp;<a href=\"https://app.jacktrip.org/studios/create\">click "
-            "here</a>&nbsp; to create your first studio.</p>\n"
-            "</div>\n"));
-        m_authenticator->setReplyHandler(replyHandler);
-        connect(m_authenticator.data(), &QOAuth2AuthorizationCodeFlow::granted, this,
-                &VirtualStudio::slotAuthSucceded);
-        connect(m_authenticator.data(), &QOAuth2AuthorizationCodeFlow::requestFailed,
-                this, &VirtualStudio::slotAuthFailed);
-    }
-}
-
 void VirtualStudio::sendHeartbeat()
 {
     if (m_device != nullptr && m_connectionState != "Connecting..."
@@ -2241,8 +2206,7 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
         topServerId = static_cast<VsServerInfo*>(m_servers.at(index))->id();
     }
 
-    QNetworkReply* reply =
-        m_authenticator->get(QStringLiteral("https://%1/api/servers").arg(m_apiHost));
+    QNetworkReply* reply = m_api->getServers();
     connect(
         reply, &QNetworkReply::finished, this,
         [&, reply, topServerId, firstLoad, signalRefresh]() {
@@ -2411,6 +2375,9 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
                 }
             }
             if (firstLoad) {
+#ifndef _WIN32  // Hack - purely for UX
+                QThread::msleep(400);
+#endif
                 emit authSucceeded();
                 m_refreshTimer.setInterval(10000);
                 m_refreshTimer.start();
@@ -2430,39 +2397,21 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
 
 void VirtualStudio::getUserId()
 {
-    QNetworkReply* reply =
-        m_authenticator->get(QStringLiteral("https://auth.jacktrip.org/userinfo"));
-    connect(reply, &QNetworkReply::finished, this, [=]() {
-        if (reply->error() != QNetworkReply::NoError) {
-            std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
-            emit authFailed();
-            reply->deleteLater();
-            return;
-        }
+    m_userId = m_auth->userId();
+    if (m_userId.isEmpty()) {
+        emit authFailed();
+        return;
+    }
 
-        QByteArray response    = reply->readAll();
-        QJsonDocument userInfo = QJsonDocument::fromJson(response);
-        m_userId               = userInfo.object()[QStringLiteral("sub")].toString();
-
-        QSettings settings;
-        settings.beginGroup(QStringLiteral("VirtualStudio"));
-        settings.setValue(QStringLiteral("UserId"), m_userId);
-        settings.endGroup();
-        getSubscriptions();
-        getServerList(true, false);
-
-        if (m_userMetadata.isEmpty() && !m_userId.isEmpty()) {
-            getUserMetadata();
-        }
-
-        reply->deleteLater();
-    });
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("VirtualStudio"));
+    settings.setValue(QStringLiteral("UserId"), m_userId);
+    settings.endGroup();
 }
 
 void VirtualStudio::getSubscriptions()
 {
-    QNetworkReply* reply = m_authenticator->get(
-        QStringLiteral("https://%1/api/users/%2/subscriptions").arg(m_apiHost, m_userId));
+    QNetworkReply* reply = m_api->getSubscriptions(m_userId);
     connect(reply, &QNetworkReply::finished, this, [&, reply]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
@@ -2490,8 +2439,7 @@ void VirtualStudio::getSubscriptions()
 
 void VirtualStudio::getRegions()
 {
-    QNetworkReply* reply = m_authenticator->get(
-        QStringLiteral("https://%1/api/users/%2/regions").arg(m_apiHost, m_userId));
+    QNetworkReply* reply = m_api->getRegions(m_userId);
     connect(reply, &QNetworkReply::finished, this, [&, reply]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
@@ -2508,8 +2456,7 @@ void VirtualStudio::getRegions()
 
 void VirtualStudio::getUserMetadata()
 {
-    QNetworkReply* reply = m_authenticator->get(
-        QStringLiteral("https://%1/api/users/%2").arg(m_apiHost, m_userId));
+    QNetworkReply* reply = m_api->getUser(m_userId);
     connect(reply, &QNetworkReply::finished, this, [&, reply]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
@@ -2676,9 +2623,7 @@ void VirtualStudio::stopStudio()
     QJsonObject json         = {{QLatin1String("enabled"), false}};
     QJsonDocument request    = QJsonDocument(json);
     studioInfo->setHost(QLatin1String(""));
-    QNetworkReply* reply = m_authenticator->put(
-        QStringLiteral("https://%1/api/servers/%2").arg(m_apiHost, studioInfo->id()),
-        request.toJson());
+    QNetworkReply* reply = m_api->updateServer(studioInfo->id(), request.toJson());
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (m_isExiting && !m_jackTripRunning) {
             emit signalExit();

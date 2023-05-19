@@ -16,7 +16,7 @@ Rectangle {
         State {
             name: "start"
             PropertyChanges { target: startScreen; x: 0 }
-            PropertyChanges { target: loginScreen; x: window.width; failTextVisible: loginScreen.failTextVisible }
+            PropertyChanges { target: loginScreen; x: window.width; }
             PropertyChanges { target: setupScreen; x: window.width }
             PropertyChanges { target: browseScreen; x: window.width }
             PropertyChanges { target: settingsScreen; x: window.width }
@@ -27,7 +27,7 @@ Rectangle {
         State {
             name: "login"
             PropertyChanges { target: startScreen; x: -startScreen.width }
-            PropertyChanges { target: loginScreen; x: 0; failTextVisible: false }
+            PropertyChanges { target: loginScreen; x: 0; }
             PropertyChanges { target: setupScreen; x: window.width }
             PropertyChanges { target: browseScreen; x: window.width }
             PropertyChanges { target: settingsScreen; x: window.width }
@@ -126,14 +126,15 @@ Rectangle {
     Connections {
         target: virtualstudio
         function onAuthSucceeded() {
+            if (virtualstudio.windowState !== "login") {
+                // can happen on settings screen when switching between prod and test
+                return;
+            }
             if (virtualstudio.showDeviceSetup) {
                 virtualstudio.windowState = "setup";
             } else {
                 virtualstudio.windowState = "browse";
             }
-        }
-        function onAuthFailed() {
-            loginScreen.failTextVisible = true;
         }
         function onConnected() {
             virtualstudio.windowState = "connected";

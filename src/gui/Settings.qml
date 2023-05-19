@@ -586,7 +586,7 @@ Item {
                 border.width: 1
                 border.color: testModeButton.down ? buttonPressedStroke : (testModeButton.hovered ? buttonHoverStroke : buttonStroke)
             }
-            onClicked: { virtualstudio.testMode = !virtualstudio.testMode; virtualstudio.windowState = "login"; virtualstudio.logout() }
+            onClicked: { virtualstudio.testMode = !virtualstudio.testMode; }
             anchors.horizontalCenter: parent.horizontalCenter
             y: logoutButton.y + (48 * virtualstudio.uiScale)
             width: 260 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale

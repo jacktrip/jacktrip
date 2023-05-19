@@ -40,9 +40,8 @@
 #include <QDebug>
 
 // Constructor
-VsDevice::VsDevice(QOAuth2AuthorizationCodeFlow* authenticator, bool testMode,
-                   QObject* parent)
-    : QObject(parent), m_authenticator(authenticator)
+VsDevice::VsDevice(VsAuth* auth, VsApi* api, QObject* parent)
+    : QObject(parent), m_auth(auth), m_api(api)
 {
     QSettings settings;
     settings.beginGroup(QStringLiteral("VirtualStudio"));
@@ -66,12 +65,6 @@ VsDevice::VsDevice(QOAuth2AuthorizationCodeFlow* authenticator, bool testMode,
     m_sendVolumeTimer->setSingleShot(true);
     connect(m_sendVolumeTimer, &QTimer::timeout, this, &VsDevice::sendLevels);
 
-    // Determine which API host to use
-    m_apiHost = PROD_API_HOST;
-    if (testMode) {
-        m_apiHost = TEST_API_HOST;
-    }
-
     // Set server levels to stored versions
     QJsonObject json = {
         {QLatin1String("captureVolume"), (int)(m_captureVolume * 100.0)},
@@ -81,9 +74,7 @@ VsDevice::VsDevice(QOAuth2AuthorizationCodeFlow* authenticator, bool testMode,
         {QLatin1String("monitorVolume"), (int)(m_monitorVolume * 100.0)}};
     QJsonDocument request = QJsonDocument(json);
 
-    QNetworkReply* reply = m_authenticator->put(
-        QStringLiteral("https://%1/api/devices/%2").arg(m_apiHost, m_appID),
-        request.toJson());
+    QNetworkReply* reply = m_api->updateDevice(m_appID, request.toJson());
     connect(reply, &QNetworkReply::finished, this, [=]() {
         // Got error
         if (reply->error() != QNetworkReply::NoError) {
@@ -143,8 +134,8 @@ void VsDevice::registerApp()
     }
 
     // check if device exists
-    QNetworkReply* reply = m_authenticator->get(
-        QStringLiteral("https://%1/api/devices/%2").arg(m_apiHost, m_appID));
+    QNetworkReply* reply = m_api->getDevice(m_appID);
+    ;
     connect(reply, &QNetworkReply::finished, this, [=]() {
         // Got error
         if (reply->error() != QNetworkReply::NoError) {
@@ -195,8 +186,7 @@ void VsDevice::removeApp()
         return;
     }
 
-    QNetworkReply* reply = m_authenticator->deleteResource(
-        QStringLiteral("https://%1/api/devices/%2").arg(m_apiHost, m_appID));
+    QNetworkReply* reply = m_api->deleteDevice(m_appID);
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
@@ -227,8 +217,8 @@ void VsDevice::sendHeartbeat()
     if (m_webSocket == nullptr) {
         m_webSocket =
             new VsWebSocket(QUrl(QStringLiteral("wss://%1/api/devices/%2/heartbeat")
-                                     .arg(m_apiHost, m_appID)),
-                            m_authenticator->token(), m_apiPrefix, m_apiSecret);
+                                     .arg(m_api->getApiHost(), m_appID)),
+                            m_auth->accessToken(), m_apiPrefix, m_apiSecret);
         connect(m_webSocket, &VsWebSocket::textMessageReceived, this,
                 &VsDevice::onTextMessageReceived);
     }
@@ -288,9 +278,7 @@ void VsDevice::sendHeartbeat()
         m_webSocket->sendMessage(request.toJson());
     } else {
         // Send heartbeat via POST API
-        QNetworkReply* reply = m_authenticator->post(
-            QStringLiteral("https://%1/api/devices/%2/heartbeat").arg(m_apiHost, m_appID),
-            request.toJson());
+        QNetworkReply* reply = m_api->postDeviceHeartbeat(m_appID, request.toJson());
         connect(reply, &QNetworkReply::finished, this, [=]() {
             if (reply->error() != QNetworkReply::NoError) {
                 std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
@@ -338,9 +326,7 @@ void VsDevice::setServerId(QString serverId)
         {QLatin1String("serverId"), serverId},
     };
     QJsonDocument request = QJsonDocument(json);
-    QNetworkReply* reply  = m_authenticator->put(
-         QStringLiteral("https://%1/api/devices/%2").arg(m_apiHost, m_appID),
-         request.toJson());
+    QNetworkReply* reply  = m_api->updateDevice(m_appID, request.toJson());
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
@@ -362,9 +348,7 @@ void VsDevice::sendLevels()
         {QLatin1String("playbackMute"), m_playbackMute},
         {QLatin1String("monitorVolume"), (int)(m_monitorVolume * 100.0)}};
     QJsonDocument request = QJsonDocument(json);
-    QNetworkReply* reply  = m_authenticator->put(
-         QStringLiteral("https://%1/api/devices/%2").arg(m_apiHost, m_appID),
-         request.toJson());
+    QNetworkReply* reply  = m_api->updateDevice(m_appID, request.toJson());
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
@@ -685,8 +669,7 @@ void VsDevice::registerJTAsDevice()
     };
     QJsonDocument request = QJsonDocument(json);
 
-    QNetworkReply* reply = m_authenticator->post(
-        QStringLiteral("https://%1/api/devices").arg(m_apiHost), request.toJson());
+    QNetworkReply* reply = m_api->postDevice(request.toJson());
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
