@@ -286,6 +286,9 @@ Item {
             if (stage === "failed") {
                 hasFailedAtLeastOnce = true;
             }
+            if (stage === "success") {
+                hasFailedAtLeastOnce = false; // reset
+            }
         }
     }
 }
