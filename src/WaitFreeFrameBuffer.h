@@ -67,6 +67,9 @@ class WaitFreeFrameBuffer : public WaitFreeRingBuffer<int8_t*, Size>
         }
     }
 
+    /// returns bytes stored in each frame
+    inline std::size_t getBytesPerFrame() const { return mBytesPerFrame; }
+
    private:
     virtual void setItem(int8_t*& item, int8_t* const& value)
     {

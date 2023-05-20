@@ -58,18 +58,19 @@ class WaitFreeRingBuffer
 
     /// @brief push a value into the buffer
     /// @param value the next free item in buffer is assigned to this
-    /// @return false if overrun
-    bool push(const T& value)
+    /// @return new number of items in the buffer if success, or 0 if overrun
+    std::size_t push(const T& value)
     {
+        std::size_t tail      = mTailPtr.load(std::memory_order_acquire);
         std::size_t head      = mHeadPtr.load(std::memory_order_relaxed);
         std::size_t next_head = next(head);
-        if (next_head == mTailPtr.load(std::memory_order_acquire)) {
+        if (next_head == tail) {
             ++mOverruns;
-            return false;
+            return 0;
         }
         setItem(mRing[head], value);
         mHeadPtr.store(next_head, std::memory_order_release);
-        return true;
+        return (next_head >= tail) ? (next_head - tail) : (next_head + (Size - tail));
     }
 
     /// @brief pop a value from the buffer
@@ -97,6 +98,25 @@ class WaitFreeRingBuffer
         mTailPtr.store(0, std::memory_order_release);
         clearStats();
     }
+
+    /// returns the number of items in the buffer
+    std::size_t size() const
+    {
+        std::size_t head = mHeadPtr.load(std::memory_order_relaxed);
+        std::size_t tail = mTailPtr.load(std::memory_order_relaxed);
+        return (head >= tail) ? (head - tail) : (head + (Size - tail));
+    }
+
+    /// returns true if the buffer is empty
+    bool empty() const
+    {
+        std::size_t head = mHeadPtr.load(std::memory_order_relaxed);
+        std::size_t tail = mTailPtr.load(std::memory_order_relaxed);
+        return head == tail;
+    }
+
+    /// returns maximum capacity for the buffer
+    inline std::size_t capacity() const { return Size; }
 
     /// returns number of times that a pop failed due to it being empty
     inline std::size_t getUnderruns() const { return mUnderruns; }

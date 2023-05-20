@@ -240,12 +240,19 @@ class RegulatorWorker : public QObject
 
    public:
     RegulatorWorker(Regulator* rPtr, size_t bytesPerPacket)
-        : mRegulatorPtr(rPtr), mPacketQueue(bytesPerPacket)
+        : mRegulatorPtr(rPtr)
+        , mPacketQueue(bytesPerPacket)
+        , mPacketQueueTarget(1)
+        , mStarted(false)
     {
+        // wire up signals
         QObject::connect(this, &RegulatorWorker::startup, this,
                          &RegulatorWorker::setRealtimePriority, Qt::QueuedConnection);
+        QObject::connect(this, &RegulatorWorker::startup, this,
+                         &RegulatorWorker::pullFirstPacket, Qt::QueuedConnection);
         QObject::connect(this, &RegulatorWorker::signalPullPacket, this,
                          &RegulatorWorker::pullPacket, Qt::QueuedConnection);
+        // set thread to realtime priority
         emit startup();
     }
 
@@ -253,13 +260,30 @@ class RegulatorWorker : public QObject
 
     bool pop(int8_t* pktPtr)
     {
-        emit signalPullPacket();
-        return mPacketQueue.pop(pktPtr);
+        if (mPacketQueue.size() <= mPacketQueueTarget) {
+            // start pulling more packets to maintain target
+            emit signalPullPacket();
+        }
+
+        if (mPacketQueue.pop(pktPtr))
+            return true;
+
+        // use silence for underruns
+        ::memset(pktPtr, 0, mPacketQueue.getBytesPerFrame());
+
+        if (mStarted && mPacketQueueTarget < mPacketQueue.capacity()) {
+            // adjust queue target
+            ++mPacketQueueTarget;
+        }
+
+        return false;
     }
 
     void getStats()
     {
-        std::cout << "PLC worker: underruns=" << mPacketQueue.getUnderruns()
+        std::cout << "PLC worker queue: size=" << mPacketQueue.size()
+                  << " target=" << mPacketQueueTarget
+                  << " underruns=" << mPacketQueue.getUnderruns()
                   << " overruns=" << mPacketQueue.getOverruns() << std::endl;
         mPacketQueue.clearStats();
     }
@@ -269,12 +293,19 @@ class RegulatorWorker : public QObject
     void startup();
 
    public slots:
+    void pullFirstPacket()
+    {
+        mPacketQueue.push(mRegulatorPtr->mZeros);
+        mStarted = true;
+    }
+
     void pullPacket()
     {
-        if (mRegulatorPtr != nullptr) {
+        std::size_t qSize;
+        do {
             mRegulatorPtr->pullPacket();
-            mPacketQueue.push(mRegulatorPtr->mXfrBuffer);
-        }
+            qSize = mPacketQueue.push(mRegulatorPtr->mXfrBuffer);
+        } while (qSize != 0 && qSize < mPacketQueueTarget);
     }
     void setRealtimePriority() { setRealtimeProcessPriority(); }
 
@@ -283,7 +314,13 @@ class RegulatorWorker : public QObject
     Regulator* mRegulatorPtr;
 
     /// queue of ready packets (if mBufferStrategy==3)
-    WaitFreeFrameBuffer<8> mPacketQueue;
+    WaitFreeFrameBuffer<> mPacketQueue;
+
+    /// target size for the packet queue
+    std::size_t mPacketQueueTarget;
+
+    /// will be true after first packet is pushed
+    bool mStarted;
 };
 
 #endif  //__REGULATOR_H__

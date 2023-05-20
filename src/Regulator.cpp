@@ -802,18 +802,14 @@ void StdDev::tick()
 
 void Regulator::readSlotNonBlocking(int8_t* ptrToReadSlot)
 {
-    if (!mUseWorkerThread) {
-        // use jack callback thread to perform PLC
-        pullPacket();
-        memcpy(ptrToReadSlot, mXfrBuffer, mBytes);
+    if (mUseWorkerThread) {
+        // use separate worker thread for PLC
+        mRegulatorWorkerPtr->pop(ptrToReadSlot);
         return;
     }
-
-    // use separate worker thread for PLC
-    if (!mRegulatorWorkerPtr->pop(ptrToReadSlot)) {
-        // use silence for underruns
-        ::memset(ptrToReadSlot, 0, mBytes);
-    }
+    // use jack callback thread to perform PLC
+    pullPacket();
+    memcpy(ptrToReadSlot, mXfrBuffer, mBytes);
 }
 
 //*******************************************************************************
