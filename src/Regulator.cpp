@@ -186,7 +186,7 @@ Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen)
     memcpy(mAssembledPacket, mXfrBuffer, mBytes);
     mLastLostCount = 0;  // for stats
     mIncomingTimer.start();
-    mLastSeqNumIn  = -1;
+    mLastSeqNumIn.store(-1, std::memory_order_relaxed);
     mLastSeqNumOut = -1;
     mPhasor.resize(mNumChannels, 0.0);
     mIncomingTiming.resize(ModSeqNumInit);
@@ -380,29 +380,28 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
 {
     if (m_b_BroadcastQueueLength)
         m_b_BroadcastRingBuffer->insertSlotNonBlocking(buf, mBytes, 0, seq_num);
-    QMutexLocker locker(&mMutex);
     seq_num %= mModSeqNum;
     // if (seq_num==0) return;   // impose regular loss
     mIncomingTiming[seq_num] =
         mMsecTolerance + (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
-    mLastSeqNumIn = seq_num;
-    if (mLastSeqNumIn != -1)
-        memcpy(mSlots[mLastSeqNumIn % mNumSlots], buf, mBytes);
+    if (seq_num != -1)
+        memcpy(mSlots[seq_num % mNumSlots], buf, mBytes);
+    mLastSeqNumIn.store(seq_num, std::memory_order_release);
 };
 
 //*******************************************************************************
 void Regulator::pullPacket()
 {
-    QMutexLocker locker(&mMutex);
-    mSkip = 0;
-    if ((mLastSeqNumIn == -1) || (!mFPPratioIsSet)) {
+    int lastSeqNumIn = mLastSeqNumIn.load(std::memory_order_acquire);
+    mSkip            = 0;
+    if ((lastSeqNumIn == -1) || (!mFPPratioIsSet)) {
         goto ZERO_OUTPUT;
     } else {
         mLastSeqNumOut++;
         mLastSeqNumOut %= mModSeqNum;
         double now = (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
         for (int i = mLostWindow; i >= 0; i--) {
-            int next = mLastSeqNumIn - i;
+            int next = lastSeqNumIn - i;
             if (next < 0)
                 next += mModSeqNum;
             if (mIncomingTiming[next] < mIncomingTiming[mLastSeqNumOut])
@@ -419,15 +418,15 @@ void Regulator::pullPacket()
         // make this a global value? -- same threshold as
         // UdpDataProtocol::printUdpWaitedTooLong
         double wait_time = 30;  // msec
-        if ((mLastSeqNumOut == mLastSeqNumIn)
+        if ((mLastSeqNumOut == lastSeqNumIn)
             && ((now - mIncomingTiming[mLastSeqNumOut]) > wait_time)) {
             //                        std::cout << (mIncomingTiming[mLastSeqNumOut] - now)
-            //                        << "mLastSeqNumIn: " << mLastSeqNumIn <<
+            //                        << "lastSeqNumIn: " << lastSeqNumIn <<
             //                        "\tmLastSeqNumOut: " << mLastSeqNumOut << std::endl;
             goto ZERO_OUTPUT;
         }  // "good underrun", not a stuck client
-        //                    std::cout << "within window -- mLastSeqNumIn: " <<
-        //                    mLastSeqNumIn <<
+        //                    std::cout << "within window -- lastSeqNumIn: " <<
+        //                    lastSeqNumIn <<
         //                    "\tmLastSeqNumOut: " << mLastSeqNumOut << std::endl;
         goto UNDERRUN;
     }
@@ -815,7 +814,6 @@ void Regulator::readSlotNonBlocking(int8_t* ptrToReadSlot)
 //*******************************************************************************
 bool Regulator::getStats(RingBuffer::IOStat* stat, bool reset)
 {
-    QMutexLocker locker(&mMutex);
     if (reset) {  // all are unused, this is copied from superclass
         mUnderruns        = 0;
         mOverflows        = 0;

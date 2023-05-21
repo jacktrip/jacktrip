@@ -48,6 +48,7 @@
 
 #include <QDebug>
 #include <QElapsedTimer>
+#include <atomic>
 #include <cstring>
 
 #include "AudioInterface.h"
@@ -199,7 +200,7 @@ class Regulator : public RingBuffer
     StdDev* pushStat;
     StdDev* pullStat;
     QElapsedTimer mIncomingTimer;
-    int mLastSeqNumIn;
+    std::atomic<int> mLastSeqNumIn;
     int mLastSeqNumOut;
     std::vector<double> mPhasor;
     std::vector<double> mIncomingTiming;
