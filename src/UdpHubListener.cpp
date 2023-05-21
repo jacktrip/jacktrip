@@ -123,16 +123,16 @@ UdpHubListener::UdpHubListener(int server_port, int server_udp_port, QObject* pa
 UdpHubListener::~UdpHubListener()
 {
     QMutexLocker lock(&mMutex);
-    // delete mJTWorker;
-    for (int i = 0; i < gMaxThreads; i++) {
-        delete mJTWorkers->at(i);
-    }
-    delete mJTWorkers;
     if (mRegulatorThreadPtr != NULL) {
         mRegulatorThreadPtr->quit();
         mRegulatorThreadPtr->wait();
         delete mRegulatorThreadPtr;
     }
+    // delete mJTWorker;
+    for (int i = 0; i < gMaxThreads; i++) {
+        delete mJTWorkers->at(i);
+    }
+    delete mJTWorkers;
 }
 
 //*******************************************************************************

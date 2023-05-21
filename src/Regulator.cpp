@@ -105,12 +105,16 @@ constexpr double AutoInitValFactor =
 constexpr int WindowDivisor = 8;     // for faster auto tracking
 constexpr int MaxFPP        = 1024;  // tested up to this FPP
 //*******************************************************************************
-Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen)
+Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
+                     int sample_rate)
     : RingBuffer(0, 0)
     , mNumChannels(rcvChannels)
     , mAudioBitRes(bit_res)
     , mFPP(FPP)
+    , mSampleRate(sample_rate)
     , mMsecTolerance((double)qLen)  // handle non-auto mode, expects positive qLen
+    , pushStat(NULL)
+    , pullStat(NULL)
     , mAuto(false)
     , mUseWorkerThread(false)
     , m_b_BroadcastQueueLength(bqLen)
@@ -228,7 +232,7 @@ void Regulator::enableWorkerThread(QThread* thread_ptr)
     if (mRegulatorWorkerPtr != nullptr) {
         delete mRegulatorWorkerPtr;
     }
-    mRegulatorWorkerPtr = new RegulatorWorker(this, mBytes);
+    mRegulatorWorkerPtr = new RegulatorWorker(this);
     mRegulatorWorkerPtr->moveToThread(thread_ptr);
     mUseWorkerThread = true;
 }
@@ -263,6 +267,14 @@ void Regulator::printParams(){
 
 Regulator::~Regulator()
 {
+    if (mRegulatorThreadPtr != nullptr) {
+        // Stop the Regulator thread before deleting other things
+        mRegulatorThreadPtr->quit();
+        mRegulatorThreadPtr->wait();
+        delete mRegulatorThreadPtr;
+    }
+    if (mRegulatorWorkerPtr != nullptr)
+        delete mRegulatorWorkerPtr;
     delete[] mXfrBuffer;
     delete[] mZeros;
     delete[] mAssembledPacket;
@@ -275,14 +287,6 @@ Regulator::~Regulator()
     };
     if (m_b_BroadcastQueueLength)
         delete m_b_BroadcastRingBuffer;
-    if (mRegulatorThreadPtr != nullptr) {
-        // Stop the Regulator thread
-        mRegulatorThreadPtr->quit();
-        mRegulatorThreadPtr->wait();
-        delete mRegulatorThreadPtr;
-    }
-    if (mRegulatorWorkerPtr != nullptr)
-        delete mRegulatorWorkerPtr;
 }
 
 void Regulator::setFPPratio()

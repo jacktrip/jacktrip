@@ -434,7 +434,7 @@ void JackTrip::setupRingBuffers()
                  << (use_worker_thread ? "true" : "false") << ")" << endl;
             Regulator* regulator_ptr =
                 new Regulator(mNumAudioChansOut, mAudioBitResolution, mAudioBufferSize,
-                              mBufferQueueLength, mBroadcastQueueLength);
+                              mBufferQueueLength, mBroadcastQueueLength, mSampleRate);
             mReceiveRingBuffer = regulator_ptr;
             if (use_worker_thread) {
 #ifdef REGULATOR_SHARED_WORKER_THREAD

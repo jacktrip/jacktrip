@@ -131,7 +131,8 @@ class Regulator : public RingBuffer
 {
    public:
     /// construct a new regulator
-    Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen);
+    Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
+              int sample_rate);
 
     // virtual destructor
     virtual ~Regulator();
@@ -163,6 +164,21 @@ class Regulator : public RingBuffer
         m_b_BroadcastRingBuffer->readBroadcastSlot(ptrToReadSlot);
     }
 
+    /// @brief returns sample rate
+    inline int getSampleRate() const { return mSampleRate; }
+
+    /// @brief returns number of bytes in an audio "packet"
+    inline int getPacketSize() const { return mBytes; }
+
+    /// @brief returns number of samples, or frames per callback period
+    inline int getBufferSizeInSamples() const { return mFPP; }
+
+    /// @brief returns time taken for last PLC prediction, in milliseconds
+    inline double getLastDspElapsed() const
+    {
+        return pullStat == nullptr ? 0 : pullStat->lastPLCdspElapsed;
+    }
+
     //    virtual QString getStats(uint32_t statCount, uint32_t lostCount);
     virtual bool getStats(IOStat* stat, bool reset);
 
@@ -178,6 +194,7 @@ class Regulator : public RingBuffer
     int mAudioBitRes;
     int mFPP;
     int mPeerFPP;
+    int mSampleRate;
     uint32_t mLastLostCount;
     int mNumSlots;
     int mHist;
@@ -240,10 +257,11 @@ class RegulatorWorker : public QObject
     Q_OBJECT;
 
    public:
-    RegulatorWorker(Regulator* rPtr, size_t bytesPerPacket)
+    RegulatorWorker(Regulator* rPtr)
         : mRegulatorPtr(rPtr)
-        , mPacketQueue(bytesPerPacket)
+        , mPacketQueue(rPtr->getPacketSize())
         , mPacketQueueTarget(1)
+        , mUnderrun(false)
         , mStarted(false)
     {
         // wire up signals
@@ -268,10 +286,8 @@ class RegulatorWorker : public QObject
         // use silence for underruns
         ::memset(pktPtr, 0, mPacketQueue.getBytesPerFrame());
 
-        if (mStarted && mPacketQueueTarget < 2) {
-            // adjust queue target
-            ++mPacketQueueTarget;
-        }
+        // trigger underrun to re-evaluate queue target
+        mUnderrun.store(true, std::memory_order_relaxed);
 
         return false;
     }
@@ -292,16 +308,42 @@ class RegulatorWorker : public QObject
    public slots:
     void pullPacket()
     {
+        if (mUnderrun.load(std::memory_order_relaxed)) {
+            if (mStarted) {
+                updateQueueTarget();
+                mUnderrun.store(false, std::memory_order_relaxed);
+            } else {
+                mStarted = true;
+            }
+        }
         std::size_t qSize = mPacketQueue.size();
         while (qSize < mPacketQueueTarget) {
             mRegulatorPtr->pullPacket();
             qSize = mPacketQueue.push(mRegulatorPtr->mXfrBuffer);
         }
-        if (!mStarted) mStarted = true;
     }
     void setRealtimePriority() { setRealtimeProcessPriority(); }
 
    private:
+    void updateQueueTarget()
+    {
+        // cap queue size at 4x the time it takes to run a prediction
+        double samples =
+            (mRegulatorPtr->getLastDspElapsed() * 4 * mRegulatorPtr->getSampleRate())
+            / 1000;
+        std::size_t maxPackets = (samples / mRegulatorPtr->getBufferSizeInSamples()) + 1;
+        if (maxPackets > mPacketQueue.capacity() / 2)
+            maxPackets = mPacketQueue.capacity() / 2;
+        if (mPacketQueueTarget < maxPackets) {
+            // adjust queue target
+            ++mPacketQueueTarget;
+            std::cout << "PLC worker queue: adjusting target=" << mPacketQueueTarget
+                      << " (max=" << maxPackets
+                      << ", lastDspElapsed=" << mRegulatorPtr->getLastDspElapsed() << ")"
+                      << std::endl;
+        }
+    }
+
     /// pointer to Regulator for pulling packets
     Regulator* mRegulatorPtr;
 
@@ -310,6 +352,9 @@ class RegulatorWorker : public QObject
 
     /// target size for the packet queue
     std::size_t mPacketQueueTarget;
+
+    /// last value of packet queue underruns
+    std::atomic<bool> mUnderrun;
 
     /// will be true after first packet is pushed
     bool mStarted;
