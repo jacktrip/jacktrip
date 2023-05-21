@@ -267,19 +267,16 @@ class RegulatorWorker : public QObject
         // wire up signals
         QObject::connect(this, &RegulatorWorker::startup, this,
                          &RegulatorWorker::setRealtimePriority, Qt::QueuedConnection);
-        QObject::connect(this, &RegulatorWorker::signalPullPacket, this,
-                         &RegulatorWorker::pullPacket, Qt::QueuedConnection);
         // set thread to realtime priority
         emit startup();
+        // start timer
+        startTimer(1, Qt::PreciseTimer);
     }
 
     virtual ~RegulatorWorker() {}
 
     bool pop(int8_t* pktPtr)
     {
-        // start pulling more packets to maintain target
-        emit signalPullPacket();
-
         if (mPacketQueue.pop(pktPtr))
             return true;
 
@@ -302,11 +299,10 @@ class RegulatorWorker : public QObject
     }
 
    signals:
-    void signalPullPacket();
     void startup();
 
-   public slots:
-    void pullPacket()
+   protected:
+    void timerEvent(QTimerEvent *event) override
     {
         if (mUnderrun.load(std::memory_order_relaxed)) {
             if (mStarted) {
