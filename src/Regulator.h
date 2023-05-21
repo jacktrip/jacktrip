@@ -249,8 +249,6 @@ class RegulatorWorker : public QObject
         // wire up signals
         QObject::connect(this, &RegulatorWorker::startup, this,
                          &RegulatorWorker::setRealtimePriority, Qt::QueuedConnection);
-        QObject::connect(this, &RegulatorWorker::startup, this,
-                         &RegulatorWorker::pullFirstPacket, Qt::QueuedConnection);
         QObject::connect(this, &RegulatorWorker::signalPullPacket, this,
                          &RegulatorWorker::pullPacket, Qt::QueuedConnection);
         // set thread to realtime priority
@@ -261,10 +259,8 @@ class RegulatorWorker : public QObject
 
     bool pop(int8_t* pktPtr)
     {
-        if (mPacketQueue.size() <= mPacketQueueTarget) {
-            // start pulling more packets to maintain target
-            emit signalPullPacket();
-        }
+        // start pulling more packets to maintain target
+        emit signalPullPacket();
 
         if (mPacketQueue.pop(pktPtr))
             return true;
@@ -272,7 +268,7 @@ class RegulatorWorker : public QObject
         // use silence for underruns
         ::memset(pktPtr, 0, mPacketQueue.getBytesPerFrame());
 
-        if (mStarted && mPacketQueueTarget < mPacketQueue.capacity()) {
+        if (mStarted && mPacketQueueTarget < 2) {
             // adjust queue target
             ++mPacketQueueTarget;
         }
@@ -294,19 +290,14 @@ class RegulatorWorker : public QObject
     void startup();
 
    public slots:
-    void pullFirstPacket()
-    {
-        mPacketQueue.push(mRegulatorPtr->mZeros);
-        mStarted = true;
-    }
-
     void pullPacket()
     {
-        std::size_t qSize;
-        do {
+        std::size_t qSize = mPacketQueue.size();
+        while (qSize < mPacketQueueTarget) {
             mRegulatorPtr->pullPacket();
             qSize = mPacketQueue.push(mRegulatorPtr->mXfrBuffer);
-        } while (qSize != 0 && qSize < mPacketQueueTarget);
+        }
+        if (!mStarted) mStarted = true;
     }
     void setRealtimePriority() { setRealtimeProcessPriority(); }
 
