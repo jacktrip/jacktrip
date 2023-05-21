@@ -47,6 +47,8 @@
 #include <math.h>
 
 #include <QDebug>
+#include <QThread>
+#include <QWaitCondition>
 #include <QElapsedTimer>
 #include <atomic>
 #include <cstring>
@@ -58,6 +60,7 @@
 
 // forward declaration
 class RegulatorWorker;
+class RegulatorThread;
 
 class BurgAlgorithm
 {
@@ -244,7 +247,7 @@ class Regulator : public RingBuffer
     int m_b_BroadcastQueueLength;
 
     /// thread used to pull packets from Regulator (if mBufferStrategy==3)
-    QThread* mRegulatorThreadPtr;
+    RegulatorThread* mRegulatorThreadPtr;
 
     /// worker used to pull packets from Regulator (if mBufferStrategy==3)
     RegulatorWorker* mRegulatorWorkerPtr;
@@ -264,6 +267,7 @@ class RegulatorWorker : public QObject
         , mUnderrun(false)
         , mStarted(false)
     {
+        /*
         // wire up signals
         QObject::connect(this, &RegulatorWorker::startup, this,
                          &RegulatorWorker::setRealtimePriority, Qt::QueuedConnection);
@@ -271,6 +275,7 @@ class RegulatorWorker : public QObject
                          &RegulatorWorker::pullPacket, Qt::QueuedConnection);
         // set thread to realtime priority
         emit startup();
+        */
     }
 
     virtual ~RegulatorWorker() {}
@@ -278,7 +283,7 @@ class RegulatorWorker : public QObject
     bool pop(int8_t* pktPtr)
     {
         // start pulling more packets to maintain target
-        emit signalPullPacket();
+        //emit signalPullPacket();
 
         if (mPacketQueue.pop(pktPtr))
             return true;
@@ -358,6 +363,54 @@ class RegulatorWorker : public QObject
 
     /// will be true after first packet is pushed
     bool mStarted;
+};
+
+class RegulatorThread : public QThread
+{
+    Q_OBJECT;
+
+   public:
+    RegulatorThread(void) : mStopped(false) {}
+
+    /// \brief The class destructor
+    virtual ~RegulatorThread() { stop(); }
+
+    /// \brief Implements the thread loop
+    virtual void run()
+    {
+        setRealtimeProcessPriority();
+        RegulatorWorker* workerPtr;
+        while (!mStopped) {
+            while (mWorkQueue.pop(workerPtr)) {
+                if (mStopped) return;
+                workerPtr->pullPacket();
+            }
+            QMutexLocker locker(&mWorkMutex);
+            if (mStopped) return;
+            mWorkAvailable.wait(&mWorkMutex, 100);
+        }
+    }
+
+    /// \brief Stops the execution of the Thread
+    virtual void stop()
+    {
+        QMutexLocker locker(&mWorkMutex);
+        mStopped = true;
+        mWorkAvailable.notify_all();
+    }
+
+    void push(RegulatorWorker* const workerPtr)
+    {
+        QMutexLocker locker(&mWorkMutex);
+        if (mWorkQueue.push(workerPtr))
+            mWorkAvailable.notify_all();
+    }
+
+   private:
+    bool mStopped;
+    QMutex mWorkMutex;
+    QWaitCondition mWorkAvailable;
+    WaitFreeRingBuffer<RegulatorWorker*, 1024> mWorkQueue;
 };
 
 #endif  //__REGULATOR_H__

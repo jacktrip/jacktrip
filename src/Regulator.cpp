@@ -223,7 +223,8 @@ void Regulator::enableWorkerThread(QThread* thread_ptr)
     if (thread_ptr == nullptr) {
         // create owned regulator thread (client mode)
         if (mRegulatorThreadPtr == nullptr) {
-            mRegulatorThreadPtr = new QThread();
+            //mRegulatorThreadPtr = new QThread();
+            mRegulatorThreadPtr = new RegulatorThread();
             mRegulatorThreadPtr->setObjectName("RegulatorThread");
             mRegulatorThreadPtr->start();
         }
@@ -233,7 +234,7 @@ void Regulator::enableWorkerThread(QThread* thread_ptr)
         delete mRegulatorWorkerPtr;
     }
     mRegulatorWorkerPtr = new RegulatorWorker(this);
-    mRegulatorWorkerPtr->moveToThread(thread_ptr);
+    //mRegulatorWorkerPtr->moveToThread(thread_ptr);
     mUseWorkerThread = true;
 }
 
@@ -269,7 +270,7 @@ Regulator::~Regulator()
 {
     if (mRegulatorThreadPtr != nullptr) {
         // Stop the Regulator thread before deleting other things
-        mRegulatorThreadPtr->quit();
+        mRegulatorThreadPtr->stop();
         mRegulatorThreadPtr->wait();
         delete mRegulatorThreadPtr;
     }
@@ -807,6 +808,7 @@ void Regulator::readSlotNonBlocking(int8_t* ptrToReadSlot)
 {
     if (mUseWorkerThread) {
         // use separate worker thread for PLC
+        mRegulatorThreadPtr->push(mRegulatorWorkerPtr);
         mRegulatorWorkerPtr->pop(ptrToReadSlot);
         return;
     }
