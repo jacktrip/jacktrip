@@ -368,9 +368,7 @@ void VirtualStudio::show()
         m_checkSsl = false;
     }
 
-    if (!m_showFirstRun) {
-        toVirtualStudio();
-    }
+    login();
     m_view.show();
 }
 
