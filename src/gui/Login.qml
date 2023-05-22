@@ -309,9 +309,9 @@ Item {
                 }
             }
             
-            anchors.left: (backButton.visible || classicModeButton.visible) ? parent.horizontalCenter : null
-            anchors.leftMargin: (backButton.visible || classicModeButton.visible) ? 8 * virtualstudio.uiScale : null
-            anchors.horizontalCenter: (!backButton.visible && !classicModeButton.visible) ? parent.horizontalCenter : null
+            anchors.left: (backButton.visible || classicModeButton.visible) ? parent.horizontalCenter : undefined
+            anchors.leftMargin: (backButton.visible || classicModeButton.visible) ? 8 * virtualstudio.uiScale : undefined
+            anchors.horizontalCenter: (!backButton.visible && !classicModeButton.visible) ? parent.horizontalCenter : undefined
             anchors.verticalCenter: parent.verticalCenter
             width: 144 * virtualstudio.uiScale; height: 32 * virtualstudio.uiScale
             Text {
