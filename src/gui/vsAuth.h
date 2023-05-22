@@ -65,6 +65,7 @@ class VsAuth : public QObject
 
     void authenticate(QString currentRefreshToken);
     void refreshAccessToken(QString refreshToken);
+    Q_INVOKABLE void resetCode();
     void logout();
 
    public slots:

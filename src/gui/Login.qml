@@ -28,7 +28,6 @@ Item {
         color: backgroundColour
     }
 
-    property bool showBackButton: true
     property bool codeCopied: false
     property bool hasFailedAtLeastOnce: false
 
@@ -218,8 +217,10 @@ Item {
             layer.enabled: !loginButton.down
         }
         onClicked: {
-            virtualstudio.showFirstRun = false;
-            virtualstudio.openLink(auth.verificationUrl);
+            if (auth.verificationCode && auth.verificationUrl) {
+                virtualstudio.showFirstRun = false;
+                virtualstudio.openLink(auth.verificationUrl);
+            }
         }
         anchors.horizontalCenter: parent.horizontalCenter
         y: 400 * virtualstudio.uiScale
@@ -236,46 +237,91 @@ Item {
         visible: !auth.isAuthenticated
     }
 
-    Text {
-        id: backButton
-        text: "Back"
-        font.family: "Poppins"
-        font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
-        font.underline: true;
+    Item {
+        id: loginScreenFooter
         anchors.horizontalCenter: parent.horizontalCenter
         y: 560 * virtualstudio.uiScale
-        visible: showBackButton
-        color: textColour
-        wrapMode: Text.WordWrap
-        horizontalAlignment: Text.AlignHCenter
-        
-        MouseArea {
-            anchors.fill: parent
-            onClicked: () => { if (!auth.isAuthenticated) { virtualstudio.windowState = "start"; } }
-            cursorShape: Qt.PointingHandCursor
-        }
-    }
+        height: 100 * virtualstudio.uiScale
 
-    Button {
-        id: classicModeButton
-        visible: !showBackButton && virtualstudio.showFirstRun && virtualstudio.vsFtux
-        background: Rectangle {
-            radius: 6 * virtualstudio.uiScale
-            color: classicModeButton.down ? buttonPressedColour : (classicModeButton.hovered ? buttonHoverColour : backgroundColour)
-            border.width: 0
-            layer.enabled: !classicModeButton.down
-        }
-        onClicked: { virtualstudio.windowState = "login"; virtualstudio.toStandard(); }
-        anchors.horizontalCenter: parent.horizontalCenter
-        y: 600 * virtualstudio.uiScale
-        width: 160 * virtualstudio.uiScale; height: 32 * virtualstudio.uiScale
-        Text {
-            text: "Use Classic Mode"
-            font.family: "Poppins"
-            font.pixelSize: 9 * virtualstudio.fontScale * virtualstudio.uiScale
-            anchors.horizontalCenter: parent.horizontalCenter
+        Button {
+            id: backButton
+            visible: !virtualstudio.vsFtux
+            background: Rectangle {
+                radius: 6 * virtualstudio.uiScale
+                color: backButton.down ? buttonPressedColour : (backButton.hovered ? buttonHoverColour : buttonColour)
+                border.color: backButton.down ? buttonPressedStroke : (backButton.hovered ? buttonHoverStroke : buttonStroke)
+                border.width: 1
+                layer.enabled: !backButton.down
+            }
+            onClicked: () => { if (!auth.isAuthenticated) { virtualstudio.windowState = "start"; } }
             anchors.verticalCenter: parent.verticalCenter
-            color: classicModeButton.down ? buttonTextPressed : (classicModeButton.hovered ? buttonTextHover : textColour)
+            anchors.right: parent.horizontalCenter
+            anchors.rightMargin: 8 * virtualstudio.uiScale
+            width: 144 * virtualstudio.uiScale; height: 32 * virtualstudio.uiScale
+            Text {
+                text: "Back"
+                font.family: "Poppins"
+                font.pixelSize: 9 * virtualstudio.fontScale * virtualstudio.uiScale
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.verticalCenter
+                color: backButton.down ? buttonTextPressed : (backButton.hovered ? buttonTextHover : textColour)
+            }
+        }
+
+        Button {
+            id: classicModeButton
+            visible: virtualstudio.showFirstRun && virtualstudio.vsFtux
+            background: Rectangle {
+                radius: 6 * virtualstudio.uiScale
+                color: classicModeButton.down ? buttonPressedColour : (classicModeButton.hovered ? buttonHoverColour : buttonColour)
+                border.color: classicModeButton.down ? buttonPressedStroke : (classicModeButton.hovered ? buttonHoverStroke : buttonStroke)
+                border.width: 1
+                layer.enabled: !classicModeButton.down
+            }
+            onClicked: { virtualstudio.windowState = "login"; virtualstudio.toStandard(); }
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.right: parent.horizontalCenter
+            anchors.rightMargin: 8 * virtualstudio.uiScale
+            width: 160 * virtualstudio.uiScale; height: 32 * virtualstudio.uiScale
+            Text {
+                text: "Use Classic Mode"
+                font.family: "Poppins"
+                font.pixelSize: 9 * virtualstudio.fontScale * virtualstudio.uiScale
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.verticalCenter
+                color: classicModeButton.down ? buttonTextPressed : (classicModeButton.hovered ? buttonTextHover : textColour)
+            }
+        }
+
+        Button {
+            id: resetCodeButton
+            visible: true
+            background: Rectangle {
+                radius: 6 * virtualstudio.uiScale
+                color: resetCodeButton.down ? buttonPressedColour : (resetCodeButton.hovered ? buttonHoverColour : buttonColour)
+                border.color: resetCodeButton.down ? buttonPressedStroke : (resetCodeButton.hovered ? buttonHoverStroke : buttonStroke)
+                border.width: 1
+                layer.enabled: !resetCodeButton.down
+            }
+            onClicked: () => { 
+                if (auth.verificationCode && auth.verificationUrl) {
+                    auth.resetCode();
+                }
+            }
+            
+            anchors.left: (backButton.visible || classicModeButton.visible) ? parent.horizontalCenter : null
+            anchors.leftMargin: (backButton.visible || classicModeButton.visible) ? 8 * virtualstudio.uiScale : null
+            anchors.horizontalCenter: (!backButton.visible && !classicModeButton.visible) ? parent.horizontalCenter : null
+            anchors.verticalCenter: parent.verticalCenter
+            width: 144 * virtualstudio.uiScale; height: 32 * virtualstudio.uiScale
+            Text {
+                text: "Reset Code"
+                font.family: "Poppins"
+                font.pixelSize: 9 * virtualstudio.fontScale * virtualstudio.uiScale
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.verticalCenter
+                color: resetCodeButton.down ? buttonTextPressed : (resetCodeButton.hovered ? buttonTextHover : textColour)
+            }
         }
     }
 

@@ -88,7 +88,6 @@ Rectangle {
     
     Login {
         id: loginScreen
-        showBackButton: false
     }
 
     Settings {

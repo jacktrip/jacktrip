@@ -152,6 +152,14 @@ void VsAuth::refreshAccessToken(QString refreshToken)
     });
 }
 
+void VsAuth::resetCode()
+{
+    if (!m_verificationCode.isEmpty()) {
+        m_deviceCodeFlow->cancelCodeFlow();
+        m_deviceCodeFlow->grant();
+    }
+}
+
 void VsAuth::codeFlowCompleted(QString accessToken, QString refreshToken)
 {
     m_refreshToken = refreshToken;
