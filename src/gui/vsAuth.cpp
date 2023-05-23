@@ -106,6 +106,9 @@ void VsAuth::fetchUserInfo(QString accessToken)
 
 void VsAuth::refreshAccessToken(QString refreshToken)
 {
+    m_authenticationStage = QStringLiteral("refreshing");
+    emit updatedAuthenticationStage(m_authenticationStage);
+
     QNetworkRequest request = QNetworkRequest(
         QUrl(QString("https://%1/oauth/token").arg(m_authorizationServerHost)));
 
@@ -179,6 +182,12 @@ void VsAuth::handleAuthSucceeded(QString userId, QString accessToken)
     std::cout << "Successfully authenticated Virtual Studio user" << std::endl;
     std::cout << "User ID: " << userId.toStdString() << std::endl;
 
+    if (m_authenticationStage == QStringLiteral("polling")) {
+        m_authenticationMethod = QStringLiteral("code flow");
+    } else {
+        m_authenticationMethod = QStringLiteral("refresh token");
+    }
+
     m_userId              = userId;
     m_verificationCode    = QStringLiteral("");
     m_accessToken         = accessToken;
@@ -189,6 +198,7 @@ void VsAuth::handleAuthSucceeded(QString userId, QString accessToken)
     emit updatedAuthenticationStage(m_authenticationStage);
     emit updatedVerificationCode(m_verificationCode);
     emit updatedIsAuthenticated(m_isAuthenticated);
+    emit updatedAuthenticationMethod(m_authenticationMethod);
 
     // notify UI and virtual studio class of success
     emit authSucceeded();
@@ -205,12 +215,14 @@ void VsAuth::handleAuthFailed()
     m_verificationCode    = QStringLiteral("");
     m_accessToken         = QStringLiteral("");
     m_authenticationStage = QStringLiteral("failed");
+    m_authenticationMethod = QStringLiteral("");
     m_isAuthenticated     = false;
 
     emit updatedUserId(m_userId);
     emit updatedAuthenticationStage(m_authenticationStage);
     emit updatedVerificationCode(m_verificationCode);
     emit updatedIsAuthenticated(m_isAuthenticated);
+    emit updatedAuthenticationMethod(m_authenticationMethod);
 
     // notify UI and virtual studio class of failure
     emit authFailed();
