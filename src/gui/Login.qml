@@ -57,7 +57,7 @@ Item {
     Image {
         id: loginLogo
         source: "logo.svg"
-        x: parent.width / 2 - (150 * virtualstudio.uiScale); y: 88 * virtualstudio.uiScale
+        x: parent.width / 2 - (150 * virtualstudio.uiScale); y: 35 * virtualstudio.uiScale
         width: 42 * virtualstudio.uiScale; height: 76 * virtualstudio.uiScale
         sourceSize: Qt.size(loginLogo.width,loginLogo.height)
         fillMode: Image.PreserveAspectFit
@@ -78,7 +78,7 @@ Item {
         font.family: "Poppins"
         font.pixelSize: 28 * virtualstudio.fontScale * virtualstudio.uiScale
         anchors.horizontalCenter: parent.horizontalCenter
-        y: 166 * virtualstudio.uiScale
+        y: 113 * virtualstudio.uiScale
         color: textColour
         visible: true
     }
@@ -89,7 +89,7 @@ Item {
         font.family: "Poppins"
         font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
         anchors.horizontalCenter: parent.horizontalCenter
-        y: backButton.visible ? 600 * virtualstudio.uiScale : 560 * virtualstudio.uiScale
+        y: backButton.visible ? 547 * virtualstudio.uiScale : 500 * virtualstudio.uiScale
         visible: (loginScreen.state === "failed" || hasFailedAtLeastOnce) && loginScreen.state !== "success"
         color: errorTextColour
     }
@@ -97,7 +97,7 @@ Item {
     Image {
         id: successIcon
         source: "check.svg"
-        y: 344 * virtualstudio.uiScale
+        y: 291 * virtualstudio.uiScale
         anchors.horizontalCenter: parent.horizontalCenter
         visible: loginScreen.state === "success"
         sourceSize: Qt.size(96 * virtualstudio.uiScale, 96 * virtualstudio.uiScale)
@@ -116,11 +116,11 @@ Item {
 
     Text {
         id: deviceVerificationExplanation
-        text: `Please sign in and confirm the following code using your web browser.`
+        text: `Please sign in and confirm the following code using your web browser. Return here when you are done.`
         font.family: "Poppins"
         font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
         anchors.horizontalCenter: parent.horizontalCenter
-        y: 248 * virtualstudio.uiScale
+        y: 195 * virtualstudio.uiScale
         width: 500 * virtualstudio.uiScale;
         visible: true
         color: textColour
@@ -142,7 +142,7 @@ Item {
         font.pixelSize: 20 * virtualstudio.fontScale * virtualstudio.uiScale
         font.letterSpacing: Boolean(auth.verificationCode) ? 8 : 1
         anchors.horizontalCenter: parent.horizontalCenter
-        y: 320 * virtualstudio.uiScale
+        y: 267 * virtualstudio.uiScale
         width: 360 * virtualstudio.uiScale;
         visible: !auth.isAuthenticated
         color: Boolean(auth.verificationCode) ? textColour : disabledButtonText
@@ -193,20 +193,6 @@ Item {
         }
     }
 
-    Text {
-        id: deviceVerificationFollowUp
-        text: "Return here when you are done."
-        font.family: "Poppins"
-        font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
-        anchors.horizontalCenter: parent.horizontalCenter
-        y: 512 * virtualstudio.uiScale
-        width: 500 * virtualstudio.uiScale;
-        visible: true
-        color: textColour
-        wrapMode: Text.WordWrap
-        horizontalAlignment: Text.AlignHCenter
-    }
-
     Button {
         id: loginButton
         background: Rectangle {
@@ -223,7 +209,7 @@ Item {
             }
         }
         anchors.horizontalCenter: parent.horizontalCenter
-        y: 400 * virtualstudio.uiScale
+        y: 340 * virtualstudio.uiScale
         width: 263 * virtualstudio.uiScale; height: 64 * virtualstudio.uiScale
         Text {
             text: "Sign In"
@@ -240,7 +226,7 @@ Item {
     Item {
         id: loginScreenFooter
         anchors.horizontalCenter: parent.horizontalCenter
-        y: 560 * virtualstudio.uiScale
+        y: 500 * virtualstudio.uiScale
         height: 100 * virtualstudio.uiScale
 
         Button {
