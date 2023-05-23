@@ -210,7 +210,6 @@ Item {
             }
             onClicked: {
                 if (auth.verificationCode && auth.verificationUrl) {
-                    // virtualstudio.showFirstRun = false;
                     virtualstudio.openLink(auth.verificationUrl);
                 }
             }
@@ -311,16 +310,10 @@ Item {
                     layer.enabled: !resetCodeButton.down
                 }
                 onClicked: () => {
-                    console.log("BackButton: ", backButton.visible);
-                    console.log("ClassicModeButton: ", classicModeButton.visible);
                     if (auth.verificationCode && auth.verificationUrl) {
                         auth.resetCode();
                     }
                 }
-
-                // anchors.horizontalCenter: (!backButton.visible && !classicModeButton.visible) ? parent.horizontalCenter : undefined
-                // anchors.left: (backButton.visible || classicModeButton.visible) ? parent.horizontalCenter : undefined
-                // anchors.leftMargin: (backButton.visible || classicModeButton.visible) ? 8 * virtualstudio.uiScale : undefined
                 x: (parent.showBackButton || parent.showClassicModeButton) ? (parent.x + parent.width / 2) + 8 * virtualstudio.uiScale : (parent.x + parent.width / 2) - resetCodeButton.width / 2
                 anchors.verticalCenter: parent.verticalCenter
                 width: 144 * virtualstudio.uiScale; height: 32 * virtualstudio.uiScale
