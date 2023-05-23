@@ -63,7 +63,7 @@ Item {
     Item {
         id: loginScreenHeader
         anchors.horizontalCenter: parent.horizontalCenter
-        y: showCodeFlow ? 88 * virtualstudio.uiScale : 144 * virtualstudio.uiScale
+        y: showCodeFlow ? 36 * virtualstudio.uiScale : 144 * virtualstudio.uiScale
 
         Image {
             id: loginLogo
@@ -95,13 +95,14 @@ Item {
     Item {
         id: codeFlow
         anchors.horizontalCenter: parent.horizontalCenter
-        y: 108 * virtualstudio.uiScale
+        y: 55 * virtualstudio.uiScale
+        height: parent.height - codeFlow.y
         visible: showCodeFlow
         width: parent.width
 
         Text {
             id: deviceVerificationExplanation
-            text: `Please sign in and confirm the following code using your web browser.`
+            text: `Please sign in and confirm the following code using your web browser. Return here when you are done.`
             font.family: "Poppins"
             font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
             anchors.horizontalCenter: parent.horizontalCenter
@@ -119,18 +120,6 @@ Item {
                 virtualstudio.openLink(link)
             }
         }
-
-        // TODO: handle this case!
-        // Text {
-        //     id: authFailedText
-        //     text: "There was an error trying to sign in. Please try again."
-        //     font.family: "Poppins"
-        //     font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
-        //     anchors.horizontalCenter: parent.horizontalCenter
-        //     y: backButton.visible ? 600 * virtualstudio.uiScale : 560 * virtualstudio.uiScale
-        //     visible: (loginScreen.state === "failed" || hasFailedAtLeastOnce) && loginScreen.state !== "success"
-        //     color: errorTextColour
-        // }
 
         Image {
             id: successIcon
@@ -159,7 +148,7 @@ Item {
             font.pixelSize: 20 * virtualstudio.fontScale * virtualstudio.uiScale
             font.letterSpacing: Boolean(auth.verificationCode) ? 8 : 1
             anchors.horizontalCenter: parent.horizontalCenter
-            y: 208 * virtualstudio.uiScale
+            y: 196 * virtualstudio.uiScale
             width: 360 * virtualstudio.uiScale;
             visible: !auth.isAuthenticated
             color: Boolean(auth.verificationCode) ? textColour : disabledButtonText
@@ -226,7 +215,7 @@ Item {
                 }
             }
             anchors.horizontalCenter: parent.horizontalCenter
-            y: 284 * virtualstudio.uiScale
+            y: 260 * virtualstudio.uiScale
             width: 263 * virtualstudio.uiScale; height: 64 * virtualstudio.uiScale
             Text {
                 text: "Sign In"
@@ -241,25 +230,24 @@ Item {
         }
 
         Text {
-            id: deviceVerificationFollowUp
-            text: "Return here when you are done."
+            id: authFailedText
+            text: "There was an error trying to sign in. Please try again."
             font.family: "Poppins"
-            font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
+            font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
             anchors.horizontalCenter: parent.horizontalCenter
-            y: 384 * virtualstudio.uiScale
-            width: 500 * virtualstudio.uiScale;
-            visible: true
-            color: textColour
-            wrapMode: Text.WordWrap
-            horizontalAlignment: Text.AlignHCenter
+            y: 360 * virtualstudio.uiScale
+            visible: (loginScreen.state === "failed" || hasFailedAtLeastOnce) && loginScreen.state !== "success"
+            color: errorTextColour
         }
 
         Item {
             id: loginScreenFooter
             anchors.horizontalCenter: parent.horizontalCenter
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: 16 * virtualstudio.uiScale
             y: 420 * virtualstudio.uiScale
             width: parent.width
-            height: 100 * virtualstudio.uiScale
+            height: 80 * virtualstudio.uiScale
 
             Button {
                 id: backButton
