@@ -191,12 +191,12 @@ void VsAuth::handleAuthSucceeded(QString userId, QString accessToken)
         m_authenticationMethod = QStringLiteral("refresh token");
     }
 
-    m_userId              = userId;
-    m_verificationCode    = QStringLiteral("");
-    m_accessToken         = accessToken;
-    m_authenticationStage = QStringLiteral("success");
+    m_userId                 = userId;
+    m_verificationCode       = QStringLiteral("");
+    m_accessToken            = accessToken;
+    m_authenticationStage    = QStringLiteral("success");
     m_attemptingRefreshToken = false;
-    m_isAuthenticated     = true;
+    m_isAuthenticated        = true;
 
     emit updatedUserId(m_userId);
     emit updatedAuthenticationStage(m_authenticationStage);
@@ -216,13 +216,13 @@ void VsAuth::handleAuthFailed()
     // that authentication succeeded
     std::cout << "Failed to authenticate user" << std::endl;
 
-    m_userId              = QStringLiteral("");
-    m_verificationCode    = QStringLiteral("");
-    m_accessToken         = QStringLiteral("");
-    m_authenticationStage = QStringLiteral("failed");
-    m_authenticationMethod = QStringLiteral("");
+    m_userId                 = QStringLiteral("");
+    m_verificationCode       = QStringLiteral("");
+    m_accessToken            = QStringLiteral("");
+    m_authenticationStage    = QStringLiteral("failed");
+    m_authenticationMethod   = QStringLiteral("");
     m_attemptingRefreshToken = false;
-    m_isAuthenticated     = false;
+    m_isAuthenticated        = false;
 
     emit updatedUserId(m_userId);
     emit updatedAuthenticationStage(m_authenticationStage);
