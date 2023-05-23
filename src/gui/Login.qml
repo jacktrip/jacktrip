@@ -354,11 +354,6 @@ Item {
     Connections {
         target: auth
         function onUpdatedAuthenticationStage (stage) {
-            // Edge case: went from refreshing token, but failed and switched to device code flow automatically
-            if (loginScreen.state === "refreshing" && stage === "polling") {
-                numFailures = numFailures + 1;
-            }
-
             loginScreen.state = stage;
             if (stage === "failed") {
                 numFailures = numFailures + 1;
