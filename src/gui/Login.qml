@@ -63,7 +63,7 @@ Item {
     Item {
         id: loginScreenHeader
         anchors.horizontalCenter: parent.horizontalCenter
-        y: showCodeFlow ? 36 * virtualstudio.uiScale : 144 * virtualstudio.uiScale
+        y: showCodeFlow ? 48 * virtualstudio.uiScale : 144 * virtualstudio.uiScale
 
         Image {
             id: loginLogo
@@ -95,7 +95,7 @@ Item {
     Item {
         id: codeFlow
         anchors.horizontalCenter: parent.horizontalCenter
-        y: 55 * virtualstudio.uiScale
+        y: 68 * virtualstudio.uiScale
         height: parent.height - codeFlow.y
         visible: showCodeFlow
         width: parent.width
@@ -235,7 +235,8 @@ Item {
             font.family: "Poppins"
             font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
             anchors.horizontalCenter: parent.horizontalCenter
-            y: 360 * virtualstudio.uiScale
+            anchors.bottom: loginScreenFooter.top
+            anchors.bottomMargin: 16 * virtualstudio.uiScale
             visible: (loginScreen.state === "failed" || hasFailedAtLeastOnce) && loginScreen.state !== "success"
             color: errorTextColour
         }
@@ -244,10 +245,9 @@ Item {
             id: loginScreenFooter
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.bottom: parent.bottom
-            anchors.bottomMargin: 16 * virtualstudio.uiScale
-            y: 420 * virtualstudio.uiScale
+            anchors.bottomMargin: 24 * virtualstudio.uiScale
             width: parent.width
-            height: 80 * virtualstudio.uiScale
+            height: 48 * virtualstudio.uiScale
 
             Button {
                 id: backButton
