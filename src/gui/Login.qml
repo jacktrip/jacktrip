@@ -249,9 +249,12 @@ Item {
             width: parent.width
             height: 48 * virtualstudio.uiScale
 
+            property bool showBackButton: !virtualstudio.vsFtux
+            property bool showClassicModeButton: virtualstudio.showFirstRun && virtualstudio.vsFtux
+
             Button {
                 id: backButton
-                visible: !virtualstudio.vsFtux
+                visible: parent.showBackButton
                 background: Rectangle {
                     radius: 6 * virtualstudio.uiScale
                     color: backButton.down ? buttonPressedColour : (backButton.hovered ? buttonHoverColour : buttonColour)
@@ -261,8 +264,7 @@ Item {
                 }
                 onClicked: () => { if (!auth.isAuthenticated) { virtualstudio.windowState = "start"; } }
                 anchors.verticalCenter: parent.verticalCenter
-                anchors.right: parent.horizontalCenter
-                anchors.rightMargin: 8 * virtualstudio.uiScale
+                x: (parent.x + parent.width / 2) - backButton.width - 8 * virtualstudio.uiScale
                 width: 144 * virtualstudio.uiScale; height: 32 * virtualstudio.uiScale
                 Text {
                     text: "Back"
@@ -276,7 +278,7 @@ Item {
 
             Button {
                 id: classicModeButton
-                visible: virtualstudio.showFirstRun && virtualstudio.vsFtux
+                visible: parent.showClassicModeButton
                 background: Rectangle {
                     radius: 6 * virtualstudio.uiScale
                     color: classicModeButton.down ? buttonPressedColour : (classicModeButton.hovered ? buttonHoverColour : buttonColour)
@@ -286,8 +288,7 @@ Item {
                 }
                 onClicked: { virtualstudio.windowState = "login"; virtualstudio.toStandard(); }
                 anchors.verticalCenter: parent.verticalCenter
-                anchors.right: parent.horizontalCenter
-                anchors.rightMargin: 8 * virtualstudio.uiScale
+                x: (parent.x + parent.width / 2) - classicModeButton.width - 8 * virtualstudio.uiScale
                 width: 160 * virtualstudio.uiScale; height: 32 * virtualstudio.uiScale
                 Text {
                     text: "Use Classic Mode"
@@ -309,15 +310,18 @@ Item {
                     border.width: 1
                     layer.enabled: !resetCodeButton.down
                 }
-                onClicked: () => { 
+                onClicked: () => {
+                    console.log("BackButton: ", backButton.visible);
+                    console.log("ClassicModeButton: ", classicModeButton.visible);
                     if (auth.verificationCode && auth.verificationUrl) {
                         auth.resetCode();
                     }
                 }
 
-                anchors.horizontalCenter: (!backButton.visible && !classicModeButton.visible) ? parent.horizontalCenter : undefined
-                anchors.left: (backButton.visible || classicModeButton.visible) ? parent.horizontalCenter : undefined
-                anchors.leftMargin: (backButton.visible || classicModeButton.visible) ? 8 * virtualstudio.uiScale : undefined
+                // anchors.horizontalCenter: (!backButton.visible && !classicModeButton.visible) ? parent.horizontalCenter : undefined
+                // anchors.left: (backButton.visible || classicModeButton.visible) ? parent.horizontalCenter : undefined
+                // anchors.leftMargin: (backButton.visible || classicModeButton.visible) ? 8 * virtualstudio.uiScale : undefined
+                x: (parent.showBackButton || parent.showClassicModeButton) ? (parent.x + parent.width / 2) + 8 * virtualstudio.uiScale : (parent.x + parent.width / 2) - resetCodeButton.width / 2
                 anchors.verticalCenter: parent.verticalCenter
                 width: 144 * virtualstudio.uiScale; height: 32 * virtualstudio.uiScale
                 Text {
