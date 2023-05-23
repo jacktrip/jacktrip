@@ -59,6 +59,7 @@ class VsAuth : public QObject
         QString verificationUrl READ deviceVerificationUrl NOTIFY updatedVerificationUrl);
     Q_PROPERTY(bool isAuthenticated READ isAuthenticated NOTIFY updatedIsAuthenticated);
     Q_PROPERTY(QString authenticationMethod READ authenticationMethod NOTIFY updatedAuthenticationMethod);
+    Q_PROPERTY(bool attemptingRefreshToken READ attemptingRefreshToken NOTIFY updatedAttemptingRefreshToken);
     Q_PROPERTY(QString userId READ userId NOTIFY updatedUserId);
 
    public:
@@ -81,6 +82,7 @@ class VsAuth : public QObject
     QString accessToken() { return m_accessToken; };
     QString refreshToken() { return m_refreshToken; };
     QString authenticationMethod() { return m_authenticationMethod; }
+    bool attemptingRefreshToken() { return m_attemptingRefreshToken; }
 
    signals:
     void updatedAuthenticationStage(QString authenticationStage);
@@ -89,6 +91,7 @@ class VsAuth : public QObject
     void updatedIsAuthenticated(bool isAuthenticated);
     void updatedUserId(QString userId);
     void updatedAuthenticationMethod(QString grant);
+    void updatedAttemptingRefreshToken(bool attemptingRefreshToken);
     void authSucceeded();
     void authFailed();
     void refreshTokenFailed();
@@ -113,6 +116,7 @@ class VsAuth : public QObject
     QString m_verificationUrl;
     QString m_authenticationMethod = QStringLiteral("");
 
+    bool m_attemptingRefreshToken = false;
     bool m_isAuthenticated = false;
     QString m_userId;
     QString m_accessToken;

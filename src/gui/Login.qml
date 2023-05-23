@@ -53,8 +53,8 @@ Item {
     property string disabledButtonText: "#D3D4D4"
     property string errorTextColour: "#DB0A0A"
 
-    property bool showCodeFlow: loginScreen.state === "polling" || loginScreen.state === "failed" || (loginScreen.state === "success" && auth.authenticationMethod === "code flow")
-    property bool showLoading: loginScreen.state === "refreshing" || (loginScreen.state === "success" && auth.authenticationMethod === "refresh token")
+    property bool showCodeFlow: (loginScreen.state === "unauthenticated" && !auth.attemptingRefreshToken) || (loginScreen.state === "polling" || loginScreen.state === "failed" || (loginScreen.state === "success" && auth.authenticationMethod === "code flow"))
+    property bool showLoading: (loginScreen.state === "unauthenticated" ** auth.attemptingRefreshToken) || loginScreen.state === "refreshing" || (loginScreen.state === "success" && auth.authenticationMethod === "refresh token")
 
     Clipboard {
         id: clipboard

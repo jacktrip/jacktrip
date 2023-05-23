@@ -67,6 +67,9 @@ void VsAuth::authenticate(QString currentRefreshToken)
         // if no refresh token, initialize device flow
         m_deviceCodeFlow->grant();
     } else {
+        m_attemptingRefreshToken = true;
+        emit updatedAttemptingRefreshToken(m_attemptingRefreshToken);
+
         // otherwise, use refresh token to gain a new access token
         m_refreshToken = currentRefreshToken;
         refreshAccessToken(m_refreshToken);
@@ -192,12 +195,14 @@ void VsAuth::handleAuthSucceeded(QString userId, QString accessToken)
     m_verificationCode    = QStringLiteral("");
     m_accessToken         = accessToken;
     m_authenticationStage = QStringLiteral("success");
+    m_attemptingRefreshToken = false;
     m_isAuthenticated     = true;
 
     emit updatedUserId(m_userId);
     emit updatedAuthenticationStage(m_authenticationStage);
     emit updatedVerificationCode(m_verificationCode);
     emit updatedIsAuthenticated(m_isAuthenticated);
+    emit updatedAttemptingRefreshToken(m_attemptingRefreshToken);
     emit updatedAuthenticationMethod(m_authenticationMethod);
 
     // notify UI and virtual studio class of success
@@ -216,12 +221,14 @@ void VsAuth::handleAuthFailed()
     m_accessToken         = QStringLiteral("");
     m_authenticationStage = QStringLiteral("failed");
     m_authenticationMethod = QStringLiteral("");
+    m_attemptingRefreshToken = false;
     m_isAuthenticated     = false;
 
     emit updatedUserId(m_userId);
     emit updatedAuthenticationStage(m_authenticationStage);
     emit updatedVerificationCode(m_verificationCode);
     emit updatedIsAuthenticated(m_isAuthenticated);
+    emit updatedAttemptingRefreshToken(m_attemptingRefreshToken);
     emit updatedAuthenticationMethod(m_authenticationMethod);
 
     // notify UI and virtual studio class of failure
