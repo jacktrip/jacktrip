@@ -99,10 +99,10 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
         m_auth->authenticate(QStringLiteral(""));  // retry without using refresh token
     });
     connect(m_auth.data(), &VsAuth::fetchUserInfoFailed, this, [=]() {
-        login();  // retry
+        m_auth->authenticate(QStringLiteral(""));  // retry without using refresh token
     });
     connect(m_auth.data(), &VsAuth::deviceCodeExpired, this, [=]() {
-        login();  // retry
+        m_auth->authenticate(QStringLiteral(""));  // retry without using refresh token
     });
 
     // Load our font for our qml interface

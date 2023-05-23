@@ -32,7 +32,7 @@ Item {
     }
 
     property bool codeCopied: false
-    property bool hasFailedAtLeastOnce: false
+    property int numFailures: 0;
 
     property string backgroundColour: virtualstudio.darkMode ? "#272525" : "#FAFBFB"
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
@@ -143,7 +143,7 @@ Item {
 
         Text {
             id: deviceVerificationCode
-            text: auth.verificationCode || "Loading...";
+            text: auth.verificationCode || ((numFailures >= 5) ? "Error" : "Loading...");
             font.family: "Poppins"
             font.pixelSize: 20 * virtualstudio.fontScale * virtualstudio.uiScale
             font.letterSpacing: Boolean(auth.verificationCode) ? 8 : 1
@@ -236,7 +236,7 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.bottom: loginScreenFooter.top
             anchors.bottomMargin: 16 * virtualstudio.uiScale
-            visible: (loginScreen.state === "failed" || hasFailedAtLeastOnce) && loginScreen.state !== "success"
+            visible: (loginScreen.state === "failed" || numFailures > 0) && loginScreen.state !== "success"
             color: errorTextColour
         }
 
@@ -354,12 +354,20 @@ Item {
     Connections {
         target: auth
         function onUpdatedAuthenticationStage (stage) {
+            // Edge case: went from refreshing token, but failed and switched to device code flow automatically
+            if (loginScreen.state === "refreshing" && stage === "polling") {
+                numFailures = numFailures + 1;
+            }
+
             loginScreen.state = stage;
             if (stage === "failed") {
-                hasFailedAtLeastOnce = true;
+                numFailures = numFailures + 1;
+                if (numFailures < 5 && !virtualstudio.hasRefreshToken) {
+                    virtualstudio.login();
+                }
             }
             if (stage === "success") {
-                hasFailedAtLeastOnce = false; // reset
+                numFailures = 0;
             }
         }
     }
