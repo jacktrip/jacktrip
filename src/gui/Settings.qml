@@ -566,7 +566,7 @@ Item {
                 border.width: 1
                 border.color: logoutButton.down ? buttonPressedStroke : (logoutButton.hovered ? buttonHoverStroke : buttonStroke)
             }
-            onClicked: { virtualstudio.windowState = "login"; virtualstudio.logout() }
+            onClicked: { virtualstudio.showFirstRun = false; virtualstudio.logout(); }
             anchors.horizontalCenter: parent.horizontalCenter
             y: editButton.y + (48 * virtualstudio.uiScale)
             width: 260 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale

@@ -88,7 +88,6 @@ Rectangle {
     
     Login {
         id: loginScreen
-        showBackButton: false
     }
 
     Settings {
@@ -124,6 +123,11 @@ Rectangle {
         }
         function onDisconnected() {
             virtualstudio.windowState = "browse";
+        }
+        function onWindowStateUpdated() {
+            if (virtualstudio.windowState === "login") {
+                virtualstudio.login();
+            }
         }
     }
 }

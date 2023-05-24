@@ -95,6 +95,15 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     connect(m_auth.data(), &VsAuth::authSucceeded, this,
             &VirtualStudio::slotAuthSucceeded);
     connect(m_auth.data(), &VsAuth::authFailed, this, &VirtualStudio::slotAuthFailed);
+    connect(m_auth.data(), &VsAuth::refreshTokenFailed, this, [=]() {
+        m_auth->authenticate(QStringLiteral(""));  // retry without using refresh token
+    });
+    connect(m_auth.data(), &VsAuth::fetchUserInfoFailed, this, [=]() {
+        m_auth->authenticate(QStringLiteral(""));  // retry without using refresh token
+    });
+    connect(m_auth.data(), &VsAuth::deviceCodeExpired, this, [=]() {
+        m_auth->authenticate(QStringLiteral(""));  // retry without using refresh token
+    });
 
     // Load our font for our qml interface
     QFontDatabase::addApplicationFont(QStringLiteral(":/vs/Poppins-Regular.ttf"));
@@ -359,9 +368,7 @@ void VirtualStudio::show()
         m_checkSsl = false;
     }
 
-    if (!m_showFirstRun) {
-        toVirtualStudio();
-    }
+    login();
     m_view.show();
 }
 
@@ -1096,16 +1103,16 @@ void VirtualStudio::toStandard()
 
 void VirtualStudio::toVirtualStudio()
 {
-    if (!m_refreshToken.isEmpty()) {
-        // Attempt to refresh our virtual studio auth token
-        m_auth->authenticate(m_refreshToken);
-    }
+    login();
 }
 
 void VirtualStudio::login()
 {
-    // Important! When the user presses "log in", always use a fresh device flow
-    m_auth->authenticate(QString(""));
+    if (m_refreshToken.isEmpty()) {
+        m_auth->authenticate(QStringLiteral(""));
+    } else {
+        m_auth->authenticate(m_refreshToken);
+    }
 }
 
 void VirtualStudio::logout()
@@ -1147,6 +1154,9 @@ void VirtualStudio::logout()
     m_userMetadata = QJsonObject();
     m_userId.clear();
     emit hasRefreshTokenChanged();
+
+    // reset window state
+    setWindowState(QStringLiteral("login"));
 }
 
 void VirtualStudio::refreshStudios(int index, bool signalRefresh)
@@ -2375,9 +2385,6 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
                 }
             }
             if (firstLoad) {
-#ifndef _WIN32  // Hack - purely for UX
-                QThread::msleep(400);
-#endif
                 emit authSucceeded();
                 m_refreshTimer.setInterval(10000);
                 m_refreshTimer.start();

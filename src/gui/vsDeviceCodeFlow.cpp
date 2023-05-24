@@ -46,14 +46,6 @@ VsDeviceCodeFlow::VsDeviceCodeFlow(QNetworkAccessManager* networkAccessManager)
     , m_authenticationError(false)
     , m_netManager(networkAccessManager)
 {
-}
-
-void VsDeviceCodeFlow::grant()
-{
-    // Set as single shot
-    m_tokenPollingTimer.setSingleShot(true);
-    m_deviceFlowExpirationTimer.setSingleShot(true);
-
     // start polling when the device flow has been initialized
     connect(this, &VsDeviceCodeFlow::deviceCodeFlowInitialized, this,
             &VsDeviceCodeFlow::startPolling);
@@ -62,6 +54,12 @@ void VsDeviceCodeFlow::grant()
     connect(&m_deviceFlowExpirationTimer, &QTimer::timeout, this,
             &VsDeviceCodeFlow::onDeviceCodeExpired);
 
+    m_tokenPollingTimer.setSingleShot(false);
+    m_deviceFlowExpirationTimer.setSingleShot(true);
+}
+
+void VsDeviceCodeFlow::grant()
+{
     initDeviceAuthorizationCodeFlow();
 }
 
@@ -142,11 +140,7 @@ void VsDeviceCodeFlow::onPollingTimerTick()
         if (m_authenticationError) {
             // shouldn't happen
             emit deviceCodeFlowError();
-        } else if (!success) {
-            // restart timer (single-shot) - we expect this to be called at least once
-            // on timeout this tick handler will get re-called
-            m_tokenPollingTimer.start();
-        } else {
+        } else if (success) {
             // flow successfully completed
             emit onCompletedCodeFlow(m_accessToken, m_refreshToken);
             // cleanup
