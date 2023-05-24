@@ -402,7 +402,16 @@ Item {
                 border.width: 1
                 border.color: modeButton.down ? buttonPressedStroke : (modeButton.hovered ? buttonHoverStroke : buttonStroke)
             }
-            onClicked: { virtualstudio.windowState = "login"; virtualstudio.toStandard(); }
+            onClicked: {
+                // essentially the same here as clicking the cancel button
+                virtualstudio.windowState = "browse";
+                inputCurrIndex = virtualstudio.previousInput;
+                outputCurrIndex = virtualstudio.previousOutput;
+                virtualstudio.revertSettings();
+
+                // switch mode
+                virtualstudio.toStandard();
+            }
             x: 234 * virtualstudio.uiScale; y: 100 * virtualstudio.uiScale
             width: 216 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
             Text {
