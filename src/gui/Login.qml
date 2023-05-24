@@ -336,10 +336,24 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         y: 108 * virtualstudio.uiScale
         visible: showLoading
-        
+
+        Text {
+            id: loadingAudioInterfaces
+            text: "Configuring Audio...";
+            font.family: "Poppins"
+            font.pixelSize: 16 * virtualstudio.fontScale * virtualstudio.uiScale
+            anchors.horizontalCenter: parent.horizontalCenter
+            y: 214 * virtualstudio.uiScale
+            width: 360 * virtualstudio.uiScale;
+            color: textColour
+            wrapMode: Text.WordWrap
+            horizontalAlignment: Text.AlignHCenter
+            visible: loginScreen.state === "success"
+        }
+
         Text {
             id: loadingViaRefreshToken
-            text: "Loading...";
+            text: "Logging In...";
             font.family: "Poppins"
             font.pixelSize: 20 * virtualstudio.fontScale * virtualstudio.uiScale
             anchors.horizontalCenter: parent.horizontalCenter
@@ -348,6 +362,7 @@ Item {
             color: textColour
             wrapMode: Text.WordWrap
             horizontalAlignment: Text.AlignHCenter
+            visible: !loadingAudioInterfaces.visible
         }
     }
 
