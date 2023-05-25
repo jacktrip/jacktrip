@@ -367,8 +367,9 @@ void VirtualStudio::show()
         }
         m_checkSsl = false;
     }
-
-    login();
+    if (m_windowState == "login") {
+        login();
+    }
     m_view.show();
 }
 
@@ -1103,7 +1104,9 @@ void VirtualStudio::toStandard()
 
 void VirtualStudio::toVirtualStudio()
 {
-    login();
+    if (m_windowState == "login") {
+        login();
+    }
 }
 
 void VirtualStudio::login()
@@ -2476,6 +2479,7 @@ void VirtualStudio::getUserMetadata()
 
 void VirtualStudio::startAudio()
 {
+    std::cout << "Starting Audio" << std::endl;
 #ifdef __APPLE__
     if (m_permissions->micPermission() != "granted") {
         return;
@@ -2553,6 +2557,7 @@ void VirtualStudio::startAudio()
 
 void VirtualStudio::restartAudio()
 {
+    std::cout << "Restarting Audio" << std::endl;
 #ifdef __APPLE__
     if (m_permissions->micPermission() != "granted") {
         return;
