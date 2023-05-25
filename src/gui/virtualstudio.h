@@ -510,7 +510,8 @@ class VirtualStudio : public QObject
 #endif
     QStringList m_bufferOptions         = {"16", "32", "64", "128", "256", "512", "1024"};
     QStringList m_bufferStrategyOptions = {"Minimal Latency", "Stable Latency",
-                                           "Loss Concealment"};
+                                           "Loss Concealment (3)",
+                                           "Loss Concealment (4)"};
     QStringList m_updateChannelOptions  = {"Stable", "Edge"};
 
 #ifdef __APPLE__
