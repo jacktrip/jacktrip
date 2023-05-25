@@ -209,6 +209,8 @@ HEADERS += src/DataProtocol.h \
            src/CompressorPresets.h \
            src/Limiter.h \
            src/Regulator.h \
+           src/WaitFreeRingBuffer.h \
+           src/WaitFreeFrameBuffer.h \
            src/Reverb.h \
            src/Meter.h \
            src/Monitor.h \

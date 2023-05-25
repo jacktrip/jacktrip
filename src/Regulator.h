@@ -42,6 +42,8 @@
 #ifndef __REGULATOR_H__
 #define __REGULATOR_H__
 
+//#define REGULATOR_SHARED_WORKER_THREAD
+
 #include <math.h>
 
 #include <QDebug>
@@ -51,6 +53,7 @@
 
 #include "AudioInterface.h"
 #include "RingBuffer.h"
+#include "WaitFreeFrameBuffer.h"
 #include "jacktrip_globals.h"
 
 // forward declaration
@@ -127,12 +130,17 @@ class StdDev
 class Regulator : public RingBuffer
 {
    public:
-    Regulator(int rcvChannels, int bit_res, int FPP, int qLen, bool use_worker_thread,
-              int bqLen);
+    /// construct a new regulator
+    Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
+              int sample_rate);
+
+    // virtual destructor
     virtual ~Regulator();
 
-    void shimFPP(const int8_t* buf, int len, int seq_num);
-    void pushPacket(const int8_t* buf, int seq_num);
+    /// @brief enables use of a separate worker thread for pulling packets
+    /// @param thread_ptr pointer to shared thread; if null, a unique one will be used
+    void enableWorkerThread(QThread* thread_ptr = nullptr);
+
     // can hijack unused2 to propagate incoming seq num if needed
     // option is in UdpDataProtocol
     // if (!mJackTrip->writeAudioBuffer(src, host_buf_size, last_seq_num))
@@ -145,21 +153,39 @@ class Regulator : public RingBuffer
         return (true);
     }
 
-    void pullPacket(int8_t* buf);
-
-    void pullPacket();
-
+    /// @brief called by audio interface to get the next buffer of samples
+    /// @param ptrToReadSlot new samples will be copied to this memory block
     virtual void readSlotNonBlocking(int8_t* ptrToReadSlot);
 
+    /// @brief called by broadcast ports to get the next buffer of samples
+    /// @param ptrToReadSlot new samples will be copied to this memory block
     virtual void readBroadcastSlot(int8_t* ptrToReadSlot)
     {
         m_b_BroadcastRingBuffer->readBroadcastSlot(ptrToReadSlot);
+    }
+
+    /// @brief returns sample rate
+    inline int getSampleRate() const { return mSampleRate; }
+
+    /// @brief returns number of bytes in an audio "packet"
+    inline int getPacketSize() const { return mBytes; }
+
+    /// @brief returns number of samples, or frames per callback period
+    inline int getBufferSizeInSamples() const { return mFPP; }
+
+    /// @brief returns time taken for last PLC prediction, in milliseconds
+    inline double getLastDspElapsed() const
+    {
+        return pullStat == nullptr ? 0 : pullStat->lastPLCdspElapsed;
     }
 
     //    virtual QString getStats(uint32_t statCount, uint32_t lostCount);
     virtual bool getStats(IOStat* stat, bool reset);
 
    private:
+    void shimFPP(const int8_t* buf, int len, int seq_num);
+    void pushPacket(const int8_t* buf, int seq_num);
+    void pullPacket();
     void setFPPratio();
     bool mFPPratioIsSet;
     void processPacket(bool glitch);
@@ -168,6 +194,7 @@ class Regulator : public RingBuffer
     int mAudioBitRes;
     int mFPP;
     int mPeerFPP;
+    int mSampleRate;
     uint32_t mLastLostCount;
     int mNumSlots;
     int mHist;
@@ -175,11 +202,7 @@ class Regulator : public RingBuffer
     BurgAlgorithm ba;
     int mBytes;
     int mBytesPeerPacket;
-    int8_t* mPullQueue;
     int8_t* mXfrBuffer;
-    const void* mLastPacket;
-    int mWorkerUnderruns;
-    std::atomic<const void*> mNextPacket;
     int8_t* mAssembledPacket;
     int mPacketCnt;
     sample_t bitsToSample(int ch, int frame);
@@ -194,7 +217,7 @@ class Regulator : public RingBuffer
     StdDev* pushStat;
     StdDev* pullStat;
     QElapsedTimer mIncomingTimer;
-    int mLastSeqNumIn;
+    std::atomic<int> mLastSeqNumIn;
     int mLastSeqNumOut;
     std::vector<double> mPhasor;
     std::vector<double> mIncomingTiming;
@@ -222,8 +245,11 @@ class Regulator : public RingBuffer
 
     /// thread used to pull packets from Regulator (if mBufferStrategy==3)
     QThread* mRegulatorThreadPtr;
+
     /// worker used to pull packets from Regulator (if mBufferStrategy==3)
     RegulatorWorker* mRegulatorWorkerPtr;
+
+    friend class RegulatorWorker;
 };
 
 class RegulatorWorker : public QObject
@@ -231,32 +257,121 @@ class RegulatorWorker : public QObject
     Q_OBJECT;
 
    public:
-    RegulatorWorker(Regulator* rPtr) : mRegulatorPtr(rPtr)
+    RegulatorWorker(Regulator* rPtr)
+        : mRegulatorPtr(rPtr)
+        , mPacketQueue(rPtr->getPacketSize())
+        , mPacketQueueTarget(1)
+        , mLastUnderrun(0)
+        , mUnderrun(false)
+        , mStarted(false)
     {
+        // wire up signals
         QObject::connect(this, &RegulatorWorker::startup, this,
                          &RegulatorWorker::setRealtimePriority, Qt::QueuedConnection);
         QObject::connect(this, &RegulatorWorker::signalPullPacket, this,
                          &RegulatorWorker::pullPacket, Qt::QueuedConnection);
+        // set thread to realtime priority
         emit startup();
     }
+
     virtual ~RegulatorWorker() {}
-    void startPullingNextPacket() { emit signalPullPacket(); }
+
+    bool pop(int8_t* pktPtr)
+    {
+        // start pulling more packets to maintain target
+        emit signalPullPacket();
+
+        if (mPacketQueue.pop(pktPtr))
+            return true;
+
+        // use silence for underruns
+        ::memset(pktPtr, 0, mPacketQueue.getBytesPerFrame());
+
+        // trigger underrun to re-evaluate queue target
+        mUnderrun.store(true, std::memory_order_relaxed);
+
+        return false;
+    }
+
+    void getStats()
+    {
+        std::cout << "PLC worker queue: size=" << mPacketQueue.size()
+                  << " target=" << mPacketQueueTarget
+                  << " underruns=" << mPacketQueue.getUnderruns()
+                  << " overruns=" << mPacketQueue.getOverruns() << std::endl;
+        mPacketQueue.clearStats();
+    }
 
    signals:
     void signalPullPacket();
+    void signalMaxQueueSize();
     void startup();
 
    public slots:
     void pullPacket()
     {
-        if (mRegulatorPtr != nullptr) {
+        if (mUnderrun.load(std::memory_order_relaxed)) {
+            if (mStarted) {
+                // allow up to 1 underrun per second before adjusting target
+                double now =
+                    (double)mRegulatorPtr->mIncomingTimer.nsecsElapsed() / 1000000.0;
+                if (mLastUnderrun != 0 && now - mLastUnderrun < 1000.0)
+                    updateQueueTarget();
+                mLastUnderrun = now;
+                mUnderrun.store(false, std::memory_order_relaxed);
+            } else {
+                mStarted = true;
+            }
+        }
+        std::size_t qSize = mPacketQueue.size();
+        while (qSize < mPacketQueueTarget) {
             mRegulatorPtr->pullPacket();
+            qSize = mPacketQueue.push(mRegulatorPtr->mXfrBuffer);
         }
     }
     void setRealtimePriority() { setRealtimeProcessPriority(); }
 
    private:
+    void updateQueueTarget()
+    {
+        // cap queue size at 4x the time it takes to run a prediction
+        double samples =
+            (mRegulatorPtr->getLastDspElapsed() * 4 * mRegulatorPtr->getSampleRate())
+            / 1000;
+        std::size_t maxPackets = (samples / mRegulatorPtr->getBufferSizeInSamples()) + 1;
+        if (maxPackets > mPacketQueue.capacity() / 2)
+            maxPackets = mPacketQueue.capacity() / 2;
+        if (mPacketQueueTarget < maxPackets) {
+            // adjust queue target
+            ++mPacketQueueTarget;
+            std::cout << "PLC worker queue: adjusting target=" << mPacketQueueTarget
+                      << " (max=" << maxPackets
+                      << ", lastDspElapsed=" << mRegulatorPtr->getLastDspElapsed() << ")"
+                      << std::endl;
+            if (mPacketQueueTarget == maxPackets) {
+                emit signalMaxQueueSize();
+                std::cout << "PLC worker queue: reached MAX target!" << std::endl;
+            }
+        }
+    }
+
+    /// pointer to Regulator for pulling packets
     Regulator* mRegulatorPtr;
+
+    /// queue of ready packets (if mBufferStrategy==3)
+    WaitFreeFrameBuffer<> mPacketQueue;
+
+    /// target size for the packet queue
+    std::size_t mPacketQueueTarget;
+
+    /// time of last underrun, in milliseconds
+    double mLastUnderrun;
+
+    /// last value of packet queue underruns
+    std::atomic<bool> mUnderrun;
+
+    /// will be true after first packet is pushed
+    bool mStarted;
 };
 
 #endif  //__REGULATOR_H__
