@@ -150,6 +150,10 @@ class VirtualStudio : public QObject
                    updatedMonitorVolume)
     Q_PROPERTY(
         bool inputMuted READ inputMuted WRITE setInputMuted NOTIFY updatedInputMuted)
+    Q_PROPERTY(QVector<float> outputMeterLevels READ outputMeterLevels NOTIFY
+                   updatedOutputMeterLevels)
+    Q_PROPERTY(QVector<float> inputMeterLevels READ inputMeterLevels NOTIFY
+                   updatedInputMeterLevels)
     Q_PROPERTY(bool audioActivated READ audioActivated WRITE setAudioActivated NOTIFY
                    audioActivatedChanged)
     Q_PROPERTY(
@@ -214,8 +218,8 @@ class VirtualStudio : public QObject
     QJsonObject userMetadata();
     QString connectionState();
     QJsonObject networkStats();
-    QVector<float> inputMeterLevels();
-    QVector<float> outputMeterLevels();
+    const QVector<float>& inputMeterLevels() const;
+    const QVector<float>& outputMeterLevels() const;
     QString updateChannel();
     void setUpdateChannel(const QString& channel);
     bool showInactive();
@@ -345,6 +349,8 @@ class VirtualStudio : public QObject
     void updatedInputMuted(bool muted);
     void updatedOutputMuted(bool muted);
     void updatedMonitorMuted(bool muted);
+    void updatedInputMeterLevels(const QVector<float>& levels);
+    void updatedOutputMeterLevels(const QVector<float>& levels);
     void audioActivatedChanged();
     void audioReadyChanged();
     void windowStateUpdated();
@@ -377,6 +383,7 @@ class VirtualStudio : public QObject
     void getUserMetadata();
     void stopStudio();
     void toggleAudio();
+    void resetMeters();
     void stopAudio();
     bool readyToJoin();
 #ifdef RT_AUDIO
@@ -443,6 +450,8 @@ class VirtualStudio : public QObject
     bool m_audioActivated = false;
     bool m_audioReady     = false;
 
+    QVector<float> m_inputMeterLevels;
+    QVector<float> m_outputMeterLevels;
     Meter* m_inputMeter;
     Meter* m_outputMeter;
     Meter* m_inputTestMeter;
