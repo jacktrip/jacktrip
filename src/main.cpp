@@ -277,6 +277,7 @@ bool isRunFromCmd()
 
 int main(int argc, char* argv[])
 {
+    QtWebEngine::initialize();
     QScopedPointer<QCoreApplication> app(createApplication(argc, argv));
     QScopedPointer<JackTrip> jackTrip;
     QScopedPointer<UdpHubListener> udpHub;
@@ -286,7 +287,6 @@ int main(int argc, char* argv[])
 #ifndef NO_VS
     QString deeplink;
     QSharedPointer<VirtualStudio> vs;
-    QtWebEngine::initialize();
 #ifdef _WIN32
     QScopedPointer<VsInit> vsInit;
 #endif

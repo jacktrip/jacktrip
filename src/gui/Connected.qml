@@ -1528,7 +1528,7 @@ Item {
 
     Item {
         id: webengine
-        visible: auth.isAuthenticated && Boolean(auth.accessToken) && showReadyScreen
+        visible: auth.isAuthenticated && Boolean(auth.accessToken) && (showReadyScreen || showWaitingScreen)
         width: parent.width
         height: parent.height
         x: 0
@@ -1537,8 +1537,34 @@ Item {
         property string studioId: virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].id : ""
 
         WebEngineView {
+            id: webEngineView
             anchors.fill: parent
-            url: `http://localhost:3000/studios?accessToken=${auth.accessToken}`
+            settings.accelerated2dCanvasEnabled: true
+            settings.allowWindowActivationFromJavaScript: true
+            settings.localContentCanAccessRemoteUrls: true
+            settings.webGLEnabled: true
+
+            onFeaturePermissionRequested: {
+                webEngineView.grantFeaturePermission(securityOrigin, feature, true);
+            }
+
+            onJavaScriptConsoleMessage: {
+                console.log(level, message, lineNumber, sourceID);
+            }
+
+            onLoadingChanged: {
+                console.log("onLoadingChanged", loadRequest.errorCode, loadRequest.errorDomain, loadRequest.errorString, loadRequest.status, loadRequest.url);
+            }
+
+            onRenderProcessTerminated: {
+                console.log("onRenderProcessTerminated", WebEngineView.CrashedTerminationStatus, terminationStatus, exitCode);
+            }
+
+            //url: `https://test.jacktrip.org/studios?accessToken=${auth.accessToken}`
+            //url: `https://maps.google.com/`
+            url: `https://example.livekit.io/`
+            //url: `https://tumblr.com`
+            //url: `https://duckduckgo.com/?q=what+is+my+user+agent&ia=answer`
         }
     }
 }
