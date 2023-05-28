@@ -599,7 +599,7 @@ bool BurgAlgorithm::classify(double d)
     return tmp;
 }
 
-void BurgAlgorithm::train(std::vector<long double>& coeffs, const std::vector<float>& x)
+void BurgAlgorithm::train(std::vector<double>& coeffs, const std::vector<double>& x)
 {
     // GET SIZE FROM INPUT VECTORS
     size_t N = x.size() - 1;
@@ -609,20 +609,20 @@ void BurgAlgorithm::train(std::vector<long double>& coeffs, const std::vector<fl
     //        than the AR order is";
 
     // INITIALIZE Ak
-    //    vector<long double> Ak(m + 1, 0.0);
+    //    vector<double> Ak(m + 1, 0.0);
     Ak.assign(m + 1, 0.0);
     Ak[0] = 1.0;
 
     // INITIALIZE f and b
-    //    vector<long double> f;
+    //    vector<double> f;
     f.resize(x.size());
     for (unsigned int i = 0; i < x.size(); i++)
         f[i] = x[i];
-    //    vector<long double> b(f);
+    //    vector<double> b(f);
     b = f;
 
     // INITIALIZE Dk
-    long double Dk = 0.0;
+    double Dk = 0.0;
     for (size_t j = 0; j <= N; j++)  // CC: N is $#x-1 in C++ but $#x in perl
     {
         Dk += 2.00001 * f[j] * f[j];  // CC: needs more damping than orig 2.0
@@ -637,7 +637,7 @@ void BurgAlgorithm::train(std::vector<long double>& coeffs, const std::vector<fl
     // BURG RECURSION
     for (size_t k = 0; k < m; k++) {
         // COMPUTE MU
-        long double mu = 0.0;
+        double mu = 0.0;
         for (size_t n = 0; n <= N - k - 1; n++) {
             mu += f[n + k + 1] * b[n];
         }
@@ -652,18 +652,18 @@ void BurgAlgorithm::train(std::vector<long double>& coeffs, const std::vector<fl
 
         // UPDATE Ak
         for (size_t n = 0; n <= (k + 1) / 2; n++) {
-            long double t1 = Ak[n] + mu * Ak[k + 1 - n];
-            long double t2 = Ak[k + 1 - n] + mu * Ak[n];
-            Ak[n]          = t1;
-            Ak[k + 1 - n]  = t2;
+            double t1     = Ak[n] + mu * Ak[k + 1 - n];
+            double t2     = Ak[k + 1 - n] + mu * Ak[n];
+            Ak[n]         = t1;
+            Ak[k + 1 - n] = t2;
         }
 
         // UPDATE f and b
         for (size_t n = 0; n <= N - k - 1; n++) {
-            long double t1 = f[n + k + 1] + mu * b[n];  // were double
-            long double t2 = b[n] + mu * f[n + k + 1];
-            f[n + k + 1]   = t1;
-            b[n]           = t2;
+            double t1    = f[n + k + 1] + mu * b[n];  // were double
+            double t2    = b[n] + mu * f[n + k + 1];
+            f[n + k + 1] = t1;
+            b[n]         = t2;
         }
 
         // UPDATE Dk
@@ -673,7 +673,7 @@ void BurgAlgorithm::train(std::vector<long double>& coeffs, const std::vector<fl
     coeffs.assign(++Ak.begin(), Ak.end());
 }
 
-void BurgAlgorithm::predict(std::vector<long double>& coeffs, std::vector<float>& tail)
+void BurgAlgorithm::predict(std::vector<double>& coeffs, std::vector<double>& tail)
 {
     size_t m = coeffs.size();
     //    qDebug() << "tail.at(0)" << tail[0]*32768;
