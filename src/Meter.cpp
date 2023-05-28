@@ -38,6 +38,7 @@
 
 #include "Meter.h"
 
+#include <algorithm>
 #include <iostream>
 
 #include "jacktrip_types.h"
@@ -136,15 +137,10 @@ void Meter::compute(int nframes, float** inputs, float** outputs)
         /* Use the existing value of mValues[i] as
            the threshold - this will be reset to the default floor of -80dB
            on each timeout */
-        float max = mValues[i];
-        for (int j = 0; j < nframes; j++) {
-            if (mBuffer[j] > max) {
-                max = mBuffer[j];
-            }
-        }
+        float maxSample = *std::max_element(mBuffer, mBuffer + nframes);
 
         /* Update mValues */
-        mValues[i] = max;
+        mValues[i] = std::max(mValues[i], maxSample);
     }
 
     /* Set processed audio flag */

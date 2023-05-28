@@ -62,7 +62,10 @@
 #endif
 
 VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
-    : QObject(parent), m_showFirstRun(firstRun)
+    : QObject(parent)
+    , m_showFirstRun(firstRun)
+    , m_inputMeterLevels(2, 0)
+    , m_outputMeterLevels(2, 0)
 {
     QSettings settings;
     m_updateChannel =
@@ -115,10 +118,10 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_fontScale = 4.0 / 3.0;
 
     // Initialize timers needed for clip indicators
-    m_inputClipTimer.setTimerType(Qt::PreciseTimer);
+    m_inputClipTimer.setTimerType(Qt::CoarseTimer);
     m_inputClipTimer.setSingleShot(true);
     m_inputClipTimer.setInterval(3000);
-    m_outputClipTimer.setTimerType(Qt::PreciseTimer);
+    m_outputClipTimer.setTimerType(Qt::CoarseTimer);
     m_outputClipTimer.setSingleShot(true);
     m_outputClipTimer.setInterval(3000);
 
@@ -131,6 +134,9 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
         m_view.engine()->rootContext()->setContextProperty(
             QStringLiteral("outputClipped"), QVariant::fromValue(false));
     });
+
+    m_inputMeterLevels[0] = m_inputMeterLevels[1] = 0;
+    m_outputMeterLevels[0] = m_outputMeterLevels[1] = 0;
 
     settings.beginGroup(QStringLiteral("Audio"));
     m_inMultiplier  = settings.value(QStringLiteral("InMultiplier"), 1).toFloat();
@@ -287,14 +293,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
         QStringLiteral("permissions"), QVariant::fromValue(m_permissions.data()));
 #endif
 
-    m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("inputMeterModel"), QVariant::fromValue(QVector<float>()));
-    m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("outputMeterModel"), QVariant::fromValue(QVector<float>()));
-    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("inputClipped"),
-                                                       QVariant::fromValue(false));
-    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("outputClipped"),
-                                                       QVariant::fromValue(false));
+    resetMeters();
 
     m_view.engine()->rootContext()->setContextProperty(
         QStringLiteral("backendComboModel"),
@@ -815,6 +814,16 @@ QString VirtualStudio::connectionState()
 QJsonObject VirtualStudio::networkStats()
 {
     return m_networkStats;
+}
+
+const QVector<float>& VirtualStudio::inputMeterLevels() const
+{
+    return m_inputMeterLevels;
+}
+
+const QVector<float>& VirtualStudio::outputMeterLevels() const
+{
+    return m_outputMeterLevels;
 }
 
 QString VirtualStudio::updateChannel()
@@ -1687,15 +1696,7 @@ void VirtualStudio::completeConnection()
         }
 #endif
         m_device->startJackTrip();
-
-        m_view.engine()->rootContext()->setContextProperty(
-            QStringLiteral("inputMeterModel"),
-            QVariant::fromValue(QVector<float>(jackTrip->getNumInputChannels())));
-
-        m_view.engine()->rootContext()->setContextProperty(
-            QStringLiteral("outputMeterModel"),
-            QVariant::fromValue(QVector<float>(jackTrip->getNumOutputChannels())));
-
+        resetMeters();
         m_device->startPinger(studioInfo);
     } catch (const std::exception& e) {
         // Let the user know what our exception was.
@@ -2109,7 +2110,6 @@ void VirtualStudio::updatedDevicesWarningHelpUrl(const QString& url)
 void VirtualStudio::updatedInputVuMeasurements(const float* valuesInDecibels,
                                                int numChannels)
 {
-    QJsonArray uiValues;
     bool detectedClip = false;
 
     // Always output 2 meter readings to the UI
@@ -2121,10 +2121,7 @@ void VirtualStudio::updatedInputVuMeasurements(const float* valuesInDecibels,
         }
 
         // Produce a normalized value from 0 to 1
-        float meter = (dB - m_meterMin) / (m_meterMax - m_meterMin);
-
-        QJsonObject object{{QStringLiteral("dB"), dB}, {QStringLiteral("level"), meter}};
-        uiValues.push_back(object);
+        m_inputMeterLevels[i] = (dB - m_meterMin) / (m_meterMax - m_meterMin);
 
         // Signal a clip if we haven't done so already
         if (dB >= -0.05 && !detectedClip) {
@@ -2142,18 +2139,16 @@ void VirtualStudio::updatedInputVuMeasurements(const float* valuesInDecibels,
          && m_numInputChannels == 1)
         || (m_inputMixMode == static_cast<int>(AudioInterface::MIXTOMONO)
             && m_numInputChannels == 2)) {
-        uiValues[1] = uiValues[0];
+        m_inputMeterLevels[1] = m_inputMeterLevels[0];
     }
 #endif
 
-    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("inputMeterModel"),
-                                                       QVariant::fromValue(uiValues));
+    emit updatedInputMeterLevels(m_inputMeterLevels);
 }
 
 void VirtualStudio::updatedOutputVuMeasurements(const float* valuesInDecibels,
                                                 int numChannels)
 {
-    QJsonArray uiValues;
     bool detectedClip = false;
 
     // Always output 2 meter readings to the UI
@@ -2165,10 +2160,7 @@ void VirtualStudio::updatedOutputVuMeasurements(const float* valuesInDecibels,
         }
 
         // Produce a normalized value from 0 to 1
-        float meter = (dB - m_meterMin) / (m_meterMax - m_meterMin);
-
-        QJsonObject object{{QStringLiteral("dB"), dB}, {QStringLiteral("level"), meter}};
-        uiValues.push_back(object);
+        m_outputMeterLevels[i] = (dB - m_meterMin) / (m_meterMax - m_meterMin);
 
         // Signal a clip if we haven't done so already
         if (dB >= -0.05 && !detectedClip) {
@@ -2180,11 +2172,11 @@ void VirtualStudio::updatedOutputVuMeasurements(const float* valuesInDecibels,
     }
 #ifdef RT_AUDIO
     if (m_numOutputChannels == 1) {
-        uiValues[1] = uiValues[0];
+        m_outputMeterLevels[1] = m_outputMeterLevels[0];
     }
 #endif
-    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("outputMeterModel"),
-                                                       QVariant::fromValue(uiValues));
+
+    emit updatedOutputMeterLevels(m_outputMeterLevels);
 }
 
 void VirtualStudio::sendHeartbeat()
@@ -2543,14 +2535,7 @@ void VirtualStudio::startAudio()
 
     m_audioReady = true;
     emit audioReadyChanged();
-
-    m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("inputMeterModel"),
-        QVariant::fromValue(QVector<float>(m_vsAudioInterface->getNumInputChannels())));
-
-    m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("outputMeterModel"),
-        QVariant::fromValue(QVector<float>(m_vsAudioInterface->getNumOutputChannels())));
+    resetMeters();
 
     m_vsAudioInterface->startProcess();
 }
@@ -2575,21 +2560,24 @@ void VirtualStudio::restartAudio()
 
         m_audioReady = true;
         emit audioReadyChanged();
-
-        m_view.engine()->rootContext()->setContextProperty(
-            QStringLiteral("inputMeterModel"),
-            QVariant::fromValue(
-                QVector<float>(m_vsAudioInterface->getNumInputChannels())));
-
-        m_view.engine()->rootContext()->setContextProperty(
-            QStringLiteral("outputMeterModel"),
-            QVariant::fromValue(
-                QVector<float>(m_vsAudioInterface->getNumOutputChannels())));
+        resetMeters();
 
         m_vsAudioInterface->startProcess();
     } else {
         startAudio();
     }
+}
+
+void VirtualStudio::resetMeters()
+{
+    m_inputMeterLevels[0] = m_inputMeterLevels[1] = 0;
+    m_outputMeterLevels[0] = m_outputMeterLevels[1] = 0;
+    emit updatedInputMeterLevels(m_inputMeterLevels);
+    emit updatedOutputMeterLevels(m_outputMeterLevels);
+    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("inputClipped"),
+                                                       QVariant::fromValue(false));
+    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("outputClipped"),
+                                                       QVariant::fromValue(false));
 }
 
 void VirtualStudio::stopAudio()
