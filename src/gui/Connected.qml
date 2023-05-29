@@ -89,12 +89,18 @@ Item {
         return idx;
     }
 
-    function getNetworkStatsText (networkStats) {
-        let minRtt = networkStats.minRtt;
-        let maxRtt = networkStats.maxRtt;
-        let avgRtt = networkStats.avgRtt;
+    function getNetworkStatsText () {
+        let minRtt = virtualstudio.networkStats.minRtt;
+        let maxRtt = virtualstudio.networkStats.maxRtt;
+        let avgRtt = virtualstudio.networkStats.avgRtt;
 
-        let texts = ["Measuring stats ...", ""];
+        let texts = ["<b>Outage detected! Your connection is unstable.</b>", "Please plug into Ethernet & turn off WIFI."];
+
+        if (virtualstudio.networkOutage) {
+            return texts;
+        }
+
+        texts = ["Measuring stats ...", ""];
 
         if (!minRtt || !maxRtt) {
             return texts;
@@ -887,7 +893,7 @@ Item {
             width: parent.width
             height: 100 * virtualstudio.uiScale
             model: virtualstudio.inputMeterLevels
-            clipped: inputClipped
+            clipped: virtualstudio.inputClipped
         }
 
         Slider {
@@ -1073,7 +1079,7 @@ Item {
             width: parent.width
             height: 100 * virtualstudio.uiScale
             model: virtualstudio.outputMeterLevels
-            clipped: outputClipped
+            clipped: virtualstudio.outputClipped
         }
 
         Slider {
@@ -1340,7 +1346,7 @@ Item {
         Text {
             id: netstat0
             x: 0; y: 0
-            text: getNetworkStatsText(virtualstudio.networkStats)[0]
+            text: getNetworkStatsText()[0]
             font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
         }
@@ -1348,7 +1354,7 @@ Item {
         Text {
             id: netstat1
             x: 0
-            text: getNetworkStatsText(virtualstudio.networkStats)[1]
+            text: getNetworkStatsText()[1]
             font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
             topPadding: 8 * virtualstudio.uiScale
             anchors.top: netstat0.bottom
