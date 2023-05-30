@@ -124,19 +124,26 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_outputClipTimer.setTimerType(Qt::CoarseTimer);
     m_outputClipTimer.setSingleShot(true);
     m_outputClipTimer.setInterval(3000);
-
     m_inputClipTimer.callOnTimeout([&]() {
-        m_view.engine()->rootContext()->setContextProperty(QStringLiteral("inputClipped"),
-                                                           QVariant::fromValue(false));
+        m_inputClipped = false;
+        emit updatedInputClipped(m_inputClipped);
     });
-
     m_outputClipTimer.callOnTimeout([&]() {
-        m_view.engine()->rootContext()->setContextProperty(
-            QStringLiteral("outputClipped"), QVariant::fromValue(false));
+        m_outputClipped = false;
+        emit updatedOutputClipped(m_outputClipped);
     });
 
     m_inputMeterLevels[0] = m_inputMeterLevels[1] = 0;
     m_outputMeterLevels[0] = m_outputMeterLevels[1] = 0;
+
+    // Initialize timer needed for network outage indicator
+    m_networkOutageTimer.setTimerType(Qt::CoarseTimer);
+    m_networkOutageTimer.setSingleShot(true);
+    m_networkOutageTimer.setInterval(5000);
+    m_networkOutageTimer.callOnTimeout([&]() {
+        m_networkOutage = false;
+        emit updatedNetworkOutage(m_networkOutage);
+    });
 
     settings.beginGroup(QStringLiteral("Audio"));
     m_inMultiplier  = settings.value(QStringLiteral("InMultiplier"), 1).toFloat();
@@ -668,6 +675,21 @@ bool VirtualStudio::audioActivated()
 bool VirtualStudio::audioReady()
 {
     return m_audioReady;
+}
+
+bool VirtualStudio::inputClipped()
+{
+    return m_inputClipped;
+}
+
+bool VirtualStudio::outputClipped()
+{
+    return m_outputClipped;
+}
+
+bool VirtualStudio::networkOutage()
+{
+    return m_networkOutage;
 }
 
 bool VirtualStudio::backendAvailable()
@@ -1628,6 +1650,8 @@ void VirtualStudio::completeConnection()
         QObject::connect(jackTrip, &JackTrip::signalReceivedConnectionFromPeer, this,
                          &VirtualStudio::receivedConnectionFromPeer,
                          Qt::QueuedConnection);
+        QObject::connect(jackTrip, &JackTrip::signalUdpWaitingTooLong, this,
+                         &VirtualStudio::udpWaitingTooLong, Qt::QueuedConnection);
 
         setAudioActivated(false);
 
@@ -2133,8 +2157,8 @@ void VirtualStudio::updatedInputVuMeasurements(const float* valuesInDecibels,
         // Signal a clip if we haven't done so already
         if (dB >= -0.05 && !detectedClip) {
             m_inputClipTimer.start();
-            m_view.engine()->rootContext()->setContextProperty(
-                QStringLiteral("inputClipped"), QVariant::fromValue(true));
+            m_inputClipped = true;
+            emit updatedInputClipped(m_inputClipped);
             detectedClip = true;
         }
     }
@@ -2172,8 +2196,8 @@ void VirtualStudio::updatedOutputVuMeasurements(const float* valuesInDecibels,
         // Signal a clip if we haven't done so already
         if (dB >= -0.05 && !detectedClip) {
             m_outputClipTimer.start();
-            m_view.engine()->rootContext()->setContextProperty(
-                QStringLiteral("outputClipped"), QVariant::fromValue(true));
+            m_outputClipped = true;
+            emit updatedOutputClipped(m_outputClipped);
             detectedClip = true;
         }
     }
@@ -2189,6 +2213,13 @@ void VirtualStudio::detectedFeedbackLoop()
 {
     setInputMuted(true);
     setMonitorVolume(0);
+}
+
+void VirtualStudio::udpWaitingTooLong()
+{
+    m_networkOutageTimer.start();
+    m_networkOutage = true;
+    emit updatedNetworkOutage(m_networkOutage);
 }
 
 void VirtualStudio::sendHeartbeat()
@@ -2584,12 +2615,11 @@ void VirtualStudio::resetMeters()
 {
     m_inputMeterLevels[0] = m_inputMeterLevels[1] = 0;
     m_outputMeterLevels[0] = m_outputMeterLevels[1] = 0;
+    m_inputClipped = m_outputClipped = false;
     emit updatedInputMeterLevels(m_inputMeterLevels);
     emit updatedOutputMeterLevels(m_outputMeterLevels);
-    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("inputClipped"),
-                                                       QVariant::fromValue(false));
-    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("outputClipped"),
-                                                       QVariant::fromValue(false));
+    emit updatedInputClipped(m_inputClipped);
+    emit updatedOutputClipped(m_outputClipped);
 }
 
 void VirtualStudio::stopAudio()
