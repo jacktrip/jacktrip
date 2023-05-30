@@ -151,7 +151,7 @@ void Analyzer::onTick()
     std::vector<float> fftBuffer;
     fftBuffer.resize(samples);
     for (uint32_t i = 0; i < samples; i++) {
-        float sample;
+        float sample = 0.0f;
         mCircularBuffer.pop(sample);
         fftBuffer[i] = sample;
     }
