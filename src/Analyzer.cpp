@@ -45,7 +45,8 @@
 #include "jacktrip_types.h"
 
 //*******************************************************************************
-Analyzer::Analyzer(int numchans, bool verboseFlag) : mNumChannels(numchans), mCircularBuffer()
+Analyzer::Analyzer(int numchans, bool verboseFlag)
+    : mNumChannels(numchans), mCircularBuffer()
 {
     setVerbose(verboseFlag);
 
@@ -172,7 +173,7 @@ void Analyzer::onTick()
     // samples. Note that samples may be less than mAnalysisBuffersSize, so the most
     // up-to-date spectra would be mAnalysisBuffersSize[:][samples - 1], and NOT
     // mAnalysisBuffersSize[:][mAnalysisBuffersSize - 1]
-    float *data = fftBuffer.data();
+    float* data = fftBuffer.data();
     static_cast<fftdsp*>(mFftP)->compute(samples, &data, mAnalysisBuffers);
     mAnalysisBufferSamples = samples;
 

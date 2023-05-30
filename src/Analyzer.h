@@ -44,8 +44,8 @@
 #include <QTimer>
 #include <vector>
 
-#include "WaitFreeFrameBuffer.h"
 #include "ProcessPlugin.h"
+#include "WaitFreeFrameBuffer.h"
 
 /** \brief The Analyzer plugin adjusts the level of the signal via multiplication
  */
@@ -93,6 +93,7 @@ class Analyzer : public ProcessPlugin
     void* mFftP;              // Faust plugin
     uint32_t mFftSize = 128;  // FFT size parameter
 
+    // ring buffer that doesn't require locking
     WaitFreeRingBuffer<float, 4096> mCircularBuffer;
 
     // mAnalysisBuffers is the buffer used for the faust plugin outputs
