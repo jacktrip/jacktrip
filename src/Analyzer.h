@@ -44,6 +44,7 @@
 #include <QTimer>
 #include <vector>
 
+#include "WaitFreeFrameBuffer.h"
 #include "ProcessPlugin.h"
 
 /** \brief The Analyzer plugin adjusts the level of the signal via multiplication
@@ -74,7 +75,6 @@ class Analyzer : public ProcessPlugin
     void onTick();
     void updateSpectra();
     void updateSpectraDifferentials();
-    uint32_t updateFftInputBuffer();
     bool checkForAudioFeedback();
 
     bool testSpectralPeakAboveThreshold();
@@ -93,22 +93,7 @@ class Analyzer : public ProcessPlugin
     void* mFftP;              // Faust plugin
     uint32_t mFftSize = 128;  // FFT size parameter
 
-    // mSumBuffer is used to hold the sum of all input channels
-    float* mSumBuffer       = nullptr;
-    uint32_t mSumBufferSize = 0;
-
-    // mRingBuffer is the buffer shared between the audio process callback thread and the
-    // onTick thread. The main thread writes to mRingBuffer and the onTick thread reads
-    // from it
-    float* mRingBuffer       = nullptr;
-    uint32_t mRingBufferSize = 0;
-    uint32_t mRingBufferHead = 0;
-    uint32_t mRingBufferTail = 0;
-    QMutex mRingBufferMutex;
-
-    // mFftBuffer is the buffer used for the faust plugin inputs
-    float* mFftBuffer       = nullptr;
-    uint32_t mFftBufferSize = 0;
+    WaitFreeRingBuffer<float, 4096> mCircularBuffer;
 
     // mAnalysisBuffers is the buffer used for the faust plugin outputs
     float** mAnalysisBuffers        = nullptr;

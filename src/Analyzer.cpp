@@ -45,29 +45,13 @@
 #include "jacktrip_types.h"
 
 //*******************************************************************************
-Analyzer::Analyzer(int numchans, bool verboseFlag) : mNumChannels(numchans)
+Analyzer::Analyzer(int numchans, bool verboseFlag) : mNumChannels(numchans), mCircularBuffer()
 {
     setVerbose(verboseFlag);
 
     // generate FFT Faust object
     mFftP        = new fftdsp;
     int fftChans = static_cast<fftdsp*>(mFftP)->getNumOutputs();
-
-    // allocate a buffer for the summation of all inputs
-    mSumBuffer = new float[mSumBufferSize];
-    memset(mSumBuffer, 0, sizeof(float) * mSumBufferSize);
-
-    // allocate a ring buffer of mRingBuffersize bytes
-    mRingBufferSize = 1 << 10;
-    mRingBuffer     = new float[mRingBufferSize];
-    mRingBufferHead = 0;
-    mRingBufferTail = 0;
-    memset(mRingBuffer, 0, sizeof(float) * mRingBufferSize);
-
-    // allocate a buffer for input to the FFT object
-    mFftBufferSize = mRingBufferSize;
-    mFftBuffer     = new float[mFftBufferSize];
-    memset(mFftBuffer, 0, sizeof(float) * mFftBufferSize);
 
     // allocate buffer for output from the FFT object
     mAnalysisBuffers = new float*[fftChans];
@@ -100,11 +84,6 @@ Analyzer::~Analyzer()
     delete mAnalysisBuffers;
     delete mSpectra;
     delete mSpectraDifferentials;
-
-    delete mSumBuffer;
-    delete mRingBuffer;
-    delete mFftBuffer;
-
     delete static_cast<fftdsp*>(mFftP);
 }
 
@@ -143,122 +122,20 @@ void Analyzer::compute(int nframes, float** inputs, float** outputs)
         init(fSamplingFreq);
     }
 
-    /* if we neeed to increase the buffer size, update mSumBuffer */
-    if (mSumBufferSize < (uint32_t)nframes) {
-        mSumBufferSize = nframes;
-
-        // reallocate mSumBuffer
-        if (mSumBuffer) {
-            delete mSumBuffer;
-        }
-        mSumBuffer = new float[mSumBufferSize];
-    }
-
-    /* sum up all channels into mSumBuffer */
+    /* sum up all channels and add it to the buffer */
     for (int i = 0; i < nframes; i++) {
-        mSumBuffer[i] = 0;
+        float sum = 0;
         for (int ch = 0; ch < mNumChannels; ch++) {
             if (!mIsMonitoringAnalyzer) {
-                mSumBuffer[i] += inputs[ch][i];
+                sum += inputs[ch][i];
             } else {
-                mSumBuffer[i] += outputs[ch][i];
+                sum += outputs[ch][i];
             }
         }
+        mCircularBuffer.push(sum);
     }
-
-    // wrap any accesses to mRingBuffer in a lock
-    if (!mRingBufferMutex.tryLock()) {
-        // use tryLock here because we don't want the compute() function to hang - that
-        // might cause the process callback to stall, leading to audible blips
-        return;
-    }
-    addFramesToQueue(nframes, mSumBuffer);
-    mRingBufferMutex.unlock();
 
     hasProcessedAudio = true;
-}
-
-//*******************************************************************************
-void Analyzer::addFramesToQueue(int nframes, float* samples)
-{
-    if ((uint32_t)nframes > mRingBufferSize) {
-        // this edge case isn't handled by the following code, and shouldn't happen
-        // anyways
-        std::cout << "Skipping addFramesToQueue" << std::endl;
-        return;
-    }
-
-    uint32_t newRingBufferTail = (mRingBufferTail + (uint32_t)nframes) % mRingBufferSize;
-
-    // check if we have enough space in the buffer, if not reallocate it
-    if ((mRingBufferHead <= mRingBufferTail)
-        && ((uint32_t)nframes >= (mRingBufferSize - mRingBufferTail) + mRingBufferHead)) {
-        // if the current head comes before the current tail and nframes
-        // would cause the new tail to wrap around to the current head, reallocate
-        resizeRingBuffer();
-        newRingBufferTail = (mRingBufferTail + (uint32_t)nframes) % mRingBufferSize;
-    } else if ((mRingBufferHead > mRingBufferTail)
-               && (uint32_t)nframes >= mRingBufferHead - mRingBufferTail) {
-        // if the current head is after the current tail and nframes
-        // would cause the current tail to be past the current head, reallocate
-        resizeRingBuffer();
-        newRingBufferTail = (mRingBufferTail + (uint32_t)nframes) % mRingBufferSize;
-    }
-
-    // mRingBuffer is large enough at this point, so we should be able to safely add
-    // nframes samples
-    if (newRingBufferTail >= mRingBufferTail) {
-        // we don't cross the overflow boundary
-        memcpy(&mRingBuffer[mRingBufferTail], samples, sizeof(float) * nframes);
-    } else {
-        // we cross the overflow boundary - first fill to the end of the buffer
-        memcpy(&mRingBuffer[mRingBufferTail], samples,
-               sizeof(float) * (mRingBufferSize - mRingBufferTail));
-
-        // then finish copying data starting from where we left off and copying it to the
-        // start of the buffer
-        memcpy(mRingBuffer, &samples[mRingBufferSize - mRingBufferTail],
-               sizeof(float) * (nframes - (mRingBufferSize - mRingBufferTail)));
-    }
-
-    // update the tail
-    mRingBufferTail = newRingBufferTail;
-}
-
-//*******************************************************************************
-void Analyzer::resizeRingBuffer()
-{
-    // need to reallocate buffer to the next larger size up (power of 2)
-    // before we write data to the buffer
-    uint32_t newRingBufferSize = mRingBufferSize << 1;          // next power of 2
-    float* newRingBuffer       = new float[newRingBufferSize];  // allocate a new buffer
-
-    uint32_t itemsCopied = 0;
-    if (mRingBufferHead <= mRingBufferTail) {
-        // if the current head comes before the current tail
-        memcpy(newRingBuffer, &mRingBuffer[mRingBufferHead],
-               sizeof(float) * (mRingBufferTail - mRingBufferHead));
-        itemsCopied += mRingBufferTail - mRingBufferHead;
-    } else {
-        // if the current head comes after the current tail, use two memcpy operations due
-        // to wraparound
-        memcpy(newRingBuffer, &mRingBuffer[mRingBufferHead],
-               sizeof(float) * (mRingBufferSize - mRingBufferHead));
-        memcpy(&newRingBuffer[mRingBufferSize - mRingBufferHead], mRingBuffer,
-               sizeof(float) * mRingBufferTail);
-
-        itemsCopied += mRingBufferSize - mRingBufferHead;
-        itemsCopied += mRingBufferTail;
-    }
-
-    delete mRingBuffer;
-
-    // update instance variables. Note that resizing sets the head to 0
-    // and the itemsCopied samples lie at the start of the newly allocated buffer
-    mRingBufferSize = newRingBufferSize;
-    mRingBufferHead = 0;
-    mRingBufferTail = itemsCopied;
-    mRingBuffer     = newRingBuffer;
 }
 
 //*******************************************************************************
@@ -269,20 +146,14 @@ void Analyzer::onTick()
         return;
     }
 
-    // reallocate fftBuffer if needed
-    if (mFftBufferSize < mRingBufferSize) {
-        delete mFftBuffer;
-        mFftBufferSize = mRingBufferSize;
-        mFftBuffer     = new float[mFftBufferSize];
+    const uint32_t samples = mCircularBuffer.size();
+    std::vector<float> fftBuffer;
+    fftBuffer.resize(samples);
+    for (uint32_t i = 0; i < samples; i++) {
+        float sample;
+        mCircularBuffer.pop(sample);
+        fftBuffer[i] = sample;
     }
-
-    // wrap any accesses to mRingBuffer in a lock. Copy from mRingBuffer to the
-    // mFftBuffer, then update the head to indicate that we can overwrite those samples in
-    // the ring buffer
-    mRingBufferMutex.lock();
-    uint32_t samples = updateFftInputBuffer();
-    mRingBufferHead  = (mRingBufferHead + samples) % mRingBufferSize;
-    mRingBufferMutex.unlock();
 
     // reallocate the analysis buffers if necessary
     int fftChans = static_cast<fftdsp*>(mFftP)->getNumOutputs();
@@ -301,7 +172,8 @@ void Analyzer::onTick()
     // samples. Note that samples may be less than mAnalysisBuffersSize, so the most
     // up-to-date spectra would be mAnalysisBuffersSize[:][samples - 1], and NOT
     // mAnalysisBuffersSize[:][mAnalysisBuffersSize - 1]
-    static_cast<fftdsp*>(mFftP)->compute(samples, &mFftBuffer, mAnalysisBuffers);
+    float *data = fftBuffer.data();
+    static_cast<fftdsp*>(mFftP)->compute(samples, &data, mAnalysisBuffers);
     mAnalysisBufferSamples = samples;
 
     // update instance spectra and differentials buffers
@@ -313,27 +185,6 @@ void Analyzer::onTick()
     if (detectedFeedback) {
         emit signalFeedbackDetected();
     }
-}
-
-//*******************************************************************************
-uint32_t Analyzer::updateFftInputBuffer()
-{
-    // copy samples from mRingBuffer into mFftBuffer
-    uint32_t samples = 0;
-    memset(mFftBuffer, 0, sizeof(float) * mFftBufferSize);
-    if (mRingBufferHead <= mRingBufferTail) {
-        memcpy(mFftBuffer, &mRingBuffer[mRingBufferHead],
-               sizeof(float) * (mRingBufferTail - mRingBufferHead));
-        samples = mRingBufferTail - mRingBufferHead;
-    } else {
-        memcpy(mFftBuffer, &mRingBuffer[mRingBufferHead],
-               sizeof(float) * (mRingBufferSize - mRingBufferHead));
-        memcpy(&mFftBuffer[mRingBufferSize - mRingBufferHead], mRingBuffer,
-               sizeof(float) * mRingBufferTail);
-        samples += mRingBufferSize - mRingBufferHead;
-        samples += mRingBufferTail;
-    }
-    return samples;
 }
 
 //*******************************************************************************
