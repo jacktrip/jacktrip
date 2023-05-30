@@ -105,15 +105,18 @@ constexpr double AutoInitValFactor =
 constexpr int WindowDivisor = 8;     // for faster auto tracking
 constexpr int MaxFPP        = 1024;  // tested up to this FPP
 //*******************************************************************************
-Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen,
-                     bool use_worker_thread, int bqLen)
+Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
+                     int sample_rate)
     : RingBuffer(0, 0)
     , mNumChannels(rcvChannels)
     , mAudioBitRes(bit_res)
     , mFPP(FPP)
+    , mSampleRate(sample_rate)
     , mMsecTolerance((double)qLen)  // handle non-auto mode, expects positive qLen
+    , pushStat(NULL)
+    , pullStat(NULL)
     , mAuto(false)
-    , mUseWorkerThread(use_worker_thread)
+    , mUseWorkerThread(false)
     , m_b_BroadcastQueueLength(bqLen)
     , mRegulatorThreadPtr(NULL)
     , mRegulatorWorkerPtr(NULL)
@@ -159,13 +162,9 @@ Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen,
 
     if (gVerboseFlag)
         cout << "mHist = " << mHist << " at " << mFPP << "\n";
-    mBytes      = mFPP * mNumChannels * mBitResolutionMode;
-    mPullQueue  = new int8_t[mBytes * 2];
-    mXfrBuffer  = mPullQueue;
-    mPacketCnt  = 0;  // burg initialization
-    mLastPacket = nullptr;
-    mNextPacket.store(mLastPacket, std::memory_order_release);
-    mWorkerUnderruns = 0;
+    mBytes     = mFPP * mNumChannels * mBitResolutionMode;
+    mXfrBuffer = new int8_t[mBytes];
+    mPacketCnt = 0;  // burg initialization
     mFadeUp.resize(mFPP, 0.0);
     mFadeDown.resize(mFPP, 0.0);
     for (int i = 0; i < mFPP; i++) {
@@ -191,7 +190,7 @@ Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen,
     memcpy(mAssembledPacket, mXfrBuffer, mBytes);
     mLastLostCount = 0;  // for stats
     mIncomingTimer.start();
-    mLastSeqNumIn  = -1;
+    mLastSeqNumIn.store(-1, std::memory_order_relaxed);
     mLastSeqNumOut = -1;
     mPhasor.resize(mNumChannels, 0.0);
     mIncomingTiming.resize(ModSeqNumInit);
@@ -217,14 +216,25 @@ Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen,
                  << m_b_BroadcastQueueLength;
         // have not implemented the mJackTrip->queueLengthChanged functionality
     }
-    if (mUseWorkerThread) {
-        mRegulatorThreadPtr = new QThread();
-        mRegulatorThreadPtr->setObjectName("RegulatorThread");
-        RegulatorWorker* workerPtr = new RegulatorWorker(this);
-        workerPtr->moveToThread(mRegulatorThreadPtr);
-        mRegulatorThreadPtr->start();
-        mRegulatorWorkerPtr = workerPtr;
+}
+
+void Regulator::enableWorkerThread(QThread* thread_ptr)
+{
+    if (thread_ptr == nullptr) {
+        // create owned regulator thread (client mode)
+        if (mRegulatorThreadPtr == nullptr) {
+            mRegulatorThreadPtr = new QThread();
+            mRegulatorThreadPtr->setObjectName("RegulatorThread");
+            mRegulatorThreadPtr->start();
+        }
+        thread_ptr = mRegulatorThreadPtr;
     }
+    if (mRegulatorWorkerPtr != nullptr) {
+        delete mRegulatorWorkerPtr;
+    }
+    mRegulatorWorkerPtr = new RegulatorWorker(this);
+    mRegulatorWorkerPtr->moveToThread(thread_ptr);
+    mUseWorkerThread = true;
 }
 
 void Regulator::changeGlobal(double x)
@@ -257,7 +267,15 @@ void Regulator::printParams(){
 
 Regulator::~Regulator()
 {
-    delete[] mPullQueue;
+    if (mRegulatorThreadPtr != nullptr) {
+        // Stop the Regulator thread before deleting other things
+        mRegulatorThreadPtr->quit();
+        mRegulatorThreadPtr->wait();
+        delete mRegulatorThreadPtr;
+    }
+    if (mRegulatorWorkerPtr != nullptr)
+        delete mRegulatorWorkerPtr;
+    delete[] mXfrBuffer;
     delete[] mZeros;
     delete[] mAssembledPacket;
     delete pushStat;
@@ -269,14 +287,6 @@ Regulator::~Regulator()
     };
     if (m_b_BroadcastQueueLength)
         delete m_b_BroadcastRingBuffer;
-    if (mRegulatorWorkerPtr != nullptr)
-        delete mRegulatorWorkerPtr;
-    if (mRegulatorThreadPtr != nullptr) {
-        // Stop the Regulator thread
-        mRegulatorThreadPtr->quit();
-        mRegulatorThreadPtr->wait();
-        delete mRegulatorThreadPtr;
-    }
 }
 
 void Regulator::setFPPratio()
@@ -374,36 +384,28 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
 {
     if (m_b_BroadcastQueueLength)
         m_b_BroadcastRingBuffer->insertSlotNonBlocking(buf, mBytes, 0, seq_num);
-    QMutexLocker locker(&mMutex);
     seq_num %= mModSeqNum;
     // if (seq_num==0) return;   // impose regular loss
     mIncomingTiming[seq_num] =
         mMsecTolerance + (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
-    mLastSeqNumIn = seq_num;
-    if (mLastSeqNumIn != -1)
-        memcpy(mSlots[mLastSeqNumIn % mNumSlots], buf, mBytes);
+    if (seq_num != -1)
+        memcpy(mSlots[seq_num % mNumSlots], buf, mBytes);
+    mLastSeqNumIn.store(seq_num, std::memory_order_release);
 };
-
-//*******************************************************************************
-void Regulator::pullPacket(int8_t* buf)
-{  // only for mBufferStrategy == 4, not using workerThread
-    pullPacket();
-    memcpy(buf, mXfrBuffer, mBytes);
-}
 
 //*******************************************************************************
 void Regulator::pullPacket()
 {
-    QMutexLocker locker(&mMutex);
-    mSkip = 0;
-    if ((mLastSeqNumIn == -1) || (!mFPPratioIsSet)) {
+    int lastSeqNumIn = mLastSeqNumIn.load(std::memory_order_acquire);
+    mSkip            = 0;
+    if ((lastSeqNumIn == -1) || (!mFPPratioIsSet)) {
         goto ZERO_OUTPUT;
     } else {
         mLastSeqNumOut++;
         mLastSeqNumOut %= mModSeqNum;
         double now = (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
         for (int i = mLostWindow; i >= 0; i--) {
-            int next = mLastSeqNumIn - i;
+            int next = lastSeqNumIn - i;
             if (next < 0)
                 next += mModSeqNum;
             if (mIncomingTiming[next] < mIncomingTiming[mLastSeqNumOut])
@@ -420,15 +422,15 @@ void Regulator::pullPacket()
         // make this a global value? -- same threshold as
         // UdpDataProtocol::printUdpWaitedTooLong
         double wait_time = 30;  // msec
-        if ((mLastSeqNumOut == mLastSeqNumIn)
+        if ((mLastSeqNumOut == lastSeqNumIn)
             && ((now - mIncomingTiming[mLastSeqNumOut]) > wait_time)) {
             //                        std::cout << (mIncomingTiming[mLastSeqNumOut] - now)
-            //                        << "mLastSeqNumIn: " << mLastSeqNumIn <<
+            //                        << "lastSeqNumIn: " << lastSeqNumIn <<
             //                        "\tmLastSeqNumOut: " << mLastSeqNumOut << std::endl;
             goto ZERO_OUTPUT;
         }  // "good underrun", not a stuck client
-        //                    std::cout << "within window -- mLastSeqNumIn: " <<
-        //                    mLastSeqNumIn <<
+        //                    std::cout << "within window -- lastSeqNumIn: " <<
+        //                    lastSeqNumIn <<
         //                    "\tmLastSeqNumOut: " << mLastSeqNumOut << std::endl;
         goto UNDERRUN;
     }
@@ -454,13 +456,7 @@ ZERO_OUTPUT:
     memcpy(mXfrBuffer, mZeros, mBytes);
 
 OUTPUT:
-    // swap positions of mXfrBuffer and mNextPacket
-    mNextPacket.store(mXfrBuffer, std::memory_order_release);
-    if (mXfrBuffer == mPullQueue) {
-        mXfrBuffer = mPullQueue + mBytes;
-    } else {
-        mXfrBuffer = mPullQueue;
-    }
+    return;
 };
 
 //*******************************************************************************
@@ -603,7 +599,7 @@ bool BurgAlgorithm::classify(double d)
     return tmp;
 }
 
-void BurgAlgorithm::train(std::vector<long double>& coeffs, const std::vector<float>& x)
+void BurgAlgorithm::train(std::vector<double>& coeffs, const std::vector<double>& x)
 {
     // GET SIZE FROM INPUT VECTORS
     size_t N = x.size() - 1;
@@ -613,20 +609,20 @@ void BurgAlgorithm::train(std::vector<long double>& coeffs, const std::vector<fl
     //        than the AR order is";
 
     // INITIALIZE Ak
-    //    vector<long double> Ak(m + 1, 0.0);
+    //    vector<double> Ak(m + 1, 0.0);
     Ak.assign(m + 1, 0.0);
     Ak[0] = 1.0;
 
     // INITIALIZE f and b
-    //    vector<long double> f;
+    //    vector<double> f;
     f.resize(x.size());
     for (unsigned int i = 0; i < x.size(); i++)
         f[i] = x[i];
-    //    vector<long double> b(f);
+    //    vector<double> b(f);
     b = f;
 
     // INITIALIZE Dk
-    long double Dk = 0.0;
+    double Dk = 0.0;
     for (size_t j = 0; j <= N; j++)  // CC: N is $#x-1 in C++ but $#x in perl
     {
         Dk += 2.00001 * f[j] * f[j];  // CC: needs more damping than orig 2.0
@@ -641,7 +637,7 @@ void BurgAlgorithm::train(std::vector<long double>& coeffs, const std::vector<fl
     // BURG RECURSION
     for (size_t k = 0; k < m; k++) {
         // COMPUTE MU
-        long double mu = 0.0;
+        double mu = 0.0;
         for (size_t n = 0; n <= N - k - 1; n++) {
             mu += f[n + k + 1] * b[n];
         }
@@ -656,18 +652,18 @@ void BurgAlgorithm::train(std::vector<long double>& coeffs, const std::vector<fl
 
         // UPDATE Ak
         for (size_t n = 0; n <= (k + 1) / 2; n++) {
-            long double t1 = Ak[n] + mu * Ak[k + 1 - n];
-            long double t2 = Ak[k + 1 - n] + mu * Ak[n];
-            Ak[n]          = t1;
-            Ak[k + 1 - n]  = t2;
+            double t1     = Ak[n] + mu * Ak[k + 1 - n];
+            double t2     = Ak[k + 1 - n] + mu * Ak[n];
+            Ak[n]         = t1;
+            Ak[k + 1 - n] = t2;
         }
 
         // UPDATE f and b
         for (size_t n = 0; n <= N - k - 1; n++) {
-            long double t1 = f[n + k + 1] + mu * b[n];  // were double
-            long double t2 = b[n] + mu * f[n + k + 1];
-            f[n + k + 1]   = t1;
-            b[n]           = t2;
+            double t1    = f[n + k + 1] + mu * b[n];  // were double
+            double t2    = b[n] + mu * f[n + k + 1];
+            f[n + k + 1] = t1;
+            b[n]         = t2;
         }
 
         // UPDATE Dk
@@ -677,7 +673,7 @@ void BurgAlgorithm::train(std::vector<long double>& coeffs, const std::vector<fl
     coeffs.assign(++Ak.begin(), Ak.end());
 }
 
-void BurgAlgorithm::predict(std::vector<long double>& coeffs, std::vector<float>& tail)
+void BurgAlgorithm::predict(std::vector<double>& coeffs, std::vector<double>& tail)
 {
     size_t m = coeffs.size();
     //    qDebug() << "tail.at(0)" << tail[0]*32768;
@@ -811,29 +807,17 @@ void Regulator::readSlotNonBlocking(int8_t* ptrToReadSlot)
 {
     if (mUseWorkerThread) {
         // use separate worker thread for PLC
-        const void* ptrToPacket = mNextPacket.load(std::memory_order_acquire);
-        if (ptrToPacket == mLastPacket) {
-            mWorkerUnderruns++;
-            ::memset(ptrToReadSlot, 0, mBytes);
-            if (ptrToPacket == nullptr) {
-                // first time run
-                mRegulatorWorkerPtr->startPullingNextPacket();
-            }
-        } else {
-            ::memcpy(ptrToReadSlot, ptrToPacket, mBytes);
-            mLastPacket = ptrToPacket;
-            mRegulatorWorkerPtr->startPullingNextPacket();
-        }
-    } else {
-        // use jack callback thread to perform PLC
-        pullPacket(ptrToReadSlot);
+        mRegulatorWorkerPtr->pop(ptrToReadSlot);
+        return;
     }
+    // use jack callback thread to perform PLC
+    pullPacket();
+    memcpy(ptrToReadSlot, mXfrBuffer, mBytes);
 }
 
 //*******************************************************************************
 bool Regulator::getStats(RingBuffer::IOStat* stat, bool reset)
 {
-    QMutexLocker locker(&mMutex);
     if (reset) {  // all are unused, this is copied from superclass
         mUnderruns        = 0;
         mOverflows        = 0;
@@ -846,9 +830,8 @@ bool Regulator::getStats(RingBuffer::IOStat* stat, bool reset)
         mBroadcastSkew    = 0;
     }
 
-    if (mUseWorkerThread) {
-        cout << "PLC worker underruns: " << mWorkerUnderruns << endl;
-        mWorkerUnderruns = 0;
+    if (mUseWorkerThread && mRegulatorWorkerPtr != nullptr) {
+        mRegulatorWorkerPtr->getStats();
     }
 
     // hijack  of  struct IOStat {

@@ -886,7 +886,7 @@ Item {
             x: 0; y: 0
             width: parent.width
             height: 100 * virtualstudio.uiScale
-            model: inputMeterModel
+            model: virtualstudio.inputMeterLevels
             clipped: inputClipped
         }
 
@@ -1072,7 +1072,7 @@ Item {
             x: 0; y: 0
             width: parent.width
             height: 100 * virtualstudio.uiScale
-            model: outputMeterModel
+            model: virtualstudio.outputMeterLevels
             clipped: outputClipped
         }
 

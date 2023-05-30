@@ -41,6 +41,7 @@
 #include <QEventLoop>
 #include <QList>
 #include <QMutex>
+#include <QNetworkAccessManager>
 #include <QScopedPointer>
 #include <QSharedPointer>
 #include <QTimer>
@@ -52,7 +53,9 @@
 #include "../Meter.h"
 #include "../Monitor.h"
 #include "../Volume.h"
+#include "vsApi.h"
 #include "vsAudioInterface.h"
+#include "vsAuth.h"
 #include "vsConstants.h"
 #include "vsDevice.h"
 #include "vsQuickView.h"
@@ -148,6 +151,10 @@ class VirtualStudio : public QObject
                    updatedMonitorVolume)
     Q_PROPERTY(
         bool inputMuted READ inputMuted WRITE setInputMuted NOTIFY updatedInputMuted)
+    Q_PROPERTY(QVector<float> outputMeterLevels READ outputMeterLevels NOTIFY
+                   updatedOutputMeterLevels)
+    Q_PROPERTY(QVector<float> inputMeterLevels READ inputMeterLevels NOTIFY
+                   updatedInputMeterLevels)
     Q_PROPERTY(bool audioActivated READ audioActivated WRITE setAudioActivated NOTIFY
                    audioActivatedChanged)
     Q_PROPERTY(
@@ -212,8 +219,8 @@ class VirtualStudio : public QObject
     QJsonObject userMetadata();
     QString connectionState();
     QJsonObject networkStats();
-    QVector<float> inputMeterLevels();
-    QVector<float> outputMeterLevels();
+    const QVector<float>& inputMeterLevels() const;
+    const QVector<float>& outputMeterLevels() const;
     QString updateChannel();
     void setUpdateChannel(const QString& channel);
     bool showInactive();
@@ -344,13 +351,15 @@ class VirtualStudio : public QObject
     void updatedInputMuted(bool muted);
     void updatedOutputMuted(bool muted);
     void updatedMonitorMuted(bool muted);
+    void updatedInputMeterLevels(const QVector<float>& levels);
+    void updatedOutputMeterLevels(const QVector<float>& levels);
     void audioActivatedChanged();
     void audioReadyChanged();
     void windowStateUpdated();
     void apiHostChanged();
 
    private slots:
-    void slotAuthSucceded();
+    void slotAuthSucceeded();
     void slotAuthFailed();
     void processFinished();
     void processError(const QString& errorMessage);
@@ -367,8 +376,6 @@ class VirtualStudio : public QObject
     void updatedDevicesWarningHelpUrl(const QString& url);
 
    private:
-    void setupAuthenticator();
-
     void sendHeartbeat();
     void getServerList(bool firstLoad = false, bool signalRefresh = false,
                        int index = -1);
@@ -378,6 +385,7 @@ class VirtualStudio : public QObject
     void getUserMetadata();
     void stopStudio();
     void toggleAudio();
+    void resetMeters();
     void stopAudio();
     bool readyToJoin();
 #ifdef RT_AUDIO
@@ -393,7 +401,9 @@ class VirtualStudio : public QObject
     QString m_userId;
     VsQuickView m_view;
     QSharedPointer<QJackTrip> m_standardWindow;
-    QScopedPointer<QOAuth2AuthorizationCodeFlow> m_authenticator;
+    QScopedPointer<VsAuth> m_auth;
+    QScopedPointer<VsApi> m_api;
+    QScopedPointer<QNetworkAccessManager> m_networkAccessManager;
 
     QList<QObject*> m_servers;
     QStringList m_subscribedServers;
@@ -444,6 +454,8 @@ class VirtualStudio : public QObject
 
     Analyzer* m_inputAnalyzerPlugin;
     Analyzer* m_outputAnalyzerPlugin;
+    QVector<float> m_inputMeterLevels;
+    QVector<float> m_outputMeterLevels;
     Meter* m_inputMeter;
     Meter* m_outputMeter;
     Meter* m_inputTestMeter;
@@ -511,7 +523,8 @@ class VirtualStudio : public QObject
 #endif
     QStringList m_bufferOptions         = {"16", "32", "64", "128", "256", "512", "1024"};
     QStringList m_bufferStrategyOptions = {"Minimal Latency", "Stable Latency",
-                                           "Loss Concealment"};
+                                           "Loss Concealment (3)",
+                                           "Loss Concealment (4)"};
     QStringList m_updateChannelOptions  = {"Stable", "Edge"};
 
 #ifdef __APPLE__
