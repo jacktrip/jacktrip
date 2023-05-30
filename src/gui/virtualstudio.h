@@ -128,6 +128,7 @@ class VirtualStudio : public QObject
                    NOTIFY showCreateStudioChanged)
     Q_PROPERTY(QString connectionState READ connectionState NOTIFY connectionStateChanged)
     Q_PROPERTY(QJsonObject networkStats READ networkStats NOTIFY networkStatsChanged)
+    Q_PROPERTY(bool networkOutage READ networkOutage NOTIFY updatedNetworkOutage)
 
     Q_PROPERTY(QString updateChannel READ updateChannel WRITE setUpdateChannel NOTIFY
                    updateChannelChanged)
@@ -154,6 +155,8 @@ class VirtualStudio : public QObject
                    updatedOutputMeterLevels)
     Q_PROPERTY(QVector<float> inputMeterLevels READ inputMeterLevels NOTIFY
                    updatedInputMeterLevels)
+    Q_PROPERTY(bool inputClipped READ inputClipped NOTIFY updatedInputClipped)
+    Q_PROPERTY(bool outputClipped READ outputClipped NOTIFY updatedOutputClipped)
     Q_PROPERTY(bool audioActivated READ audioActivated WRITE setAudioActivated NOTIFY
                    audioActivatedChanged)
     Q_PROPERTY(
@@ -253,6 +256,9 @@ class VirtualStudio : public QObject
     Q_INVOKABLE void restartAudio();
     bool audioActivated();
     bool audioReady();
+    bool inputClipped();
+    bool outputClipped();
+    bool networkOutage();
     bool backendAvailable();
     QString windowState();
     QString apiHost();
@@ -285,6 +291,7 @@ class VirtualStudio : public QObject
     void openLink(const QString& url);
     void updatedInputVuMeasurements(const float* valuesInDecibels, int numChannels);
     void updatedOutputVuMeasurements(const float* valuesInDecibels, int numChannels);
+    void udpWaitingTooLong();
     void setInputVolume(float multiplier);
     void setOutputVolume(float multiplier);
     void setMonitorVolume(float multiplier);
@@ -351,6 +358,9 @@ class VirtualStudio : public QObject
     void updatedMonitorMuted(bool muted);
     void updatedInputMeterLevels(const QVector<float>& levels);
     void updatedOutputMeterLevels(const QVector<float>& levels);
+    void updatedInputClipped(bool clip);
+    void updatedOutputClipped(bool clip);
+    void updatedNetworkOutage(bool outage);
     void audioActivatedChanged();
     void audioReadyChanged();
     void windowStateUpdated();
@@ -449,6 +459,9 @@ class VirtualStudio : public QObject
     bool m_authenticated  = false;
     bool m_audioActivated = false;
     bool m_audioReady     = false;
+    bool m_inputClipped   = false;
+    bool m_outputClipped  = false;
+    bool m_networkOutage  = false;
 
     QVector<float> m_inputMeterLevels;
     QVector<float> m_outputMeterLevels;
@@ -460,6 +473,7 @@ class VirtualStudio : public QObject
     Monitor* m_monitor;
     QTimer m_inputClipTimer;
     QTimer m_outputClipTimer;
+    QTimer m_networkOutageTimer;
 
     QString m_devicesWarningMsg     = QStringLiteral("");
     QString m_devicesErrorMsg       = QStringLiteral("");

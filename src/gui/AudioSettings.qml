@@ -227,7 +227,7 @@ Rectangle {
             anchors.topMargin: 16 * virtualstudio.uiScale
             height: 24 * virtualstudio.uiScale
             model: virtualstudio.outputMeterLevels
-            clipped: outputClipped
+            clipped: virtualstudio.outputClipped
             enabled: virtualstudio.audioReady && !Boolean(virtualstudio.devicesError)
         }
 
@@ -536,7 +536,7 @@ Rectangle {
             anchors.topMargin: 16 * virtualstudio.uiScale
             height: 24 * virtualstudio.uiScale
             model: virtualstudio.inputMeterLevels
-            clipped: inputClipped
+            clipped: virtualstudio.inputClipped
             enabled: virtualstudio.audioReady && !Boolean(virtualstudio.devicesError)
         }
 
@@ -864,7 +864,7 @@ Rectangle {
             anchors.verticalCenter: jackOutputLabel.verticalCenter
             height: 24 * virtualstudio.uiScale
             model: virtualstudio.outputMeterLevels
-            clipped: outputClipped
+            clipped: virtualstudio.outputClipped
             enabled: virtualstudio.audioReady && !Boolean(virtualstudio.devicesError)
         }
 
@@ -1007,7 +1007,7 @@ Rectangle {
             anchors.verticalCenter: jackInputLabel.verticalCenter
             height: 24 * virtualstudio.uiScale
             model: virtualstudio.inputMeterLevels
-            clipped: inputClipped
+            clipped: virtualstudio.inputClipped
             enabled: virtualstudio.audioReady && !Boolean(virtualstudio.devicesError)
         }
 
