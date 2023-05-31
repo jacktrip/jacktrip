@@ -150,7 +150,8 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_outMultiplier = settings.value(QStringLiteral("OutMultiplier"), 1).toFloat();
     m_inMuted       = settings.value(QStringLiteral("InMuted"), false).toBool();
     m_outMuted      = settings.value(QStringLiteral("OutMuted"), false).toBool();
-    m_feedbackDetectionEnabled = settings.value(QStringLiteral("FeedbackDetectionEnabled"), true).toBool();
+    m_feedbackDetectionEnabled =
+        settings.value(QStringLiteral("FeedbackDetectionEnabled"), true).toBool();
 
 #ifdef RT_AUDIO
     m_useRtAudio   = settings.value(QStringLiteral("Backend"), 1).toInt() == 1;
@@ -816,7 +817,8 @@ void VirtualStudio::setFeedbackDetectionEnabled(bool enabled)
     m_feedbackDetectionEnabled = enabled;
     QSettings settings;
     settings.beginGroup(QStringLiteral("Audio"));
-    settings.setValue(QStringLiteral("FeedbackDetectionEnabled"), m_feedbackDetectionEnabled);
+    settings.setValue(QStringLiteral("FeedbackDetectionEnabled"),
+                      m_feedbackDetectionEnabled);
     settings.endGroup();
     emit feedbackDetectionEnabledChanged();
 }
@@ -1555,7 +1557,8 @@ void VirtualStudio::applySettings()
     settings.setValue(QStringLiteral("InputMixMode"), m_inputMixMode);
     settings.setValue(QStringLiteral("BaseOutputChannel"), m_baseOutputChannel);
     settings.setValue(QStringLiteral("NumOutputChannels"), m_numOutputChannels);
-    settings.setValue(QStringLiteral("FeedbackDetectionEnabled"), m_feedbackDetectionEnabled);
+    settings.setValue(QStringLiteral("FeedbackDetectionEnabled"),
+                      m_feedbackDetectionEnabled);
     settings.endGroup();
 
     m_previousUseRtAudio = m_useRtAudio;
@@ -2236,6 +2239,7 @@ void VirtualStudio::detectedFeedbackLoop()
 {
     setInputMuted(true);
     setMonitorVolume(0);
+    emit feedbackDetected();
 }
 
 void VirtualStudio::udpWaitingTooLong()
