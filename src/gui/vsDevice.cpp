@@ -396,7 +396,7 @@ JackTrip* VsDevice::initJackTrip(
     m_jackTrip->setBufferStrategy(bufferStrategy + 1);
     if (bufferStrategy == 2 || bufferStrategy == 3) {
         // use -q auto3 for loss concealment
-        m_jackTrip->setBufferQueueLength(-5);
+        m_jackTrip->setBufferQueueLength(-3);
     } else {
         // use -q auto
         m_jackTrip->setBufferQueueLength(-500);

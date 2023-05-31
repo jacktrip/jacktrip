@@ -14,6 +14,7 @@
     <file>AudioSettings.qml</file>
     <file>Settings.qml</file>
     <file>Meter.qml</file>
+    <file>MeterBars.qml</file>
     <file>Connected.qml</file>
     <file>Failed.qml</file>
     <file>Setup.qml</file>

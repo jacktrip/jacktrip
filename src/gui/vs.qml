@@ -145,5 +145,10 @@ Rectangle {
         function onDisconnected() {
             virtualstudio.windowState = "browse";
         }
+        function onWindowStateUpdated() {
+            if (virtualstudio.windowState === "login") {
+                virtualstudio.login();
+            }
+        }
     }
 }

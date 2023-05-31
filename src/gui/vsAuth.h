@@ -58,14 +58,18 @@ class VsAuth : public QObject
     Q_PROPERTY(
         QString verificationUrl READ deviceVerificationUrl NOTIFY updatedVerificationUrl);
     Q_PROPERTY(bool isAuthenticated READ isAuthenticated NOTIFY updatedIsAuthenticated);
+    Q_PROPERTY(QString authenticationMethod READ authenticationMethod NOTIFY
+                   updatedAuthenticationMethod);
+    Q_PROPERTY(bool attemptingRefreshToken READ attemptingRefreshToken NOTIFY
+                   updatedAttemptingRefreshToken);
     Q_PROPERTY(QString userId READ userId NOTIFY updatedUserId);
-    Q_PROPERTY(QString accessToken READ accessToken NOTIFY updatedAccessToken)
 
    public:
     VsAuth(VsQuickView* view, QNetworkAccessManager* networkAccessManager, VsApi* api);
 
     void authenticate(QString currentRefreshToken);
     void refreshAccessToken(QString refreshToken);
+    Q_INVOKABLE void resetCode();
     void logout();
 
    public slots:
@@ -79,6 +83,8 @@ class VsAuth : public QObject
     QString userId() { return m_userId; };
     QString accessToken() { return m_accessToken; };
     QString refreshToken() { return m_refreshToken; };
+    QString authenticationMethod() { return m_authenticationMethod; }
+    bool attemptingRefreshToken() { return m_attemptingRefreshToken; }
 
    signals:
     void updatedAuthenticationStage(QString authenticationStage);
@@ -86,15 +92,20 @@ class VsAuth : public QObject
     void updatedVerificationUrl(QUrl verificationUrl);
     void updatedIsAuthenticated(bool isAuthenticated);
     void updatedUserId(QString userId);
-    void updatedAccessToken(QString accessToken);
+    void updatedAuthenticationMethod(QString grant);
+    void updatedAttemptingRefreshToken(bool attemptingRefreshToken);
     void authSucceeded();
     void authFailed();
+    void refreshTokenFailed();
+    void fetchUserInfoFailed();
+    void deviceCodeExpired();
 
    private slots:
     void handleAuthSucceeded(QString userId, QString accessToken);
     void handleAuthFailed();
     void initializedCodeFlow(QString code, QString verificationUrl);
     void codeFlowCompleted(QString accessToken, QString refreshToken);
+    void codeExpired();
 
    private:
     void fetchUserInfo(QString accessToken);
@@ -103,10 +114,12 @@ class VsAuth : public QObject
     QString m_authorizationServerHost;
 
     QString m_authenticationStage = QStringLiteral("unauthenticated");
-    QString m_verificationCode    = QString("");
+    QString m_verificationCode    = QStringLiteral("");
     QString m_verificationUrl;
+    QString m_authenticationMethod = QStringLiteral("");
 
-    bool m_isAuthenticated = false;
+    bool m_attemptingRefreshToken = false;
+    bool m_isAuthenticated        = false;
     QString m_userId;
     QString m_accessToken;
     QString m_refreshToken;
