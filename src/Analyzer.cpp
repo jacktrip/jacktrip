@@ -148,12 +148,11 @@ void Analyzer::onTick()
     }
 
     const uint32_t samples = mCircularBuffer.size();
-    std::vector<float> fftBuffer;
-    fftBuffer.resize(samples);
+    mFftBuffer.resize(samples);
     for (uint32_t i = 0; i < samples; i++) {
         float sample = 0.0f;
         mCircularBuffer.pop(sample);
-        fftBuffer[i] = sample;
+        mFftBuffer[i] = sample;
     }
 
     // reallocate the analysis buffers if necessary
@@ -173,7 +172,7 @@ void Analyzer::onTick()
     // samples. Note that samples may be less than mAnalysisBuffersSize, so the most
     // up-to-date spectra would be mAnalysisBuffersSize[:][samples - 1], and NOT
     // mAnalysisBuffersSize[:][mAnalysisBuffersSize - 1]
-    float* data = fftBuffer.data();
+    float* data = mFftBuffer.data();
     static_cast<fftdsp*>(mFftP)->compute(samples, &data, mAnalysisBuffers);
     mAnalysisBufferSamples = samples;
 
