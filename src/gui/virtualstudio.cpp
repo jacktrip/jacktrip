@@ -150,6 +150,8 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_outMultiplier = settings.value(QStringLiteral("OutMultiplier"), 1).toFloat();
     m_inMuted       = settings.value(QStringLiteral("InMuted"), false).toBool();
     m_outMuted      = settings.value(QStringLiteral("OutMuted"), false).toBool();
+    m_feedbackDetectionEnabled = settings.value(QStringLiteral("FeedbackDetectionEnabled"), true).toBool();
+
 #ifdef RT_AUDIO
     m_useRtAudio   = settings.value(QStringLiteral("Backend"), 1).toInt() == 1;
     m_inputDevice  = settings.value(QStringLiteral("InputDevice"), "").toString();
@@ -277,6 +279,9 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_view.engine()->rootContext()->setContextProperty(
         QStringLiteral("updateChannelComboModel"),
         QVariant::fromValue(m_updateChannelOptions));
+    m_view.engine()->rootContext()->setContextProperty(
+        QStringLiteral("feedbackDetectionComboModel"),
+        QVariant::fromValue(m_feedbackDetectionOptions));
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("virtualstudio"),
                                                        this);
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("serverModel"),
@@ -799,6 +804,21 @@ void VirtualStudio::setBufferStrategy(int index)
     settings.beginGroup(QStringLiteral("Audio"));
     settings.setValue(QStringLiteral("BufferStrategy"), m_bufferStrategy);
     settings.endGroup();
+}
+
+bool VirtualStudio::feedbackDetectionEnabled()
+{
+    return m_feedbackDetectionEnabled;
+}
+
+void VirtualStudio::setFeedbackDetectionEnabled(bool enabled)
+{
+    m_feedbackDetectionEnabled = enabled;
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("Audio"));
+    settings.setValue(QStringLiteral("FeedbackDetectionEnabled"), m_feedbackDetectionEnabled);
+    settings.endGroup();
+    emit feedbackDetectionEnabledChanged();
 }
 
 void VirtualStudio::setAudioActivated(bool activated)
@@ -1535,6 +1555,7 @@ void VirtualStudio::applySettings()
     settings.setValue(QStringLiteral("InputMixMode"), m_inputMixMode);
     settings.setValue(QStringLiteral("BaseOutputChannel"), m_baseOutputChannel);
     settings.setValue(QStringLiteral("NumOutputChannels"), m_numOutputChannels);
+    settings.setValue(QStringLiteral("FeedbackDetectionEnabled"), m_feedbackDetectionEnabled);
     settings.endGroup();
 
     m_previousUseRtAudio = m_useRtAudio;
@@ -1686,11 +1707,13 @@ void VirtualStudio::completeConnection()
                 &Monitor::volumeUpdated);
 
         // Setup output analyzer
-        m_outputAnalyzerPlugin = new Analyzer(jackTrip->getNumOutputChannels());
-        m_outputAnalyzerPlugin->setIsMonitoringAnalyzer(true);
-        jackTrip->appendProcessPluginToMonitor(m_outputAnalyzerPlugin);
-        connect(m_outputAnalyzerPlugin, &Analyzer::signalFeedbackDetected, this,
-                &VirtualStudio::detectedFeedbackLoop);
+        if (m_feedbackDetectionEnabled) {
+            m_outputAnalyzerPlugin = new Analyzer(jackTrip->getNumOutputChannels());
+            m_outputAnalyzerPlugin->setIsMonitoringAnalyzer(true);
+            jackTrip->appendProcessPluginToMonitor(m_outputAnalyzerPlugin);
+            connect(m_outputAnalyzerPlugin, &Analyzer::signalFeedbackDetected, this,
+                    &VirtualStudio::detectedFeedbackLoop);
+        }
 
         // Setup output meter
         // Note: Add this to monitor process to include self-volume
