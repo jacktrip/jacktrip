@@ -116,6 +116,8 @@ class VirtualStudio : public QObject
         int bufferSize READ bufferSize WRITE setBufferSize NOTIFY bufferSizeChanged)
     Q_PROPERTY(int bufferStrategy READ bufferStrategy WRITE setBufferStrategy NOTIFY
                    bufferStrategyChanged)
+    Q_PROPERTY(bool feedbackDetectionEnabled READ feedbackDetectionEnabled WRITE
+                   setFeedbackDetectionEnabled NOTIFY feedbackDetectionEnabledChanged)
     Q_PROPERTY(int currentStudio READ currentStudio NOTIFY currentStudioChanged)
     Q_PROPERTY(QUrl studioToJoin READ studioToJoin WRITE setStudioToJoin NOTIFY
                    studioToJoinChanged)
@@ -217,6 +219,8 @@ class VirtualStudio : public QObject
     void setBufferSize(int index);
     int bufferStrategy();
     void setBufferStrategy(int index);
+    bool feedbackDetectionEnabled();
+    void setFeedbackDetectionEnabled(bool enabled);
     int currentStudio();
     QJsonObject regions();
     QJsonObject userMetadata();
@@ -333,6 +337,7 @@ class VirtualStudio : public QObject
     void triggerPlayOutputAudio();
     void bufferSizeChanged();
     void bufferStrategyChanged();
+    void feedbackDetectionEnabledChanged();
     void currentStudioChanged();
     void regionsChanged();
     void userMetadataChanged();
@@ -348,6 +353,7 @@ class VirtualStudio : public QObject
     void newScale();
     void darkModeChanged();
     void testModeChanged();
+    void feedbackDetected();
     void signalExit();
     void periodicRefresh();
     void failedMessageChanged();
@@ -452,11 +458,12 @@ class VirtualStudio : public QObject
     float m_fontScale        = 1;
     float m_uiScale;
     float m_previousUiScale;
-    int m_bufferStrategy    = 0;
-    QString m_apiHost       = PROD_API_HOST;
-    bool m_darkMode         = false;
-    bool m_testMode         = false;
-    QString m_failedMessage = "";
+    int m_bufferStrategy            = 0;
+    bool m_feedbackDetectionEnabled = true;
+    QString m_apiHost               = PROD_API_HOST;
+    bool m_darkMode                 = false;
+    bool m_testMode                 = false;
+    QString m_failedMessage         = "";
     QUrl m_studioToJoin;
     bool m_authenticated  = false;
     bool m_audioActivated = false;
@@ -540,6 +547,7 @@ class VirtualStudio : public QObject
                                            "Loss Concealment (3)",
                                            "Loss Concealment (4)"};
     QStringList m_updateChannelOptions  = {"Stable", "Edge"};
+    QStringList m_feedbackDetectionOptions = {"Enabled", "Disabled"};
 
 #ifdef __APPLE__
     NoNap m_noNap;
