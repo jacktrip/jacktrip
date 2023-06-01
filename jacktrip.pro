@@ -204,6 +204,7 @@ INSTALLS += target
 # Input
 HEADERS += src/DataProtocol.h \
            src/JackTrip.h \
+           src/Analyzer.h \
            src/Effects.h \
            src/Compressor.h \
            src/CompressorPresets.h \
@@ -231,6 +232,7 @@ HEADERS += src/DataProtocol.h \
            src/UdpDataProtocol.h \
            src/UdpHubListener.h \
            src/AudioInterface.h \
+           src/fftdsp.h \
            src/compressordsp.h \
            src/limiterdsp.h \
            src/freeverbdsp.h \
@@ -285,6 +287,7 @@ rtaudio|bundled_rtaudio {
 
 SOURCES += src/DataProtocol.cpp \
            src/JackTrip.cpp \
+           src/Analyzer.cpp \
            src/Compressor.cpp \
            src/Limiter.cpp \
            src/Regulator.cpp \

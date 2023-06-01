@@ -1685,6 +1685,13 @@ void VirtualStudio::completeConnection()
         connect(this, &VirtualStudio::updatedMonitorVolume, m_monitor,
                 &Monitor::volumeUpdated);
 
+        // Setup output analyzer
+        m_outputAnalyzerPlugin = new Analyzer(jackTrip->getNumOutputChannels());
+        m_outputAnalyzerPlugin->setIsMonitoringAnalyzer(true);
+        jackTrip->appendProcessPluginToMonitor(m_outputAnalyzerPlugin);
+        connect(m_outputAnalyzerPlugin, &Analyzer::signalFeedbackDetected, this,
+                &VirtualStudio::detectedFeedbackLoop);
+
         // Setup output meter
         // Note: Add this to monitor process to include self-volume
         m_outputMeter = new Meter(jackTrip->getNumOutputChannels());
@@ -2199,8 +2206,13 @@ void VirtualStudio::updatedOutputVuMeasurements(const float* valuesInDecibels,
         m_outputMeterLevels[1] = m_outputMeterLevels[0];
     }
 #endif
-
     emit updatedOutputMeterLevels(m_outputMeterLevels);
+}
+
+void VirtualStudio::detectedFeedbackLoop()
+{
+    setInputMuted(true);
+    setMonitorVolume(0);
 }
 
 void VirtualStudio::udpWaitingTooLong()

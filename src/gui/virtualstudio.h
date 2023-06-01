@@ -48,6 +48,7 @@
 #include <QVector>
 #include <QtNetworkAuth>
 
+#include "../Analyzer.h"
 #include "../JackTrip.h"
 #include "../Meter.h"
 #include "../Monitor.h"
@@ -300,6 +301,7 @@ class VirtualStudio : public QObject
     void setMonitorMuted(bool muted);
     void setAudioActivated(bool activated);
     void setAudioReady(bool ready);
+    void detectedFeedbackLoop();
     void setWindowState(QString state);
     void exit();
 
@@ -463,6 +465,8 @@ class VirtualStudio : public QObject
     bool m_outputClipped  = false;
     bool m_networkOutage  = false;
 
+    Analyzer* m_inputAnalyzerPlugin;
+    Analyzer* m_outputAnalyzerPlugin;
     QVector<float> m_inputMeterLevels;
     QVector<float> m_outputMeterLevels;
     Meter* m_inputMeter;
