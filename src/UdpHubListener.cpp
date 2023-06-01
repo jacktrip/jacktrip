@@ -122,6 +122,7 @@ UdpHubListener::UdpHubListener(int server_port, int server_udp_port, QObject* pa
 //*******************************************************************************
 UdpHubListener::~UdpHubListener()
 {
+    mStopCheckTimer.stop();
     QMutexLocker lock(&mMutex);
     if (mRegulatorThreadPtr != NULL) {
         mRegulatorThreadPtr->quit();
