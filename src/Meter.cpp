@@ -56,6 +56,7 @@ Meter::Meter(int numchans, bool verboseFlag) : mNumChannels(numchans)
 //*******************************************************************************
 Meter::~Meter()
 {
+    mTimer.stop();
     for (int i = 0; i < mNumChannels; i++) {
         delete static_cast<meterdsp*>(meterP[i]);
     }

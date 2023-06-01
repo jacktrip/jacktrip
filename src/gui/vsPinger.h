@@ -64,6 +64,7 @@ class VsPinger : public QObject
      * \param path The path to ping the server on
      */
     explicit VsPinger(QString scheme, QString host, QString path);
+    virtual ~VsPinger() { stop(); }
     void start();
     void stop();
     bool active() { return mStarted; };

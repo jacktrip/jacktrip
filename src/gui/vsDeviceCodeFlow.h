@@ -57,6 +57,7 @@ class VsDeviceCodeFlow : public QObject
 
    public:
     explicit VsDeviceCodeFlow(QNetworkAccessManager* networkAccessManager);
+    virtual ~VsDeviceCodeFlow() { stopPolling(); }
 
     void grant();
     void refreshAccessToken(){};

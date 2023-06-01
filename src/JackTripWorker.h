@@ -76,7 +76,7 @@ class JackTripWorker : public QObject
         AudioInterface::audioBitResolutionT AudioBitResolution = AudioInterface::BIT16,
         const QString& clientName                              = QLatin1String(""));
     /// \brief The class destructor
-    ~JackTripWorker() = default;
+    virtual ~JackTripWorker() { stopThread(); }
 
     /// \brief Starts the jacktrip process
     void start();

@@ -72,6 +72,8 @@ Analyzer::Analyzer(int numchans, bool verboseFlag)
 //*******************************************************************************
 Analyzer::~Analyzer()
 {
+    mTimer.stop();
+
     int fftChans = static_cast<fftdsp*>(mFftP)->getNumOutputs();
     for (int i = 0; i < fftChans; i++) {
         delete mAnalysisBuffers[i];

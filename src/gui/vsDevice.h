@@ -61,6 +61,7 @@ class VsDevice : public QObject
    public:
     // Constructor
     explicit VsDevice(VsAuth* auth, VsApi* api, QObject* parent = nullptr);
+    virtual ~VsDevice();
 
     // Public functions
     void registerApp();
@@ -125,7 +126,7 @@ class VsDevice : public QObject
     float m_playbackVolume = 1.0;
     bool m_playbackMute    = false;
     float m_monitorVolume  = 0;
-    QTimer* m_sendVolumeTimer;
+    QTimer m_sendVolumeTimer;
     bool m_reconnect = false;
 };
 

@@ -1910,8 +1910,13 @@ void VirtualStudio::openLink(const QString& link)
 
 void VirtualStudio::exit()
 {
+    m_startTimer.stop();
+    m_retryPeriodTimer.stop();
     m_refreshTimer.stop();
     m_heartbeatTimer.stop();
+    m_inputClipTimer.stop();
+    m_outputClipTimer.stop();
+    m_networkOutageTimer.stop();
     if (m_onConnectedScreen) {
         m_isExiting = true;
 
