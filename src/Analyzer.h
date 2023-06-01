@@ -94,10 +94,13 @@ class Analyzer : public ProcessPlugin
     uint32_t mFftSize = 128;  // FFT size parameter
 
     // ring buffer that doesn't require locking
-    WaitFreeRingBuffer<float, 81920> mCircularBuffer;
+    WaitFreeFrameBuffer<4096>* mCircularBufferPtr;
 
-    // buffer for input to fft
-    std::vector<float> mFftBuffer;
+    // buffer used to push sums into circular buffer
+    std::vector<float> mPushBuffer;
+
+    // buffer used to pull sums from circular buffer
+    std::vector<float> mPullBuffer;
 
     // mAnalysisBuffers is the buffer used for the faust plugin outputs
     float** mAnalysisBuffers        = nullptr;

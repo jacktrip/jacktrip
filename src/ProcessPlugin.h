@@ -76,14 +76,15 @@ class ProcessPlugin : public QObject
     {
         if (samplingRate <= 0) {
             samplingRate = 48000;
-            printf("%s: *** HAD TO GUESS the sampling rate (chose 48000 Hz) ***\n", getName());
+            printf("%s: *** HAD TO GUESS the sampling rate (chose 48000 Hz) ***\n",
+                   getName());
         }
         if (bufferSize <= 0) {
             bufferSize = 128;
             printf("%s: *** HAD TO GUESS the buffer size (chose 128) ***\n", getName());
         }
         fSamplingFreq = samplingRate;
-        mBufferSize = bufferSize;
+        mBufferSize   = bufferSize;
         if (verbose) {
             printf("%s: init(%d, %d)\n", getName(), samplingRate, bufferSize);
         }

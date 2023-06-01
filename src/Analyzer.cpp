@@ -46,7 +46,7 @@
 
 //*******************************************************************************
 Analyzer::Analyzer(int numchans, bool verboseFlag)
-    : mNumChannels(numchans), mCircularBuffer()
+    : mNumChannels(numchans), mCircularBufferPtr(nullptr)
 {
     setVerbose(verboseFlag);
 
@@ -84,6 +84,10 @@ Analyzer::~Analyzer()
         delete mSpectraDifferentials[i];
     }
 
+    if (mCircularBufferPtr != nullptr) {
+        delete mCircularBufferPtr;
+    }
+
     delete mAnalysisBuffers;
     delete mSpectra;
     delete mSpectraDifferentials;
@@ -96,6 +100,9 @@ void Analyzer::init(int samplingRate, int bufferSize)
     ProcessPlugin::init(samplingRate, bufferSize);
     fs = float(fSamplingFreq);
     static_cast<fftdsp*>(mFftP)->init(fs);
+
+    mPushBuffer.resize(mBufferSize);
+    mCircularBufferPtr = new WaitFreeFrameBuffer<4096>(mBufferSize * sizeof(float));
 
     /* Start timer */
     connect(&mTimer, &QTimer::timeout, this, &Analyzer::onTick);
@@ -115,18 +122,23 @@ void Analyzer::compute(int nframes, float** inputs, float** outputs)
         init(0, 0);
     }
 
-    /* sum up all channels and add it to the buffer */
+    // just a sanity check; should never happen
+    if (nframes > mBufferSize)
+        nframes = mBufferSize;
+
+    // sum up all channels and add it to the buffer
     for (int i = 0; i < nframes; i++) {
-        float sum = 0;
+        mPushBuffer[i] = 0;
         for (int ch = 0; ch < mNumChannels; ch++) {
             if (!mIsMonitoringAnalyzer) {
-                sum += inputs[ch][i];
+                mPushBuffer[i] += inputs[ch][i];
             } else {
-                sum += outputs[ch][i];
+                mPushBuffer[i] += outputs[ch][i];
             }
         }
-        mCircularBuffer.push(sum);
     }
+    int8_t* ptr = reinterpret_cast<int8_t*>(mPushBuffer.data());
+    mCircularBufferPtr->push(ptr);
 
     hasProcessedAudio = true;
 }
@@ -139,12 +151,13 @@ void Analyzer::onTick()
         return;
     }
 
-    const uint32_t samples = mCircularBuffer.size();
-    mFftBuffer.resize(samples);
-    for (uint32_t i = 0; i < samples; i++) {
-        float sample = 0.0f;
-        mCircularBuffer.pop(sample);
-        mFftBuffer[i] = sample;
+    const uint32_t buffers = mCircularBufferPtr->size();
+    const uint32_t samples = buffers * mBufferSize;
+    mPullBuffer.resize(samples);
+    int8_t* pullPtr = reinterpret_cast<int8_t*>(mPullBuffer.data());
+    for (uint32_t i = 0; i < buffers; i++) {
+        mCircularBufferPtr->pop(pullPtr);
+        pullPtr += mCircularBufferPtr->getBytesPerFrame();
     }
 
     // reallocate the analysis buffers if necessary
@@ -164,7 +177,7 @@ void Analyzer::onTick()
     // samples. Note that samples may be less than mAnalysisBuffersSize, so the most
     // up-to-date spectra would be mAnalysisBuffersSize[:][samples - 1], and NOT
     // mAnalysisBuffersSize[:][mAnalysisBuffersSize - 1]
-    float* data = mFftBuffer.data();
+    float* data = mPullBuffer.data();
     static_cast<fftdsp*>(mFftP)->compute(samples, &data, mAnalysisBuffers);
     mAnalysisBufferSamples = samples;
 
