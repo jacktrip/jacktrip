@@ -73,7 +73,7 @@ class Compressor : public ProcessPlugin
     //  void setParamAllChannels(std::string& pName, float p) {
     void setParamAllChannels(const char pName[], float p);
 
-    void init(int samplingRate) override;
+    void init(int samplingRate, int bufferSize) override;
     int getNumInputs() override { return (mNumChannels); }
     int getNumOutputs() override { return (mNumChannels); }
     void compute(int nframes, float** inputs, float** outputs) override;

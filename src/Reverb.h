@@ -58,7 +58,7 @@ class Reverb : public ProcessPlugin
     /// \brief The class destructor
     virtual ~Reverb();
 
-    void init(int samplingRate) override;
+    void init(int samplingRate, int bufferSize) override;
     int getNumInputs() override { return (mNumInChannels); }
     int getNumOutputs() override { return (mNumOutChannels); }
     void compute(int nframes, float** inputs, float** outputs) override;

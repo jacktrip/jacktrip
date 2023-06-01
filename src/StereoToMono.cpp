@@ -56,13 +56,9 @@ StereoToMono::~StereoToMono()
 }
 
 //*******************************************************************************
-void StereoToMono::init(int samplingRate)
+void StereoToMono::init(int samplingRate, int bufferSize)
 {
-    ProcessPlugin::init(samplingRate);
-    if (samplingRate != fSamplingFreq) {
-        std::cerr << "Sampling rate not set by superclass!\n";
-        std::exit(1);
-    }
+    ProcessPlugin::init(samplingRate, bufferSize);
 
     fs = float(fSamplingFreq);
     static_cast<stereotomonodsp*>(stereoToMonoP)->init(fs);
@@ -76,12 +72,7 @@ void StereoToMono::compute(int nframes, float** inputs, float** outputs)
     if (not inited) {
         std::cerr << "*** Stereo-to-Mono " << this
                   << ": init never called! Doing it now.\n";
-        if (fSamplingFreq <= 0) {
-            fSamplingFreq = 48000;
-            std::cout << "Stereo-to-Mono " << this
-                      << ": *** HAD TO GUESS the sampling rate (chose 48000 Hz) ***\n";
-        }
-        init(fSamplingFreq);
+        init(0, 0);
     }
     static_cast<stereotomonodsp*>(stereoToMonoP)->compute(nframes, inputs, outputs);
 }

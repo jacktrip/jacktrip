@@ -92,13 +92,9 @@ void Compressor::setParamAllChannels(const char pName[], float p)
 }
 
 //*******************************************************************************
-void Compressor::init(int samplingRate)
+void Compressor::init(int samplingRate, int bufferSize)
 {
-    ProcessPlugin::init(samplingRate);
-    if (samplingRate != fSamplingFreq) {
-        std::cerr << "Sampling rate not set by superclass!\n";
-        std::exit(1);
-    }
+    ProcessPlugin::init(samplingRate, bufferSize);
     fs = float(fSamplingFreq);
     for (int i = 0; i < mNumChannels; i++) {
         static_cast<compressordsp*>(compressorP[i])
@@ -117,12 +113,7 @@ void Compressor::compute(int nframes, float** inputs, float** outputs)
 {
     if (not inited) {
         std::cerr << "*** Compressor " << this << ": init never called! Doing it now.\n";
-        if (fSamplingFreq <= 0) {
-            fSamplingFreq = 48000;
-            std::cout << "Compressor " << this
-                      << ": *** HAD TO GUESS the sampling rate (chose 48000 Hz) ***\n";
-        }
-        init(fSamplingFreq);
+        init(0, 0);
     }
     for (int i = 0; i < mNumChannels; i++) {
         static_cast<compressordsp*>(compressorP[i])

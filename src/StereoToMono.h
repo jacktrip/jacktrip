@@ -56,7 +56,7 @@ class StereoToMono : public ProcessPlugin
     /// \brief The class destructor
     virtual ~StereoToMono();
 
-    void init(int samplingRate) override;
+    void init(int samplingRate, int bufferSize) override;
     int getNumInputs() override { return 2; }
     int getNumOutputs() override { return 2; }
     void compute(int nframes, float** inputs, float** outputs) override;

@@ -68,13 +68,9 @@ Monitor::~Monitor()
 }
 
 //*******************************************************************************
-void Monitor::init(int samplingRate)
+void Monitor::init(int samplingRate, int bufferSize)
 {
-    ProcessPlugin::init(samplingRate);
-    if (samplingRate != fSamplingFreq) {
-        std::cerr << "Sampling rate not set by superclass!\n";
-        std::exit(1);
-    }
+    ProcessPlugin::init(samplingRate, bufferSize);
     fs = float(fSamplingFreq);
 
     for (int i = 0; i < mNumChannels; i++) {
@@ -94,12 +90,7 @@ void Monitor::compute(int nframes, float** inputs, float** outputs)
 {
     if (not inited) {
         std::cerr << "*** Monitor " << this << ": init never called! Doing it now.\n";
-        if (fSamplingFreq <= 0) {
-            fSamplingFreq = 48000;
-            std::cout << "Monitor " << this
-                      << ": *** HAD TO GUESS the sampling rate (chose 48000 Hz) ***\n";
-        }
-        init(fSamplingFreq);
+        init(0, 0);
     }
 
     if (mBufSize < nframes) {

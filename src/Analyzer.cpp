@@ -91,15 +91,10 @@ Analyzer::~Analyzer()
 }
 
 //*******************************************************************************
-void Analyzer::init(int samplingRate)
+void Analyzer::init(int samplingRate, int bufferSize)
 {
-    ProcessPlugin::init(samplingRate);
-    if (samplingRate != fSamplingFreq) {
-        std::cerr << "Sampling rate not set by superclass!\n";
-        std::exit(1);
-    }
+    ProcessPlugin::init(samplingRate, bufferSize);
     fs = float(fSamplingFreq);
-
     static_cast<fftdsp*>(mFftP)->init(fs);
 
     /* Start timer */
@@ -117,12 +112,7 @@ void Analyzer::compute(int nframes, float** inputs, float** outputs)
 {
     if (not inited) {
         std::cerr << "*** Analyzer " << this << ": init never called! Doing it now.\n";
-        if (fSamplingFreq <= 0) {
-            fSamplingFreq = 48000;
-            std::cout << "Analyzer " << this
-                      << ": *** HAD TO GUESS the sampling rate (chose 48000 Hz) ***\n";
-        }
-        init(fSamplingFreq);
+        init(0, 0);
     }
 
     /* sum up all channels and add it to the buffer */
