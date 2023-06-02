@@ -57,7 +57,7 @@ class Volume : public ProcessPlugin
     /// \brief The class destructor
     virtual ~Volume();
 
-    void init(int samplingRate) override;
+    void init(int samplingRate, int bufferSize) override;
     int getNumInputs() override { return (mNumChannels); }
     int getNumOutputs() override { return (mNumChannels); }
     void compute(int nframes, float** inputs, float** outputs) override;

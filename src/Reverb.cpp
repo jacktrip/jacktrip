@@ -103,14 +103,9 @@ Reverb::~Reverb()
 }
 
 //*******************************************************************************
-void Reverb::init(int samplingRate)
+void Reverb::init(int samplingRate, int bufferSize)
 {
-    ProcessPlugin::init(samplingRate);
-    // std::cout << "Reverb: init(" << samplingRate << ")\n";
-    if (samplingRate != fSamplingFreq) {
-        std::cerr << "Sampling rate not set by superclass!\n";
-        std::exit(1);
-    }
+    ProcessPlugin::init(samplingRate, bufferSize);
     fs = float(fSamplingFreq);
     if (mReverbLevel <= 1.0) {  // freeverb:
         static_cast<freeverbdsp*>(freeverbStereoP)
@@ -139,12 +134,7 @@ void Reverb::compute(int nframes, float** inputs, float** outputs)
 {
     if (not inited) {
         std::cerr << "*** Reverb " << this << ": init never called! Doing it now.\n";
-        if (fSamplingFreq <= 0) {
-            fSamplingFreq = 48000;
-            std::cout << "Reverb " << this
-                      << ": *** HAD TO GUESS the sampling rate (chose 48000 Hz) ***\n";
-        }
-        init(fSamplingFreq);
+        init(0, 0);
     }
     if (mReverbLevel <= 1.0) {
         if (mNumInChannels == 1) {
