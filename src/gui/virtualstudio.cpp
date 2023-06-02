@@ -151,7 +151,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_inMuted       = settings.value(QStringLiteral("InMuted"), false).toBool();
     m_outMuted      = settings.value(QStringLiteral("OutMuted"), false).toBool();
     m_feedbackDetectionEnabled =
-        settings.value(QStringLiteral("FeedbackDetectionEnabled"), true).toBool();
+        settings.value(QStringLiteral("FeedbackDetectionEnabled"), false).toBool();
 
 #ifdef RT_AUDIO
     m_useRtAudio   = settings.value(QStringLiteral("Backend"), 1).toInt() == 1;
