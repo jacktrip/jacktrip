@@ -72,11 +72,21 @@ class ProcessPlugin : public QObject
      * initializes the Sampling Frequency. If a class instance depends on the
      * sampling frequency, it should be initialize here.
      */
-    virtual void init(int samplingRate)
+    virtual void init(int samplingRate, int bufferSize)
     {
+        if (samplingRate <= 0) {
+            samplingRate = 48000;
+            printf("%s: *** HAD TO GUESS the sampling rate (chose 48000 Hz) ***\n",
+                   getName());
+        }
+        if (bufferSize <= 0) {
+            bufferSize = 128;
+            printf("%s: *** HAD TO GUESS the buffer size (chose 128) ***\n", getName());
+        }
         fSamplingFreq = samplingRate;
+        mBufferSize   = bufferSize;
         if (verbose) {
-            printf("%s: init(%d)\n", getName(), samplingRate);
+            printf("%s: init(%d, %d)\n", getName(), samplingRate, bufferSize);
         }
     }
     virtual bool getInited() { return inited; }
@@ -100,6 +110,7 @@ class ProcessPlugin : public QObject
 
    protected:
     int fSamplingFreq;  //< Faust Data member, Sampling Rate
+    int mBufferSize;    //< expected number of samples per compute callbacks
     bool inited                  = false;
     bool verbose                 = false;
     bool outgoingPluginToNetwork = false;  //< Tells the plugin if it processes audio

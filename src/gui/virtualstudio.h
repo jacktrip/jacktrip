@@ -48,6 +48,7 @@
 #include <QVector>
 #include <QtNetworkAuth>
 
+#include "../Analyzer.h"
 #include "../JackTrip.h"
 #include "../Meter.h"
 #include "../Monitor.h"
@@ -115,6 +116,8 @@ class VirtualStudio : public QObject
         int bufferSize READ bufferSize WRITE setBufferSize NOTIFY bufferSizeChanged)
     Q_PROPERTY(int bufferStrategy READ bufferStrategy WRITE setBufferStrategy NOTIFY
                    bufferStrategyChanged)
+    Q_PROPERTY(bool feedbackDetectionEnabled READ feedbackDetectionEnabled WRITE
+                   setFeedbackDetectionEnabled NOTIFY feedbackDetectionEnabledChanged)
     Q_PROPERTY(int currentStudio READ currentStudio NOTIFY currentStudioChanged)
     Q_PROPERTY(QUrl studioToJoin READ studioToJoin WRITE setStudioToJoin NOTIFY
                    studioToJoinChanged)
@@ -128,6 +131,7 @@ class VirtualStudio : public QObject
                    NOTIFY showCreateStudioChanged)
     Q_PROPERTY(QString connectionState READ connectionState NOTIFY connectionStateChanged)
     Q_PROPERTY(QJsonObject networkStats READ networkStats NOTIFY networkStatsChanged)
+    Q_PROPERTY(bool networkOutage READ networkOutage NOTIFY updatedNetworkOutage)
 
     Q_PROPERTY(QString updateChannel READ updateChannel WRITE setUpdateChannel NOTIFY
                    updateChannelChanged)
@@ -150,6 +154,12 @@ class VirtualStudio : public QObject
                    updatedMonitorVolume)
     Q_PROPERTY(
         bool inputMuted READ inputMuted WRITE setInputMuted NOTIFY updatedInputMuted)
+    Q_PROPERTY(QVector<float> outputMeterLevels READ outputMeterLevels NOTIFY
+                   updatedOutputMeterLevels)
+    Q_PROPERTY(QVector<float> inputMeterLevels READ inputMeterLevels NOTIFY
+                   updatedInputMeterLevels)
+    Q_PROPERTY(bool inputClipped READ inputClipped NOTIFY updatedInputClipped)
+    Q_PROPERTY(bool outputClipped READ outputClipped NOTIFY updatedOutputClipped)
     Q_PROPERTY(bool audioActivated READ audioActivated WRITE setAudioActivated NOTIFY
                    audioActivatedChanged)
     Q_PROPERTY(
@@ -209,13 +219,15 @@ class VirtualStudio : public QObject
     void setBufferSize(int index);
     int bufferStrategy();
     void setBufferStrategy(int index);
+    bool feedbackDetectionEnabled();
+    void setFeedbackDetectionEnabled(bool enabled);
     int currentStudio();
     QJsonObject regions();
     QJsonObject userMetadata();
     QString connectionState();
     QJsonObject networkStats();
-    QVector<float> inputMeterLevels();
-    QVector<float> outputMeterLevels();
+    const QVector<float>& inputMeterLevels() const;
+    const QVector<float>& outputMeterLevels() const;
     QString updateChannel();
     void setUpdateChannel(const QString& channel);
     bool showInactive();
@@ -249,6 +261,9 @@ class VirtualStudio : public QObject
     Q_INVOKABLE void restartAudio();
     bool audioActivated();
     bool audioReady();
+    bool inputClipped();
+    bool outputClipped();
+    bool networkOutage();
     bool backendAvailable();
     QString windowState();
     QString apiHost();
@@ -281,6 +296,7 @@ class VirtualStudio : public QObject
     void openLink(const QString& url);
     void updatedInputVuMeasurements(const float* valuesInDecibels, int numChannels);
     void updatedOutputVuMeasurements(const float* valuesInDecibels, int numChannels);
+    void udpWaitingTooLong();
     void setInputVolume(float multiplier);
     void setOutputVolume(float multiplier);
     void setMonitorVolume(float multiplier);
@@ -289,6 +305,7 @@ class VirtualStudio : public QObject
     void setMonitorMuted(bool muted);
     void setAudioActivated(bool activated);
     void setAudioReady(bool ready);
+    void detectedFeedbackLoop();
     void setWindowState(QString state);
     void exit();
 
@@ -320,6 +337,7 @@ class VirtualStudio : public QObject
     void triggerPlayOutputAudio();
     void bufferSizeChanged();
     void bufferStrategyChanged();
+    void feedbackDetectionEnabledChanged();
     void currentStudioChanged();
     void regionsChanged();
     void userMetadataChanged();
@@ -335,6 +353,7 @@ class VirtualStudio : public QObject
     void newScale();
     void darkModeChanged();
     void testModeChanged();
+    void feedbackDetected();
     void signalExit();
     void periodicRefresh();
     void failedMessageChanged();
@@ -345,6 +364,11 @@ class VirtualStudio : public QObject
     void updatedInputMuted(bool muted);
     void updatedOutputMuted(bool muted);
     void updatedMonitorMuted(bool muted);
+    void updatedInputMeterLevels(const QVector<float>& levels);
+    void updatedOutputMeterLevels(const QVector<float>& levels);
+    void updatedInputClipped(bool clip);
+    void updatedOutputClipped(bool clip);
+    void updatedNetworkOutage(bool outage);
     void audioActivatedChanged();
     void audioReadyChanged();
     void windowStateUpdated();
@@ -377,6 +401,7 @@ class VirtualStudio : public QObject
     void getUserMetadata();
     void stopStudio();
     void toggleAudio();
+    void resetMeters();
     void stopAudio();
     bool readyToJoin();
 #ifdef RT_AUDIO
@@ -433,16 +458,24 @@ class VirtualStudio : public QObject
     float m_fontScale        = 1;
     float m_uiScale;
     float m_previousUiScale;
-    int m_bufferStrategy    = 0;
-    QString m_apiHost       = PROD_API_HOST;
-    bool m_darkMode         = false;
-    bool m_testMode         = false;
-    QString m_failedMessage = "";
+    int m_bufferStrategy            = 0;
+    bool m_feedbackDetectionEnabled = true;
+    QString m_apiHost               = PROD_API_HOST;
+    bool m_darkMode                 = false;
+    bool m_testMode                 = false;
+    QString m_failedMessage         = "";
     QUrl m_studioToJoin;
     bool m_authenticated  = false;
     bool m_audioActivated = false;
     bool m_audioReady     = false;
+    bool m_inputClipped   = false;
+    bool m_outputClipped  = false;
+    bool m_networkOutage  = false;
 
+    Analyzer* m_inputAnalyzerPlugin;
+    Analyzer* m_outputAnalyzerPlugin;
+    QVector<float> m_inputMeterLevels;
+    QVector<float> m_outputMeterLevels;
     Meter* m_inputMeter;
     Meter* m_outputMeter;
     Meter* m_inputTestMeter;
@@ -451,6 +484,7 @@ class VirtualStudio : public QObject
     Monitor* m_monitor;
     QTimer m_inputClipTimer;
     QTimer m_outputClipTimer;
+    QTimer m_networkOutageTimer;
 
     QString m_devicesWarningMsg     = QStringLiteral("");
     QString m_devicesErrorMsg       = QStringLiteral("");
@@ -510,8 +544,10 @@ class VirtualStudio : public QObject
 #endif
     QStringList m_bufferOptions         = {"16", "32", "64", "128", "256", "512", "1024"};
     QStringList m_bufferStrategyOptions = {"Minimal Latency", "Stable Latency",
-                                           "Loss Concealment"};
+                                           "Loss Concealment (3)",
+                                           "Loss Concealment (4)"};
     QStringList m_updateChannelOptions  = {"Stable", "Edge"};
+    QStringList m_feedbackDetectionOptions = {"Enabled", "Disabled"};
 
 #ifdef __APPLE__
     NoNap m_noNap;

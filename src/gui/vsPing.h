@@ -54,6 +54,7 @@ class VsPing : public QObject
 
    public:
     explicit VsPing(uint32_t pingNum, uint32_t timeout_msec);
+    virtual ~VsPing() { mTimer.stop(); }
     uint32_t pingNumber() { return mPingNumber; }
 
     QDateTime sentTimestamp() { return mSent; }

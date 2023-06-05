@@ -30,55 +30,90 @@
 //*****************************************************************
 
 /**
- * \file Monitor.h
+ * \file Analyzer.h
  * \author Dominick Hing
  * \date May 2023
  * \license MIT
  */
 
-#ifndef __MONITOR_H__
-#define __MONITOR_H__
+#ifndef __ANALYZER_H__
+#define __ANALYZER_H__
 
+#include <QMutex>
 #include <QObject>
+#include <QTimer>
 #include <vector>
 
 #include "ProcessPlugin.h"
+#include "WaitFreeFrameBuffer.h"
 
-/** \brief The Monitor plugin adds a portion of the input signal multiplied by a
- *  constant factor to the output signal
+/** \brief The Analyzer plugin adjusts the level of the signal via multiplication
  */
-class Monitor : public ProcessPlugin
+class Analyzer : public ProcessPlugin
 {
     Q_OBJECT;
 
    public:
-    /// \brief The class constructor sets the number of channels to use
-    Monitor(int numchans, bool verboseFlag = false);
+    /// \brief The class constructor sets the number of channels to measure
+    Analyzer(int numchans, bool verboseFlag = false);
 
     /// \brief The class destructor
-    virtual ~Monitor();
+    virtual ~Analyzer();
 
     void init(int samplingRate, int bufferSize) override;
     int getNumInputs() override { return (mNumChannels); }
     int getNumOutputs() override { return (mNumChannels); }
     void compute(int nframes, float** inputs, float** outputs) override;
-    const char* getName() const override { return "Monitor"; };
+    const char* getName() const override { return "Analyzer"; };
 
     void updateNumChannels(int nChansIn, int nChansOut) override;
-
-   public slots:
-    void volumeUpdated(float multiplier);
+    void setIsMonitoringAnalyzer(bool isMonitoringAnalyzer);
 
    private:
-    std::vector<void*> monitorP;
-    std::vector<void*> monitorUIP;
+    void addFramesToQueue(int nframes, float* samples);
+    void resizeRingBuffer();
+    void onTick();
+    void updateSpectra();
+    void updateSpectraDifferentials();
+    bool checkForAudioFeedback();
+
+    bool testSpectralPeakAboveThreshold();
+    bool testSpectralPeakAbnormallyHigh();
+    bool testSpectralPeakGrowing();
+
+    int mInterval              = 100;
+    float mThresholdMultiplier = 0.5;
+
     float fs;
     int mNumChannels;
-    float mVolMultiplier = 0.0;
+    bool mIsMonitoringAnalyzer = false;
+    bool hasProcessedAudio     = false;
+    QTimer mTimer;
 
-    float* mOutBufferInput = nullptr;
-    float* mInBufferInput  = nullptr;
-    int mBufSize           = 0;
+    void* mFftP;              // Faust plugin
+    uint32_t mFftSize = 128;  // FFT size parameter
+
+    // ring buffer that doesn't require locking
+    WaitFreeFrameBuffer<4096>* mCircularBufferPtr;
+
+    // buffer used to push sums into circular buffer
+    std::vector<float> mPushBuffer;
+
+    // buffer used to pull sums from circular buffer
+    std::vector<float> mPullBuffer;
+
+    // mAnalysisBuffers is the buffer used for the faust plugin outputs
+    float** mAnalysisBuffers        = nullptr;
+    uint32_t mAnalysisBuffersSize   = 0;
+    uint32_t mAnalysisBufferSamples = 0;
+
+    // mSpectra and mSpectra store a history of the spectral analyses
+    int mNumSpectra               = 10;
+    float** mSpectra              = nullptr;
+    float** mSpectraDifferentials = nullptr;
+
+   signals:
+    void signalFeedbackDetected();
 };
 
 #endif

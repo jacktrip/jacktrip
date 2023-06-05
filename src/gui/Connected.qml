@@ -90,12 +90,18 @@ Item {
         return idx;
     }
 
-    function getNetworkStatsText (networkStats) {
-        let minRtt = networkStats.minRtt;
-        let maxRtt = networkStats.maxRtt;
-        let avgRtt = networkStats.avgRtt;
+    function getNetworkStatsText () {
+        let minRtt = virtualstudio.networkStats.minRtt;
+        let maxRtt = virtualstudio.networkStats.maxRtt;
+        let avgRtt = virtualstudio.networkStats.avgRtt;
 
-        let texts = ["Measuring stats ...", ""];
+        let texts = ["<b>Outage detected! Your connection is unstable.</b>", "Please plug into Ethernet & turn off WIFI."];
+
+        if (virtualstudio.networkOutage) {
+            return texts;
+        }
+
+        texts = ["Measuring stats ...", ""];
 
         if (!minRtt || !maxRtt) {
             return texts;
@@ -773,6 +779,107 @@ Item {
                 }
             }
         }
+
+        Popup {
+            id: feedbackDetectedModal
+            padding: 1
+            width: parent.width
+            height: 232 * virtualstudio.uiScale
+            anchors.centerIn: parent
+            modal: true
+            focus: true
+            closePolicy: Popup.NoAutoClose
+
+            background: Rectangle {
+                anchors.fill: parent
+                color: "transparent"
+                radius: 6 * virtualstudio.uiScale
+                border.width: 1
+                border.color: buttonStroke
+                clip: true
+            }
+
+            contentItem: Rectangle {
+                width: parent.width
+                height: 232 * virtualstudio.uiScale
+                color: backgroundColour
+                radius: 6 * virtualstudio.uiScale
+
+                Item {
+                    id: feedbackDetectedContent
+                    anchors.top: parent.top
+                    anchors.topMargin: 24 * virtualstudio.uiScale
+                    anchors.bottom: parent.bottom
+                    anchors.left: parent.left
+                    anchors.leftMargin: 24 * virtualstudio.uiScale
+                    anchors.right: parent.right
+
+                    Text {
+                        id: feedbackDetectedHeader
+                        anchors.top: parent.top
+                        anchors.topMargin: 16 * virtualstudio.uiScale
+                        width: parent.width
+                        text: "Audio feedback detected!"
+                        font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale; bold: true }
+                        color: textColour
+                        elide: Text.ElideRight
+                        wrapMode: Text.WordWrap    
+                    }
+
+                    Text {
+                        id: feedbackDetectedText
+                        anchors.top: feedbackDetectedHeader.bottom
+                        anchors.topMargin: 16 * virtualstudio.uiScale
+                        width: parent.width
+                        text: "JackTrip detected a feedback loop. Your monitor and input volume have automatically been disabled."
+                        font {family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                        color: textColour
+                        elide: Text.ElideRight
+                        wrapMode: Text.WordWrap
+                    }
+
+                    Text {
+                        id: feedbackDetectedText2
+                        anchors.top: feedbackDetectedText.bottom
+                        anchors.topMargin: 16 * virtualstudio.uiScale
+                        width: parent.width
+                        text: "You can disable this behavior under <b>Settings</b> > <b>Advanced</b>"
+                        textFormat: Text.RichText
+                        font {family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                        color: textColour
+                        elide: Text.ElideRight
+                        wrapMode: Text.WordWrap
+                    }
+
+                    Button {
+                        id: closeFeedbackDetectedModalButton
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        anchors.bottomMargin: rightMargin * virtualstudio.uiScale
+                        anchors.bottom: parent.bottom
+                        width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+                        onClicked: feedbackDetectedModal.close()
+
+                        background: Rectangle {
+                            radius: 6 * virtualstudio.uiScale
+                            color: closeFeedbackDetectedModalButton.down ? browserButtonPressedColour : (closeFeedbackDetectedModalButton.hovered ? browserButtonHoverColour : browserButtonColour)
+                            border.width: 1
+                            border.color: closeFeedbackDetectedModalButton.down ? browserButtonPressedStroke : (closeFeedbackDetectedModalButton.hovered ? browserButtonHoverStroke : browserButtonStroke)
+                        }
+
+                        Text {
+                            text: "Ok"
+                            font.family: "Poppins"
+                            font.pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale
+                            font.weight: Font.Bold
+                            color: !Boolean(virtualstudio.devicesError) && virtualstudio.backendAvailable ? saveButtonText : disabledButtonText
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+                    }
+
+                }
+            }
+        }
     }
 
     Item {
@@ -887,8 +994,8 @@ Item {
             x: 0; y: 0
             width: parent.width
             height: 100 * virtualstudio.uiScale
-            model: inputMeterModel
-            clipped: inputClipped
+            model: virtualstudio.inputMeterLevels
+            clipped: virtualstudio.inputClipped
         }
 
         Slider {
@@ -1073,8 +1180,8 @@ Item {
             x: 0; y: 0
             width: parent.width
             height: 100 * virtualstudio.uiScale
-            model: outputMeterModel
-            clipped: outputClipped
+            model: virtualstudio.outputMeterLevels
+            clipped: virtualstudio.outputClipped
         }
 
         Slider {
@@ -1341,7 +1448,7 @@ Item {
         Text {
             id: netstat0
             x: 0; y: 0
-            text: getNetworkStatsText(virtualstudio.networkStats)[0]
+            text: getNetworkStatsText()[0]
             font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
         }
@@ -1349,7 +1456,7 @@ Item {
         Text {
             id: netstat1
             x: 0
-            text: getNetworkStatsText(virtualstudio.networkStats)[1]
+            text: getNetworkStatsText()[1]
             font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
             topPadding: 8 * virtualstudio.uiScale
             anchors.top: netstat0.bottom
@@ -1539,6 +1646,14 @@ Item {
         WebEngineView {
             anchors.fill: parent
             url: `http://localhost:3000/studios?accessToken=${auth.accessToken}`
+        }
+    }
+    
+    Connections {
+        target: virtualstudio
+
+        function onFeedbackDetected() {
+            feedbackDetectedModal.visible = true;
         }
     }
 }

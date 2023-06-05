@@ -41,7 +41,7 @@
 
 // Constructor
 VsDevice::VsDevice(VsAuth* auth, VsApi* api, QObject* parent)
-    : QObject(parent), m_auth(auth), m_api(api)
+    : QObject(parent), m_auth(auth), m_api(api), m_sendVolumeTimer(this)
 {
     QSettings settings;
     settings.beginGroup(QStringLiteral("VirtualStudio"));
@@ -61,9 +61,8 @@ VsDevice::VsDevice(VsAuth* auth, VsApi* api, QObject* parent)
         (float)settings.value(QStringLiteral("MonMultiplier"), 0).toDouble();
     settings.endGroup();
 
-    m_sendVolumeTimer = new QTimer(this);
-    m_sendVolumeTimer->setSingleShot(true);
-    connect(m_sendVolumeTimer, &QTimer::timeout, this, &VsDevice::sendLevels);
+    m_sendVolumeTimer.setSingleShot(true);
+    connect(&m_sendVolumeTimer, &QTimer::timeout, this, &VsDevice::sendLevels);
 
     // Set server levels to stored versions
     QJsonObject json = {
@@ -124,6 +123,13 @@ VsDevice::VsDevice(VsAuth* auth, VsApi* api, QObject* parent)
 
         reply->deleteLater();
     });
+}
+
+VsDevice::~VsDevice()
+{
+    m_sendVolumeTimer.stop();
+    stopJackTrip();
+    stopPinger();
 }
 
 // registerApp idempotently registers an emulated device belonging to the current user
@@ -396,7 +402,7 @@ JackTrip* VsDevice::initJackTrip(
     m_jackTrip->setBufferStrategy(bufferStrategy + 1);
     if (bufferStrategy == 2 || bufferStrategy == 3) {
         // use -q auto3 for loss concealment
-        m_jackTrip->setBufferQueueLength(-5);
+        m_jackTrip->setBufferQueueLength(-3);
     } else {
         // use -q auto
         m_jackTrip->setBufferQueueLength(-500);
@@ -487,10 +493,7 @@ void VsDevice::updateCaptureVolume(float multiplier)
         return;
     }
     m_captureVolume = multiplier;
-
-    if (m_sendVolumeTimer) {
-        m_sendVolumeTimer->start(200);
-    }
+    m_sendVolumeTimer.start(100);
 }
 
 // updateCaptureMute sets VsDevice's capture (input) mute to the provided boolean
@@ -500,10 +503,7 @@ void VsDevice::updateCaptureMute(bool muted)
         return;
     }
     m_captureMute = muted;
-
-    if (m_sendVolumeTimer) {
-        m_sendVolumeTimer->start(200);
-    }
+    m_sendVolumeTimer.start(100);
 }
 
 // updatePlaybackVolume sets VsDevice's playback (output) volume to the provided float
@@ -513,10 +513,7 @@ void VsDevice::updatePlaybackVolume(float multiplier)
         return;
     }
     m_playbackVolume = multiplier;
-
-    if (m_sendVolumeTimer) {
-        m_sendVolumeTimer->start(200);
-    }
+    m_sendVolumeTimer.start(100);
 }
 
 // updatePlaybackMute sets VsDevice's playback (output) mute to the provided boolean
@@ -526,10 +523,7 @@ void VsDevice::updatePlaybackMute(bool muted)
         return;
     }
     m_playbackMute = muted;
-
-    if (m_sendVolumeTimer) {
-        m_sendVolumeTimer->start(200);
-    }
+    m_sendVolumeTimer.start(100);
 }
 
 // updateMonitorVolume sets VsDevice's monitor to the provided float
@@ -538,12 +532,8 @@ void VsDevice::updateMonitorVolume(float multiplier)
     if (multiplier == m_monitorVolume) {
         return;
     }
-
     m_monitorVolume = multiplier;
-
-    if (m_sendVolumeTimer) {
-        m_sendVolumeTimer->start(200);
-    }
+    m_sendVolumeTimer.start(100);
 }
 
 // terminateJackTrip is a slot intended to be triggered on jacktrip process signals

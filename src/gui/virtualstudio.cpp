@@ -62,7 +62,10 @@
 #endif
 
 VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
-    : QObject(parent), m_showFirstRun(firstRun)
+    : QObject(parent)
+    , m_showFirstRun(firstRun)
+    , m_inputMeterLevels(2, 0)
+    , m_outputMeterLevels(2, 0)
 {
     QSettings settings;
     m_updateChannel =
@@ -115,21 +118,31 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_fontScale = 4.0 / 3.0;
 
     // Initialize timers needed for clip indicators
-    m_inputClipTimer.setTimerType(Qt::PreciseTimer);
+    m_inputClipTimer.setTimerType(Qt::CoarseTimer);
     m_inputClipTimer.setSingleShot(true);
     m_inputClipTimer.setInterval(3000);
-    m_outputClipTimer.setTimerType(Qt::PreciseTimer);
+    m_outputClipTimer.setTimerType(Qt::CoarseTimer);
     m_outputClipTimer.setSingleShot(true);
     m_outputClipTimer.setInterval(3000);
-
     m_inputClipTimer.callOnTimeout([&]() {
-        m_view.engine()->rootContext()->setContextProperty(QStringLiteral("inputClipped"),
-                                                           QVariant::fromValue(false));
+        m_inputClipped = false;
+        emit updatedInputClipped(m_inputClipped);
+    });
+    m_outputClipTimer.callOnTimeout([&]() {
+        m_outputClipped = false;
+        emit updatedOutputClipped(m_outputClipped);
     });
 
-    m_outputClipTimer.callOnTimeout([&]() {
-        m_view.engine()->rootContext()->setContextProperty(
-            QStringLiteral("outputClipped"), QVariant::fromValue(false));
+    m_inputMeterLevels[0] = m_inputMeterLevels[1] = 0;
+    m_outputMeterLevels[0] = m_outputMeterLevels[1] = 0;
+
+    // Initialize timer needed for network outage indicator
+    m_networkOutageTimer.setTimerType(Qt::CoarseTimer);
+    m_networkOutageTimer.setSingleShot(true);
+    m_networkOutageTimer.setInterval(5000);
+    m_networkOutageTimer.callOnTimeout([&]() {
+        m_networkOutage = false;
+        emit updatedNetworkOutage(m_networkOutage);
     });
 
     settings.beginGroup(QStringLiteral("Audio"));
@@ -137,6 +150,9 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_outMultiplier = settings.value(QStringLiteral("OutMultiplier"), 1).toFloat();
     m_inMuted       = settings.value(QStringLiteral("InMuted"), false).toBool();
     m_outMuted      = settings.value(QStringLiteral("OutMuted"), false).toBool();
+    m_feedbackDetectionEnabled =
+        settings.value(QStringLiteral("FeedbackDetectionEnabled"), false).toBool();
+
 #ifdef RT_AUDIO
     m_useRtAudio   = settings.value(QStringLiteral("Backend"), 1).toInt() == 1;
     m_inputDevice  = settings.value(QStringLiteral("InputDevice"), "").toString();
@@ -264,6 +280,9 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_view.engine()->rootContext()->setContextProperty(
         QStringLiteral("updateChannelComboModel"),
         QVariant::fromValue(m_updateChannelOptions));
+    m_view.engine()->rootContext()->setContextProperty(
+        QStringLiteral("feedbackDetectionComboModel"),
+        QVariant::fromValue(m_feedbackDetectionOptions));
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("virtualstudio"),
                                                        this);
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("serverModel"),
@@ -287,14 +306,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
         QStringLiteral("permissions"), QVariant::fromValue(m_permissions.data()));
 #endif
 
-    m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("inputMeterModel"), QVariant::fromValue(QVector<float>()));
-    m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("outputMeterModel"), QVariant::fromValue(QVector<float>()));
-    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("inputClipped"),
-                                                       QVariant::fromValue(false));
-    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("outputClipped"),
-                                                       QVariant::fromValue(false));
+    resetMeters();
 
     m_view.engine()->rootContext()->setContextProperty(
         QStringLiteral("backendComboModel"),
@@ -367,8 +379,9 @@ void VirtualStudio::show()
         }
         m_checkSsl = false;
     }
-
-    login();
+    if (m_windowState == "login") {
+        login();
+    }
     m_view.show();
 }
 
@@ -670,6 +683,21 @@ bool VirtualStudio::audioReady()
     return m_audioReady;
 }
 
+bool VirtualStudio::inputClipped()
+{
+    return m_inputClipped;
+}
+
+bool VirtualStudio::outputClipped()
+{
+    return m_outputClipped;
+}
+
+bool VirtualStudio::networkOutage()
+{
+    return m_networkOutage;
+}
+
 bool VirtualStudio::backendAvailable()
 {
     if constexpr ((isBackendAvailable<AudioInterfaceMode::JACK>()
@@ -779,6 +807,22 @@ void VirtualStudio::setBufferStrategy(int index)
     settings.endGroup();
 }
 
+bool VirtualStudio::feedbackDetectionEnabled()
+{
+    return m_feedbackDetectionEnabled;
+}
+
+void VirtualStudio::setFeedbackDetectionEnabled(bool enabled)
+{
+    m_feedbackDetectionEnabled = enabled;
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("Audio"));
+    settings.setValue(QStringLiteral("FeedbackDetectionEnabled"),
+                      m_feedbackDetectionEnabled);
+    settings.endGroup();
+    emit feedbackDetectionEnabledChanged();
+}
+
 void VirtualStudio::setAudioActivated(bool activated)
 {
     m_audioActivated = activated;
@@ -814,6 +858,16 @@ QString VirtualStudio::connectionState()
 QJsonObject VirtualStudio::networkStats()
 {
     return m_networkStats;
+}
+
+const QVector<float>& VirtualStudio::inputMeterLevels() const
+{
+    return m_inputMeterLevels;
+}
+
+const QVector<float>& VirtualStudio::outputMeterLevels() const
+{
+    return m_outputMeterLevels;
 }
 
 QString VirtualStudio::updateChannel()
@@ -1103,7 +1157,9 @@ void VirtualStudio::toStandard()
 
 void VirtualStudio::toVirtualStudio()
 {
-    login();
+    if (m_windowState == "login") {
+        login();
+    }
 }
 
 void VirtualStudio::login()
@@ -1501,6 +1557,8 @@ void VirtualStudio::applySettings()
     settings.setValue(QStringLiteral("InputMixMode"), m_inputMixMode);
     settings.setValue(QStringLiteral("BaseOutputChannel"), m_baseOutputChannel);
     settings.setValue(QStringLiteral("NumOutputChannels"), m_numOutputChannels);
+    settings.setValue(QStringLiteral("FeedbackDetectionEnabled"),
+                      m_feedbackDetectionEnabled);
     settings.endGroup();
 
     m_previousUseRtAudio = m_useRtAudio;
@@ -1600,14 +1658,10 @@ void VirtualStudio::completeConnection()
             numOutputChannels = m_numOutputChannels;
         }
 #endif
-        int bufferStrategy = m_bufferStrategy;
-        if (bufferStrategy == 2) {
-            bufferStrategy = 3;
-        }
-        JackTrip* jackTrip =
-            m_device->initJackTrip(m_useRtAudio, input, output, baseInputChannel,
-                                   numInputChannels, baseOutputChannel, numOutputChannels,
-                                   inputMixMode, buffer_size, bufferStrategy, studioInfo);
+        JackTrip* jackTrip = m_device->initJackTrip(
+            m_useRtAudio, input, output, baseInputChannel, numInputChannels,
+            baseOutputChannel, numOutputChannels, inputMixMode, buffer_size,
+            m_bufferStrategy, studioInfo);
         if (jackTrip == 0) {
             processError("Could not bind port");
             return;
@@ -1620,6 +1674,8 @@ void VirtualStudio::completeConnection()
         QObject::connect(jackTrip, &JackTrip::signalReceivedConnectionFromPeer, this,
                          &VirtualStudio::receivedConnectionFromPeer,
                          Qt::QueuedConnection);
+        QObject::connect(jackTrip, &JackTrip::signalUdpWaitingTooLong, this,
+                         &VirtualStudio::udpWaitingTooLong, Qt::QueuedConnection);
 
         setAudioActivated(false);
 
@@ -1652,6 +1708,15 @@ void VirtualStudio::completeConnection()
         jackTrip->appendProcessPluginToMonitor(m_monitor);
         connect(this, &VirtualStudio::updatedMonitorVolume, m_monitor,
                 &Monitor::volumeUpdated);
+
+        // Setup output analyzer
+        if (m_feedbackDetectionEnabled) {
+            m_outputAnalyzerPlugin = new Analyzer(jackTrip->getNumOutputChannels());
+            m_outputAnalyzerPlugin->setIsMonitoringAnalyzer(true);
+            jackTrip->appendProcessPluginToMonitor(m_outputAnalyzerPlugin);
+            connect(m_outputAnalyzerPlugin, &Analyzer::signalFeedbackDetected, this,
+                    &VirtualStudio::detectedFeedbackLoop);
+        }
 
         // Setup output meter
         // Note: Add this to monitor process to include self-volume
@@ -1688,15 +1753,7 @@ void VirtualStudio::completeConnection()
         }
 #endif
         m_device->startJackTrip();
-
-        m_view.engine()->rootContext()->setContextProperty(
-            QStringLiteral("inputMeterModel"),
-            QVariant::fromValue(QVector<float>(jackTrip->getNumInputChannels())));
-
-        m_view.engine()->rootContext()->setContextProperty(
-            QStringLiteral("outputMeterModel"),
-            QVariant::fromValue(QVector<float>(jackTrip->getNumOutputChannels())));
-
+        resetMeters();
         m_device->startPinger(studioInfo);
     } catch (const std::exception& e) {
         // Let the user know what our exception was.
@@ -1853,8 +1910,13 @@ void VirtualStudio::openLink(const QString& link)
 
 void VirtualStudio::exit()
 {
+    m_startTimer.stop();
+    m_retryPeriodTimer.stop();
     m_refreshTimer.stop();
     m_heartbeatTimer.stop();
+    m_inputClipTimer.stop();
+    m_outputClipTimer.stop();
+    m_networkOutageTimer.stop();
     if (m_onConnectedScreen) {
         m_isExiting = true;
 
@@ -2110,7 +2172,6 @@ void VirtualStudio::updatedDevicesWarningHelpUrl(const QString& url)
 void VirtualStudio::updatedInputVuMeasurements(const float* valuesInDecibels,
                                                int numChannels)
 {
-    QJsonArray uiValues;
     bool detectedClip = false;
 
     // Always output 2 meter readings to the UI
@@ -2122,16 +2183,13 @@ void VirtualStudio::updatedInputVuMeasurements(const float* valuesInDecibels,
         }
 
         // Produce a normalized value from 0 to 1
-        float meter = (dB - m_meterMin) / (m_meterMax - m_meterMin);
-
-        QJsonObject object{{QStringLiteral("dB"), dB}, {QStringLiteral("level"), meter}};
-        uiValues.push_back(object);
+        m_inputMeterLevels[i] = (dB - m_meterMin) / (m_meterMax - m_meterMin);
 
         // Signal a clip if we haven't done so already
         if (dB >= -0.05 && !detectedClip) {
             m_inputClipTimer.start();
-            m_view.engine()->rootContext()->setContextProperty(
-                QStringLiteral("inputClipped"), QVariant::fromValue(true));
+            m_inputClipped = true;
+            emit updatedInputClipped(m_inputClipped);
             detectedClip = true;
         }
     }
@@ -2143,18 +2201,16 @@ void VirtualStudio::updatedInputVuMeasurements(const float* valuesInDecibels,
          && m_numInputChannels == 1)
         || (m_inputMixMode == static_cast<int>(AudioInterface::MIXTOMONO)
             && m_numInputChannels == 2)) {
-        uiValues[1] = uiValues[0];
+        m_inputMeterLevels[1] = m_inputMeterLevels[0];
     }
 #endif
 
-    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("inputMeterModel"),
-                                                       QVariant::fromValue(uiValues));
+    emit updatedInputMeterLevels(m_inputMeterLevels);
 }
 
 void VirtualStudio::updatedOutputVuMeasurements(const float* valuesInDecibels,
                                                 int numChannels)
 {
-    QJsonArray uiValues;
     bool detectedClip = false;
 
     // Always output 2 meter readings to the UI
@@ -2166,26 +2222,36 @@ void VirtualStudio::updatedOutputVuMeasurements(const float* valuesInDecibels,
         }
 
         // Produce a normalized value from 0 to 1
-        float meter = (dB - m_meterMin) / (m_meterMax - m_meterMin);
-
-        QJsonObject object{{QStringLiteral("dB"), dB}, {QStringLiteral("level"), meter}};
-        uiValues.push_back(object);
+        m_outputMeterLevels[i] = (dB - m_meterMin) / (m_meterMax - m_meterMin);
 
         // Signal a clip if we haven't done so already
         if (dB >= -0.05 && !detectedClip) {
             m_outputClipTimer.start();
-            m_view.engine()->rootContext()->setContextProperty(
-                QStringLiteral("outputClipped"), QVariant::fromValue(true));
+            m_outputClipped = true;
+            emit updatedOutputClipped(m_outputClipped);
             detectedClip = true;
         }
     }
 #ifdef RT_AUDIO
     if (m_numOutputChannels == 1) {
-        uiValues[1] = uiValues[0];
+        m_outputMeterLevels[1] = m_outputMeterLevels[0];
     }
 #endif
-    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("outputMeterModel"),
-                                                       QVariant::fromValue(uiValues));
+    emit updatedOutputMeterLevels(m_outputMeterLevels);
+}
+
+void VirtualStudio::detectedFeedbackLoop()
+{
+    setInputMuted(true);
+    setMonitorVolume(0);
+    emit feedbackDetected();
+}
+
+void VirtualStudio::udpWaitingTooLong()
+{
+    m_networkOutageTimer.start();
+    m_networkOutage = true;
+    emit updatedNetworkOutage(m_networkOutage);
 }
 
 void VirtualStudio::sendHeartbeat()
@@ -2480,6 +2546,7 @@ void VirtualStudio::getUserMetadata()
 
 void VirtualStudio::startAudio()
 {
+    std::cout << "Starting Audio" << std::endl;
 #ifdef __APPLE__
     if (m_permissions->micPermission() != "granted") {
         return;
@@ -2543,20 +2610,14 @@ void VirtualStudio::startAudio()
 
     m_audioReady = true;
     emit audioReadyChanged();
-
-    m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("inputMeterModel"),
-        QVariant::fromValue(QVector<float>(m_vsAudioInterface->getNumInputChannels())));
-
-    m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("outputMeterModel"),
-        QVariant::fromValue(QVector<float>(m_vsAudioInterface->getNumOutputChannels())));
+    resetMeters();
 
     m_vsAudioInterface->startProcess();
 }
 
 void VirtualStudio::restartAudio()
 {
+    std::cout << "Restarting Audio" << std::endl;
 #ifdef __APPLE__
     if (m_permissions->micPermission() != "granted") {
         return;
@@ -2574,21 +2635,23 @@ void VirtualStudio::restartAudio()
 
         m_audioReady = true;
         emit audioReadyChanged();
-
-        m_view.engine()->rootContext()->setContextProperty(
-            QStringLiteral("inputMeterModel"),
-            QVariant::fromValue(
-                QVector<float>(m_vsAudioInterface->getNumInputChannels())));
-
-        m_view.engine()->rootContext()->setContextProperty(
-            QStringLiteral("outputMeterModel"),
-            QVariant::fromValue(
-                QVector<float>(m_vsAudioInterface->getNumOutputChannels())));
+        resetMeters();
 
         m_vsAudioInterface->startProcess();
     } else {
         startAudio();
     }
+}
+
+void VirtualStudio::resetMeters()
+{
+    m_inputMeterLevels[0] = m_inputMeterLevels[1] = 0;
+    m_outputMeterLevels[0] = m_outputMeterLevels[1] = 0;
+    m_inputClipped = m_outputClipped = false;
+    emit updatedInputMeterLevels(m_inputMeterLevels);
+    emit updatedOutputMeterLevels(m_outputMeterLevels);
+    emit updatedInputClipped(m_inputClipped);
+    emit updatedOutputClipped(m_outputClipped);
 }
 
 void VirtualStudio::stopAudio()

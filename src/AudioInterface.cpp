@@ -849,17 +849,17 @@ void AudioInterface::initPlugins(bool verbose)
         for (ProcessPlugin* plugin : qAsConst(mProcessPluginsFromNetwork)) {
             plugin->setOutgoingToNetwork(false);
             plugin->updateNumChannels(nChansIn, nChansOut);
-            plugin->init(mSampleRate);
+            plugin->init(mSampleRate, mBufferSizeInSamples);
         }
         for (ProcessPlugin* plugin : qAsConst(mProcessPluginsToNetwork)) {
             plugin->setOutgoingToNetwork(true);
             plugin->updateNumChannels(nChansIn, nChansOut);
-            plugin->init(mSampleRate);
+            plugin->init(mSampleRate, mBufferSizeInSamples);
         }
         for (ProcessPlugin* plugin : qAsConst(mProcessPluginsToMonitor)) {
             plugin->setOutgoingToNetwork(false);
             plugin->updateNumChannels(nChansMon, nChansMon);
-            plugin->init(mSampleRate);
+            plugin->init(mSampleRate, mBufferSizeInSamples);
         }
     }
 }

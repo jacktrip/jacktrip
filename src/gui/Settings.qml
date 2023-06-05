@@ -402,7 +402,16 @@ Item {
                 border.width: 1
                 border.color: modeButton.down ? buttonPressedStroke : (modeButton.hovered ? buttonHoverStroke : buttonStroke)
             }
-            onClicked: { virtualstudio.windowState = "login"; virtualstudio.toStandard(); }
+            onClicked: {
+                // essentially the same here as clicking the cancel button
+                virtualstudio.windowState = "browse";
+                inputCurrIndex = virtualstudio.previousInput;
+                outputCurrIndex = virtualstudio.previousOutput;
+                virtualstudio.revertSettings();
+
+                // switch mode
+                virtualstudio.toStandard();
+            }
             x: 234 * virtualstudio.uiScale; y: 100 * virtualstudio.uiScale
             width: 216 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
             Text {
@@ -500,6 +509,33 @@ Item {
             visible: virtualstudio.audioBackend != "JACK"
             color: textColour
         }
+
+        ComboBox {
+            id: feedbackDetectionCombo
+            x: updateChannelCombo.x; y: bufferStrategyCombo.y + (48 * virtualstudio.uiScale)
+            width: updateChannelCombo.width; height: updateChannelCombo.height
+            model: feedbackDetectionComboModel
+            currentIndex: virtualstudio.feedbackDetectionEnabled ? 0 : 1
+            onActivated: {
+                if (currentIndex === 1) {
+                    virtualstudio.feedbackDetectionEnabled = false;
+                } else {
+                    virtualstudio.feedbackDetectionEnabled = true;
+                } 
+            }
+            font.family: "Poppins"
+            visible: virtualstudio.audioBackend != "JACK"
+        }
+
+        Text {
+            anchors.verticalCenter: feedbackDetectionCombo.verticalCenter
+            x: 48 * virtualstudio.uiScale
+            text: "Feedback Detection"
+            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            visible: virtualstudio.audioBackend != "JACK"
+            color: textColour
+        }
+
     }
 
     Rectangle {

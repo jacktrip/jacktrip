@@ -1,3 +1,16 @@
+- Version: "1.10.0-beta2"
+  Date: 2023-06-02
+  Description:
+  - (added) VS Mode automatically mute when feedback is detected
+- Version: "1.10.0-beta1"
+  Date: 2023-05-29
+  Description:
+  - (added) VS Mode - notify people of network outages
+  - (updated) PLC optimizations for slower hardware devices
+  - (updated) VS Mode volume meter performance improvements
+  - (updated) VS Mode login no longer listens on a local port
+  - (updated) VS Mode improved clarity of startup messages
+  - (fixed) Switching from VS to Classic mode leaves audio open
 - Version: "1.9.0"
   Date: 2023-05-05
   Description:

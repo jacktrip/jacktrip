@@ -288,7 +288,7 @@ void RtAudioInterface::setup(bool verbose)
     unsigned int sampleRate   = getSampleRate();           // mSamplingRate;
     unsigned int bufferFrames = getBufferSizeInSamples();  // mBufferSize;
     mStereoToMonoMixer        = new StereoToMono();
-    mStereoToMonoMixer->init(sampleRate);
+    mStereoToMonoMixer->init(sampleRate, bufferFrames);
 
     // Setup parent class
     AudioInterface::setup(verbose);

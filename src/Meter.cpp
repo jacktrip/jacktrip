@@ -38,6 +38,7 @@
 
 #include "Meter.h"
 
+#include <algorithm>
 #include <iostream>
 
 #include "jacktrip_types.h"
@@ -55,6 +56,7 @@ Meter::Meter(int numchans, bool verboseFlag) : mNumChannels(numchans)
 //*******************************************************************************
 Meter::~Meter()
 {
+    mTimer.stop();
     for (int i = 0; i < mNumChannels; i++) {
         delete static_cast<meterdsp*>(meterP[i]);
     }
@@ -71,13 +73,9 @@ Meter::~Meter()
 }
 
 //*******************************************************************************
-void Meter::init(int samplingRate)
+void Meter::init(int samplingRate, int bufferSize)
 {
-    ProcessPlugin::init(samplingRate);
-    if (samplingRate != fSamplingFreq) {
-        std::cerr << "Sampling rate not set by superclass!\n";
-        std::exit(1);
-    }
+    ProcessPlugin::init(samplingRate, bufferSize);
 
     fs = float(fSamplingFreq);
     for (int i = 0; i < mNumChannels; i++) {
@@ -103,12 +101,7 @@ void Meter::compute(int nframes, float** inputs, float** outputs)
 {
     if (not inited) {
         std::cerr << "*** Meter " << this << ": init never called! Doing it now.\n";
-        if (fSamplingFreq <= 0) {
-            fSamplingFreq = 48000;
-            std::cout << "Meter " << this
-                      << ": *** HAD TO GUESS the sampling rate (chose 48000 Hz) ***\n";
-        }
-        init(fSamplingFreq);
+        init(0, 0);
     }
 
     // Will measure inputs by default unless mMeasureOutputBuffer = true,
@@ -136,15 +129,10 @@ void Meter::compute(int nframes, float** inputs, float** outputs)
         /* Use the existing value of mValues[i] as
            the threshold - this will be reset to the default floor of -80dB
            on each timeout */
-        float max = mValues[i];
-        for (int j = 0; j < nframes; j++) {
-            if (mBuffer[j] > max) {
-                max = mBuffer[j];
-            }
-        }
+        float maxSample = *std::max_element(mBuffer, mBuffer + nframes);
 
         /* Update mValues */
-        mValues[i] = max;
+        mValues[i] = std::max(mValues[i], maxSample);
     }
 
     /* Set processed audio flag */

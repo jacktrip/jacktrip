@@ -199,6 +199,7 @@ if (NOT nogui)
       src/gui/vsWebSocket.cpp
       src/gui/vsPermissions.cpp
       src/gui/qjacktrip.qrc
+      src/Analyzer.cpp
       src/Monitor.cpp
       src/Volume.cpp
       src/Tone.cpp
