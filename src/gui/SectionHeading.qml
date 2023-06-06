@@ -1,5 +1,5 @@
-import QtQuick 2.12
-import QtQuick.Controls 2.12
+import QtQuick
+import QtQuick.Controls
 
 Rectangle {
   property string filterStroke: virtualstudio.darkMode ? "#827D7D" : "#BABCBC"

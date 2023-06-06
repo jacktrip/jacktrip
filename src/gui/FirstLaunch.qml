@@ -1,10 +1,10 @@
-import QtQuick 2.12
-import QtQuick.Controls 2.12
+import QtQuick
+import QtQuick.Controls
 
 Item {
     width: parent.width; height: parent.height
     clip: true
-    
+
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
     property string shadowColour: virtualstudio.darkMode ? "40000000" : "#80A1A1A1"
     property string buttonColour: virtualstudio.darkMode ? "#FAFBFB" : "#F0F1F1"
@@ -13,7 +13,7 @@ Item {
     property string buttonStroke: virtualstudio.darkMode ? "#636060" : "#DEDFDF"
     property string buttonHoverStroke: virtualstudio.darkMode ? "#6F6C6C" : "#B0B5B5"
     property string buttonPressedStroke: virtualstudio.darkMode ? "#6F6C6C" : "#B0B5B5"
-    
+
     Image {
         id: jtlogo
         source: "logo.svg"

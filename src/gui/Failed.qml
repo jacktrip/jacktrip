@@ -1,16 +1,16 @@
-import QtQuick 2.12
-import QtQuick.Controls 2.12
-import QtGraphicalEffects 1.12
+import QtQuick
+import QtQuick.Controls
+import Qt5Compat.GraphicalEffects
 
 Item {
     width: parent.width; height: parent.height
     clip: true
-    
+
     property int leftMargin: 16
     property int fontBig: 28
     property int fontMedium: 18
     property int fontSmall: 11
-    
+
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
     property string buttonColour: virtualstudio.darkMode ? "#FAFBFB" : "#F0F1F1"
     property string buttonHoverColour: virtualstudio.darkMode ? "#E9E9E9" : "#E4E5E5"
@@ -19,7 +19,6 @@ Item {
     property string buttonTextColour: virtualstudio.darkMode ? "#272525" : "#DB0A0A"
     property string buttonTextHover: virtualstudio.darkMode ? "#242222" : "#D00A0A"
     property string buttonTextPressed: virtualstudio.darkMode ? "#323030" : "#D00A0A"
-
     property real imageLightnessValue: virtualstudio.darkMode ? 1.0 : 0.0
 
     Image {
@@ -38,7 +37,7 @@ Item {
         saturation: 0
         lightness: imageLightnessValue
     }
-    
+
     Text {
         id: ohnoHeader
         text: "Oh no!"

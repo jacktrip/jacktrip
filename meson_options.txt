@@ -7,4 +7,4 @@ option('novs', type : 'boolean', value : 'false', description: 'Build without Vi
 option('vsftux', type : 'boolean', value : 'false', description: 'Build with Virtual Studio first launch experience')
 option('noupdater', type : 'boolean', value : 'false', description: 'Build without auto-update support')
 option('profile', type: 'combo', choices: ['default', 'development'], value: 'default', description: 'Choose build profile / Sets desktop id accordingly')
-option('qtversion', type : 'combo', choices: ['5', '6'], description: 'Choose to build with either Qt5 or Qt6')
+option('qtversion', type : 'combo', choices: ['5', '6'], value : '6', description: 'Choose to build with either Qt5 or Qt6')

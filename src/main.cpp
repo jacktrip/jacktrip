@@ -37,6 +37,7 @@
 
 #ifndef NO_GUI
 #include <QApplication>
+#include <QQuickStyle>
 
 #ifndef NO_UPDATER
 #include "dblsqd/feed.h"
@@ -79,6 +80,7 @@
 
 #ifndef NO_GUI
 #ifndef NO_VS
+#include <QtWebEngineQuick/qtwebenginequickglobal.h>
 static QTextStream* ts;
 static QFile outFile;
 #endif  // NO_VS
@@ -276,11 +278,18 @@ bool isRunFromCmd()
 
 int main(int argc, char* argv[])
 {
+#ifndef NO_GUI
+#ifndef NO_VS
+    QtWebEngineQuick::initialize();
+#endif
+#endif
+
     QScopedPointer<QCoreApplication> app(createApplication(argc, argv));
     QScopedPointer<JackTrip> jackTrip;
     QScopedPointer<UdpHubListener> udpHub;
 #ifndef NO_GUI
     QSharedPointer<QJackTrip> window;
+    QQuickStyle::setStyle("Basic");
 
 #ifndef NO_VS
     QString deeplink;

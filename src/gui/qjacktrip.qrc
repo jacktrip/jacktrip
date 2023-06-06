@@ -19,6 +19,7 @@
     <file>Failed.qml</file>
     <file>Setup.qml</file>
     <file>SectionHeading.qml</file>
+    <file>Web.qml</file>
     <file>logo.svg</file>
     <file>wedge.svg</file>
     <file>wedge_inactive.svg</file>

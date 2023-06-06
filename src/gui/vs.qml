@@ -1,10 +1,10 @@
-import QtQuick 2.12
-import QtQuick.Controls 2.12
+import QtQuick
+import QtQuick.Controls
 
 Rectangle {
     property string backgroundColour: virtualstudio.darkMode ? "#272525" : "#FAFBFB"
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
-    
+
     width: 696
     height: 577
     color: backgroundColour
@@ -98,7 +98,7 @@ Rectangle {
     FirstLaunch {
         id: startScreen
     }
-    
+
     Setup {
         id: setupScreen
     }
@@ -106,7 +106,7 @@ Rectangle {
     Browse {
         id: browseScreen
     }
-    
+
     Login {
         id: loginScreen
     }

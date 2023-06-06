@@ -1,6 +1,6 @@
-import QtQuick 2.12
-import QtQuick.Controls 2.12
-import QtGraphicalEffects 1.12
+import QtQuick
+import QtQuick.Controls
+import Qt5Compat.GraphicalEffects
 
 Rectangle {
     width: parent.width
@@ -20,6 +20,7 @@ Rectangle {
     property int buttonHeight: 25
 
     property string backgroundColour: virtualstudio.darkMode ? "#272525" : "#FAFBFB"
+    property real imageLightnessValue: virtualstudio.darkMode ? 1.0 : 0.0
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
     property string buttonColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
     property string buttonHoverColour: virtualstudio.darkMode ? "#5B5858" : "#D3D4D4"
@@ -109,14 +110,6 @@ Rectangle {
 
             property bool showToolTip: false
 
-            Colorize {
-                anchors.fill: parent
-                source: parent
-                hue: 0
-                saturation: 0
-                lightness: virtualstudio.darkMode ? 0.8 : 0.2
-            }
-
             MouseArea {
                 id: outputMouseArea
                 anchors.fill: parent
@@ -150,6 +143,14 @@ Rectangle {
             }
         }
 
+        Colorize {
+            anchors.fill: outputHelpIcon
+            source: outputHelpIcon
+            hue: 0
+            saturation: 0
+            lightness: imageLightnessValue
+        }
+
         Image {
             id: headphonesIcon
             anchors.left: outputLabel.left
@@ -158,14 +159,14 @@ Rectangle {
             sourceSize: Qt.size(28 * virtualstudio.uiScale, 28 * virtualstudio.uiScale)
             fillMode: Image.PreserveAspectFit
             smooth: true
+        }
 
-            Colorize {
-                anchors.fill: parent
-                source: parent
-                hue: 0
-                saturation: 0
-                lightness: virtualstudio.darkMode ? 1 : 0
-            }
+        Colorize {
+            anchors.fill: headphonesIcon
+            source: headphonesIcon
+            hue: 0
+            saturation: 0
+            lightness: imageLightnessValue
         }
 
         ComboBox {
@@ -282,14 +283,14 @@ Rectangle {
             sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
             fillMode: Image.PreserveAspectFit
             smooth: true
+        }
 
-            Colorize {
-                anchors.fill: parent
-                source: parent
-                hue: 0
-                saturation: 0
-                lightness: virtualstudio.darkMode ? 1 : 0
-            }
+        Colorize {
+            anchors.fill: outputQuieterIcon
+            source: outputQuieterIcon
+            hue: 0
+            saturation: 0
+            lightness: imageLightnessValue
         }
 
         Image {
@@ -301,14 +302,14 @@ Rectangle {
             sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
             fillMode: Image.PreserveAspectFit
             smooth: true
+        }
 
-            Colorize {
-                anchors.fill: parent
-                source: parent
-                hue: 0
-                saturation: 0
-                lightness: virtualstudio.darkMode ? 1 : 0
-            }
+        Colorize {
+            anchors.fill: outputLouderIcon
+            source: outputLouderIcon
+            hue: 0
+            saturation: 0
+            lightness: imageLightnessValue
         }
 
         Text {
@@ -419,14 +420,6 @@ Rectangle {
 
             property bool showToolTip: false
 
-            Colorize {
-                anchors.fill: parent
-                source: parent
-                hue: 0
-                saturation: 0
-                lightness: virtualstudio.darkMode ? 0.8 : 0.2
-            }
-
             MouseArea {
                 id: inputMouseArea
                 anchors.fill: parent
@@ -460,6 +453,14 @@ Rectangle {
             }
         }
 
+        Colorize {
+            anchors.fill: inputHelpIcon
+            source: inputHelpIcon
+            hue: 0
+            saturation: 0
+            lightness: imageLightnessValue
+        }
+
         Image {
             id: microphoneIcon
             anchors.left: outputLabel.left
@@ -468,14 +469,14 @@ Rectangle {
             sourceSize: Qt.size(32 * virtualstudio.uiScale, 32 * virtualstudio.uiScale)
             fillMode: Image.PreserveAspectFit
             smooth: true
+        }
 
-            Colorize {
-                anchors.fill: parent
-                source: parent
-                hue: 0
-                saturation: 0
-                lightness: virtualstudio.darkMode ? 1 : 0
-            }
+        Colorize {
+            anchors.fill: microphoneIcon
+            source: microphoneIcon
+            hue: 0
+            saturation: 0
+            lightness: imageLightnessValue
         }
 
         ComboBox {
@@ -591,14 +592,14 @@ Rectangle {
             sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
             fillMode: Image.PreserveAspectFit
             smooth: true
+        }
 
-            Colorize {
-                anchors.fill: parent
-                source: parent
-                hue: 0
-                saturation: 0
-                lightness: virtualstudio.darkMode ? 1 : 0
-            }
+        Colorize {
+            anchors.fill: inputQuieterIcon
+            source: inputQuieterIcon
+            hue: 0
+            saturation: 0
+            lightness: imageLightnessValue
         }
 
         Image {
@@ -610,14 +611,14 @@ Rectangle {
             sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
             fillMode: Image.PreserveAspectFit
             smooth: true
+        }
 
-            Colorize {
-                anchors.fill: parent
-                source: parent
-                hue: 0
-                saturation: 0
-                lightness: virtualstudio.darkMode ? 1 : 0
-            }
+        Colorize {
+            anchors.fill: inputLouderIcon
+            source: inputLouderIcon
+            hue: 0
+            saturation: 0
+            lightness: imageLightnessValue
         }
 
         Button {
@@ -846,14 +847,14 @@ Rectangle {
             sourceSize: Qt.size(28 * virtualstudio.uiScale, 28 * virtualstudio.uiScale)
             fillMode: Image.PreserveAspectFit
             smooth: true
+        }
 
-            Colorize {
-                anchors.fill: parent
-                source: parent
-                hue: 0
-                saturation: 0
-                lightness: virtualstudio.darkMode ? 1 : 0
-            }
+        Colorize {
+            anchors.fill: jackHeadphonesIcon
+            source: jackHeadphonesIcon
+            hue: 0
+            saturation: 0
+            lightness: imageLightnessValue
         }
 
         Meter {
@@ -940,14 +941,14 @@ Rectangle {
             sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
             fillMode: Image.PreserveAspectFit
             smooth: true
+        }
 
-            Colorize {
-                anchors.fill: parent
-                source: parent
-                hue: 0
-                saturation: 0
-                lightness: virtualstudio.darkMode ? 1 : 0
-            }
+        Colorize {
+            anchors.fill: jackOutputQuieterButton
+            source: jackOutputQuieterButton
+            hue: 0
+            saturation: 0
+            lightness: imageLightnessValue
         }
 
         Image {
@@ -959,14 +960,14 @@ Rectangle {
             sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
             fillMode: Image.PreserveAspectFit
             smooth: true
+        }
 
-            Colorize {
-                anchors.fill: parent
-                source: parent
-                hue: 0
-                saturation: 0
-                lightness: virtualstudio.darkMode ? 1 : 0
-            }
+        Colorize {
+            anchors.fill: jackOutputLouderIcon
+            source: jackOutputLouderIcon
+            hue: 0
+            saturation: 0
+            lightness: imageLightnessValue
         }
 
         Text {
@@ -989,14 +990,14 @@ Rectangle {
             sourceSize: Qt.size(32 * virtualstudio.uiScale, 32 * virtualstudio.uiScale)
             fillMode: Image.PreserveAspectFit
             smooth: true
+        }
 
-            Colorize {
-                anchors.fill: parent
-                source: parent
-                hue: 0
-                saturation: 0
-                lightness: virtualstudio.darkMode ? 1 : 0
-            }
+        Colorize {
+            anchors.fill: jackMicrophoneIcon
+            source: jackMicrophoneIcon
+            hue: 0
+            saturation: 0
+            lightness: imageLightnessValue
         }
 
         Meter {
@@ -1062,14 +1063,14 @@ Rectangle {
             sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
             fillMode: Image.PreserveAspectFit
             smooth: true
+        }
 
-            Colorize {
-                anchors.fill: parent
-                source: parent
-                hue: 0
-                saturation: 0
-                lightness: virtualstudio.darkMode ? 1 : 0
-            }
+        Colorize {
+            anchors.fill: jackInputQuieterButton
+            source: jackInputQuieterButton
+            hue: 0
+            saturation: 0
+            lightness: imageLightnessValue
         }
 
         Image {
@@ -1081,14 +1082,14 @@ Rectangle {
             sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
             fillMode: Image.PreserveAspectFit
             smooth: true
+        }
 
-            Colorize {
-                anchors.fill: parent
-                source: parent
-                hue: 0
-                saturation: 0
-                lightness: virtualstudio.darkMode ? 1 : 0
-            }
+        Colorize {
+            anchors.fill: jackInputLouderIcon
+            source: jackInputLouderIcon
+            hue: 0
+            saturation: 0
+            lightness: imageLightnessValue
         }
 
         Button {

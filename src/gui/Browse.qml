@@ -1,5 +1,5 @@
-import QtQuick 2.12
-import QtQuick.Controls 2.12
+import QtQuick
+import QtQuick.Controls
 
 Item {
     width: parent.width; height: parent.height
@@ -9,9 +9,9 @@ Item {
         width: parent.width; height: parent.height
         color: backgroundColour
     }
-    
+
     property bool refreshing: false
-    
+
     property int buttonHeight: 25
     property int buttonWidth: 103
     property int extraSettingsButtonWidth: 16
@@ -20,9 +20,9 @@ Item {
     property int createButtonTopMargin: 24
     property int fontBig: 28
     property int fontMedium: 11
-    
+
     property int scrollY: 0
-    
+
     property string backgroundColour: virtualstudio.darkMode ? "#272525" : "#FAFBFB"
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
     property string buttonColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
@@ -32,7 +32,7 @@ Item {
     property string buttonHoverStroke: virtualstudio.darkMode ? "#7B7777" : "#BABCBC"
     property string buttonPressedStroke: virtualstudio.darkMode ? "#827D7D" : "#BABCBC"
     property string createButtonStroke: virtualstudio.darkMode ? "#AB0F0F" : "#0F0D0D"
-    
+
     function refresh() {
         scrollY = studioListView.contentY;
         var currentIndex = studioListView.indexAt(16 * virtualstudio.uiScale, studioListView.contentY);
@@ -41,7 +41,7 @@ Item {
         }
         virtualstudio.refreshStudios(currentIndex, true)
     }
-    
+
     Rectangle {
         z: 1
         width: parent.width; height: parent.height
@@ -54,7 +54,7 @@ Item {
             preventStealing: true
         }
     }
-    
+
     Component {
         id: footer
         Rectangle {
@@ -87,7 +87,7 @@ Item {
             studioId: id ? id : ""
             inviteKeyString: inviteKey ? inviteKey : ""
         }
-        
+
         section {property: "type"; criteria: ViewSection.FullString; delegate: SectionHeading {} }
 
         // Show sectionHeading if there are no Studios in list
@@ -214,7 +214,7 @@ Item {
                 studioListView.returnToBounds();
             }
         }
-        
+
         Component.onCompleted: {
             // Customize scroll properties on different platforms
             if (Qt.platform.os == "linux" || Qt.platform.os == "osx" ||
@@ -227,12 +227,12 @@ Item {
             }
         }
     }
-    
+
     Rectangle {
         x: 0; y: parent.height - 36 * virtualstudio.uiScale; width: parent.width; height: 36 * virtualstudio.uiScale
         border.color: "#33979797"
         color: backgroundColour
-        
+
         Button {
             id: refreshButton
             background: Rectangle {
@@ -252,7 +252,7 @@ Item {
                 color: textColour
             }
         }
-        
+
         Button {
             id: aboutButton
             background: Rectangle {
@@ -272,7 +272,7 @@ Item {
                 color: textColour
             }
         }
-        
+
         Button {
             id: settingsButton
             text: "Settings"
@@ -295,7 +295,7 @@ Item {
             onClicked: { virtualstudio.windowState = "settings"; restartAudioTimer.restart(); }
             display: AbstractButton.TextBesideIcon
             font {
-                family: "Poppins"; 
+                family: "Poppins";
                 pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale;
             }
             leftPadding: 0
@@ -306,11 +306,11 @@ Item {
             width: (buttonWidth + extraSettingsButtonWidth) * virtualstudio.uiScale; height: buttonHeight * virtualstudio.uiScale
         }
     }
-    
+
     Connections {
         target: virtualstudio
         // Need to do this to avoid layout issues with our section header.
-        function onNewScale() { 
+        function onNewScale() {
             studioListView.positionViewAtEnd();
             studioListView.positionViewAtBeginning();
             scrollY = studioListView.contentY;
