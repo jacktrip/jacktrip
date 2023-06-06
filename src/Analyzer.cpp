@@ -337,7 +337,8 @@ bool Analyzer::testSpectralPeakGrowing()
         }
     }
 
-    if (numPositiveDifferentials == (uint32_t)mNumSpectra * (mNumSpectra * 0.8) && numLargeDifferentials >= 1) {
+    if (numPositiveDifferentials == (uint32_t)mNumSpectra * (mNumSpectra * 0.8)
+        && numLargeDifferentials >= 1) {
         return true;
     }
 
