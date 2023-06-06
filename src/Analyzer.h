@@ -46,8 +46,6 @@
 
 #include "ProcessPlugin.h"
 #include "WaitFreeFrameBuffer.h"
-
-
 #include "externals/Simple-FFT/include/simple_fft/fft.h"
 #include "externals/Simple-FFT/include/simple_fft/fft_settings.h"
 

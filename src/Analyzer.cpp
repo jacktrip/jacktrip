@@ -53,9 +53,8 @@ Analyzer::Analyzer(int numchans, bool verboseFlag)
     mCurrentNorms.resize(mFftSize);
     mCurrentSpectra.resize(mFftSize);
 
-
     // allocate buffers for holding on to past spectra
-    int nPositiveFreqs = 0.5 * mFftSize + 1;
+    int nPositiveFreqs    = 0.5 * mFftSize + 1;
     mSpectra              = new float*[mNumSpectra];
     mSpectraDifferentials = new float*[mNumSpectra];
     for (int i = 0; i < mNumSpectra; i++) {
@@ -153,8 +152,9 @@ void Analyzer::onTick()
         pullPtr += mCircularBufferPtr->getBytesPerFrame();
     }
 
-    const char * err_str = NULL;
-    simple_fft::FFT(&mPullBuffer[mPullBuffer.size() - mFftSize - 1], mCurrentSpectra, mFftSize, err_str);
+    const char* err_str = NULL;
+    simple_fft::FFT(&mPullBuffer[mPullBuffer.size() - mFftSize - 1], mCurrentSpectra,
+                    mFftSize, err_str);
     for (uint32_t i = 0; i < mFftSize; i++) {
         mCurrentNorms[i] = norm(mCurrentSpectra[i]);
     }
@@ -173,7 +173,7 @@ void Analyzer::onTick()
 //*******************************************************************************
 void Analyzer::updateSpectra()
 {
-    int nPositiveFreqs = .5 * mFftSize + 1;
+    int nPositiveFreqs    = .5 * mFftSize + 1;
     float* currentSpectra = mSpectra[0];
     for (int i = 0; i < nPositiveFreqs; i++) {
         currentSpectra[i] = mCurrentNorms[i];
@@ -228,7 +228,7 @@ bool Analyzer::testSpectralPeakAboveThreshold()
     // this test checks if the peak of the latest spectra is above a certain threshold
 
     float* latestSpectra = mSpectra[mNumSpectra - 1];
-    int nPositiveFreqs = .5 * mFftSize + 1;
+    int nPositiveFreqs   = .5 * mFftSize + 1;
 
     // the exact threshold can be adjusted using the mThresholdMultiplier
     float threshold = 10 * mThresholdMultiplier;
@@ -251,7 +251,7 @@ bool Analyzer::testSpectralPeakAbnormallyHigh()
     // the peak / median exceeds a certain threshold
 
     float* latestSpectra = mSpectra[mNumSpectra - 1];
-    int nPositiveFreqs = .5 * mFftSize + 1;
+    int nPositiveFreqs   = .5 * mFftSize + 1;
 
     std::vector<float> latestSpectraSorted;
     for (int i = 0; i < nPositiveFreqs; i++) {
@@ -280,7 +280,7 @@ bool Analyzer::testSpectralPeakGrowing()
     // few samples. This likely indicates a positive feedback loop
 
     float* latestSpectra = mSpectra[mNumSpectra - 1];
-    int nPositiveFreqs = .5 * mFftSize + 1;
+    int nPositiveFreqs   = .5 * mFftSize + 1;
 
     float peak    = 0.0f;
     int peakIndex = 0;
