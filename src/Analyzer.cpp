@@ -231,7 +231,9 @@ bool Analyzer::testSpectralPeakAboveThreshold()
     int nPositiveFreqs   = .5 * mFftSize + 1;
 
     // the exact threshold can be adjusted using the mThresholdMultiplier
-    float threshold = 10 * mThresholdMultiplier;
+    // for a non-clipping signal, we can expect any value to be between 0 and N^2
+    // with N being the number of FFT channels
+    float threshold = 128 * 128 * mPeakThresholdMultipler;
 
     float peak = 0.0f;
     for (int i = 0; i < nPositiveFreqs; i++) {
@@ -259,7 +261,7 @@ bool Analyzer::testSpectralPeakAbnormallyHigh()
     }
     std::sort(latestSpectraSorted.begin(), latestSpectraSorted.end(), std::less<float>());
 
-    float threshold = mThresholdMultiplier * 10;
+    float threshold = mPeakDeviationThresholdMultiplier * 100 * 100;
 
     float peak = 0.0f;
     for (int i = 0; i < nPositiveFreqs; i++) {
@@ -313,16 +315,17 @@ bool Analyzer::testSpectralPeakGrowing()
             numPositiveDifferentials++;
         }
 
-        if (differentials[i] > 10 * mThresholdMultiplier) {
+        if (differentials[i] > 10 * 10 * mDifferentialThresholdMultiplier) {
             numLargeDifferentials++;
         }
     }
 
-    if (numPositiveDifferentials == (uint32_t)mNumSpectra && numLargeDifferentials >= 1) {
+    if (numPositiveDifferentials == (uint32_t)mNumSpectra * (mNumSpectra * 0.8)
+        && numLargeDifferentials >= 1) {
         return true;
     }
 
-    if (numPositiveDifferentials >= (uint32_t)(mNumSpectra * 0.75)
+    if (numPositiveDifferentials >= (uint32_t)(mNumSpectra * 0.6)
         && numLargeDifferentials >= 2) {
         return true;
     }

@@ -498,7 +498,6 @@ Item {
             currentIndex: virtualstudio.bufferStrategy
             onActivated: { virtualstudio.bufferStrategy = currentIndex }
             font.family: "Poppins"
-            visible: virtualstudio.audioBackend != "JACK"
         }
 
         Text {
@@ -506,7 +505,6 @@ Item {
             x: 48 * virtualstudio.uiScale
             text: "Buffer Strategy"
             font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-            visible: virtualstudio.audioBackend != "JACK"
             color: textColour
         }
 
@@ -524,7 +522,6 @@ Item {
                 } 
             }
             font.family: "Poppins"
-            visible: virtualstudio.audioBackend != "JACK"
         }
 
         Text {
@@ -532,7 +529,6 @@ Item {
             x: 48 * virtualstudio.uiScale
             text: "Feedback Detection"
             font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-            visible: virtualstudio.audioBackend != "JACK"
             color: textColour
         }
 
