@@ -1,0 +1,24 @@
+FFT test: creating real 1D pulse.
+Done.
+FFT test: creating real 2D pulse.
+Done.
+FFT test: creating real 3D pulse.
+Done.
+FFT test: creating real 1D pulse.
+Done.
+FFT test: creating real 2D pulse.
+Done.
+FFT test: creating real 3D pulse.
+Done.
+Simple 1D FFT for real data: execution time for 1 loops: 0
+Simple 1D FFT for complex data: execution time for 1 loops: 0
+Simple 2D FFT for real data: execution time for 1 loops: 0.010000000000000000208
+Simple 2D FFT for complex data: execution time for 1 loops: 0
+Simple 3D FFT for real data: execution time for 1 loops: 0.60999999999999998668
+Simple 3D FFT for complex data: execution time for 1 loops: 0.64000000000000001332
+FFTW3 1D FFT for real data: execution time for 1 loops: 0
+FFTW3 1D FFT for complex data: execution time for 1 loops: 0
+FFTW 2D FFT for real data: execution time for 1 loops: 0.050000000000000002776
+FFTW 2D FFT for complex data: execution time for 1 loops: 0.11999999999999999556
+FFTW 3D FFT for real data: execution time for 1 loops: 1.0900000000000000799
+FFTW 3D FFT for complex data: execution time for 1 loops: 0.75
