@@ -83,7 +83,7 @@ class Analyzer : public ProcessPlugin
 
     int mInterval                           = 100;
     float mPeakThresholdMultipler           = 0.5;
-    float mPeakDeviationThresholdMultiplier = .4;
+    float mPeakDeviationThresholdMultiplier = 0.4;
     float mDifferentialThresholdMultiplier  = 0.05;
 
     float fs;

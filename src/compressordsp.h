@@ -1133,8 +1133,8 @@ class FAUST_API AccUpDownConverter : public UpdatableValueConverter
     Interpolator fF2A;
 
    public:
-    AccUpDownConverter(double amin, double amid, double amax, double fmin,
-                       double /*fmid*/, double fmax)
+    AccUpDownConverter(double amin, double amid, double amax, double fmin, double /*fmid*/,
+                       double fmax)
         : fA2F(amin, amid, amax, fmin, fmax, fmin)
         , fF2A(fmin, fmax, amin,
                amax)  // Special, pseudo inverse of a non monotonic function
@@ -1170,8 +1170,8 @@ class FAUST_API AccDownUpConverter : public UpdatableValueConverter
     Interpolator fF2A;
 
    public:
-    AccDownUpConverter(double amin, double amid, double amax, double fmin,
-                       double /*fmid*/, double fmax)
+    AccDownUpConverter(double amin, double amid, double amax, double fmin, double /*fmid*/,
+                       double fmax)
         : fA2F(amin, amid, amax, fmax, fmin, fmax)
         , fF2A(fmin, fmax, amin,
                amax)  // Special, pseudo inverse of a non monotonic function
@@ -1210,9 +1210,8 @@ class FAUST_API ZoneControl
 
     virtual void update(double /*v*/) const {}
 
-    virtual void setMappingValues(int /*curve*/, double /*amin*/, double /*amid*/,
-                                  double /*amax*/, double /*min*/, double /*init*/,
-                                  double /*max*/)
+    virtual void setMappingValues(int /*curve*/, double /*amin*/, double /*amid*/, double /*amax*/,
+                                  double /*min*/, double /*init*/, double /*max*/)
     {
     }
     virtual void getMappingValues(double& /*amin*/, double& /*amid*/, double& /*amax*/) {}
