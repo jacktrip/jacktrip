@@ -232,7 +232,7 @@ void Analyzer::updateSpectraDifferentials()
 //*******************************************************************************
 bool Analyzer::checkForAudioFeedback()
 {
-   if (!testSpectralPeakAboveThreshold()) {
+    if (!testSpectralPeakAboveThreshold()) {
         return false;
     }
 
