@@ -232,7 +232,6 @@ HEADERS += src/DataProtocol.h \
            src/UdpDataProtocol.h \
            src/UdpHubListener.h \
            src/AudioInterface.h \
-           src/fftdsp.h \
            src/compressordsp.h \
            src/limiterdsp.h \
            src/freeverbdsp.h \

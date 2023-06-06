@@ -41,7 +41,6 @@
 #include <QMutexLocker>
 #include <iostream>
 
-#include "fftdsp.h"
 #include "jacktrip_types.h"
 
 //*******************************************************************************
@@ -50,22 +49,18 @@ Analyzer::Analyzer(int numchans, bool verboseFlag)
 {
     setVerbose(verboseFlag);
 
-    // generate FFT Faust object
-    mFftP        = new fftdsp;
-    int fftChans = static_cast<fftdsp*>(mFftP)->getNumOutputs();
+    // size full spectra
+    mCurrentNorms.resize(mFftSize);
+    mCurrentSpectra.resize(mFftSize);
 
-    // allocate buffer for output from the FFT object
-    mAnalysisBuffers = new float*[fftChans];
-    for (int i = 0; i < fftChans; i++) {
-        mAnalysisBuffers[i] = new float[mAnalysisBuffersSize];
-    }
 
     // allocate buffers for holding on to past spectra
+    int nPositiveFreqs = 0.5 * mFftSize + 1;
     mSpectra              = new float*[mNumSpectra];
     mSpectraDifferentials = new float*[mNumSpectra];
     for (int i = 0; i < mNumSpectra; i++) {
-        mSpectra[i]              = new float[fftChans];
-        mSpectraDifferentials[i] = new float[fftChans];
+        mSpectra[i]              = new float[nPositiveFreqs];
+        mSpectraDifferentials[i] = new float[nPositiveFreqs];
     }
 }
 
@@ -73,12 +68,6 @@ Analyzer::Analyzer(int numchans, bool verboseFlag)
 Analyzer::~Analyzer()
 {
     mTimer.stop();
-
-    int fftChans = static_cast<fftdsp*>(mFftP)->getNumOutputs();
-    for (int i = 0; i < fftChans; i++) {
-        delete mAnalysisBuffers[i];
-    }
-
     for (int i = 0; i < mNumSpectra; i++) {
         delete mSpectra[i];
         delete mSpectraDifferentials[i];
@@ -88,10 +77,8 @@ Analyzer::~Analyzer()
         delete mCircularBufferPtr;
     }
 
-    delete mAnalysisBuffers;
     delete mSpectra;
     delete mSpectraDifferentials;
-    delete static_cast<fftdsp*>(mFftP);
 }
 
 //*******************************************************************************
@@ -99,7 +86,6 @@ void Analyzer::init(int samplingRate, int bufferSize)
 {
     ProcessPlugin::init(samplingRate, bufferSize);
     fs = float(fSamplingFreq);
-    static_cast<fftdsp*>(mFftP)->init(fs);
 
     mPushBuffer.resize(mBufferSize);
     mCircularBufferPtr = new WaitFreeFrameBuffer<4096>(mBufferSize * sizeof(float));
@@ -153,6 +139,13 @@ void Analyzer::onTick()
 
     const uint32_t buffers = mCircularBufferPtr->size();
     const uint32_t samples = buffers * mBufferSize;
+
+    // require at least mFftSize values to process, otherwise return
+    if (samples < mFftSize) {
+        // shouldn't happen due to 48khz sample rate and timing config, but just in case
+        return;
+    }
+
     mPullBuffer.resize(samples);
     int8_t* pullPtr = reinterpret_cast<int8_t*>(mPullBuffer.data());
     for (uint32_t i = 0; i < buffers; i++) {
@@ -160,26 +153,11 @@ void Analyzer::onTick()
         pullPtr += mCircularBufferPtr->getBytesPerFrame();
     }
 
-    // reallocate the analysis buffers if necessary
-    int fftChans = static_cast<fftdsp*>(mFftP)->getNumOutputs();
-    if (samples > mAnalysisBuffersSize) {
-        mAnalysisBuffersSize = samples;
-        for (int i = 0; i < fftChans; i++) {
-            if (mAnalysisBuffers[i]) {
-                delete mAnalysisBuffers[i];
-            }
-            mAnalysisBuffers[i] = new float[mAnalysisBuffersSize];
-        }
+    const char * err_str = NULL;
+    simple_fft::FFT(&mPullBuffer[mPullBuffer.size() - mFftSize - 1], mCurrentSpectra, mFftSize, err_str);
+    for (uint32_t i = 0; i < mFftSize; i++) {
+        mCurrentNorms[i] = norm(mCurrentSpectra[i]);
     }
-
-    // run Faust and output results to mAnalysisBuffers. With this, the relevant data in
-    // mAnalysisBuffers should be on all (N/2 + 1) faust output channels x the # of
-    // samples. Note that samples may be less than mAnalysisBuffersSize, so the most
-    // up-to-date spectra would be mAnalysisBuffersSize[:][samples - 1], and NOT
-    // mAnalysisBuffersSize[:][mAnalysisBuffersSize - 1]
-    float* data = mPullBuffer.data();
-    static_cast<fftdsp*>(mFftP)->compute(samples, &data, mAnalysisBuffers);
-    mAnalysisBufferSamples = samples;
 
     // update instance spectra and differentials buffers
     updateSpectra();
@@ -195,13 +173,10 @@ void Analyzer::onTick()
 //*******************************************************************************
 void Analyzer::updateSpectra()
 {
-    int fftChans = static_cast<fftdsp*>(mFftP)->getNumOutputs();
-
+    int nPositiveFreqs = .5 * mFftSize + 1;
     float* currentSpectra = mSpectra[0];
-    for (int i = 0; i < fftChans; i++) {
-        // take the last sample from each bin. NOTE: use mAnalysisBufferSamples - 1, NOT
-        // mAnalysisBuffersSize - 1
-        currentSpectra[i] = mAnalysisBuffers[i][mAnalysisBufferSamples - 1];
+    for (int i = 0; i < nPositiveFreqs; i++) {
+        currentSpectra[i] = mCurrentNorms[i];
     }
 
     // shift all buffers by 1 forward
@@ -214,16 +189,16 @@ void Analyzer::updateSpectra()
 //*******************************************************************************
 void Analyzer::updateSpectraDifferentials()
 {
-    int fftChans = static_cast<fftdsp*>(mFftP)->getNumOutputs();
+    int nPositiveFreqs = .5 * mFftSize + 1;
 
     // compute spectra differentials
-    for (int i = 0; i < fftChans; i++) {
+    for (int i = 0; i < nPositiveFreqs; i++) {
         // set the first spectra differential to 0
         mSpectraDifferentials[0][i] = 0;
     }
 
     for (int i = 1; i < mNumSpectra; i++) {
-        for (int j = 0; j < fftChans; j++) {
+        for (int j = 0; j < nPositiveFreqs; j++) {
             mSpectraDifferentials[i][j] = mSpectra[i][j] - mSpectra[i - 1][j];
         }
     }
@@ -253,18 +228,17 @@ bool Analyzer::testSpectralPeakAboveThreshold()
     // this test checks if the peak of the latest spectra is above a certain threshold
 
     float* latestSpectra = mSpectra[mNumSpectra - 1];
-    int fftChans         = static_cast<fftdsp*>(mFftP)->getNumOutputs();
+    int nPositiveFreqs = .5 * mFftSize + 1;
 
     // the exact threshold can be adjusted using the mThresholdMultiplier
     float threshold = 10 * mThresholdMultiplier;
 
     float peak = 0.0f;
-    for (int i = 0; i < fftChans; i++) {
+    for (int i = 0; i < nPositiveFreqs; i++) {
         if (latestSpectra[i] > peak) {
             peak = latestSpectra[i];
         }
     }
-
     return peak > threshold;
 }
 
@@ -277,10 +251,10 @@ bool Analyzer::testSpectralPeakAbnormallyHigh()
     // the peak / median exceeds a certain threshold
 
     float* latestSpectra = mSpectra[mNumSpectra - 1];
-    int fftChans         = static_cast<fftdsp*>(mFftP)->getNumOutputs();
+    int nPositiveFreqs = .5 * mFftSize + 1;
 
     std::vector<float> latestSpectraSorted;
-    for (int i = 0; i < fftChans; i++) {
+    for (int i = 0; i < nPositiveFreqs; i++) {
         latestSpectraSorted.push_back(latestSpectra[i]);
     }
     std::sort(latestSpectraSorted.begin(), latestSpectraSorted.end(), std::less<float>());
@@ -288,13 +262,13 @@ bool Analyzer::testSpectralPeakAbnormallyHigh()
     float threshold = mThresholdMultiplier * 10;
 
     float peak = 0.0f;
-    for (int i = 0; i < fftChans; i++) {
+    for (int i = 0; i < nPositiveFreqs; i++) {
         if (latestSpectra[i] > peak) {
             peak = latestSpectra[i];
         }
     }
 
-    float median = latestSpectraSorted[(int)(fftChans / 2)];
+    float median = latestSpectraSorted[(int)(nPositiveFreqs / 2)];
 
     return peak / median > threshold;
 }
@@ -306,11 +280,11 @@ bool Analyzer::testSpectralPeakGrowing()
     // few samples. This likely indicates a positive feedback loop
 
     float* latestSpectra = mSpectra[mNumSpectra - 1];
-    int fftChans         = static_cast<fftdsp*>(mFftP)->getNumOutputs();
+    int nPositiveFreqs = .5 * mFftSize + 1;
 
     float peak    = 0.0f;
     int peakIndex = 0;
-    for (int i = 0; i < fftChans; i++) {
+    for (int i = 0; i < nPositiveFreqs; i++) {
         if (latestSpectra[i] > peak) {
             peak      = latestSpectra[i];
             peakIndex = i;
