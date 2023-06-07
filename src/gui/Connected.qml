@@ -42,7 +42,7 @@ Item {
     property string muteButtonMutedColor: "#FCB6B6"
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
     property string meterColor: virtualstudio.darkMode ? "gray" : "#E0E0E0"
-    property real imageLightnessValue: virtualstudio.darkMode ? 1.0 : 0.0
+    property real imageLightnessValue: virtualstudio.darkMode ? 0.8 : 0.2
     property real muteButtonLightnessValue: virtualstudio.darkMode ? 1.0 : 0.0
     property real muteButtonMutedLightnessValue: 0.24
     property real muteButtonMutedSaturationValue: 0.73
@@ -262,14 +262,6 @@ Item {
 
                         property bool showToolTip: false
 
-                        Colorize {
-                            anchors.fill: parent
-                            source: parent
-                            hue: 0
-                            saturation: 0
-                            lightness: virtualstudio.darkMode ? 0.8 : 0.2
-                        }
-
                         MouseArea {
                             id: outputMouseArea
                             anchors.fill: parent
@@ -303,6 +295,14 @@ Item {
                         }
                     }
 
+                    Colorize {
+                        anchors.fill: outputHelpIcon
+                        source: outputHelpIcon
+                        hue: 0
+                        saturation: 0
+                        lightness: imageLightnessValue
+                    }
+
                     Image {
                         id: headphonesIcon
                         anchors.left: outputLabel.left
@@ -312,14 +312,14 @@ Item {
                         sourceSize: Qt.size(28 * virtualstudio.uiScale, 28 * virtualstudio.uiScale)
                         fillMode: Image.PreserveAspectFit
                         smooth: true
+                    }
 
-                        Colorize {
-                            anchors.fill: parent
-                            source: parent
-                            hue: 0
-                            saturation: 0
-                            lightness: virtualstudio.darkMode ? 1 : 0
-                        }
+                    Colorize {
+                        anchors.fill: headphonesIcon
+                        source: headphonesIcon
+                        hue: 0
+                        saturation: 0
+                        lightness: imageLightnessValue
                     }
 
                     ComboBox {
@@ -453,14 +453,6 @@ Item {
 
                         property bool showToolTip: false
 
-                        Colorize {
-                            anchors.fill: parent
-                            source: parent
-                            hue: 0
-                            saturation: 0
-                            lightness: virtualstudio.darkMode ? 0.8 : 0.2
-                        }
-
                         MouseArea {
                             id: inputMouseArea
                             anchors.fill: parent
@@ -494,6 +486,14 @@ Item {
                         }
                     }
 
+                    Colorize {
+                        anchors.fill: inputHelpIcon
+                        source: inputHelpIcon
+                        hue: 0
+                        saturation: 0
+                        lightness: imageLightnessValue
+                    }
+
                     Image {
                         id: microphoneIcon
                         anchors.left: inputLabel.left
@@ -503,14 +503,14 @@ Item {
                         sourceSize: Qt.size(32 * virtualstudio.uiScale, 32 * virtualstudio.uiScale)
                         fillMode: Image.PreserveAspectFit
                         smooth: true
+                    }
 
-                        Colorize {
-                            anchors.fill: parent
-                            source: parent
-                            hue: 0
-                            saturation: 0
-                            lightness: virtualstudio.darkMode ? 1 : 0
-                        }
+                    Colorize {
+                        anchors.fill: microphoneIcon
+                        source: microphoneIcon
+                        hue: 0
+                        saturation: 0
+                        lightness: imageLightnessValue
                     }
 
                     ComboBox {
@@ -822,7 +822,7 @@ Item {
                         font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale; bold: true }
                         color: textColour
                         elide: Text.ElideRight
-                        wrapMode: Text.WordWrap    
+                        wrapMode: Text.WordWrap
                     }
 
                     Text {
@@ -1125,14 +1125,6 @@ Item {
 
             property bool showToolTip: false
 
-            Colorize {
-                anchors.fill: parent
-                source: parent
-                hue: 0
-                saturation: 0
-                lightness: virtualstudio.darkMode ? 0.8 : 0.2
-            }
-
             MouseArea {
                 id: inputStudioMouseArea
                 anchors.fill: parent
@@ -1164,6 +1156,14 @@ Item {
                     color: "transparent"
                 }
             }
+        }
+
+        Colorize {
+            anchors.fill: inputStudioHelpIcon
+            source: inputStudioHelpIcon
+            hue: 0
+            saturation: 0
+            lightness: imageLightnessValue
         }
     }
 
@@ -1291,14 +1291,6 @@ Item {
 
             property bool showToolTip: false
 
-            Colorize {
-                anchors.fill: parent
-                source: parent
-                hue: 0
-                saturation: 0
-                lightness: virtualstudio.darkMode ? 0.8 : 0.2
-            }
-
             MouseArea {
                 id: outputStudioMouseArea
                 anchors.fill: parent
@@ -1332,6 +1324,14 @@ Item {
             }
         }
 
+        Colorize {
+            anchors.fill: outputStudioHelpIcon
+            source: outputStudioHelpIcon
+            hue: 0
+            saturation: 0
+            lightness: imageLightnessValue
+        }
+
         Text {
             id: outputMonText
             width: 40 * virtualstudio.uiScale
@@ -1357,14 +1357,6 @@ Item {
             smooth: true
 
             property bool showToolTip: false
-
-            Colorize {
-                anchors.fill: parent
-                source: parent
-                hue: 0
-                saturation: 0
-                lightness: virtualstudio.darkMode ? 0.8 : 0.2
-            }
 
             MouseArea {
                 id: outputMonMouseArea
@@ -1397,6 +1389,14 @@ Item {
                     color: "transparent"
                 }
             }
+        }
+
+        Colorize {
+            anchors.fill: outputMonHelpIcon
+            source: outputMonHelpIcon
+            hue: 0
+            saturation: 0
+            lightness: imageLightnessValue
         }
     }
 
