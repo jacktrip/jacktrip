@@ -340,7 +340,7 @@ Item {
                             width: parent.width
                             contentItem: Text {
                                 leftPadding: modelData.type === "element" && outputCombo.model.filter(it => it.type === "header").length > 0 ? 24 : 12
-                                text: modelData.text
+                                text: modelData.text || ""
                                 font.bold: modelData.type === "header"
                             }
                             highlighted: outputCombo.highlightedIndex === index
@@ -369,7 +369,7 @@ Item {
                             horizontalAlignment: Text.AlignHLeft
                             verticalAlignment: Text.AlignVCenter
                             elide: Text.ElideRight
-                            text: outputCombo.model[outputCombo.currentIndex].text ? outputCombo.model[outputCombo.currentIndex].text : ""
+                            text: outputCombo.model[outputCombo.currentIndex] && outputCombo.model[outputCombo.currentIndex].text ? outputCombo.model[outputCombo.currentIndex].text : ""
                         }
                     }
 
@@ -530,7 +530,7 @@ Item {
                             width: parent.width
                             contentItem: Text {
                                 leftPadding: modelData.type === "element" && inputCombo.model.filter(it => it.type === "header").length > 0 ? 24 : 12
-                                text: modelData.text
+                                text: modelData.text || ""
                                 font.bold: modelData.type === "header"
                             }
                             highlighted: inputCombo.highlightedIndex === index
@@ -559,7 +559,7 @@ Item {
                             horizontalAlignment: Text.AlignHLeft
                             verticalAlignment: Text.AlignVCenter
                             elide: Text.ElideRight
-                            text: inputCombo.model[inputCombo.currentIndex].text ? inputCombo.model[inputCombo.currentIndex].text : ""
+                            text: inputCombo.model[inputCombo.currentIndex] && inputCombo.model[inputCombo.currentIndex].text ? inputCombo.model[inputCombo.currentIndex].text : ""
                         }
                     }
 

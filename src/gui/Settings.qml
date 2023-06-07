@@ -519,7 +519,7 @@ Item {
                     virtualstudio.feedbackDetectionEnabled = false;
                 } else {
                     virtualstudio.feedbackDetectionEnabled = true;
-                } 
+                }
             }
             font.family: "Poppins"
         }
