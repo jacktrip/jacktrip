@@ -340,7 +340,7 @@ Item {
                             width: parent.width
                             contentItem: Text {
                                 leftPadding: modelData.type === "element" && outputCombo.model.filter(it => it.type === "header").length > 0 ? 24 : 12
-                                text: modelData.text
+                                text: modelData.text || ""
                                 font.bold: modelData.type === "header"
                             }
                             highlighted: outputCombo.highlightedIndex === index
@@ -530,7 +530,7 @@ Item {
                             width: parent.width
                             contentItem: Text {
                                 leftPadding: modelData.type === "element" && inputCombo.model.filter(it => it.type === "header").length > 0 ? 24 : 12
-                                text: modelData.text
+                                text: modelData.text || ""
                                 font.bold: modelData.type === "header"
                             }
                             highlighted: inputCombo.highlightedIndex === index
