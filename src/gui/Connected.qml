@@ -369,7 +369,7 @@ Item {
                             horizontalAlignment: Text.AlignHLeft
                             verticalAlignment: Text.AlignVCenter
                             elide: Text.ElideRight
-                            text: outputCombo.model[outputCombo.currentIndex].text ? outputCombo.model[outputCombo.currentIndex].text : ""
+                            text: outputCombo.model[outputCombo.currentIndex] && outputCombo.model[outputCombo.currentIndex].text ? outputCombo.model[outputCombo.currentIndex].text : ""
                         }
                     }
 
@@ -559,7 +559,7 @@ Item {
                             horizontalAlignment: Text.AlignHLeft
                             verticalAlignment: Text.AlignVCenter
                             elide: Text.ElideRight
-                            text: inputCombo.model[inputCombo.currentIndex].text ? inputCombo.model[inputCombo.currentIndex].text : ""
+                            text: inputCombo.model[inputCombo.currentIndex] && inputCombo.model[inputCombo.currentIndex].text ? inputCombo.model[inputCombo.currentIndex].text : ""
                         }
                     }
 
