@@ -250,10 +250,10 @@ jobs:
       OPENSSL_FULL_VERSION: '3.1.0'
       OPENSSL_SRC_PATH: ${{ github.workspace }}/openssl-src
       OPENSSL_BUILD_PATH: ${{ github.workspace }}/openssl-build
-      QT_VERSION: '5.15.2' # for shared qt installer using install-qt-action
+      QT_VERSION: '6.5.1' # for shared qt installer using install-qt-action
       QT_SRC_PATH: ${{ github.workspace }}/../qt-static-src
       QT_STATIC_BUILD_PATH: ${{ github.workspace }}/qt-static # note: don't use '..' here as this is used with the cache action, which doesn't support '.' and '..' in paths
-      QT_STATIC_OPTIONS: '-static -release -optimize-size -no-pch -nomake tools -nomake tests -nomake examples -opensource -confirm-license -skip webengine -skip qt3d -skip qtactiveqt -skip qtandroidextras -skip qtcharts -skip qtdatavis3d -skip qtdoc -skip qtgamepad -skip qtimageformats -skip qtlocation -skip qtmultimedia -skip qtpurchasing -skip qtpurchasing -skip qtremoteobjects -skip qtscript -skip qtsensors -skip qtserialbus -skip qtserialport -skip qtspeech -skip qttools -skip qtvirtualkeyboard -skip qtwebchannel -skip qtwebglplugin -skip qtxmlpatterns' # common for all platforms
+      QT_STATIC_OPTIONS: '-static -release -optimize-size -no-pch -nomake tools -nomake tests -nomake examples -opensource -confirm-license  -skip qt3d -skip qtactiveqt -skip qtandroidextras -skip qtcharts -skip qtdatavis3d -skip qtdoc -skip qtgamepad -skip qtimageformats -skip qtlocation -skip qtmultimedia -skip qtpurchasing -skip qtpurchasing -skip qtremoteobjects -skip qtscript -skip qtsensors -skip qtserialbus -skip qtserialport -skip qtspeech -skip qttools -skip qttranslations -skip qtvirtualkeyboard -skip qtwebchannel -skip qtwebglplugin -skip qtxmlpatterns' # common for all platforms
       CLANG_TIDY_NAME: clang-tidy-result
       CLANG_TIDY_PATH: ${{ github.workspace }}/clang-tidy-result
       VCPKG_COMMIT: '662dbb50e63af15baa2909b7eac5b1b87e86a0aa'
@@ -309,12 +309,15 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install --yes libjack-dev
+          python -m pip install --upgrade pip
+          pip install html5lib
           if [[ -n "${{ matrix.static-qt-version }}" ]]; then
             sudo apt-get install --yes libfreetype6-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev libx11-xcb-dev libdrm-dev libglu1-mesa-dev libwayland-dev libwayland-egl1-mesa libgles2-mesa-dev libwayland-server0 libwayland-egl-backend-dev libxcb1-dev libxext-dev libfontconfig1-dev libxrender-dev libxcb-keysyms1-dev libxcb-image0-dev libxcb-shm0-dev libxcb-icccm4-dev '^libxcb.*-dev' libxcb-render-util0-dev libxcomposite-dev libgtk-3-dev
           else
             sudo add-apt-repository universe
             sudo apt-get update
-            sudo apt-get install --yes qt6-base-dev qt6-base-dev-tools qmake6 qt6-tools-dev qt6-declarative-dev qt6-webengine-dev libqt6svg6
+            sudo apt-get install --yes qt6-base-dev qt6-base-dev-tools qmake6 qt6-tools-dev qt6-declarative-dev qt6-webengine-dev libqt6svg6-dev libqt6websockets6-dev libgl1-mesa-dev build-essential
+            sudo qtchooser -install qt6 $(which qmake6)
           fi
           if [[ "${{ matrix.system-rtaudio }}" == true ]]; then
             sudo apt-get install --yes librtaudio-dev
@@ -390,7 +393,7 @@ jobs:
           arch: ${{ matrix.qt-arch }}
           cache: true
           cache-key-prefix: $${{ runner.os }}-QtCache-${{ env.QT_VERSION }}-${{ matrix.build-system }}_${{matrix.qt-cache-key}}
-          modules: 'qtnetworkauth'
+          modules: 'qtwebengine qt5compat qtwebsockets'
       - name: wait for static Qt build
         if: matrix.wait-for-static-qt == true
         shell: bash
@@ -479,12 +482,12 @@ jobs:
           fi
           # this patch force enables the arm64 neon feature for universal binary builds on osx
           # without it, qt builds fail with undefined symbols due to configure only taking first architecture into account
-          patch -d "$QT_SRC_PATH/qtbase" < "./macos/qt/configure.json.patch"
+          #patch -d "$QT_SRC_PATH/qtbase" < "./macos/qt/configure.json.patch"
           # configure
           # we can't just append to $QT_STATIC_OPTIONS for this because the space in argument makes things more tricky
           echo "QT Configure command"
-          echo "\"$QT_SRC_PATH/configure\" -prefix \"$QT_STATIC_BUILD_PATH\" $QT_STATIC_OPTIONS \"QMAKE_APPLE_DEVICE_ARCHS=x86_64 arm64\""
-          "$QT_SRC_PATH/configure" -prefix "$QT_STATIC_BUILD_PATH" $QT_STATIC_OPTIONS "QMAKE_APPLE_DEVICE_ARCHS=x86_64 arm64"
+          echo "\"$QT_SRC_PATH/configure\" -prefix \"$QT_STATIC_BUILD_PATH\" $QT_STATIC_OPTIONS \"QMAKE_APPLE_DEVICE_ARCHS=x86_64 arm64\" -- -DCMAKE_OSX_ARCHITECTURES=\"x86_64;arm64\""
+          "$QT_SRC_PATH/configure" -prefix "$QT_STATIC_BUILD_PATH" $QT_STATIC_OPTIONS "QMAKE_APPLE_DEVICE_ARCHS=x86_64 arm64" -- -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
           # build
           echo "building Qt"
           make -j4
@@ -518,6 +521,7 @@ jobs:
         if: matrix.build-system == 'qmake'
         shell: bash
         run: |
+          export QT_SELECT=qt6
           CONFIG_STRING="noclean -j4"
           if [[ -n "${{ matrix.static-qt-version }}" ]]; then
             CONFIG_STRING="static $CONFIG_STRING"

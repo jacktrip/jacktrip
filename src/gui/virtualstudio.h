@@ -46,7 +46,6 @@
 #include <QSharedPointer>
 #include <QTimer>
 #include <QVector>
-#include <QtNetworkAuth>
 
 #include "../Analyzer.h"
 #include "../JackTrip.h"
