@@ -35,7 +35,6 @@ Item {
     property int numFailures: 0;
 
     property string backgroundColour: virtualstudio.darkMode ? "#272525" : "#FAFBFB"
-    property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
     property string buttonColour: virtualstudio.darkMode ? "#FAFBFB" : "#F0F1F1"
     property string buttonHoverColour: virtualstudio.darkMode ? "#E9E9E9" : "#E4E5E5"
     property string buttonPressedColour: virtualstudio.darkMode ? "#FAFBFB" : "#E4E5E5"
@@ -47,11 +46,10 @@ Item {
     property string buttonTextPressed: virtualstudio.darkMode ? "#323030" : "#D00A0A"
     property string shadowColour: virtualstudio.darkMode ? "40000000" : "#80A1A1A1"
     property string linkTextColour: virtualstudio.darkMode ? "#8B8D8D" : "#272525"
-    property string toolTipTextColour: codeCopied ? "#FAFBFB" : textColour
+    property string toolTipTextColour: codeCopied ? "#FAFBFB" : Styles.text.color.standard
     property string toolTipBackgroundColour: codeCopied ? "#57B147" : (virtualstudio.darkMode ? "#323232" : "#F3F3F3")
     property string tooltipStroke: virtualstudio.darkMode ? "#80827D7D" : "#34979797"
     property string disabledButtonText: "#D3D4D4"
-    property string errorTextColour: "#DB0A0A"
 
     property bool showCodeFlow: (loginScreen.state === "unauthenticated" && !auth.attemptingRefreshToken) || (loginScreen.state === "polling" || loginScreen.state === "failed" || (loginScreen.state === "success" && auth.authenticationMethod === "code flow"))
     property bool showLoading: (loginScreen.state === "unauthenticated" ** auth.attemptingRefreshToken) || loginScreen.state === "refreshing" || (loginScreen.state === "success" && auth.authenticationMethod === "refresh token")
@@ -85,10 +83,10 @@ Item {
         Text {
             text: "Virtual Studio"
             font.family: "Poppins"
-            font.pixelSize: 24 * virtualstudio.fontScale * virtualstudio.uiScale
+            font.pixelSize: Styles.font.xl
             anchors.horizontalCenter: parent.horizontalCenter
             y: 80 * virtualstudio.uiScale
-            color: textColour
+            color: Styles.text.color.standard
         }
     }
 
@@ -104,12 +102,12 @@ Item {
             id: deviceVerificationExplanation
             text: `Please sign in and confirm the following code using your web browser. Return here when you are done.`
             font.family: "Poppins"
-            font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
+            font.pixelSize: Styles.font.sm
             anchors.horizontalCenter: parent.horizontalCenter
             y: 128 * virtualstudio.uiScale
             width: 500 * virtualstudio.uiScale;
             visible: true
-            color: textColour
+            color: Styles.text.color.standard
             wrapMode: Text.WordWrap
             horizontalAlignment: Text.AlignHCenter
             textFormat: Text.RichText
@@ -145,13 +143,13 @@ Item {
             id: deviceVerificationCode
             text: auth.verificationCode || ((numFailures >= 5) ? "Error" : "Loading...");
             font.family: "Poppins"
-            font.pixelSize: 20 * virtualstudio.fontScale * virtualstudio.uiScale
+            font.pixelSize: Styles.font.lg
             font.letterSpacing: Boolean(auth.verificationCode) ? 8 : 1
             anchors.horizontalCenter: parent.horizontalCenter
             y: 196 * virtualstudio.uiScale
             width: 360 * virtualstudio.uiScale;
             visible: !auth.isAuthenticated
-            color: Boolean(auth.verificationCode) ? textColour : disabledButtonText
+            color: Boolean(auth.verificationCode) ? Styles.text.color.standard : disabledButtonText
             wrapMode: Text.WordWrap
             horizontalAlignment: Text.AlignHCenter
 
@@ -188,7 +186,7 @@ Item {
 
                     Text {
                         anchors.centerIn: parent
-                        font { family: "Poppins"; pixelSize: 8 * virtualstudio.fontScale * virtualstudio.uiScale}
+                        font { family: "Poppins"; pixelSize: Styles.font.xs }
                         text: codeCopied ? qsTr("📋 Copied code to clipboard") : qsTr("📋 Copy code to Clipboard")
                         color: toolTipTextColour
                     }
@@ -219,7 +217,7 @@ Item {
             Text {
                 text: "Sign In"
                 font.family: "Poppins"
-                font.pixelSize: 18 * virtualstudio.fontScale * virtualstudio.uiScale
+                font.pixelSize: Styles.font.lg
                 font.weight: Font.Bold
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
@@ -232,12 +230,12 @@ Item {
             id: authFailedText
             text: "There was an error trying to sign in. Please try again."
             font.family: "Poppins"
-            font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
+            font.pixelSize: Styles.font.sm
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.bottom: loginScreenFooter.top
             anchors.bottomMargin: 16 * virtualstudio.uiScale
             visible: (loginScreen.state === "failed" || numFailures > 0) && loginScreen.state !== "success"
-            color: errorTextColour
+            color: Styles.text.color.warning
         }
 
         Item {
@@ -261,10 +259,10 @@ Item {
                     text: "Back"
                     font.family: "Poppins"
                     font.underline: true
-                    font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
+                    font.pixelSize: Styles.font.sm
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.verticalCenter: parent.verticalCenter
-                    color: textColour
+                    color: Styles.text.color.standard
                 }
                 MouseArea {
                     anchors.fill: parent
@@ -283,10 +281,10 @@ Item {
                     text: "Use Classic Mode"
                     font.underline: true
                     font.family: "Poppins"
-                    font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
+                    font.pixelSize: Styles.font.sm
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.verticalCenter: parent.verticalCenter
-                    color: textColour
+                    color: Styles.text.color.standard
                 }
                 MouseArea {
                     anchors.fill: parent
@@ -305,10 +303,10 @@ Item {
                     text: "Reset Code"
                     font.family: "Poppins"
                     font.underline: true
-                    font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
+                    font.pixelSize: Styles.font.sm
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.verticalCenter: parent.verticalCenter
-                    color: textColour
+                    color: Styles.text.color.standard
                 }
                 MouseArea {
                     anchors.fill: parent
@@ -333,11 +331,11 @@ Item {
             id: loadingAudioInterfaces
             text: "Configuring Audio...";
             font.family: "Poppins"
-            font.pixelSize: 16 * virtualstudio.fontScale * virtualstudio.uiScale
+            font.pixelSize: Styles.font.lg
             anchors.horizontalCenter: parent.horizontalCenter
             y: 214 * virtualstudio.uiScale
             width: 360 * virtualstudio.uiScale;
-            color: textColour
+            color: Styles.text.color.standard
             wrapMode: Text.WordWrap
             horizontalAlignment: Text.AlignHCenter
             visible: loginScreen.state === "success"
@@ -347,11 +345,11 @@ Item {
             id: loadingViaRefreshToken
             text: "Logging In...";
             font.family: "Poppins"
-            font.pixelSize: 20 * virtualstudio.fontScale * virtualstudio.uiScale
+            font.pixelSize: Styles.font.lg
             anchors.horizontalCenter: parent.horizontalCenter
             y: 208 * virtualstudio.uiScale
             width: 360 * virtualstudio.uiScale;
-            color: textColour
+            color: Styles.text.color.standard
             wrapMode: Text.WordWrap
             horizontalAlignment: Text.AlignHCenter
             visible: !loadingAudioInterfaces.visible

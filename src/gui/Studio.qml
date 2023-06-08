@@ -25,15 +25,10 @@ Rectangle {
     property int bottomToolTipMargin: 8
     property int rightToolTipMargin: 4
 
-    property real fontBig: 18
-    property real fontMedium: 11
-    property real fontSmall: 8
-
     property string backgroundColour: virtualstudio.darkMode ? "#494646" : "#F4F6F6"
-    property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
     property string shadowColour: virtualstudio.darkMode ? "#40000000" : "#80A1A1A1"
     property string toolTipBackgroundColour: inviteCopied ? "#57B147" : (virtualstudio.darkMode ? "#323232" : "#F3F3F3")
-    property string toolTipTextColour: inviteCopied ? "#FAFBFB" : textColour
+    property string toolTipTextColour: inviteCopied ? "#FAFBFB" : Styles.text.color.standard
     property string tooltipStroke: virtualstudio.darkMode ? "#80827D7D" : "#34979797"
 
     property string baseButtonColour: virtualstudio.darkMode ? "#F0F1F1" : "#EAEBEB"
@@ -142,10 +137,10 @@ Rectangle {
         width: (admin || connected) ? parent.width - (310 * virtualstudio.uiScale) : parent.width - (233 * virtualstudio.uiScale)
         text: studioName
         fontSizeMode: Text.HorizontalFit
-        font { family: "Poppins"; weight: Font.Bold; pixelSize: fontBig * virtualstudio.fontScale * virtualstudio.uiScale }
+        font { family: "Poppins"; weight: Font.Bold; pixelSize: Styles.font.lg }
         elide: Text.ElideRight
         verticalAlignment: Text.AlignVCenter
-        color: textColour
+        color: Styles.text.color.standard
     }
 
     Rectangle {
@@ -169,9 +164,9 @@ Rectangle {
         x: (leftMargin + 22) * virtualstudio.uiScale
         width: (admin || connected) ? parent.width - (255 * virtualstudio.uiScale) : parent.width - (178 * virtualstudio.uiScale)
         text: publicStudio ? "Public hub studio " + serverLocation : "Private hub studio " + serverLocation
-        font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+        font { family: "Poppins"; pixelSize: Styles.font.xs }
         elide: Text.ElideRight
-        color: textColour
+        color: Styles.text.color.standard
     }
 
     Button {
@@ -230,9 +225,9 @@ Rectangle {
         anchors.horizontalCenter: joinButton.horizontalCenter
         y: 56 * virtualstudio.uiScale
         text: connected ? "Leave" : "Join"
-        font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale}
+        font { family: "Poppins"; pixelSize: Styles.font.sm }
         visible: true
-        color: textColour
+        color: Styles.text.color.standard
     }
 
     Button {
@@ -290,7 +285,7 @@ Rectangle {
 
                 Text {
                     anchors.centerIn: parent
-                    font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale}
+                    font { family: "Poppins"; pixelSize: Styles.font.xs }
                     text: inviteCopied ?  qsTr("📋 Copied invitation link to Clipboard") : qsTr("Copy invite link for Studio")
                     color: toolTipTextColour
                 }
@@ -305,9 +300,9 @@ Rectangle {
         anchors.horizontalCenter: inviteButton.horizontalCenter
         y: 56 * virtualstudio.uiScale
         text: "Invite"
-        font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+        font { family: "Poppins"; pixelSize: Styles.font.sm }
         visible: true
-        color: textColour
+        color: Styles.text.color.standard
     }
 
     Button {
@@ -343,8 +338,8 @@ Rectangle {
         anchors.horizontalCenter: manageOrVideoButton.horizontalCenter
         y: 56 * virtualstudio.uiScale
         text: connected ? "Video" : "Manage"
-        font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+        font { family: "Poppins"; pixelSize: Styles.font.sm }
         visible: admin || connected
-        color: textColour
+        color: Styles.text.color.standard
     }
 }

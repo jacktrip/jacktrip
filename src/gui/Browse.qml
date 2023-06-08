@@ -7,7 +7,7 @@ Item {
 
     Rectangle {
         width: parent.width; height: parent.height
-        color: backgroundColour
+        color: Styles.background.defaultColor
     }
 
     property bool refreshing: false
@@ -18,13 +18,9 @@ Item {
     property int emptyListMessageWidth: 450
     property int createMessageTopMargin: 16
     property int createButtonTopMargin: 24
-    property int fontBig: 28
-    property int fontMedium: 11
 
     property int scrollY: 0
 
-    property string backgroundColour: virtualstudio.darkMode ? "#272525" : "#FAFBFB"
-    property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
     property string buttonColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
     property string buttonHoverColour: virtualstudio.darkMode ? "#5B5858" : "#D3D4D4"
     property string buttonPressedColour: virtualstudio.darkMode ? "#524F4F" : "#DEE0E0"
@@ -61,7 +57,7 @@ Item {
             height: 16 * virtualstudio.uiScale
             x: 16 * virtualstudio.uiScale
             width: parent.width - (2 * x)
-            color: backgroundColour
+            color: Styles.background.defaultColor
         }
     }
 
@@ -101,8 +97,8 @@ Item {
             id: emptyListMessage
             visible: parent.count == 0 && !virtualstudio.showCreateStudio
             text: "No studios found that match your filter criteria."
-            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-            color: textColour
+            font { family: "Poppins"; pixelSize: Styles.font.md }
+            color: Styles.text.color.standard
             width: emptyListMessageWidth
             wrapMode: Text.Wrap
             horizontalAlignment: Text.AlignHCenter
@@ -131,9 +127,9 @@ Item {
             width: 120 * virtualstudio.uiScale; height: 32 * virtualstudio.uiScale
             Text {
                 text: "Reset Filters"
-                font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+                font { family: "Poppins"; pixelSize: Styles.font.md }
                 anchors {horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-                color: textColour
+                color: Styles.text.color.standard
             }
         }
 
@@ -153,8 +149,8 @@ Item {
                 Text {
                     id: welcomeMessage
                     text: "Welcome"
-                    font { family: "Poppins"; pixelSize: fontBig * virtualstudio.fontScale * virtualstudio.uiScale; weight: Font.Bold }
-                    color: textColour
+                    font { family: "Poppins"; pixelSize: Styles.font.xl; weight: Font.Bold }
+                    color: Styles.text.color.standard
                     width: emptyListMessageWidth
                     wrapMode: Text.Wrap
                     horizontalAlignment: Text.AlignHCenter
@@ -165,8 +161,8 @@ Item {
                 Text {
                     id: createStudioMessage
                     text: "Looks like you're not a member of any studios!\nHave the studio owner send you an invite link, or create your own studio to invite others."
-                    font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-                    color: textColour
+                    font { family: "Poppins"; pixelSize: Styles.font.md }
+                    color: Styles.text.color.standard
                     width: emptyListMessageWidth
                     wrapMode: Text.Wrap
                     horizontalAlignment: Text.AlignHCenter
@@ -192,7 +188,7 @@ Item {
                     Text {
                         text: "Create a Studio"
                         font.family: "Poppins"
-                        font.pixelSize: 18 * virtualstudio.fontScale * virtualstudio.uiScale
+                        font.pixelSize: Styles.font.lg
                         font.weight: Font.Bold
                         color: "#DB0A0A"
                         anchors.horizontalCenter: parent.horizontalCenter
@@ -231,7 +227,7 @@ Item {
     Rectangle {
         x: 0; y: parent.height - 36 * virtualstudio.uiScale; width: parent.width; height: 36 * virtualstudio.uiScale
         border.color: "#33979797"
-        color: backgroundColour
+        color: Styles.background.defaultColor
 
         Button {
             id: refreshButton
@@ -247,9 +243,9 @@ Item {
             width: buttonWidth * virtualstudio.uiScale; height: buttonHeight * virtualstudio.uiScale
             Text {
                 text: "Refresh List"
-                font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+                font { family: "Poppins"; pixelSize: Styles.font.md }
                 anchors {horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-                color: textColour
+                color: Styles.text.color.standard
             }
         }
 
@@ -267,19 +263,19 @@ Item {
             width: buttonWidth * virtualstudio.uiScale; height: buttonHeight * virtualstudio.uiScale
             Text {
                 text: "About"
-                font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+                font { family: "Poppins"; pixelSize: Styles.font.md }
                 anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-                color: textColour
+                color: Styles.text.color.standard
             }
         }
 
         Button {
             id: settingsButton
             text: "Settings"
-            palette.buttonText: textColour
+            palette.buttonText: Styles.text.color.standard
             icon {
                 source: "cog.svg";
-                color: textColour;
+                color: Styles.text.color.standard;
             }
             background: Rectangle {
                 radius: 6 * virtualstudio.uiScale
@@ -294,10 +290,7 @@ Item {
             }
             onClicked: { virtualstudio.windowState = "settings"; restartAudioTimer.restart(); }
             display: AbstractButton.TextBesideIcon
-            font {
-                family: "Poppins";
-                pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale;
-            }
+            font { family: "Poppins"; pixelSize: Styles.font.md }
             leftPadding: 0
             rightPadding: 4
             spacing: 0

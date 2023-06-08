@@ -5,7 +5,6 @@ Item {
     width: parent.width; height: parent.height
     clip: true
 
-    property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
     property string shadowColour: virtualstudio.darkMode ? "40000000" : "#80A1A1A1"
     property string buttonColour: virtualstudio.darkMode ? "#FAFBFB" : "#F0F1F1"
     property string buttonHoverColour: virtualstudio.darkMode ? "#E9E9E9" : "#E4E5E5"
@@ -30,8 +29,8 @@ Item {
         y: 168 * virtualstudio.uiScale
         text: "Sign in with a Virtual Studio account?"
         font.family: "Poppins"
-        font.pixelSize: 17 * virtualstudio.fontScale * virtualstudio.uiScale
-        color: textColour
+        font.pixelSize: Styles.font.lg
+        color: Styles.text.color.standard
     }
 
     Text {
@@ -39,8 +38,8 @@ Item {
         y: 219 * virtualstudio.uiScale
         text: "You'll be able to change your mind later"
         font.family: "Poppins"
-        font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
-        color: textColour
+        font.pixelSize: Styles.font.sm
+        color: Styles.text.color.standard
     }
 
     Button {
@@ -58,7 +57,7 @@ Item {
         Text {
             text: "Yes"
             font.family: "Poppins"
-            font.pixelSize: 18 * virtualstudio.fontScale * virtualstudio.uiScale
+            font.pixelSize: Styles.font.lg
             font.weight: Font.Bold
             color: "#DB0A0A"
             anchors.horizontalCenter: parent.horizontalCenter
@@ -69,14 +68,14 @@ Item {
         text: "• Connect to Virtual Studios<br>• Broadcast on JackTrip Radio<br>• Apply FX with Soundscapes"
         textFormat: Text.StyledText
         font.family: "Poppins"
-        font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
+        font.pixelSize: Styles.font.sm
         x: parent.width / 2 - (265 * virtualstudio.uiScale);
         y: 355 * virtualstudio.uiScale;
         width: 230 * virtualstudio.uiScale
         padding: 0
         wrapMode: Text.WordWrap
         horizontalAlignment: Text.AlignHCenter
-        color: textColour
+        color: Styles.text.color.standard
     }
     Image {
         source: "JTVS.png"
@@ -99,7 +98,7 @@ Item {
         Text {
             text: "No"
             font.family: "Poppins"
-            font.pixelSize: 18 * virtualstudio.fontScale * virtualstudio.uiScale
+            font.pixelSize: Styles.font.lg
             font.weight: Font.Bold
             color: "#DB0A0A"
             anchors.horizontalCenter: parent.horizontalCenter
@@ -116,13 +115,13 @@ Item {
               "• Connect via IP address<br>• Run a local hub server<br>• The Classic JackTrip experience"
         textFormat: Text.StyledText
         font.family: "Poppins"
-        font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
+        font.pixelSize: Styles.font.sm
         x: parent.width / 2 + (32 * virtualstudio.uiScale);
         y: 355 * virtualstudio.uiScale;
         width: 230 * virtualstudio.uiScale
         padding: 0
         wrapMode: Text.WordWrap
         horizontalAlignment: Text.AlignHCenter
-        color: textColour
+        color: Styles.text.color.standard
     }
 }

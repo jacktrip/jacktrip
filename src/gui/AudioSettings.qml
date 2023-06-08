@@ -5,12 +5,7 @@ import QtGraphicalEffects 1.12
 Rectangle {
     width: parent.width
     height: parent.height
-    color: backgroundColour
-
-    property int fontBig: 20
-    property int fontMedium: 13
-    property int fontSmall: 11
-    property int fontExtraSmall: 8
+    color: Styles.background.defaultColor
 
     property int leftMargin: 48
     property int rightMargin: 16
@@ -19,23 +14,8 @@ Rectangle {
     property int buttonWidth: 103
     property int buttonHeight: 25
 
-    property string backgroundColour: virtualstudio.darkMode ? "#272525" : "#FAFBFB"
-    property real imageLightnessValue: virtualstudio.darkMode ? 0.8 : 0.2
-    property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
-    property string buttonColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
-    property string buttonHoverColour: virtualstudio.darkMode ? "#5B5858" : "#D3D4D4"
-    property string buttonPressedColour: virtualstudio.darkMode ? "#524F4F" : "#DEE0E0"
     property string buttonStroke: virtualstudio.darkMode ? "#80827D7D" : "#40979797"
-    property string buttonHoverStroke: virtualstudio.darkMode ? "#7B7777" : "#BABCBC"
-    property string buttonPressedStroke: virtualstudio.darkMode ? "#827D7D" : "#BABCBC"
-    property string sliderColour: virtualstudio.darkMode ? "#BABCBC" :  "#EAECEC"
-    property string sliderPressedColour: virtualstudio.darkMode ? "#ACAFAF" : "#DEE0E0"
-    property string sliderTrackColour: virtualstudio.darkMode ? "#5B5858" : "light gray"
-    property string sliderActiveTrackColour: virtualstudio.darkMode ? "light gray" : "black"
-    property string warningTextColour: "#DB0A0A"
     property string linkText: virtualstudio.darkMode ? "#8B8D8D" : "#272525"
-    property string toolTipBackgroundColour: virtualstudio.darkMode ? "#323232" : "#F3F3F3"
-    property string toolTipTextColour: textColour
 
     property string errorFlagColour: "#DB0A0A"
     property string disabledButtonTextColour: virtualstudio.darkMode ? "#827D7D" : "#BABCBC"
@@ -99,8 +79,8 @@ Rectangle {
                 id: outputLabel
                 x: 0; y: 0
                 text: "Output Device"
-                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-                color: textColour
+                font { family: "Poppins"; pixelSize: Styles.font.sm }
+                color: Styles.text.color.standard
             }
 
             Image {
@@ -126,20 +106,20 @@ Rectangle {
                 ToolTip {
                     visible: outputHelpIcon.showToolTip
                     contentItem: Rectangle {
-                        color: toolTipBackgroundColour
+                        color: Styles.button.bgColor
                         radius: 3
                         anchors.fill: parent
                         anchors.bottomMargin: bottomToolTipMargin * virtualstudio.uiScale
                         anchors.rightMargin: rightToolTipMargin * virtualstudio.uiScale
                         layer.enabled: true
                         border.width: 1
-                        border.color: buttonStroke
+                        border.color: Styles.button.strokeColor
 
                         Text {
                             anchors.centerIn: parent
-                            font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale}
+                            font { family: "Poppins"; pixelSize: Styles.font.xs }
                             text: qsTr("How you'll hear the studio audio")
-                            color: toolTipTextColour
+                            color: Styles.text.color.standard
                         }
                     }
                     background: Rectangle {
@@ -153,7 +133,7 @@ Rectangle {
                 source: outputHelpIcon
                 hue: 0
                 saturation: 0
-                lightness: imageLightnessValue
+                lightness: Styles.image.lightness
             }
 
             Image {
@@ -171,7 +151,7 @@ Rectangle {
                 source: headphonesIcon
                 hue: 0
                 saturation: 0
-                lightness: imageLightnessValue
+                lightness: Styles.image.lightness
             }
 
             ComboBox {
@@ -259,12 +239,12 @@ Rectangle {
                     width: outputSlider.availableWidth
                     height: implicitHeight
                     radius: 4
-                    color: sliderTrackColour
+                    color: Styles.slider.trackInactiveColor
 
                     Rectangle {
                         width: outputSlider.visualPosition * parent.width
                         height: parent.height
-                        color: sliderActiveTrackColour
+                        color: Styles.slider.trackActiveColor
                         radius: 4
                     }
                 }
@@ -275,7 +255,7 @@ Rectangle {
                     implicitWidth: 26 * virtualstudio.uiScale
                     implicitHeight: 26 * virtualstudio.uiScale
                     radius: 13 * virtualstudio.uiScale
-                    color: outputSlider.pressed ? sliderPressedColour : sliderColour
+                    color: outputSlider.pressed ? Styles.slider.bgPressedColor : Styles.slider.bgColor
                     border.color: buttonStroke
                 }
             }
@@ -295,7 +275,7 @@ Rectangle {
                 source: outputQuieterIcon
                 hue: 0
                 saturation: 0
-                lightness: imageLightnessValue
+                lightness: Styles.image.lightness
             }
 
             Image {
@@ -314,7 +294,7 @@ Rectangle {
                 source: outputLouderIcon
                 hue: 0
                 saturation: 0
-                lightness: imageLightnessValue
+                lightness: Styles.image.lightness
             }
 
             Text {
@@ -325,8 +305,8 @@ Rectangle {
                 anchors.topMargin: 12 * virtualstudio.uiScale
                 textFormat: Text.RichText
                 text: "Output Channel(s)"
-                font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-                color: textColour
+                font { family: "Poppins"; pixelSize: Styles.font.xs }
+                color: Styles.text.color.standard
             }
 
             ComboBox {
@@ -378,9 +358,9 @@ Rectangle {
                 id: testOutputAudioButton
                 background: Rectangle {
                     radius: 6 * virtualstudio.uiScale
-                    color: testOutputAudioButton.down ? buttonPressedColour : (testOutputAudioButton.hovered ? buttonHoverColour : buttonColour)
+                    color: testOutputAudioButton.down ? Styles.button.bgPressedColor : (testOutputAudioButton.hovered ? Styles.button.bgHoverColor : Styles.button.bgColor )
                     border.width: 1
-                    border.color: testOutputAudioButton.down || testOutputAudioButton.hovered ? buttonPressedStroke : (testOutputAudioButton.hovered ? buttonHoverStroke : buttonStroke)
+                    border.color: testOutputAudioButton.down || testOutputAudioButton.hovered ? Styles.button.strokePressedColor : (testOutputAudioButton.hovered ? Styles.button.strokeHoverColor : Styles.button.strokeColor )
                 }
                 onClicked: { virtualstudio.playOutputAudio() }
                 anchors.right: parent.right
@@ -389,9 +369,9 @@ Rectangle {
                 width: 144 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
                 Text {
                     text: "Play Test Tone"
-                    font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                    font { family: "Poppins"; pixelSize: Styles.font.xs }
                     anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-                    color: textColour
+                    color: Styles.text.color.standard
                 }
             }
 
@@ -409,8 +389,8 @@ Rectangle {
                 anchors.top: divider1.bottom
                 anchors.topMargin: 32 * virtualstudio.uiScale
                 text: "Input Device"
-                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-                color: textColour
+                font { family: "Poppins"; pixelSize: Styles.font.sm }
+                color: Styles.text.color.standard
             }
 
             Image {
@@ -436,20 +416,20 @@ Rectangle {
                 ToolTip {
                     visible: inputHelpIcon.showToolTip
                     contentItem: Rectangle {
-                        color: toolTipBackgroundColour
+                        color: Styles.button.bgColor
                         radius: 3
                         anchors.fill: parent
                         anchors.bottomMargin: bottomToolTipMargin * virtualstudio.uiScale
                         anchors.rightMargin: rightToolTipMargin * virtualstudio.uiScale
                         layer.enabled: true
                         border.width: 1
-                        border.color: buttonStroke
+                        border.color: Styles.button.strokeColor
 
                         Text {
                             anchors.centerIn: parent
-                            font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale}
+                            font { family: "Poppins"; pixelSize: Styles.font.xs }
                             text: qsTr("Audio sent to the studio (microphone, instrument, mixer, etc.)")
-                            color: toolTipTextColour
+                            color: Styles.text.color.standard
                         }
                     }
                     background: Rectangle {
@@ -463,7 +443,7 @@ Rectangle {
                 source: inputHelpIcon
                 hue: 0
                 saturation: 0
-                lightness: imageLightnessValue
+                lightness: Styles.image.lightness
             }
 
             Image {
@@ -481,7 +461,7 @@ Rectangle {
                 source: microphoneIcon
                 hue: 0
                 saturation: 0
-                lightness: imageLightnessValue
+                lightness: Styles.image.lightness
             }
 
             ComboBox {
@@ -568,12 +548,12 @@ Rectangle {
                     width: inputSlider.availableWidth
                     height: implicitHeight
                     radius: 4
-                    color: sliderTrackColour
+                    color: Styles.slider.trackInactiveColor
 
                     Rectangle {
                         width: inputSlider.visualPosition * parent.width
                         height: parent.height
-                        color: sliderActiveTrackColour
+                        color: Styles.slider.trackActiveColor
                         radius: 4
                     }
                 }
@@ -584,7 +564,7 @@ Rectangle {
                     implicitWidth: 26 * virtualstudio.uiScale
                     implicitHeight: 26 * virtualstudio.uiScale
                     radius: 13 * virtualstudio.uiScale
-                    color: inputSlider.pressed ? sliderPressedColour : sliderColour
+                    color: inputSlider.pressed ? Styles.slider.bgPressedColor : Styles.slider.bgColor
                     border.color: buttonStroke
                 }
             }
@@ -604,7 +584,7 @@ Rectangle {
                 source: inputQuieterIcon
                 hue: 0
                 saturation: 0
-                lightness: imageLightnessValue
+                lightness: Styles.image.lightness
             }
 
             Image {
@@ -623,7 +603,7 @@ Rectangle {
                 source: inputLouderIcon
                 hue: 0
                 saturation: 0
-                lightness: imageLightnessValue
+                lightness: Styles.image.lightness
             }
 
             Button {
@@ -643,8 +623,8 @@ Rectangle {
                 anchors.topMargin: 12 * virtualstudio.uiScale
                 textFormat: Text.RichText
                 text: "Input Channel(s)"
-                font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-                color: textColour
+                font { family: "Poppins"; pixelSize: Styles.font.xs }
+                color: Styles.text.color.standard
             }
 
             ComboBox {
@@ -701,8 +681,8 @@ Rectangle {
                 anchors.topMargin: 12 * virtualstudio.uiScale
                 textFormat: Text.RichText
                 text: "Mono / Stereo"
-                font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-                color: textColour
+                font { family: "Poppins"; pixelSize: Styles.font.xs }
+                color: Styles.text.color.standard
             }
 
             ComboBox {
@@ -758,8 +738,8 @@ Rectangle {
                 textFormat: Text.RichText
                 wrapMode: Text.WordWrap
                 text: "Choose up to 2 channels"
-                font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-                color: textColour
+                font { family: "Poppins"; pixelSize: Styles.font.xs }
+                color: Styles.text.color.standard
             }
 
             Text {
@@ -782,8 +762,8 @@ Rectangle {
                         return "";
                     }
                 })()
-                font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-                color: textColour
+                font { family: "Poppins"; pixelSize: Styles.font.xs }
+                color: Styles.text.color.standard
             }
 
             Text {
@@ -805,8 +785,8 @@ Rectangle {
                 }
                 horizontalAlignment: Text.AlignHLeft
                 wrapMode: Text.WordWrap
-                color: warningTextColour
-                font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                color: Styles.text.color.warning
+                font { family: "Poppins"; pixelSize: Styles.font.xs }
                 visible: Boolean(virtualstudio.devicesError) || Boolean(virtualstudio.devicesWarning);
             }
         }
@@ -828,9 +808,9 @@ Rectangle {
                 x: 0; y: 0
                 width: parent.width - rightMargin * virtualstudio.uiScale
                 text: "Using JACK for audio input and output. Use QjackCtl to adjust your sample rate, buffer, and device settings."
-                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                font { family: "Poppins"; pixelSize: Styles.font.sm }
                 wrapMode: Text.WordWrap
-                color: textColour
+                color: Styles.text.color.standard
             }
 
             Text {
@@ -840,9 +820,9 @@ Rectangle {
                 anchors.topMargin: 48 * virtualstudio.uiScale
                 width: 144 * virtualstudio.uiScale
                 text: "Output Volume"
-                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                font { family: "Poppins"; pixelSize: Styles.font.sm }
                 wrapMode: Text.WordWrap
-                color: textColour
+                color: Styles.text.color.standard
             }
 
             Image {
@@ -860,7 +840,7 @@ Rectangle {
                 source: jackHeadphonesIcon
                 hue: 0
                 saturation: 0
-                lightness: imageLightnessValue
+                lightness: Styles.image.lightness
             }
 
             Meter {
@@ -879,9 +859,9 @@ Rectangle {
                 id: jackTestOutputAudioButton
                 background: Rectangle {
                     radius: 6 * virtualstudio.uiScale
-                    color: jackTestOutputAudioButton.down ? buttonPressedColour : (jackTestOutputAudioButton.hovered ? buttonHoverColour : buttonColour)
+                    color: jackTestOutputAudioButton.down ? Styles.button.bgPressedColor : (jackTestOutputAudioButton.hovered ? Styles.button.bgHoverColor : Styles.button.bgColor )
                     border.width: 1
-                    border.color: jackTestOutputAudioButton.down ? buttonPressedStroke : (jackTestOutputAudioButton.hovered ? buttonHoverStroke : buttonStroke)
+                    border.color: jackTestOutputAudioButton.down || jackTestOutputAudioButton.hovered ? Styles.button.strokePressedColor : (jackTestOutputAudioButton.hovered ? Styles.button.strokeHoverColor : Styles.button.strokeColor )
                 }
                 onClicked: { virtualstudio.playOutputAudio() }
                 anchors.right: parent.right
@@ -890,9 +870,9 @@ Rectangle {
                 width: 144 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
                 Text {
                     text: "Play Test Tone"
-                    font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                    font { family: "Poppins"; pixelSize: Styles.font.xs }
                     anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-                    color: textColour
+                    color: Styles.text.color.standard
                 }
             }
 
@@ -918,12 +898,12 @@ Rectangle {
                     width: jackOutputVolumeSlider.availableWidth
                     height: implicitHeight
                     radius: 4
-                    color: sliderTrackColour
+                    color: Styles.slider.trackInactiveColor
 
                     Rectangle {
                         width: jackOutputVolumeSlider.visualPosition * parent.width
                         height: parent.height
-                        color: sliderActiveTrackColour
+                        color: Styles.slider.trackActiveColor
                         radius: 4
                     }
                 }
@@ -934,7 +914,7 @@ Rectangle {
                     implicitWidth: 26 * virtualstudio.uiScale
                     implicitHeight: 26 * virtualstudio.uiScale
                     radius: 13 * virtualstudio.uiScale
-                    color: jackOutputVolumeSlider.pressed ? sliderPressedColour : sliderColour
+                    color: jackOutputVolumeSlider.pressed ? Styles.slider.bgPressedColor : Styles.slider.bgColor
                     border.color: buttonStroke
                 }
             }
@@ -954,7 +934,7 @@ Rectangle {
                 source: jackOutputQuieterButton
                 hue: 0
                 saturation: 0
-                lightness: imageLightnessValue
+                lightness: Styles.image.lightness
             }
 
             Image {
@@ -973,7 +953,7 @@ Rectangle {
                 source: jackOutputLouderIcon
                 hue: 0
                 saturation: 0
-                lightness: imageLightnessValue
+                lightness: Styles.image.lightness
             }
 
             Text {
@@ -983,9 +963,9 @@ Rectangle {
                 anchors.topMargin: 48 * virtualstudio.uiScale
                 width: 144 * virtualstudio.uiScale
                 text: "Input Volume"
-                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                font { family: "Poppins"; pixelSize: Styles.font.sm }
                 wrapMode: Text.WordWrap
-                color: textColour
+                color: Styles.text.color.standard
             }
 
             Image {
@@ -1003,7 +983,7 @@ Rectangle {
                 source: jackMicrophoneIcon
                 hue: 0
                 saturation: 0
-                lightness: imageLightnessValue
+                lightness: Styles.image.lightness
             }
 
             Meter {
@@ -1040,12 +1020,12 @@ Rectangle {
                     width: jackInputVolumeSlider.availableWidth
                     height: implicitHeight
                     radius: 4
-                    color: sliderTrackColour
+                    color: Styles.slider.trackInactiveColor
 
                     Rectangle {
                         width: jackInputVolumeSlider.visualPosition * parent.width
                         height: parent.height
-                        color: sliderActiveTrackColour
+                        color: Styles.slider.trackActiveColor
                         radius: 4
                     }
                 }
@@ -1056,7 +1036,7 @@ Rectangle {
                     implicitWidth: 26 * virtualstudio.uiScale
                     implicitHeight: 26 * virtualstudio.uiScale
                     radius: 13 * virtualstudio.uiScale
-                    color: jackInputVolumeSlider.pressed ? sliderPressedColour : sliderColour
+                    color: jackInputVolumeSlider.pressed ? Styles.slider.bgPressedColor : Styles.slider.bgColor
                     border.color: buttonStroke
                 }
             }
@@ -1076,7 +1056,7 @@ Rectangle {
                 source: jackInputQuieterButton
                 hue: 0
                 saturation: 0
-                lightness: imageLightnessValue
+                lightness: Styles.image.lightness
             }
 
             Image {
@@ -1095,7 +1075,7 @@ Rectangle {
                 source: jackInputLouderIcon
                 hue: 0
                 saturation: 0
-                lightness: imageLightnessValue
+                lightness: Styles.image.lightness
             }
 
             Button {
@@ -1125,9 +1105,9 @@ Rectangle {
                 x: 0; y: 0
                 width: parent.width - (16 * virtualstudio.uiScale)
                 text: "JackTrip has been compiled without an audio backend. Please rebuild with the rtaudio flag or without the nojack flag."
-                font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+                font { family: "Poppins"; pixelSize: Styles.font.md }
                 wrapMode: Text.WordWrap
-                color: textColour
+                color: Styles.text.color.standard
             }
         }
     }

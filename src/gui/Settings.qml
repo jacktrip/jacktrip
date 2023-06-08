@@ -11,18 +11,12 @@ Item {
         color: backgroundColour
     }
 
-    property int fontBig: 20
-    property int fontMedium: 13
-    property int fontSmall: 11
-    property int fontExtraSmall: 8
-
     property int leftMargin: 48
     property int rightMargin: 16
     property int buttonWidth: 103
     property int buttonHeight: 25
 
     property string backgroundColour: virtualstudio.darkMode ? "#272525" : "#FAFBFB"
-    property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
     property string buttonColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
     property string buttonHoverColour: virtualstudio.darkMode ? "#5B5858" : "#D3D4D4"
     property string buttonPressedColour: virtualstudio.darkMode ? "#524F4F" : "#DEE0E0"
@@ -33,7 +27,6 @@ Item {
     property string sliderPressedColour: virtualstudio.darkMode ? "#ACAFAF" : "#DEE0E0"
     property string sliderTrackColour: virtualstudio.darkMode ? "#5B5858" : "light gray"
     property string sliderActiveTrackColour: virtualstudio.darkMode ? "light gray" : "black"
-    property string warningTextColour: "#DB0A0A"
     property string linkText: virtualstudio.darkMode ? "#8B8D8D" : "#272525"
 
     property string errorFlagColour: "#DB0A0A"
@@ -111,8 +104,8 @@ Item {
                 elide: Label.ElideRight
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
-                font { family: "Poppins"; weight: Font.Bold; pixelSize: fontBig * virtualstudio.fontScale * virtualstudio.uiScale }
-                color: textColour
+                font { family: "Poppins"; weight: Font.Bold; pixelSize: Styles.font.lg }
+                color: Styles.text.color.standard
             }
 
             Button {
@@ -122,7 +115,7 @@ Item {
                 anchors.right: headerContent.right;
                 anchors.rightMargin: 16 * virtualstudio.uiScale;
 
-                palette.buttonText: textColour
+                palette.buttonText: Styles.text.color.standard
                 background: Rectangle {
                     radius: 6 * virtualstudio.uiScale
                     color: refreshButton.down ? buttonPressedColour : (refreshButton.hovered ? buttonHoverColour : buttonColour)
@@ -131,7 +124,7 @@ Item {
                 }
                 icon {
                     source: "refresh.svg";
-                    color: textColour;
+                    color: Styles.text.color.standard;
                 }
                 display: AbstractButton.TextBesideIcon
                 onClicked: {
@@ -142,7 +135,7 @@ Item {
                 width: 144 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
                 font {
                     family: "Poppins"
-                    pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale
+                    pixelSize: Styles.font.xs
                 }
                 visible: parent.isUsingRtAudio && settingsGroupView == "Audio"
             }
@@ -188,10 +181,10 @@ Item {
                         id: audioButtonText
                         text: audioBtn.text
                         width: Boolean(virtualstudio.devicesError) ? parent.width - 16 * virtualstudio.uiScale : parent.width
-                        font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                        font { family: "Poppins"; pixelSize: Styles.font.sm }
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
-                        color: textColour
+                        color: Styles.text.color.standard
                     }
 
                     Rectangle {
@@ -223,10 +216,10 @@ Item {
                         id: appearanceButtonText
                         text: appearanceBtn.text
                         width: parent.width
-                        font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                        font { family: "Poppins"; pixelSize: Styles.font.sm }
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
-                        color: textColour
+                        color: Styles.text.color.standard
                     }
                 }
 
@@ -248,10 +241,10 @@ Item {
                         id: advancedButtonText
                         text: advancedBtn.text
                         width: parent.width
-                        font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                        font { family: "Poppins"; pixelSize: Styles.font.sm }
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
-                        color: textColour
+                        color: Styles.text.color.standard
                     }
                 }
                 background: Rectangle {
@@ -272,10 +265,10 @@ Item {
                         id: profileButtonText
                         text: profileBtn.text
                         width: parent.width
-                        font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                        font { family: "Poppins"; pixelSize: Styles.font.sm }
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
-                        color: textColour
+                        color: Styles.text.color.standard
                     }
                 }
                 background: Rectangle {
@@ -294,8 +287,8 @@ Item {
 
             Text {
                 text: "Version " + virtualstudio.versionString
-                font { family: "Poppins"; pixelSize: 9 * virtualstudio.fontScale * virtualstudio.uiScale}
-                color: textColour
+                font { family: "Poppins"; pixelSize: Styles.font.xs }
+                color: Styles.text.color.standard
                 opacity: 0.8
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
@@ -353,8 +346,8 @@ Item {
             anchors.verticalCenter: scaleSlider.verticalCenter
             x: leftMargin * virtualstudio.uiScale
             text: "Scale Interface"
-            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-            color: textColour
+            font { family: "Poppins"; pixelSize: Styles.font.md }
+            color: Styles.text.color.standard
         }
 
         Button {
@@ -370,9 +363,9 @@ Item {
             width: 216 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
             Text {
                 text: virtualstudio.darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"
-                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                font { family: "Poppins"; pixelSize: Styles.font.sm }
                 anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-                color: textColour
+                color: Styles.text.color.standard
             }
         }
 
@@ -380,8 +373,8 @@ Item {
             anchors.verticalCenter: darkButton.verticalCenter
             x: leftMargin * virtualstudio.uiScale
             text: "Color Theme"
-            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-            color: textColour
+            font { family: "Poppins"; pixelSize: Styles.font.md }
+            color: Styles.text.color.standard
         }
     }
 
@@ -416,9 +409,9 @@ Item {
             width: 216 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
             Text {
                 text: virtualstudio.psiBuild ? "Switch to Standard Mode" : "Switch to Classic Mode"
-                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                font { family: "Poppins"; pixelSize: Styles.font.sm }
                 anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-                color: textColour
+                color: Styles.text.color.standard
             }
         }
 
@@ -426,8 +419,8 @@ Item {
             anchors.verticalCenter: modeButton.verticalCenter
             x: leftMargin * virtualstudio.uiScale
             text: "Display Mode"
-            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-            color: textColour
+            font { family: "Poppins"; pixelSize: Styles.font.md }
+            color: Styles.text.color.standard
         }
 
         ComboBox {
@@ -445,8 +438,8 @@ Item {
             anchors.verticalCenter: updateChannelCombo.verticalCenter
             x: leftMargin * virtualstudio.uiScale
             text: "Update Channel"
-            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-            color: textColour
+            font { family: "Poppins"; pixelSize: Styles.font.md }
+            color: Styles.text.color.standard
             visible: !virtualstudio.noUpdater
         }
 
@@ -465,9 +458,9 @@ Item {
             anchors.verticalCenter: backendCombo.verticalCenter
             x: leftMargin * virtualstudio.uiScale
             text: "Audio Backend"
-            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            font { family: "Poppins"; pixelSize: Styles.font.md }
             visible: virtualstudio.selectableBackend
-            color: textColour
+            color: Styles.text.color.standard
         }
 
         ComboBox {
@@ -485,9 +478,9 @@ Item {
             anchors.verticalCenter: bufferCombo.verticalCenter
             x: 48 * virtualstudio.uiScale
             text: "Buffer Size"
-            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            font { family: "Poppins"; pixelSize: Styles.font.md }
             visible: virtualstudio.audioBackend != "JACK"
-            color: textColour
+            color: Styles.text.color.standard
         }
 
         ComboBox {
@@ -504,8 +497,8 @@ Item {
             anchors.verticalCenter: bufferStrategyCombo.verticalCenter
             x: 48 * virtualstudio.uiScale
             text: "Buffer Strategy"
-            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-            color: textColour
+            font { family: "Poppins"; pixelSize: Styles.font.md }
+            color: Styles.text.color.standard
         }
 
         ComboBox {
@@ -528,8 +521,8 @@ Item {
             anchors.verticalCenter: feedbackDetectionCombo.verticalCenter
             x: 48 * virtualstudio.uiScale
             text: "Feedback Detection"
-            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-            color: textColour
+            font { family: "Poppins"; pixelSize: Styles.font.md }
+            color: Styles.text.color.standard
         }
 
     }
@@ -557,8 +550,8 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: profilePicture.bottom
             text: virtualstudio.userMetadata.user_metadata ? ( virtualstudio.userMetadata.user_metadata.display_name ? virtualstudio.userMetadata.user_metadata.display_name : virtualstudio.userMetadata.nickname ) : virtualstudio.userMetadata.name || ""
-            font { family: "Poppins"; weight: Font.Bold; pixelSize: fontBig * virtualstudio.fontScale * virtualstudio.uiScale }
-            color: textColour
+            font { family: "Poppins"; weight: Font.Bold; pixelSize: Styles.font.lg }
+            color: Styles.text.color.standard
         }
 
         Text {
@@ -566,8 +559,8 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: displayName.bottom
             text: virtualstudio.userMetadata.email ? virtualstudio.userMetadata.email : ""
-            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-            color: textColour
+            font { family: "Poppins"; pixelSize: Styles.font.md }
+            color: Styles.text.color.standard
         }
 
         Button {
@@ -584,9 +577,9 @@ Item {
             width: 260 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
             Text {
                 text: "Edit Profile"
-                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                font { family: "Poppins"; pixelSize: Styles.font.sm }
                 anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-                color: textColour
+                color: Styles.text.color.standard
             }
         }
 
@@ -604,9 +597,9 @@ Item {
             width: 260 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
             Text {
                 text: "Log Out"
-                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                font { family: "Poppins"; pixelSize: Styles.font.sm }
                 anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-                color: textColour
+                color: Styles.text.color.standard
             }
         }
 
@@ -625,9 +618,9 @@ Item {
             visible: virtualstudio.userMetadata.email ? ( virtualstudio.userMetadata.email.endsWith("@jacktrip.org") ? true : false ) : false
             Text {
                 text: virtualstudio.testMode ? "Switch to Prod Mode" : "Switch to Test Mode"
-                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                font { family: "Poppins"; pixelSize: Styles.font.sm }
                 anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-                color: textColour
+                color: Styles.text.color.standard
             }
         }
     }
@@ -657,9 +650,9 @@ Item {
             width: buttonWidth * virtualstudio.uiScale; height: buttonHeight * virtualstudio.uiScale
             Text {
                 text: "Cancel"
-                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                font { family: "Poppins"; pixelSize: Styles.font.sm }
                 anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-                color: textColour
+                color: Styles.text.color.standard
             }
         }
 
@@ -678,9 +671,9 @@ Item {
             width: buttonWidth * virtualstudio.uiScale; height: buttonHeight * virtualstudio.uiScale
             Text {
                 text: "Save"
-                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                font { family: "Poppins"; pixelSize: Styles.font.sm }
                 anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-                color: Boolean(virtualstudio.devicesError) ? disabledButtonTextColour : textColour
+                color: Boolean(virtualstudio.devicesError) ? disabledButtonTextColour : Styles.text.color.standard
             }
         }
     }

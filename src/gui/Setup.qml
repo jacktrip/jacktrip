@@ -6,11 +6,6 @@ Item {
     width: parent.width; height: parent.height
     clip: true
 
-    property int fontBig: 20
-    property int fontMedium: 13
-    property int fontSmall: 11
-    property int fontExtraSmall: 8
-
     property int buttonWidth: 103
     property int buttonHeight: 25
 
@@ -18,8 +13,6 @@ Item {
     property int rightMargin: 16
 
     property string backgroundColour: virtualstudio.darkMode ? "#272525" : "#FAFBFB"
-    property real imageLightnessValue: virtualstudio.darkMode ? 1.0 : 0.0
-    property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
     property string buttonColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
     property string buttonHoverColour: virtualstudio.darkMode ? "#5B5858" : "#D3D4D4"
     property string buttonPressedColour: virtualstudio.darkMode ? "#524F4F" : "#DEE0E0"
@@ -39,7 +32,6 @@ Item {
     property string checkboxStroke: "#0062cc"
     property string checkboxPressedStroke: "#007AFF"
     property string disabledButtonText: "#D3D4D4"
-    property string linkText: virtualstudio.darkMode ? "#8B8D8D" : "#272525"
 
     property bool currShowWarnings: virtualstudio.showWarnings
     property string warningScreen: virtualstudio.showWarnings ? "ethernet" : ( permissions.micPermission == "unknown" ? "microphone" : "acknowledged")
@@ -63,14 +55,14 @@ Item {
             source: ethernetWarningLogo
             hue: 0
             saturation: 0
-            lightness: imageLightnessValue
+            lightness: Styles.image.lightness
         }
 
         Text {
             id: ethernetWarningHeader
             text: "Connect via Wired Ethernet"
-            font { family: "Poppins"; weight: Font.Bold; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-            color: textColour
+            font { family: "Poppins"; weight: Font.Bold; pixelSize: Styles.font.md }
+            color: Styles.text.color.standard
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: ethernetWarningLogo.bottom
             anchors.topMargin: 32 * virtualstudio.uiScale
@@ -79,8 +71,8 @@ Item {
         Text {
             id: ethernetWarningSubheader1
             text: "JackTrip works best when you connect directly to your router via wired ethernet."
-            font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-            color: textColour
+            font { family: "Poppins"; pixelSize: Styles.font.sm }
+            color: Styles.text.color.standard
             width: 400
             wrapMode: Text.Wrap
             horizontalAlignment: Text.AlignHCenter
@@ -92,8 +84,8 @@ Item {
         Text {
             id: ethernetWarningSubheader2
             text: "WiFi works OK for some people, but you will experience higher latency and audio glitches."
-            font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-            color: textColour
+            font { family: "Poppins"; pixelSize: Styles.font.sm }
+            color: Styles.text.color.standard
             width: 400
             wrapMode: Text.Wrap
             horizontalAlignment: Text.AlignHCenter
@@ -120,7 +112,7 @@ Item {
             Text {
                 text: "OK"
                 font.family: "Poppins"
-                font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
+                font.pixelSize: Styles.font.sm
                 font.weight: Font.Bold
                 color: saveButtonText
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -157,11 +149,11 @@ Item {
             contentItem: Text {
                 text: showEthernetWarningCheckbox.text
                 font.family: "Poppins"
-                font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
+                font.pixelSize: Styles.font.sm
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
                 leftPadding: showEthernetWarningCheckbox.indicator.width + showEthernetWarningCheckbox.spacing
-                color: textColour
+                color: Styles.text.color.standard
             }
         }
     }
@@ -192,14 +184,14 @@ Item {
             source: headphoneWarningLogo
             hue: 0
             saturation: 0
-            lightness: imageLightnessValue
+            lightness: Styles.image.lightness
         }
 
         Text {
             id: headphoneWarningHeader
             text: "Use Wired Headphones"
-            font { family: "Poppins"; weight: Font.Bold; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-            color: textColour
+            font { family: "Poppins"; weight: Font.Bold; pixelSize: Styles.font.md }
+            color: Styles.text.color.standard
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: headphoneWarningLogo.bottom
             anchors.topMargin: 32 * virtualstudio.uiScale
@@ -208,8 +200,8 @@ Item {
         Text {
             id: headphoneWarningSubheader1
             text: "JackTrip requires the use of wired headphones."
-            font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-            color: textColour
+            font { family: "Poppins"; pixelSize: Styles.font.sm }
+            color: Styles.text.color.standard
             width: 400
             wrapMode: Text.Wrap
             horizontalAlignment: Text.AlignHCenter
@@ -221,8 +213,8 @@ Item {
         Text {
             id: headphoneWarningSubheader2
             text: "Using speakers can cause loud feedback loops."
-            font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-            color: textColour
+            font { family: "Poppins"; pixelSize: Styles.font.sm }
+            color: Styles.text.color.standard
             width: 400
             wrapMode: Text.Wrap
             horizontalAlignment: Text.AlignHCenter
@@ -234,8 +226,8 @@ Item {
         Text {
             id: headphoneWarningSubheader3
             text: "Wireless headphones add way too much latency."
-            font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-            color: textColour
+            font { family: "Poppins"; pixelSize: Styles.font.sm }
+            color: Styles.text.color.standard
             width: 400
             wrapMode: Text.Wrap
             horizontalAlignment: Text.AlignHCenter
@@ -268,7 +260,7 @@ Item {
             Text {
                 text: "OK"
                 font.family: "Poppins"
-                font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
+                font.pixelSize: Styles.font.sm
                 font.weight: Font.Bold
                 color: saveButtonText
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -305,11 +297,11 @@ Item {
             contentItem: Text {
                 text: showHeadphonesWarningCheckbox.text
                 font.family: "Poppins"
-                font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
+                font.pixelSize: Styles.font.sm
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
                 leftPadding: showHeadphonesWarningCheckbox.indicator.width + showHeadphonesWarningCheckbox.spacing
-                color: textColour
+                color: Styles.text.color.standard
             }
         }
     }
@@ -348,7 +340,7 @@ Item {
             source: microphonePrompt
             hue: 0
             saturation: 0
-            lightness: imageLightnessValue
+            lightness: Styles.image.lightness
         }
 
         Button {
@@ -371,7 +363,7 @@ Item {
             anchors.bottom: microphonePrompt.bottom
             Text {
                 text: "OK"
-                font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
+                font.pixelSize: Styles.font.sm
                 font.weight: Font.Bold
                 color: saveButtonText
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -382,8 +374,8 @@ Item {
         Text {
             id: micPermissionsHeader
             text: "JackTrip needs your sounds!"
-            font { family: "Poppins"; weight: Font.Bold; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-            color: textColour
+            font { family: "Poppins"; weight: Font.Bold; pixelSize: Styles.font.md }
+            color: Styles.text.color.standard
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: microphonePrompt.bottom
             anchors.topMargin: 48 * virtualstudio.uiScale
@@ -392,8 +384,8 @@ Item {
         Text {
             id: micPermissionsSubheader1
             text: "JackTrip requires permission to use your microphone."
-            font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-            color: textColour
+            font { family: "Poppins"; pixelSize: Styles.font.sm }
+            color: Styles.text.color.standard
             width: 400
             wrapMode: Text.Wrap
             horizontalAlignment: Text.AlignHCenter
@@ -405,8 +397,8 @@ Item {
         Text {
             id: micPermissionsSubheader2
             text: "Click ‘OK’ to give JackTrip access to your microphone, instrument, or other audio device."
-            font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-            color: textColour
+            font { family: "Poppins"; pixelSize: Styles.font.sm }
+            color: Styles.text.color.standard
             width: 400
             wrapMode: Text.Wrap
             horizontalAlignment: Text.AlignHCenter
@@ -438,7 +430,7 @@ Item {
             source: noMic
             hue: 0
             saturation: 0
-            lightness: imageLightnessValue
+            lightness: Styles.image.lightness
         }
 
         Button {
@@ -461,7 +453,7 @@ Item {
             Text {
                 text: "Open Privacy Settings"
                 font.family: "Poppins"
-                font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
+                font.pixelSize: Styles.font.sm
                 font.weight: Font.Bold
                 color: saveButtonText
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -472,8 +464,8 @@ Item {
         Text {
             id: noMicHeader
             text: "JackTrip can't hear you!"
-            font { family: "Poppins"; weight: Font.Bold; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-            color: textColour
+            font { family: "Poppins"; weight: Font.Bold; pixelSize: Styles.font.md }
+            color: Styles.text.color.standard
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: noMic.bottom
             anchors.topMargin: 48 * virtualstudio.uiScale
@@ -482,8 +474,8 @@ Item {
         Text {
             id: noMicSubheader1
             text: "JackTrip requires permission to use your microphone."
-            font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-            color: textColour
+            font { family: "Poppins"; pixelSize: Styles.font.sm }
+            color: Styles.text.color.standard
             width: 400
             wrapMode: Text.Wrap
             horizontalAlignment: Text.AlignHCenter
@@ -495,8 +487,8 @@ Item {
         Text {
             id: noMicSubheader2
             text: "Click 'Open Privacy Settings' to give JackTrip permission to access your microphone, instrument, or other audio device."
-            font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-            color: textColour
+            font { family: "Poppins"; pixelSize: Styles.font.sm }
+            color: Styles.text.color.standard
             width: 400
             wrapMode: Text.Wrap
             horizontalAlignment: Text.AlignHCenter
@@ -517,14 +509,14 @@ Item {
             id: pageTitle
             x: 16 * virtualstudio.uiScale; y: 32 * virtualstudio.uiScale
             text: "Choose your audio devices"
-            font { family: "Poppins"; weight: Font.Bold; pixelSize: fontBig * virtualstudio.fontScale * virtualstudio.uiScale }
-            color: textColour
+            font { family: "Poppins"; weight: Font.Bold; pixelSize: Styles.font.lg }
+            color: Styles.text.color.standard
         }
 
         Button {
             id: refreshButton
             text: "Refresh Devices"
-            palette.buttonText: textColour
+            palette.buttonText: Styles.text.color.standard
             background: Rectangle {
                 radius: 6 * virtualstudio.uiScale
                 color: refreshButton.down ? buttonPressedColour : (refreshButton.hovered ? buttonHoverColour : buttonColour)
@@ -533,7 +525,7 @@ Item {
             }
             icon {
                 source: "refresh.svg";
-                color: textColour;
+                color: Styles.text.color.standard;
             }
             display: AbstractButton.TextBesideIcon
             onClicked: {
@@ -545,7 +537,7 @@ Item {
             width: 144 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
             font {
                 family: "Poppins"
-                pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale
+                pixelSize: Styles.font.xs
             }
             visible: parent.isUsingRtAudio
         }
@@ -575,7 +567,7 @@ Item {
             Text {
                 text: virtualstudio.studioToJoin.toString() ? "Connect to Studio" : "Save Settings"
                 font.family: "Poppins"
-                font.pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale
+                font.pixelSize: Styles.font.sm
                 font.weight: Font.Bold
                 color: !Boolean(virtualstudio.devicesError) && virtualstudio.backendAvailable ? saveButtonText : disabledButtonText
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -614,11 +606,11 @@ Item {
             contentItem: Text {
                 text: showAgainCheckbox.text
                 font.family: "Poppins"
-                font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
+                font.pixelSize: Styles.font.sm
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
                 leftPadding: showAgainCheckbox.indicator.width + showAgainCheckbox.spacing
-                color: textColour
+                color: Styles.text.color.standard
             }
         }
     }

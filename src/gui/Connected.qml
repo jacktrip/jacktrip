@@ -9,10 +9,6 @@ Item {
     property bool connecting: false
 
     property int leftHeaderMargin: 16
-    property int fontBig: 28
-    property int fontMedium: 12
-    property int fontSmall: 10
-    property int fontTiny: 8
 
     property int bodyMargin: 60
     property int rightMargin: 16
@@ -40,9 +36,7 @@ Item {
     property string saveButtonText: "#DB0A0A"
 
     property string muteButtonMutedColor: "#FCB6B6"
-    property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
     property string meterColor: virtualstudio.darkMode ? "gray" : "#E0E0E0"
-    property real imageLightnessValue: virtualstudio.darkMode ? 0.8 : 0.2
     property real muteButtonLightnessValue: virtualstudio.darkMode ? 1.0 : 0.0
     property real muteButtonMutedLightnessValue: 0.24
     property real muteButtonMutedSaturationValue: 0.73
@@ -53,8 +47,6 @@ Item {
     property string sliderActiveTrackColour: virtualstudio.darkMode ? "light gray" : "black"
     property string shadowColour: virtualstudio.darkMode ? "#40000000" : "#80A1A1A1"
     property string toolTipBackgroundColour: virtualstudio.darkMode ? "#323232" : "#F3F3F3"
-    property string toolTipTextColour: textColour
-    property string warningTextColour: "#DB0A0A"
     property string linkText: virtualstudio.darkMode ? "#8B8D8D" : "#272525"
 
     property string meterGreen: "#61C554"
@@ -151,8 +143,8 @@ Item {
         id: heading
         text: studioStatus === "Starting" ? "Starting..." : virtualstudio.connectionState
         x: leftHeaderMargin * virtualstudio.uiScale; y: 34 * virtualstudio.uiScale
-        font { family: "Poppins"; weight: Font.Bold; pixelSize: fontBig * virtualstudio.fontScale * virtualstudio.uiScale }
-        color: textColour
+        font { family: "Poppins"; weight: Font.Bold; pixelSize: Styles.font.xl }
+        color: Styles.text.color.standard
     }
 
     Studio {
@@ -189,9 +181,9 @@ Item {
 
             Text {
                 text: "Change Device Settings"
-                font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale}
+                font { family: "Poppins"; pixelSize: Styles.font.xs }
                 anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-                color: textColour
+                color: Styles.text.color.standard
             }
         }
 
@@ -246,8 +238,8 @@ Item {
                         id: outputLabel
                         x: 0; y: 0
                         text: "Output Device"
-                        font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-                        color: textColour
+                        font { family: "Poppins"; pixelSize: Styles.font.sm }
+                        color: Styles.text.color.standard
                     }
 
                     Image {
@@ -284,9 +276,9 @@ Item {
 
                                 Text {
                                     anchors.centerIn: parent
-                                    font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale}
+                                    font { family: "Poppins"; pixelSize: Styles.font.sm }
                                     text: qsTr("How you'll hear the studio audio")
-                                    color: toolTipTextColour
+                                    color: Styles.text.color.standard
                                 }
                             }
                             background: Rectangle {
@@ -300,7 +292,7 @@ Item {
                         source: outputHelpIcon
                         hue: 0
                         saturation: 0
-                        lightness: imageLightnessValue
+                        lightness: Styles.image.lightness
                     }
 
                     Image {
@@ -319,7 +311,7 @@ Item {
                         source: headphonesIcon
                         hue: 0
                         saturation: 0
-                        lightness: imageLightnessValue
+                        lightness: Styles.image.lightness
                     }
 
                     ComboBox {
@@ -381,8 +373,8 @@ Item {
                         anchors.topMargin: 12 * virtualstudio.uiScale
                         textFormat: Text.RichText
                         text: "Output Channel(s)"
-                        font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
-                        color: textColour
+                        font { family: "Poppins"; pixelSize: Styles.font.xs }
+                        color: Styles.text.color.standard
                     }
 
                     ComboBox {
@@ -437,8 +429,8 @@ Item {
                         anchors.top: outputChannelsCombo.bottom
                         anchors.topMargin: 32 * virtualstudio.uiScale
                         text: "Input Device"
-                        font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-                        color: textColour
+                        font { family: "Poppins"; pixelSize: Styles.font.sm }
+                        color: Styles.text.color.standard
                     }
 
                     Image {
@@ -475,9 +467,9 @@ Item {
 
                                 Text {
                                     anchors.centerIn: parent
-                                    font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale}
+                                    font { family: "Poppins"; pixelSize: Styles.font.xs }
                                     text: qsTr("Audio sent to the studio (microphone, instrument, mixer, etc.)")
-                                    color: toolTipTextColour
+                                    color: Styles.text.color.standard
                                 }
                             }
                             background: Rectangle {
@@ -491,7 +483,7 @@ Item {
                         source: inputHelpIcon
                         hue: 0
                         saturation: 0
-                        lightness: imageLightnessValue
+                        lightness: Styles.image.lightness
                     }
 
                     Image {
@@ -510,7 +502,7 @@ Item {
                         source: microphoneIcon
                         hue: 0
                         saturation: 0
-                        lightness: imageLightnessValue
+                        lightness: Styles.image.lightness
                     }
 
                     ComboBox {
@@ -571,8 +563,8 @@ Item {
                         anchors.topMargin: 12 * virtualstudio.uiScale
                         textFormat: Text.RichText
                         text: "Input Channel(s)"
-                        font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
-                        color: textColour
+                        font { family: "Poppins"; pixelSize: Styles.font.xs }
+                        color: Styles.text.color.standard
                     }
 
                     ComboBox {
@@ -630,8 +622,8 @@ Item {
                         anchors.topMargin: 12 * virtualstudio.uiScale
                         textFormat: Text.RichText
                         text: "Mono / Stereo"
-                        font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
-                        color: textColour
+                        font { family: "Poppins"; pixelSize: Styles.font.xs }
+                        color: Styles.text.color.standard
                     }
 
                     ComboBox {
@@ -688,8 +680,8 @@ Item {
                         textFormat: Text.RichText
                         wrapMode: Text.WordWrap
                         text: "Choose up to 2 channels"
-                        font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
-                        color: textColour
+                        font { family: "Poppins"; pixelSize: Styles.font.xs }
+                        color: Styles.text.color.standard
                     }
 
                     Text {
@@ -712,8 +704,8 @@ Item {
                                 return "";
                             }
                         })()
-                        font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
-                        color: textColour
+                        font { family: "Poppins"; pixelSize: Styles.font.xs }
+                        color: Styles.text.color.standard
                     }
 
                     Button {
@@ -735,7 +727,7 @@ Item {
                         Text {
                             text: "Close"
                             font.family: "Poppins"
-                            font.pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale
+                            font.pixelSize: Styles.font.sm
                             font.weight: Font.Bold
                             color: !Boolean(virtualstudio.devicesError) && virtualstudio.backendAvailable ? saveButtonText : disabledButtonText
                             anchors.horizontalCenter: parent.horizontalCenter
@@ -753,7 +745,7 @@ Item {
                         width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
                         enabled: virtualstudio.connectionState == "Connected"
 
-                        palette.buttonText: textColour
+                        palette.buttonText: Styles.text.color.standard
                         background: Rectangle {
                             radius: 6 * virtualstudio.uiScale
                             color: refreshButton.down ? browserButtonPressedColour : (refreshButton.hovered ? browserButtonHoverColour : browserButtonColour)
@@ -763,7 +755,7 @@ Item {
 
                         icon {
                             source: "refresh.svg";
-                            color: textColour;
+                            color: Styles.text.color.standard;
                         }
                         display: AbstractButton.TextBesideIcon
                         onClicked: {
@@ -772,7 +764,7 @@ Item {
 
                         font {
                             family: "Poppins"
-                            pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale
+                            pixelSize: Styles.font.sm
                         }
                     }
                 }
@@ -819,8 +811,8 @@ Item {
                         anchors.topMargin: 16 * virtualstudio.uiScale
                         width: parent.width
                         text: "Audio feedback detected!"
-                        font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale; bold: true }
-                        color: textColour
+                        font {family: "Poppins"; pixelSize: Styles.font.md; bold: true }
+                        color: Styles.text.color.standard
                         elide: Text.ElideRight
                         wrapMode: Text.WordWrap
                     }
@@ -831,8 +823,8 @@ Item {
                         anchors.topMargin: 16 * virtualstudio.uiScale
                         width: parent.width
                         text: "JackTrip detected a feedback loop. Your monitor and input volume have automatically been disabled."
-                        font {family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-                        color: textColour
+                        font {family: "Poppins"; pixelSize: Styles.font.sm }
+                        color: Styles.text.color.standard
                         elide: Text.ElideRight
                         wrapMode: Text.WordWrap
                     }
@@ -844,8 +836,8 @@ Item {
                         width: parent.width
                         text: "You can disable this behavior under <b>Settings</b> > <b>Advanced</b>"
                         textFormat: Text.RichText
-                        font {family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-                        color: textColour
+                        font {family: "Poppins"; pixelSize: Styles.font.sm }
+                        color: Styles.text.color.standard
                         elide: Text.ElideRight
                         wrapMode: Text.WordWrap
                     }
@@ -868,7 +860,7 @@ Item {
                         Text {
                             text: "Ok"
                             font.family: "Poppins"
-                            font.pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale
+                            font.pixelSize: Styles.font.sm
                             font.weight: Font.Bold
                             color: !Boolean(virtualstudio.devicesError) && virtualstudio.backendAvailable ? saveButtonText : disabledButtonText
                             anchors.horizontalCenter: parent.horizontalCenter
@@ -904,7 +896,7 @@ Item {
             source: mic
             hue: 0
             saturation: 0
-            lightness: imageLightnessValue
+            lightness: Styles.image.lightness
         }
 
         Text {
@@ -912,9 +904,9 @@ Item {
             x: 64 * virtualstudio.uiScale
             width: parent.width - 64 * virtualstudio.uiScale
             text: "<b>Input Device</b>"
-            font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            font {family: "Poppins"; pixelSize: Styles.font.md }
             anchors.verticalCenter: mic.verticalCenter
-            color: textColour
+            color: Styles.text.color.standard
             elide: Text.ElideRight
         }
 
@@ -925,8 +917,8 @@ Item {
             anchors.left: inputDeviceHeader.left
             text: virtualstudio.audioBackend == "JACK" ?
                 virtualstudio.audioBackend : virtualstudio.inputDevice
-            font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
-            color: textColour
+            font {family: "Poppins"; pixelSize: Styles.font.xs }
+            color: Styles.text.color.standard
             elide: Text.ElideRight
         }
     }
@@ -955,7 +947,7 @@ Item {
             source: headphones
             hue: 0
             saturation: 0
-            lightness: imageLightnessValue
+            lightness: Styles.image.lightness
         }
 
         Text {
@@ -963,9 +955,9 @@ Item {
             x: 64 * virtualstudio.uiScale
             width: parent.width - 64 * virtualstudio.uiScale
             text: "<b>Output Device</b>"
-            font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            font {family: "Poppins"; pixelSize: Styles.font.md }
             anchors.verticalCenter: headphones.verticalCenter
-            color: textColour
+            color: Styles.text.color.standard
             elide: Text.ElideRight
         }
 
@@ -976,8 +968,8 @@ Item {
             anchors.left: outputDeviceHeader.left
             text: virtualstudio.audioBackend == "JACK" ?
                 virtualstudio.audioBackend : virtualstudio.outputDevice
-            font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
-            color: textColour
+            font {family: "Poppins"; pixelSize: Styles.font.xs }
+            color: Styles.text.color.standard
             elide: Text.ElideRight
         }
     }
@@ -1088,9 +1080,9 @@ Item {
 
                     Text {
                         anchors.centerIn: parent
-                        font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale}
-                        text: virtualstudio.inputMuted ?  qsTr("Click to unmute yourself") : qsTr("Click to mute yourself")
-                        color: toolTipTextColour
+                        font { family: "Poppins"; pixelSize: Styles.font.sm }
+                        text: virtualstudio.inputMuted ? qsTr("Click to unmute yourself") : qsTr("Click to mute yourself")
+                        color: Styles.text.color.standard
                     }
                 }
                 background: Rectangle {
@@ -1109,8 +1101,8 @@ Item {
             topPadding: 4 * virtualstudio.uiScale
             rightPadding: 4 * virtualstudio.uiScale
             text: "Send"
-            font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale; bold: true }
-            color: textColour
+            font {family: "Poppins"; pixelSize: Styles.font.xs ; bold: true }
+            color: Styles.text.color.standard
         }
 
         Image {
@@ -1147,9 +1139,9 @@ Item {
 
                     Text {
                         anchors.centerIn: parent
-                        font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale}
+                        font { family: "Poppins"; pixelSize: Styles.font.sm }
                         text: qsTr("How loudly other participants hear you")
-                        color: toolTipTextColour
+                        color: Styles.text.color.standard
                     }
                 }
                 background: Rectangle {
@@ -1163,7 +1155,7 @@ Item {
             source: inputStudioHelpIcon
             hue: 0
             saturation: 0
-            lightness: imageLightnessValue
+            lightness: Styles.image.lightness
         }
     }
 
@@ -1275,8 +1267,8 @@ Item {
             topPadding: 4 * virtualstudio.uiScale
             rightPadding: 4 * virtualstudio.uiScale
             text: "Studio"
-            font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale; bold: true }
-            color: textColour
+            font {family: "Poppins"; pixelSize: Styles.font.xs ; bold: true }
+            color: Styles.text.color.standard
         }
 
         Image {
@@ -1313,9 +1305,9 @@ Item {
 
                     Text {
                         anchors.centerIn: parent
-                        font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale}
+                        font { family: "Poppins"; pixelSize: Styles.font.sm}
                         text: qsTr("How loudly you hear other participants")
-                        color: toolTipTextColour
+                        color: Styles.text.color.standard
                     }
                 }
                 background: Rectangle {
@@ -1329,7 +1321,7 @@ Item {
             source: outputStudioHelpIcon
             hue: 0
             saturation: 0
-            lightness: imageLightnessValue
+            lightness: Styles.image.lightness
         }
 
         Text {
@@ -1342,8 +1334,8 @@ Item {
             topPadding: 4 * virtualstudio.uiScale
             rightPadding: 4 * virtualstudio.uiScale
             text: "Monitor"
-            font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale; bold: true }
-            color: textColour
+            font {family: "Poppins"; pixelSize: Styles.font.xs; bold: true }
+            color: Styles.text.color.standard
         }
 
         Image {
@@ -1380,9 +1372,9 @@ Item {
 
                     Text {
                         anchors.centerIn: parent
-                        font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale}
+                        font { family: "Poppins"; pixelSize: Styles.font.sm }
                         text: qsTr("How loudly you hear yourself")
-                        color: toolTipTextColour
+                        color: Styles.text.color.standard
                     }
                 }
                 background: Rectangle {
@@ -1396,7 +1388,7 @@ Item {
             source: outputMonHelpIcon
             hue: 0
             saturation: 0
-            lightness: imageLightnessValue
+            lightness: Styles.image.lightness
         }
     }
 
@@ -1423,16 +1415,16 @@ Item {
             source: network
             hue: 0
             saturation: 0
-            lightness: imageLightnessValue
+            lightness: Styles.image.lightness
         }
 
         Text {
             id: networkStatsHeaderText
             text: "<b>Network</b>"
-            font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            font {family: "Poppins"; pixelSize: Styles.font.md }
             x: 64 * virtualstudio.uiScale
             anchors.verticalCenter: network.verticalCenter
-            color: textColour
+            color: Styles.text.color.standard
         }
     }
 
@@ -1448,18 +1440,18 @@ Item {
             id: netstat0
             x: 0; y: 0
             text: getNetworkStatsText()[0]
-            font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
-            color: textColour
+            font {family: "Poppins"; pixelSize: Styles.font.xs }
+            color: Styles.text.color.standard
         }
 
         Text {
             id: netstat1
             x: 0
             text: getNetworkStatsText()[1]
-            font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
+            font {family: "Poppins"; pixelSize: Styles.font.xs }
             topPadding: 8 * virtualstudio.uiScale
             anchors.top: netstat0.bottom
-            color: textColour
+            color: Styles.text.color.standard
         }
     }
 
@@ -1485,8 +1477,8 @@ Item {
             }
             horizontalAlignment: Text.AlignHLeft
             wrapMode: Text.WordWrap
-            font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
-            color: warningTextColour
+            font {family: "Poppins"; pixelSize: Styles.font.xs }
+            color: Styles.text.color.warning
         }
     }
 
@@ -1502,8 +1494,8 @@ Item {
             id: waitingText0
             x: 0
             width: parent.width
-            color: textColour
-            font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: Styles.text.color.standard
+            font {family: "Poppins"; pixelSize: Styles.font.md }
             text: parent.isAdmin
                     ? "Waiting for this studio to start. Please start the studio using one of the options below."
                     : "This studio is currently inactive. Please contact an owner or admin for this studio to start it."
@@ -1538,10 +1530,10 @@ Item {
                 Text {
                     text: "Start Studio"
                     font.family: "Poppins"
-                    font.pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale
+                    font.pixelSize: Styles.font.md
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.verticalCenter: parent.verticalCenter
-                    color: textColour
+                    color: Styles.text.color.standard
                 }
             }
 
@@ -1552,14 +1544,14 @@ Item {
                 anchors.leftMargin: 24 * virtualstudio.uiScale
                 width: 240 * virtualstudio.uiScale
                 textFormat: Text.RichText
-                text:`<a style="color: ${textColour};" href="https://${virtualstudio.apiHost}/studios/${virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].id : ""}/live?start=true">Change Settings and Start</a>`
+                text:`<a style="color: ${Styles.text.color.standard};" href="https://${virtualstudio.apiHost}/studios/${virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].id : ""}/live?start=true">Change Settings and Start</a>`
 
                 onLinkActivated: link => {
                     virtualstudio.openLink(link)
                 }
                 horizontalAlignment: Text.AlignHLeft
                 wrapMode: Text.WordWrap
-                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                font { family: "Poppins"; pixelSize: Styles.font.sm }
             }
         }
 
@@ -1567,12 +1559,12 @@ Item {
             id: waitingText1
             x: 0
             width: parent.width
-            color: textColour
+            color: Styles.text.color.standard
             anchors.top: parent.isAdmin ? startButtonsBox.bottom : waitingText0.bottom
             anchors.topMargin: 16 * virtualstudio.uiScale
             anchors.bottomMargin: 16 * virtualstudio.uiScale
             visible: parent.isAdmin
-            font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            font {family: "Poppins"; pixelSize: Styles.font.md }
             text: "You will be automatically connected to the studio when it is ready."
             wrapMode: Text.WordWrap
         }
@@ -1581,7 +1573,7 @@ Item {
             id: connectedErrorMessage1
             x: 0
             width: parent.width
-            color: warningTextColour
+            color: Styles.text.color.warning
             anchors.top: waitingText1.bottom
             anchors.topMargin: 16 * virtualstudio.uiScale
             anchors.bottomMargin: 16 * virtualstudio.uiScale
@@ -1593,7 +1585,7 @@ Item {
             onLinkActivated: link => {
                 virtualstudio.openLink(link)
             }
-            font {family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+            font {family: "Poppins"; pixelSize: Styles.font.sm }
             wrapMode: Text.WordWrap
         }
     }
@@ -1608,8 +1600,8 @@ Item {
             id: studioStartingText0
             x: 0
             width: parent.width
-            color: textColour
-            font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: Styles.text.color.standard
+            font {family: "Poppins"; pixelSize: Styles.font.md }
             text: "This studio is currently starting up. You will be connected automatically when it is ready."
             wrapMode: Text.WordWrap
         }
@@ -1625,8 +1617,8 @@ Item {
             id: studioStoppingText0
             x: 0
             width: parent.width
-            color: textColour
-            font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: Styles.text.color.standard
+            font {family: "Poppins"; pixelSize: Styles.font.md }
             text: "This studio is shutting down, please wait to start it again."
             wrapMode: Text.WordWrap
         }

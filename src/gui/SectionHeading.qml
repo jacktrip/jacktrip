@@ -19,8 +19,8 @@ Rectangle {
       width: parent.width - 332 * virtualstudio.uiScale
       fontSizeMode: Text.HorizontalFit
       text: listIsEmpty ? "No Studios" : section
-      font { family: "Poppins"; pixelSize: 28 * virtualstudio.fontScale * virtualstudio.uiScale; weight: Font.Bold }
-      color: textColour
+      font { family: "Poppins"; pixelSize: Styles.font.xl; weight: Font.Bold }
+      color: Styles.text.color.standard
       verticalAlignment: Text.AlignBottom
   }
   Button {
@@ -40,7 +40,7 @@ Rectangle {
       Text {
           text: "Create a Studio"
           font.family: "Poppins"
-          font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
+          font.pixelSize: Styles.font.sm
           font.weight: Font.Bold
           color: "#DB0A0A"
           anchors.horizontalCenter: parent.horizontalCenter
@@ -64,7 +64,7 @@ Rectangle {
       Text {
           text: "Filter Studios"
           font.family: "Poppins"
-          font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
+          font.pixelSize: Styles.font.sm
           anchors.horizontalCenter: parent.horizontalCenter
           anchors.verticalCenter: parent.verticalCenter
       }
@@ -116,7 +116,7 @@ Rectangle {
                   contentItem: Text {
                       text: inactiveCheckbox.text
                       font.family: "Poppins"
-                      font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
+                      font.pixelSize: Styles.font.sm
                       anchors.horizontalCenter: parent.horizontalCenter
                       anchors.verticalCenter: parent.verticalCenter
                       leftPadding: inactiveCheckbox.indicator.width + inactiveCheckbox.spacing
@@ -151,7 +151,7 @@ Rectangle {
                   contentItem: Text {
                       text: selfHostedCheckbox.text
                       font.family: "Poppins"
-                      font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
+                      font.pixelSize: Styles.font.sm
                       anchors.horizontalCenter: parent.horizontalCenter
                       anchors.verticalCenter: parent.verticalCenter
                       leftPadding: selfHostedCheckbox.indicator.width + selfHostedCheckbox.spacing

@@ -3,7 +3,6 @@ import QtQuick.Controls 2.12
 
 Rectangle {
     property string backgroundColour: virtualstudio.darkMode ? "#272525" : "#FAFBFB"
-    property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
 
     width: 696
     height: 577
