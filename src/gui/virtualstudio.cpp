@@ -1814,6 +1814,7 @@ void VirtualStudio::disconnect()
     emit connectionStateChanged();
 
     // cleanup
+    m_currentStudio      = -1;
     m_monitor            = nullptr;
     m_inputMeter         = nullptr;
     m_outputMeter        = nullptr;

@@ -1699,7 +1699,7 @@ Item {
             property string accessToken: auth.isAuthenticated && Boolean(auth.accessToken) ? auth.accessToken : ""
             property string studioId: virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].id : ""
 
-            source: accessToken && studioId && "Web.qml"
+            source: accessToken && studioId ? "Web.qml" : "WebNull.qml"
         }
     }
 
