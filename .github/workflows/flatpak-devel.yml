@@ -24,6 +24,7 @@ jobs:
       options: --privileged
     steps:
     - uses: actions/checkout@v3
+    - run: git submodule update --init --recursive
     - name: Generate flatpak manifest
       uses: cuchi/jinja2-action@v1.2.0
       with:

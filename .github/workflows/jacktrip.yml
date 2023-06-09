@@ -263,6 +263,7 @@ jobs:
         with:
           fetch-depth: 0
           submodules: true
+      - run: git submodule update --init --recursive
       - name: set version string for artifacts
         shell: bash
         id: set-version
@@ -751,6 +752,7 @@ jobs:
           fetch-depth: 0
           submodules: true
         if: needs.check-secrets.outputs.should_run == 'true'
+      - run: git submodule update --init --recursive
       - name: set version string for artifacts
         if: needs.check-secrets.outputs.should_run == 'true'
         shell: bash
