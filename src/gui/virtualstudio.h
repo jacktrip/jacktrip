@@ -46,6 +46,8 @@
 #include <QSharedPointer>
 #include <QTimer>
 #include <QVector>
+#include <QWebChannel>
+#include <QWebSocketServer>
 
 #include "../Analyzer.h"
 #include "../JackTrip.h"
@@ -61,6 +63,8 @@
 #include "vsServerInfo.h"
 #include "vsUrlHandler.h"
 #include "vsWebSocket.h"
+#include "websocketclientwrapper.h"
+#include "websockettransport.h"
 
 #ifdef __APPLE__
 #include "NoNap.h"
@@ -74,6 +78,7 @@ class QJackTrip;
 class VirtualStudio : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(int port READ port NOTIFY portChanged)
     Q_PROPERTY(bool showFirstRun READ showFirstRun WRITE setShowFirstRun NOTIFY
                    showFirstRunChanged)
     Q_PROPERTY(bool hasRefreshToken READ hasRefreshToken NOTIFY hasRefreshTokenChanged)
@@ -178,6 +183,7 @@ class VirtualStudio : public QObject
     void raiseToTop();
     bool vsModeActive();
 
+    int port();
     bool showFirstRun();
     void setShowFirstRun(bool show);
     bool hasRefreshToken();
@@ -315,6 +321,7 @@ class VirtualStudio : public QObject
     void connected();
     void disconnected();
     void refreshFinished(int index);
+    void portChanged(int port);
     void showFirstRunChanged();
     void hasRefreshTokenChanged();
     void logoSectionChanged();
@@ -407,6 +414,11 @@ class VirtualStudio : public QObject
     QVariant formatDeviceList(const QStringList& devices, const QStringList& categories,
                               const QList<int>& channels);
 #endif
+
+    QScopedPointer<QWebSocketServer> m_server;
+    uint32_t m_port;
+    QScopedPointer<WebSocketClientWrapper> m_clientWrapper;
+    QScopedPointer<QWebChannel> m_webChannel;
 
     bool m_showFirstRun = false;
     bool m_checkSsl     = true;

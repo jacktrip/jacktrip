@@ -149,7 +149,9 @@ else
 			'src/gui/vsUrlHandler.cpp',
 			'src/gui/vsPermissions.cpp',
 			'src/gui/vsPinger.cpp',
-			'src/gui/vsPing.cpp'
+			'src/gui/vsPing.cpp',
+			'src/gui/websocketclientwrapper.cpp',
+			'src/gui/websockettransport.cpp'
 		]
 		moc_h += [
 			'src/gui/virtualstudio.h',
@@ -167,7 +169,9 @@ else
 			'src/gui/vsPing.h',
 			'src/gui/vsUrlHandler.h',
 			'src/gui/vsQmlClipboard.h',
-			'src/JTApplication.h'
+			'src/JTApplication.h',
+			'src/gui/websocketclientwrapper.h',
+			'src/gui/websockettransport.h'
 		]
 
 		if host_machine.system() == 'darwin'

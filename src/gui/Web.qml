@@ -7,6 +7,38 @@ Item {
     width: parent.width; height: parent.height
     clip: true
 
+    function contentScriptFactory (port) {
+        return `
+            // add script tag for qwebchannel
+            var script = document.createElement("script");
+            script.onload = function () {
+                var url = "ws://localhost:${port}";
+                var socket = new WebSocket(url);
+                
+                socket.onclose = function() {
+                    console.error("web channel closed");
+                };
+                socket.onerror = function(error) {
+                    console.error("web channel error: " + error);
+                };
+                socket.onopen = function() {
+                    new QWebChannel(socket, function(channel) {
+                        // make core object accessible globally
+                        window.virtualstudio = channel.objects.virtualstudio;
+                        console.log("[QT6] Connected to WebChannel, ready to send/receive messages!");
+                    });
+                }
+
+            }
+
+            script.setAttribute("src", "qrc:///qtwebchannel/qwebchannel.js");
+            script.setAttribute("type", "text/javascript");
+            document.head.appendChild(script);
+
+            console.log("[QT] Loaded content script.");
+        `
+    }
+
     Item {
         id: web
         anchors.fill: parent
@@ -21,7 +53,7 @@ Item {
             settings.javascriptCanPaste: true
             settings.screenCaptureEnabled: true
             profile.httpUserAgent: `JackTrip/${virtualstudio.versionString}`
-            url: `https://${virtualstudio.apiHost}/studios/${studioId}/live?accessToken=${accessToken}`
+            url: `http://localhost:3000/studios/${studioId}/live?accessToken=${accessToken}`
 
             // useful for debugging
             // onJavaScriptConsoleMessage: function(level, message, lineNumber, sourceID) {
@@ -58,6 +90,17 @@ Item {
                     break;
                 }
                 console.log("Render process exited with code " + exitCode + " " + status);
+            }
+
+            onNavigationRequested: function(request) {
+                webEngineView.userScripts.collection = [
+                    {
+                        name: "script",
+                        sourceCode: contentScriptFactory(virtualstudio.port),
+                        injectionPoint: WebEngineScript.DocumentReady,
+                        worldId: WebEngineScript.MainWorld
+                    }
+                ]
             }
         }
     }
