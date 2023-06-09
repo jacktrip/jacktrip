@@ -753,6 +753,7 @@ jobs:
           submodules: true
         if: needs.check-secrets.outputs.should_run == 'true'
       - run: git submodule update --init --recursive
+        if: needs.check-secrets.outputs.should_run == 'true'
       - name: set version string for artifacts
         if: needs.check-secrets.outputs.should_run == 'true'
         shell: bash
