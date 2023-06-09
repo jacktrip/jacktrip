@@ -7,3 +7,6 @@
 [submodule "externals/rtaudio"]
 	path = externals/rtaudio
 	url = https://github.com/thestk/rtaudio.git
+[submodule "externals/Simple-FFT"]
+	path = externals/Simple-FFT
+	url = git@github.com:jacktrip/Simple-FFT.git
