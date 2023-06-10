@@ -24,6 +24,8 @@ jobs:
       options: --privileged
     steps:
     - uses: actions/checkout@v3
+      with:
+        submodules: true
     - name: Generate flatpak manifest
       uses: cuchi/jinja2-action@v1.2.0
       with:
