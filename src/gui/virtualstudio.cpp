@@ -358,6 +358,12 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
 void VirtualStudio::setStandardWindow(QSharedPointer<QJackTrip> window)
 {
     m_standardWindow = window;
+
+    WebViewWorker *worker = new WebViewWorker();
+    worker->moveToThread(&m_webViewThread);
+    connect(&m_webViewThread, &QThread::finished, worker, &QObject::deleteLater);
+    connect(this, &VirtualStudio::openWeb, worker, &WebViewWorker::doWork);
+    m_webViewThread.start();
 }
 
 void VirtualStudio::show()

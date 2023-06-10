@@ -136,6 +136,7 @@ else
 		qres = ['src/gui/qjacktrip_novs.qrc']
 	else
 		src += [
+			'src/webview/WebViewWorker.cpp',
 			'src/gui/virtualstudio.cpp',
 			'src/gui/vsAuth.cpp',
 			'src/gui/vsApi.cpp',
@@ -152,6 +153,8 @@ else
 			'src/gui/vsPing.cpp'
 		]
 		moc_h += [
+			'src/webview/webview.h',
+			'src/webview/WebViewWorker.h',
 			'src/gui/virtualstudio.h',
 			'src/gui/vsApi.h',
 			'src/gui/vsAuth.h',
@@ -237,7 +240,7 @@ endif
 
 if host_machine.system() == 'darwin' and get_option('novs') == false
 	src += ['src/gui/vsMacPermissions.mm']
-	apple_av_dep = dependency('appleframeworks', modules : ['avfoundation'])
+	apple_av_dep = dependency('appleframeworks', modules : ['avfoundation', 'webkit'])
 	deps += apple_av_dep
 endif
 

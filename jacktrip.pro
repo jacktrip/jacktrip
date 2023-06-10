@@ -100,7 +100,7 @@ bundled_rtaudio {
     PKGCONFIG += rtaudio
     win32 {
       # even though we get linker flags from pkg-config, define -lrtaudio again to enforce linking order
-      CONFIG += no_lflags_merge    
+      CONFIG += no_lflags_merge
       LIBS += -lrtaudio -lole32 -lwinmm -lksuser -lmfplat -lmfuuid -lwmcodecdspuuid # -ldsound # -ldsound only needed if rtaudio is built with directsound support
     }
   }
@@ -109,7 +109,7 @@ bundled_rtaudio {
 macx {
   message(Building on MAC OS X)
   CONFIG -= app_bundle
-  LIBS += -framework CoreAudio -framework CoreFoundation
+  LIBS += -framework CoreAudio -framework CoreFoundation -framework WebKit
   !nogui {
     LIBS += -framework Foundation
     CONFIG += objective_c
@@ -120,28 +120,28 @@ macx {
 }
 
 linux-g++ | linux-g++-64 {
-  
+
   FEDORA = $$system(cat /proc/version | grep -o fc)
-  
+
   contains( FEDORA, fc): {
     message(building on fedora)
   }
-  
+
   UBUNTU = $$system(cat /proc/version | grep -o Ubuntu)
-  
+
   contains( UBUNTU, Ubuntu): {
     message(building on  Ubuntu)
-    
+
     # workaround for Qt bug under ubuntu 18.04
     # gcc version 7.3.0 (Ubuntu 7.3.0-16ubuntu3)
     # QMake version 3.1
     # Using Qt version 5.9.5 in /usr/lib/x86_64-linux-gnu
     INCLUDEPATH += /usr/include/x86_64-linux-gnu/c++/7
-    
+
     # sets differences from original fedora version
     DEFINES += __UBUNTU__
   }
-  
+
   QMAKE_CXXFLAGS += -g -O2
 }
 
@@ -270,7 +270,9 @@ HEADERS += src/DataProtocol.h \
                src/gui/vsPing.h \
                src/gui/vsUrlHandler.h \
                src/gui/vsQmlClipboard.h \
-               src/JTApplication.h
+               src/JTApplication.h \
+               src/webview/webview.h \
+               src/webview/WebViewWorker.h
   }
   !noupdater:!linux-g++:!linux-g++-64 {
     HEADERS += src/dblsqd/feed.h \
@@ -338,7 +340,8 @@ SOURCES += src/DataProtocol.cpp \
                src/gui/vsPermissions.cpp \
                src/gui/vsPinger.cpp \
                src/gui/vsPing.cpp \
-               src/gui/vsUrlHandler.cpp
+               src/gui/vsUrlHandler.cpp \
+               src/webview/WebViewWorker.cpp
   }
   !noupdater:!linux-g++:!linux-g++-64 {
     SOURCES += src/dblsqd/feed.cpp \

@@ -254,6 +254,28 @@ Item {
         }
 
         Button {
+            id: webButton
+            background: Rectangle {
+                radius: 6 * virtualstudio.uiScale
+                color: webButton.down ? buttonPressedColour : (webButton.hovered ? buttonHoverColour : buttonColour)
+                border.width: 1
+                border.color: webButton.down ? buttonPressedStroke : (webButton.hovered ? buttonHoverStroke : buttonStroke)
+            }
+            onClicked: { virtualstudio.openWeb() }
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.left: refreshButton.right
+            anchors.leftMargin: 8
+            x: parent.width - ((230 + extraSettingsButtonWidth) * virtualstudio.uiScale)
+            width: buttonWidth * virtualstudio.uiScale; height: buttonHeight * virtualstudio.uiScale
+            Text {
+                text: "Open Web"
+                font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+                anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
+                color: textColour
+            }
+        }
+
+        Button {
             id: aboutButton
             background: Rectangle {
                 radius: 6 * virtualstudio.uiScale

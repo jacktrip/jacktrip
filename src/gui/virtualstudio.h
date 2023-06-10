@@ -46,6 +46,7 @@
 #include <QSharedPointer>
 #include <QTimer>
 #include <QVector>
+#include <QThread>
 #include <QtNetworkAuth>
 
 #include "../Analyzer.h"
@@ -53,6 +54,7 @@
 #include "../Meter.h"
 #include "../Monitor.h"
 #include "../Volume.h"
+#include "../webview/WebViewWorker.h"
 #include "vsApi.h"
 #include "vsAudioInterface.h"
 #include "vsAuth.h"
@@ -310,6 +312,7 @@ class VirtualStudio : public QObject
     void exit();
 
    signals:
+    void openWeb();
     void authSucceeded();
     void authFailed();
     void failed();
@@ -416,6 +419,7 @@ class VirtualStudio : public QObject
     QString m_refreshToken;
     QString m_userId;
     VsQuickView m_view;
+    QThread m_webViewThread;
     QSharedPointer<QJackTrip> m_standardWindow;
     QScopedPointer<VsAuth> m_auth;
     QScopedPointer<VsApi> m_api;
