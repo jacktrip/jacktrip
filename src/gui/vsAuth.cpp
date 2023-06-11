@@ -92,7 +92,8 @@ void VsAuth::fetchUserInfo(QString accessToken)
     QNetworkReply* reply = m_api->getAuth0UserInfo();
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() != QNetworkReply::NoError) {
-            std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
+            std::cout << "VsAuth::fetchUserInfo Error: "
+                      << reply->errorString().toStdString() << std::endl;
             handleAuthFailed();  // handle failure
             emit fetchUserInfoFailed();
             reply->deleteLater();

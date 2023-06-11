@@ -46,6 +46,7 @@
 #include <algorithm>
 #include <iostream>
 
+#include "../Settings.h"
 #include "../jacktrip_globals.h"
 #include "about.h"
 #include "qjacktrip.h"
@@ -1150,7 +1151,9 @@ void VirtualStudio::joinStudio()
 void VirtualStudio::toStandard()
 {
     if (!m_standardWindow.isNull()) {
+        Settings jtSettings;
         m_view.hide();
+        m_standardWindow->init(&jtSettings);
         m_standardWindow->show();
         m_vsModeActive = false;
     }

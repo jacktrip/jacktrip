@@ -327,7 +327,9 @@ int main(int argc, char* argv[])
         vsInit.reset(new VsInit());
         vsInit->checkForInstance(deeplink);
 #endif  // _WIN32
-        window.reset(new QJackTrip(&cliSettings, !deeplink.isEmpty()));
+        window.reset(new QJackTrip());
+        if (uiMode == QJackTrip::STANDARD)
+            window->init(&cliSettings, !deeplink.isEmpty());
 #else
         window.reset(new QJackTrip(&cliSettings));
 #endif  // NO_VS

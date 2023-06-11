@@ -53,7 +53,7 @@
 #include "../Meter.h"
 #include "../Reverb.h"
 
-QJackTrip::QJackTrip(Settings* settings, bool suppressCommandlineWarning, QWidget* parent)
+QJackTrip::QJackTrip(QWidget* parent)
     : QMainWindow(parent)
     , m_ui(new Ui::QJackTrip)
     , m_netManager(new QNetworkAccessManager(this))
@@ -291,7 +291,16 @@ QJackTrip::QJackTrip(Settings* settings, bool suppressCommandlineWarning, QWidge
         m_ui->optionsTabWidget->removeTab(tabIndex);
     }
 #endif
+}
 
+QJackTrip::QJackTrip(Settings* settings, bool suppressCommandlineWarning, QWidget* parent)
+    : QJackTrip(parent)
+{
+    init(settings, suppressCommandlineWarning);
+}
+
+void QJackTrip::init(Settings* settings, bool suppressCommandlineWarning)
+{
     migrateSettings();
     loadSettings(settings);
 
