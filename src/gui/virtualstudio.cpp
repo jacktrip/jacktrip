@@ -66,6 +66,13 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     , m_showFirstRun(firstRun)
     , m_inputMeterLevels(2, 0)
     , m_outputMeterLevels(2, 0)
+    , m_inputComboModel(QJsonArray::fromStringList(QStringList(QLatin1String(""))))
+    , m_outputComboModel(QJsonArray::fromStringList(QStringList(QLatin1String(""))))
+    , m_inputChannelsComboModel(
+          QJsonArray::fromStringList(QStringList(QLatin1String(""))))
+    , m_outputChannelsComboModel(
+          QJsonArray::fromStringList(QStringList(QLatin1String(""))))
+    , m_inputMixModeComboModel(QJsonArray::fromStringList(QStringList(QLatin1String(""))))
 {
     QSettings settings;
     m_updateChannel =
@@ -199,7 +206,6 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
 
     m_bufferSize     = settings.value(QStringLiteral("BufferSize"), 128).toInt();
     m_previousBuffer = m_bufferSize;
-    refreshDevices();
     m_previousInput  = m_inputDevice;
     m_previousOutput = m_outputDevice;
 
@@ -210,47 +216,26 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_selectableBackend = false;
     m_vsAudioInterface.reset(new VsAudioInterface());
 
-    // Set our combo box models to an empty list to avoid a reference error
-    m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("inputComboModel"),
-        QVariant::fromValue(QStringList(QLatin1String(""))));
-    m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("outputComboModel"),
-        QVariant::fromValue(QStringList(QLatin1String(""))));
+    QJsonObject element;
+    element.insert(QString::fromStdString("label"), QString::fromStdString("Mono"));
+    element.insert(QString::fromStdString("value"),
+                   static_cast<int>(AudioInterface::MONO));
+    m_inputMixModeComboModel = QJsonArray();
+    m_inputMixModeComboModel.push_back(element);
 
-    QJsonObject inputMixModeComboElement = QJsonObject();
-    inputMixModeComboElement.insert(QString::fromStdString("label"),
-                                    QString::fromStdString("Mono"));
-    inputMixModeComboElement.insert(QString::fromStdString("value"),
-                                    static_cast<int>(AudioInterface::MONO));
-    m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("inputMixModeComboModel"),
-        QVariant::fromValue(
-            QVariant(QVariantList() << QVariant(QJsonValue(inputMixModeComboElement)))));
+    element = QJsonObject();
+    element.insert(QString::fromStdString("label"), QString::fromStdString("1"));
+    element.insert(QString::fromStdString("baseChannel"), QVariant(0).toInt());
+    element.insert(QString::fromStdString("numChannels"), QVariant(1).toInt());
+    m_inputChannelsComboModel = QJsonArray();
+    m_inputChannelsComboModel.push_back(element);
 
-    QJsonObject inputChannelsComboElement = QJsonObject();
-    inputChannelsComboElement.insert(QString::fromStdString("label"),
-                                     QString::fromStdString("1"));
-    inputChannelsComboElement.insert(QString::fromStdString("baseChannel"),
-                                     QVariant(0).toInt());
-    inputChannelsComboElement.insert(QString::fromStdString("numChannels"),
-                                     QVariant(1).toInt());
-    m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("inputChannelsComboModel"),
-        QVariant::fromValue(
-            QVariant(QVariantList() << QVariant(QJsonValue(inputChannelsComboElement)))));
-
-    QJsonObject outputChannelsComboElement = QJsonObject();
-    outputChannelsComboElement.insert(QString::fromStdString("label"),
-                                      QString::fromStdString("1 & 2"));
-    outputChannelsComboElement.insert(QString::fromStdString("baseChannel"),
-                                      QVariant(0).toInt());
-    outputChannelsComboElement.insert(QString::fromStdString("numChannels"),
-                                      QVariant(2).toInt());
-    m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("outputChannelsComboModel"),
-        QVariant::fromValue(QVariant(
-            QVariantList() << QVariant(QJsonValue(outputChannelsComboElement)))));
+    element = QJsonObject();
+    element.insert(QString::fromStdString("label"), QString::fromStdString("1 & 2"));
+    element.insert(QString::fromStdString("baseChannel"), QVariant(0).toInt());
+    element.insert(QString::fromStdString("numChannels"), QVariant(2).toInt());
+    m_outputChannelsComboModel = QJsonArray();
+    m_outputChannelsComboModel.push_back(element);
 
 #endif
     m_bufferStrategy = settings.value(QStringLiteral("BufferStrategy"), 2).toInt();
@@ -870,6 +855,31 @@ const QVector<float>& VirtualStudio::outputMeterLevels() const
     return m_outputMeterLevels;
 }
 
+const QJsonArray& VirtualStudio::inputComboModel() const
+{
+    return m_inputComboModel;
+}
+
+const QJsonArray& VirtualStudio::outputComboModel() const
+{
+    return m_outputComboModel;
+}
+
+const QJsonArray& VirtualStudio::inputChannelsComboModel() const
+{
+    return m_inputChannelsComboModel;
+}
+
+const QJsonArray& VirtualStudio::outputChannelsComboModel() const
+{
+    return m_outputChannelsComboModel;
+}
+
+const QJsonArray& VirtualStudio::inputMixModeComboModel() const
+{
+    return m_inputMixModeComboModel;
+}
+
 QString VirtualStudio::updateChannel()
 {
     return m_updateChannel;
@@ -1224,38 +1234,30 @@ void VirtualStudio::refreshStudios(int index, bool signalRefresh)
 void VirtualStudio::refreshDevices()
 {
 #ifdef RT_AUDIO
-    if (!m_vsAudioInterface.isNull()) {
-        m_vsAudioInterface->closeAudio();
-        setAudioReady(false);
-    }
-
-    refreshRtAudioDevices();
-    validateDevicesState();
-    if (!m_vsAudioInterface.isNull()) {
-        restartAudio();
-    }
+    if (m_vsAudioInterface.isNull())
+        return;
+    m_vsAudioInterface->closeAudio();
+    setAudioReady(false);
+    restartAudio();
 #endif
 }
 
 void VirtualStudio::refreshRtAudioDevices()
 {
-    if (!m_useRtAudio) {
+    if (!m_useRtAudio || m_vsAudioInterface.isNull())
         return;
-    }
 #ifdef RT_AUDIO
-    RtAudioInterface::getDeviceList(&m_inputDeviceList, &m_inputDeviceCategories,
-                                    &m_inputDeviceChannels, true);
-    RtAudioInterface::getDeviceList(&m_outputDeviceList, &m_outputDeviceCategories,
-                                    &m_outputDeviceChannels, false);
-
-    QVariant inputComboModel = formatDeviceList(
-        m_inputDeviceList, m_inputDeviceCategories, m_inputDeviceChannels);
-    QVariant outputComboModel = formatDeviceList(
-        m_outputDeviceList, m_outputDeviceCategories, m_outputDeviceChannels);
-    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("inputComboModel"),
-                                                       inputComboModel);
-    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("outputComboModel"),
-                                                       outputComboModel);
+    m_vsAudioInterface->refreshRtAudioDevices();
+    m_vsAudioInterface->getDeviceList(&m_inputDeviceList, &m_inputDeviceCategories,
+                                      &m_inputDeviceChannels, true);
+    m_vsAudioInterface->getDeviceList(&m_outputDeviceList, &m_outputDeviceCategories,
+                                      &m_outputDeviceChannels, false);
+    m_inputComboModel  = formatDeviceList(m_inputDeviceList, m_inputDeviceCategories,
+                                          m_inputDeviceChannels);
+    m_outputComboModel = formatDeviceList(m_outputDeviceList, m_outputDeviceCategories,
+                                          m_outputDeviceChannels);
+    emit inputComboModelChanged();
+    emit outputComboModelChanged();
 #endif
 }
 
@@ -1306,23 +1308,21 @@ void VirtualStudio::validateInputDevicesState()
                                         QString::fromStdString("Mono"));
         inputMixModeComboElement.insert(QString::fromStdString("value"),
                                         static_cast<int>(AudioInterface::MONO));
-        m_view.engine()->rootContext()->setContextProperty(
-            QStringLiteral("inputMixModeComboModel"),
-            QVariant::fromValue(QVariant(
-                QVariantList() << QVariant(QJsonValue(inputMixModeComboElement)))));
+        m_inputMixModeComboModel = QJsonArray();
+        m_inputMixModeComboModel.push_back(inputMixModeComboElement);
+        emit inputMixModeComboModelChanged();
 
         // Set the input channels combo to only have channel 1 as an option
-        QJsonObject inputChannelsComboElement = QJsonObject();
+        QJsonObject inputChannelsComboElement;
         inputChannelsComboElement.insert(QString::fromStdString("label"),
                                          QString::fromStdString("1"));
         inputChannelsComboElement.insert(QString::fromStdString("baseChannel"),
                                          QVariant(0).toInt());
         inputChannelsComboElement.insert(QString::fromStdString("numChannels"),
                                          QVariant(1).toInt());
-        m_view.engine()->rootContext()->setContextProperty(
-            QStringLiteral("inputChannelsComboModel"),
-            QVariant::fromValue(QVariant(
-                QVariantList() << QVariant(QJsonValue(inputChannelsComboElement)))));
+        m_inputChannelsComboModel = QJsonArray();
+        m_inputChannelsComboModel.push_back(inputChannelsComboElement);
+        emit inputChannelsComboModelChanged();
 
         // Set the only allowed options for these variables automatically
         m_baseInputChannel = 0;
@@ -1335,13 +1335,13 @@ void VirtualStudio::validateInputDevicesState()
     } else {
         // set the input channels selector to have the options based on the currently
         // selected device
-        QVariantList items = QVariantList();
+        m_inputChannelsComboModel = QJsonArray();
         for (int i = 0; i < numDevicesChannelsAvailable; i++) {
             QJsonObject element = QJsonObject();
             element.insert(QString::fromStdString("label"), QVariant(i + 1).toString());
             element.insert(QString::fromStdString("baseChannel"), QVariant(i).toInt());
             element.insert(QString::fromStdString("numChannels"), QVariant(1).toInt());
-            items.push_back(QVariant(QJsonValue(element)));
+            m_inputChannelsComboModel.push_back(element);
         }
         for (int i = 0; i < numDevicesChannelsAvailable; i++) {
             if (i % 2 == 0) {
@@ -1353,11 +1353,10 @@ void VirtualStudio::validateInputDevicesState()
                                QVariant(i).toInt());
                 element.insert(QString::fromStdString("numChannels"),
                                QVariant(2).toInt());
-                items.push_back(QVariant(QJsonValue(element)));
+                m_inputChannelsComboModel.push_back(element);
             }
         }
-        m_view.engine()->rootContext()->setContextProperty(
-            QStringLiteral("inputChannelsComboModel"), QVariant(items));
+        emit inputChannelsComboModelChanged();
 
         // if the current m_baseInputChannel or m_numInputChannels is invalid based on
         // this device's option, use the first two channels by default
@@ -1382,12 +1381,10 @@ void VirtualStudio::validateInputDevicesState()
                                              QString::fromStdString("Mix to Mono"));
             inputMixModeComboElement2.insert(QString::fromStdString("value"),
                                              static_cast<int>(AudioInterface::MIXTOMONO));
-
-            m_view.engine()->rootContext()->setContextProperty(
-                QStringLiteral("inputMixModeComboModel"),
-                QVariant::fromValue(QVariant(
-                    QVariantList() << QVariant(QJsonValue(inputMixModeComboElement1))
-                                   << QVariant(QJsonValue(inputMixModeComboElement2)))));
+            m_inputMixModeComboModel = QJsonArray();
+            m_inputMixModeComboModel.push_back(inputMixModeComboElement1);
+            m_inputMixModeComboModel.push_back(inputMixModeComboElement2);
+            emit inputMixModeComboModelChanged();
 
             // if m_inputMixMode is an invalid value, set it to "stereo" by default
             // given that we are using 2 channels
@@ -1404,10 +1401,9 @@ void VirtualStudio::validateInputDevicesState()
                                             QString::fromStdString("Mono"));
             inputMixModeComboElement.insert(QString::fromStdString("value"),
                                             static_cast<int>(AudioInterface::MONO));
-            m_view.engine()->rootContext()->setContextProperty(
-                QStringLiteral("inputMixModeComboModel"),
-                QVariant::fromValue(QVariant(
-                    QVariantList() << QVariant(QJsonValue(inputMixModeComboElement)))));
+            m_inputMixModeComboModel = QJsonArray();
+            m_inputMixModeComboModel.push_back(inputMixModeComboElement);
+            emit inputMixModeComboModelChanged();
 
             // if m_inputMixMode is an invalid value, set it to AudioInterface::MONO
             if (m_inputMixMode != static_cast<int>(AudioInterface::MONO)) {
@@ -1459,10 +1455,9 @@ void VirtualStudio::validateOutputDevicesState()
                                           QVariant(0).toInt());
         outputChannelsComboElement.insert(QString::fromStdString("numChannels"),
                                           QVariant(1).toInt());
-        m_view.engine()->rootContext()->setContextProperty(
-            QStringLiteral("outputChannelsComboModel"),
-            QVariant::fromValue(QVariant(
-                QVariantList() << QVariant(QJsonValue(outputChannelsComboElement)))));
+        m_outputChannelsComboModel = QJsonArray();
+        m_outputChannelsComboModel.push_back(outputChannelsComboElement);
+        emit outputChannelsComboModelChanged();
 
         // Set the only allowed options for these variables automatically
         m_baseOutputChannel = 0;
@@ -1473,7 +1468,7 @@ void VirtualStudio::validateOutputDevicesState()
     } else {
         // set the output channels selector to have the options based on the currently
         // selected device
-        QVariantList items = QVariantList();
+        m_outputChannelsComboModel = QJsonArray();
         for (int i = 0; i < numDevicesChannelsAvailable; i++) {
             if (i % 2 == 0) {
                 QJsonObject element = QJsonObject();
@@ -1484,11 +1479,10 @@ void VirtualStudio::validateOutputDevicesState()
                                QVariant(i).toInt());
                 element.insert(QString::fromStdString("numChannels"),
                                QVariant(2).toInt());
-                items.push_back(QVariant(QJsonValue(element)));
+                m_outputChannelsComboModel.push_back(element);
             }
         }
-        m_view.engine()->rootContext()->setContextProperty(
-            QStringLiteral("outputChannelsComboModel"), QVariant(items));
+        emit outputChannelsComboModelChanged();
 
         // if the current m_baseOutputChannel or m_numOutputChannels is invalid based on
         // this device's option, use the first two channels by default
@@ -2558,6 +2552,7 @@ void VirtualStudio::startAudio()
             QStringLiteral("audioInterface"), m_vsAudioInterface.data());
     }
 #ifdef RT_AUDIO
+    refreshRtAudioDevices();
     validateDevicesState();
     m_vsAudioInterface->setInputDevice(m_inputDevice, false);
     m_vsAudioInterface->setOutputDevice(m_outputDevice, false);
@@ -2626,6 +2621,7 @@ void VirtualStudio::restartAudio()
     // Start VsAudioInterface again
     if (!m_vsAudioInterface.isNull()) {
 #ifdef RT_AUDIO
+        refreshRtAudioDevices();
         validateDevicesState();
         m_vsAudioInterface->setInputDevice(m_inputDevice, false);
         m_vsAudioInterface->setOutputDevice(m_outputDevice, false);
@@ -2712,9 +2708,9 @@ bool VirtualStudio::readyToJoin()
 }
 
 #ifdef RT_AUDIO
-QVariant VirtualStudio::formatDeviceList(const QStringList& devices,
-                                         const QStringList& categories,
-                                         const QList<int>& channels)
+QJsonArray VirtualStudio::formatDeviceList(const QStringList& devices,
+                                           const QStringList& categories,
+                                           const QList<int>& channels)
 {
     QStringList uniqueCategories = QStringList(categories);
     uniqueCategories.removeDuplicates();
@@ -2726,7 +2722,7 @@ QVariant VirtualStudio::formatDeviceList(const QStringList& devices,
         containsCategories = false;
     }
 
-    QVariantList items = QVariantList();
+    QJsonArray items;
     for (int i = 0; i < uniqueCategories.size(); i++) {
         QString category = uniqueCategories.at(i);
 
@@ -2736,7 +2732,7 @@ QVariant VirtualStudio::formatDeviceList(const QStringList& devices,
             header.insert(QString::fromStdString("type"),
                           QString::fromStdString("header"));
             header.insert(QString::fromStdString("category"), category);
-            items.push_back(QVariant(QJsonValue(header)));
+            items.push_back(header);
         }
 
         for (int j = 0; j < devices.size(); j++) {
@@ -2747,12 +2743,12 @@ QVariant VirtualStudio::formatDeviceList(const QStringList& devices,
                                QString::fromStdString("element"));
                 element.insert(QString::fromStdString("channels"), channels.at(j));
                 element.insert(QString::fromStdString("category"), category);
-                items.push_back(QVariant(QJsonValue(element)));
+                items.push_back(element);
             }
         }
     }
 
-    return QVariant(items);
+    return items;
 }
 #endif
 
