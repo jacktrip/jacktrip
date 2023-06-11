@@ -324,9 +324,6 @@ void RtAudioInterface::printDevices()
 {
     QVector<RtAudioDevice> devices;
     scanDevices(devices);
-    for (int n = 0; n < devices.size(); ++n) {
-        devices[n].print();
-    }
 }
 
 //*******************************************************************************
@@ -535,6 +532,8 @@ void RtAudioInterface::scanDevices(QVector<RtAudioDevice>& devices)
         unsigned int numDevices = rtaudio.getDeviceCount();
         for (unsigned int j = 0; j < numDevices; j++) {
             RtAudio::DeviceInfo info = rtaudio.getDeviceInfo(j);
+            if (!info.probed || (info.inputChannels == 0 && info.outputChannels == 0))
+                continue;
             RtAudioDevice device;
             device.api            = rtaudio.getCurrentApi();
             device.apiIndex       = j;

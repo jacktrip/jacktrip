@@ -44,9 +44,6 @@ Rectangle {
     property bool isUsingRtAudio: virtualstudio.audioBackend == "RtAudio"
     property bool hasNoBackend: !isUsingJack && !isUsingRtAudio && !virtualstudio.backendAvailable;
 
-    property int inputCurrIndex: getCurrentInputDeviceIndex()
-    property int outputCurrIndex: getCurrentOutputDeviceIndex()
-
     function getCurrentInputDeviceIndex () {
         if (virtualstudio.inputDevice === "") {
             return virtualstudio.inputComboModel.findIndex(elem => elem.type === "element");
@@ -181,7 +178,7 @@ Rectangle {
                 anchors.rightMargin: rightMargin * virtualstudio.uiScale
                 width: parent.width - leftSpacer.width - rightMargin * virtualstudio.uiScale
                 model: virtualstudio.outputComboModel
-                currentIndex: outputCurrIndex
+                currentIndex: getCurrentOutputDeviceIndex()
                 delegate: ItemDelegate {
                     required property var modelData
                     required property int index
@@ -487,7 +484,7 @@ Rectangle {
             ComboBox {
                 id: inputCombo
                 model: virtualstudio.inputComboModel
-                currentIndex: inputCurrIndex
+                currentIndex: getCurrentInputDeviceIndex()
                 anchors.left: outputCombo.left
                 anchors.right: outputCombo.right
                 anchors.verticalCenter: inputLabel.verticalCenter
