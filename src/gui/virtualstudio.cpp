@@ -215,9 +215,8 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     }
 #else
     m_selectableBackend = false;
-    m_vsAudioInterface.reset(new VsAudioInterface());
-
     QJsonObject element;
+
     element.insert(QString::fromStdString("label"), QString::fromStdString("Mono"));
     element.insert(QString::fromStdString("value"),
                    static_cast<int>(AudioInterface::MONO));
