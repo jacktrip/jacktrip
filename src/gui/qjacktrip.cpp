@@ -365,6 +365,7 @@ void QJackTrip::showEvent(QShowEvent* event)
     // VirtualStudio window is shown first.
     QMainWindow::showEvent(event);
     if (m_firstShow) {
+        QSettings settings;
         loadSettings(m_cliSettings.data());
 
         // Display a warning about any ignored command line options.
@@ -404,7 +405,6 @@ void QJackTrip::showEvent(QShowEvent* event)
                 "JACK was not found. This means that only the RtAudio backend is "
                 "available and that JackTrip cannot be run in hub server mode.");
 
-            QSettings settings;
             settings.beginGroup(QStringLiteral("Audio"));
             if (!settings.value(QStringLiteral("HideJackWarning"), false).toBool()) {
                 QCheckBox* dontBugMe =
@@ -451,7 +451,6 @@ void QJackTrip::showEvent(QShowEvent* event)
         }
 #endif  // USE_WEAK_JACK
 
-        QSettings settings;
         settings.beginGroup(QStringLiteral("Window"));
         QByteArray geometry = settings.value(QStringLiteral("Geometry")).toByteArray();
         if (geometry.size() > 0) {
