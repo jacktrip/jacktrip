@@ -301,6 +301,7 @@ void VsAudioInterface::closeAudio()
 void VsAudioInterface::replaceProcess()
 {
     if (m_hasBeenActive) {
+        std::cout << "running replaceProcess" << std::endl;
         closeAudio();
         setupAudio();
         setupPlugins();
@@ -575,6 +576,7 @@ int VsAudioInterface::getNumOutputChannels()
 
 void VsAudioInterface::setupPlugins()
 {
+    std::cout << "Setting up plugins" << std::endl;
     // Create plugins
     m_inputMeter         = new Meter(getNumInputChannels());
     m_outputMeter        = new Meter(getNumOutputChannels());
@@ -604,6 +606,8 @@ void VsAudioInterface::setupPlugins()
             &Volume::muteUpdated);
     connect(this, &VsAudioInterface::triggerPlayback, m_outputTonePlugin,
             &Tone::triggerPlayback);
+    std::cout << "done Setting up plugins" << std::endl;
+
 }
 
 void VsAudioInterface::startProcess()
@@ -618,6 +622,7 @@ void VsAudioInterface::startProcess()
             }
 #endif
         } catch (const std::exception& e) {
+            std::cout << "startProcess caught exception" << std::endl;
             emit errorToProcess(QString::fromUtf8(e.what()));
         }
         m_audioActive   = true;

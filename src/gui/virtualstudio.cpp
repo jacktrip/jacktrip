@@ -1236,6 +1236,7 @@ void VirtualStudio::refreshStudios(int index, bool signalRefresh)
 void VirtualStudio::refreshDevices()
 {
 #ifdef RT_AUDIO
+    std::cout << "refreshing devices" << std::endl;
     if (m_vsAudioInterface.isNull())
         return;
     m_vsAudioInterface->closeAudio();
@@ -2554,8 +2555,11 @@ void VirtualStudio::startAudio()
             QStringLiteral("audioInterface"), m_vsAudioInterface.data());
     }
 #ifdef RT_AUDIO
+std::cout << "refreshing audio devices" << std::endl;
     refreshRtAudioDevices();
+std::cout << "validating device state" << std::endl;
     validateDevicesState();
+std::cout << "done validating device state" << std::endl;
     m_vsAudioInterface->setInputDevice(m_inputDevice, false);
     m_vsAudioInterface->setOutputDevice(m_outputDevice, false);
     m_vsAudioInterface->setAudioInterfaceMode(m_useRtAudio, false);
@@ -2610,6 +2614,8 @@ void VirtualStudio::startAudio()
     resetMeters();
 
     m_vsAudioInterface->startProcess();
+
+    std::cout << "Done starting Audio" << std::endl;
 }
 
 void VirtualStudio::restartAudio()
@@ -2639,6 +2645,7 @@ void VirtualStudio::restartAudio()
     } else {
         startAudio();
     }
+    std::cout << "Done restarting Audio" << std::endl;
 }
 
 void VirtualStudio::resetMeters()

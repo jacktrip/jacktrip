@@ -121,6 +121,8 @@ void RtAudioInterface::setup(bool verbose)
     cout << "Setting Up RtAudio Interface" << endl;
     cout << gPrintSeparator << endl;
 
+    try {
+
     AudioInterface::setDevicesWarningMsg(AudioInterface::DEVICE_WARN_NONE);
     AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_NONE);
 
@@ -302,21 +304,23 @@ void RtAudioInterface::setup(bool verbose)
     // Setup parent class
     AudioInterface::setup(verbose);
 
-    try {
         // IMPORTANT NOTE: It's VERY important to remember to pass "this"
         // to the user data in the process callback, otherwise member won't
         // be accessible
         if (mRtAudio != NULL) {
+            std::cout << "RTAudio opening stream" << std::endl;
             mRtAudio->openStream(&out_params, &in_params, RTAUDIO_FLOAT32, sampleRate,
                                  &bufferFrames, &RtAudioInterface::wrapperRtAudioCallback,
                                  this, &options, &RtAudioInterface::RtAudioErrorCallback);
         }
 
+        std::cout << "RTAudio setting buffer size" << std::endl;
         setBufferSize(bufferFrames);
     } catch (RtAudioError& e) {
-        std::cout << e.getMessage() << '\n' << std::endl;
+        std::cout << "RTAudio exception: " << e.getMessage() << '\n' << std::endl;
         throw std::runtime_error(e.getMessage());
     }
+    std::cout << "RtAudioInterface::setup completed successfully" << std::endl;
 }
 
 //*******************************************************************************
@@ -467,10 +471,12 @@ int RtAudioInterface::startProcess()
 {
     try {
         if (mRtAudio != NULL) {
+            std::cout << "starting rtaudio stream" << std::endl;
             mRtAudio->startStream();
+            std::cout << "done starting rtaudio stream" << std::endl;
         }
     } catch (RtAudioError& e) {
-        std::cout << e.getMessage() << '\n' << std::endl;
+        std::cout << "RTAudio exception: " << e.getMessage() << '\n' << std::endl;
         return (-1);
     }
     return (0);
