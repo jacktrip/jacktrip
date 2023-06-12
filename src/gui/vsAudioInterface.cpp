@@ -440,6 +440,17 @@ void VsAudioInterface::getDeviceList(QStringList* list, QStringList* categories,
     }
     list->clear();
 
+    // do not include blacklisted audio interfaces
+    // these are known to be unstable and cause JackTrip to crash
+    QVector<QString> blacklisted_devices = {
+#ifdef _WIN32
+        // Realtek ASIO: seems to crash any computer that tries to use it
+        QString::fromUtf8("Realtek ASIO"),
+#endif
+        // JackRouter: crashes if not running; use Jack backend instead
+        QString::fromUtf8("JackRouter"),
+    };
+
     // Explicitly add default device
     QString defaultDeviceName = "";
     uint32_t defaultDeviceIdx;
@@ -455,7 +466,10 @@ void VsAudioInterface::getDeviceList(QStringList* list, QStringList* categories,
         defaultDeviceName = QString::fromStdString(defaultDeviceInfo.name);
     }
 
-    if (defaultDeviceName != "") {
+    if (blacklisted_devices.contains(defaultDeviceName)) {
+        std::cout << "RTAudio: blacklisted default " << (isInput ? "input" : "output")
+                  << " device: " << defaultDeviceName.toStdString() << std::endl;
+    } else if (defaultDeviceName != "") {
         list->append(defaultDeviceName);
         if (categories != NULL) {
 #ifdef _WIN32
@@ -503,22 +517,30 @@ void VsAudioInterface::getDeviceList(QStringList* list, QStringList* categories,
             continue;
         }
 
-        if (m_devices[n].name == "JackRouter") {
+        // Skip if no channels available
+        if ((isInput && m_devices[n].inputChannels == 0)
+            || (!isInput && m_devices[n].outputChannels == 0)) {
             continue;
         }
 
-        if (isInput && m_devices[n].inputChannels > 0) {
+        // Skip blacklisted devices
+        if (blacklisted_devices.contains(m_devices[n].name)) {
+            std::cout << "RTAudio: blacklisted " << (isInput ? "input" : "output")
+                      << " device: " << m_devices[n].name.toStdString() << std::endl;
+            continue;
+        }
+
+        // Good to go!
+        if (isInput) {
             list->append(m_devices[n].name);
             if (channels != NULL) {
                 channels->append(m_devices[n].inputChannels);
             }
-        } else if (!isInput && m_devices[n].outputChannels > 0) {
+        } else {
             list->append(m_devices[n].name);
             if (channels != NULL) {
                 channels->append(m_devices[n].outputChannels);
             }
-        } else {
-            continue;
         }
 
         if (categories == NULL) {
