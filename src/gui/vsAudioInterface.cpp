@@ -245,6 +245,7 @@ void VsAudioInterface::setupRtAudio()
         m_audioInterface->setInputDevice(m_inputDeviceName);
         m_audioInterface->setOutputDevice(m_outputDeviceName);
         m_audioInterface->setBufferSizeInSamples(m_audioBufferSize);
+        static_cast<RtAudioInterface*>(m_audioInterface.get())->setDevices(m_devices);
 
         // Note: setup might change the number of channels and/or buffer size
         m_audioInterface->setup(true);
@@ -342,6 +343,16 @@ void VsAudioInterface::setInputDevice(QString deviceName, bool shouldRestart)
     }
 }
 
+void VsAudioInterface::setOutputDevice(QString deviceName, bool shouldRestart)
+{
+    m_outputDeviceName = deviceName.toStdString();
+    if (!m_audioInterface.isNull()) {
+        if (m_audioActive && shouldRestart) {
+            emit settingsUpdated();
+        }
+    }
+}
+
 #ifdef RT_AUDIO
 void VsAudioInterface::setBaseInputChannel(int baseChannel, bool shouldRestart)
 {
@@ -383,18 +394,7 @@ void VsAudioInterface::setInputMixMode(const int mode, bool shouldRestart)
     }
     return;
 }
-#endif
-void VsAudioInterface::setOutputDevice(QString deviceName, bool shouldRestart)
-{
-    m_outputDeviceName = deviceName.toStdString();
-    if (!m_audioInterface.isNull()) {
-        if (m_audioActive && shouldRestart) {
-            emit settingsUpdated();
-        }
-    }
-}
 
-#ifdef RT_AUDIO
 void VsAudioInterface::setBaseOutputChannel(int baseChannel, bool shouldRestart)
 {
     if (m_audioInterfaceMode != VsAudioInterface::RTAUDIO) {
@@ -419,6 +419,130 @@ void VsAudioInterface::setNumOutputChannels(int numChannels, bool shouldRestart)
         if (m_audioActive && shouldRestart) {
             emit settingsUpdated();
         }
+    }
+}
+
+void VsAudioInterface::refreshRtAudioDevices()
+{
+    RtAudioInterface::scanDevices(m_devices);
+}
+
+void VsAudioInterface::getDeviceList(QStringList* list, QStringList* categories,
+                                     QList<int>* channels, bool isInput)
+{
+    RtAudio baseRtAudio;
+    RtAudio::Api baseRtAudioApi = baseRtAudio.getCurrentApi();
+    if (categories != NULL) {
+        categories->clear();
+    }
+    if (channels != NULL) {
+        channels->clear();
+    }
+    list->clear();
+
+    // Explicitly add default device
+    QString defaultDeviceName = "";
+    uint32_t defaultDeviceIdx;
+    RtAudio::DeviceInfo defaultDeviceInfo;
+    if (isInput) {
+        defaultDeviceIdx = baseRtAudio.getDefaultInputDevice();
+    } else {
+        defaultDeviceIdx = baseRtAudio.getDefaultOutputDevice();
+    }
+
+    if (defaultDeviceIdx != 0) {
+        defaultDeviceInfo = baseRtAudio.getDeviceInfo(defaultDeviceIdx);
+        defaultDeviceName = QString::fromStdString(defaultDeviceInfo.name);
+    }
+
+    if (defaultDeviceName != "") {
+        list->append(defaultDeviceName);
+        if (categories != NULL) {
+#ifdef _WIN32
+            switch (baseRtAudioApi) {
+            case RtAudio::WINDOWS_ASIO:
+                categories->append(QStringLiteral("Low-Latency (ASIO)"));
+                break;
+            case RtAudio::WINDOWS_WASAPI:
+                categories->append(QStringLiteral("High-Latency (Non-ASIO)"));
+                break;
+            case RtAudio::WINDOWS_DS:
+                categories->append(QStringLiteral("High-Latency (Non-ASIO)"));
+                break;
+            default:
+                categories->append(QStringLiteral(""));
+                break;
+            }
+#else
+            categories->append(QStringLiteral(""));
+#endif
+        }
+        if (channels != NULL) {
+            if (isInput) {
+                channels->append(defaultDeviceInfo.inputChannels);
+            } else {
+                channels->append(defaultDeviceInfo.outputChannels);
+            }
+        }
+    }
+
+    for (int n = 0; n < m_devices.size(); ++n) {
+#ifdef _WIN32
+        if (m_devices[n].api == RtAudio::UNIX_JACK) {
+            continue;
+        }
+#endif
+        // Don't include duplicate entries
+        if (list->contains(m_devices[n].name)) {
+            continue;
+        }
+
+        // Skip the default device, since we already added it
+        if (m_devices[n].name == defaultDeviceName
+            && m_devices[n].api == baseRtAudioApi) {
+            continue;
+        }
+
+        if (m_devices[n].name == "JackRouter") {
+            continue;
+        }
+
+        if (isInput && m_devices[n].inputChannels > 0) {
+            list->append(m_devices[n].name);
+            if (channels != NULL) {
+                channels->append(m_devices[n].inputChannels);
+            }
+        } else if (!isInput && m_devices[n].outputChannels > 0) {
+            list->append(m_devices[n].name);
+            if (channels != NULL) {
+                channels->append(m_devices[n].outputChannels);
+            }
+        } else {
+            continue;
+        }
+
+        if (categories == NULL) {
+            continue;
+        }
+
+#ifdef _WIN32
+        switch (m_devices[n].api) {
+        case RtAudio::WINDOWS_ASIO:
+            categories->append("Low-Latency (ASIO)");
+            break;
+        case RtAudio::WINDOWS_WASAPI:
+            categories->append("High-Latency (Non-ASIO)");
+            break;
+        case RtAudio::WINDOWS_DS:
+            categories->append("High-Latency (Non-ASIO)");
+            break;
+        default:
+            categories->append("");
+            break;
+        }
+#else
+        categories->append("");
+#endif
     }
 }
 #endif

@@ -48,6 +48,17 @@ using std::cout;
 using std::endl;
 
 //*******************************************************************************
+void RtAudioDevice::print() const
+{
+    std::cout << "[" << RtAudio::getApiDisplayName(this->api) << " - " << this->apiIndex
+              << "]"
+              << ": \"";
+    std::cout << this->name.toStdString() << "\" ";
+    std::cout << "(" << this->inputChannels << " ins, " << this->outputChannels
+              << " outs)" << endl;
+}
+
+//*******************************************************************************
 RtAudioInterface::RtAudioInterface(QVarLengthArray<int> InputChans,
                                    QVarLengthArray<int> OutputChans,
                                    inputMixModeT InputMixMode,
@@ -118,13 +129,11 @@ void RtAudioInterface::setup(bool verbose)
     std::string api_in;
     std::string api_out;
 
-    QStringList all_input_devices;
-    QStringList all_output_devices;
-    getDeviceList(&all_input_devices, NULL, NULL, true);
-    getDeviceList(&all_output_devices, NULL, NULL, false);
+    if (mDevices.empty())
+        scanDevices(mDevices);
 
-    unsigned int n_devices_input  = all_input_devices.size();
-    unsigned int n_devices_output = all_output_devices.size();
+    unsigned int n_devices_input  = getNumInputDevices();
+    unsigned int n_devices_output = getNumOutputDevices();
     unsigned int n_devices_total  = n_devices_input + n_devices_output;
 
     RtAudio* rtAudioIn  = NULL;
@@ -313,29 +322,32 @@ void RtAudioInterface::setup(bool verbose)
 //*******************************************************************************
 void RtAudioInterface::printDevices()
 {
-    std::vector<RtAudio::Api> apis;
-    RtAudio::getCompiledApi(apis);
+    QVector<RtAudioDevice> devices;
+    scanDevices(devices);
+}
 
-    for (uint32_t i = 0; i < apis.size(); i++) {
-#ifdef _WIN32
-        if (apis.at(i) == RtAudio::UNIX_JACK) {
-            continue;
-        }
-#endif
-        RtAudio rtaudio(apis.at(i));
-        unsigned int devices = rtaudio.getDeviceCount();
-        for (unsigned int j = 0; j < devices; j++) {
-            RtAudio::DeviceInfo info = rtaudio.getDeviceInfo(j);
-            if (info.probed == true) {
-                std::cout << "[" << RtAudio::getApiDisplayName(rtaudio.getCurrentApi())
-                          << " - " << j << "]"
-                          << ": \"";
-                std::cout << info.name << "\" ";
-                std::cout << "(" << info.inputChannels << " ins, " << info.outputChannels
-                          << " outs)" << endl;
-            }
+//*******************************************************************************
+unsigned int RtAudioInterface::getNumInputDevices() const
+{
+    unsigned int deviceCount = 0;
+    for (int n = 0; n < mDevices.size(); ++n) {
+        if (mDevices[n].inputChannels > 0) {
+            ++deviceCount;
         }
     }
+    return deviceCount;
+}
+
+//*******************************************************************************
+unsigned int RtAudioInterface::getNumOutputDevices() const
+{
+    unsigned int deviceCount = 0;
+    for (int n = 0; n < mDevices.size(); ++n) {
+        if (mDevices[n].outputChannels > 0) {
+            ++deviceCount;
+        }
+    }
+    return deviceCount;
 }
 
 //*******************************************************************************
@@ -481,146 +493,34 @@ int RtAudioInterface::stopProcess()
 }
 
 //*******************************************************************************
-void RtAudioInterface::getDeviceList(QStringList* list, QStringList* categories,
-                                     QList<int>* channels, bool isInput)
+void RtAudioInterface::getDeviceInfoFromName(std::string deviceName, int* index,
+                                             std::string* api, bool isInput) const
 {
-    RtAudio baseRtAudio;
-    RtAudio::Api baseRtAudioApi = baseRtAudio.getCurrentApi();
-    if (categories != NULL) {
-        categories->clear();
-    }
-    if (channels != NULL) {
-        channels->clear();
-    }
-    list->clear();
-
-    // Explicitly add default device
-    QString defaultDeviceName = "";
-    uint32_t defaultDeviceIdx;
-    RtAudio::DeviceInfo defaultDeviceInfo;
-    if (isInput) {
-        defaultDeviceIdx = baseRtAudio.getDefaultInputDevice();
-    } else {
-        defaultDeviceIdx = baseRtAudio.getDefaultOutputDevice();
-    }
-
-    if (defaultDeviceIdx != 0) {
-        defaultDeviceInfo = baseRtAudio.getDeviceInfo(defaultDeviceIdx);
-        defaultDeviceName = QString::fromStdString(defaultDeviceInfo.name);
-    }
-
-    if (defaultDeviceName != "") {
-        list->append(defaultDeviceName);
-        if (categories != NULL) {
-#ifdef _WIN32
-            switch (baseRtAudioApi) {
-            case RtAudio::WINDOWS_ASIO:
-                categories->append(QStringLiteral("Low-Latency (ASIO)"));
-                break;
-            case RtAudio::WINDOWS_WASAPI:
-                categories->append(QStringLiteral("High-Latency (Non-ASIO)"));
-                break;
-            case RtAudio::WINDOWS_DS:
-                categories->append(QStringLiteral("High-Latency (Non-ASIO)"));
-                break;
-            default:
-                categories->append(QStringLiteral(""));
-                break;
-            }
-#else
-            categories->append(QStringLiteral(""));
-#endif
-        }
-        if (channels != NULL) {
-            if (isInput) {
-                channels->append(defaultDeviceInfo.inputChannels);
-            } else {
-                channels->append(defaultDeviceInfo.outputChannels);
+    const QVector<RtAudioDevice>& devices(getDevices());
+    for (int n = 0; n < devices.size(); ++n) {
+        if (deviceName == devices[n].name.toStdString()) {
+            if ((isInput && devices[n].inputChannels > 0)
+                || (!isInput && devices[n].outputChannels > 0)) {
+                *index = devices[n].apiIndex;
+                *api   = RtAudio::getApiName(devices[n].api);
+                return;
             }
         }
     }
 
-    std::vector<RtAudio::Api> apis;
-    RtAudio::getCompiledApi(apis);
-
-    for (uint32_t i = 0; i < apis.size(); i++) {
-#ifdef _WIN32
-        if (apis.at(i) == RtAudio::UNIX_JACK) {
-            continue;
-        }
-#endif
-        RtAudio::Api api = apis.at(i);
-        RtAudio rtaudio(api);
-        unsigned int devices = rtaudio.getDeviceCount();
-        for (unsigned int j = 0; j < devices; j++) {
-            RtAudio::DeviceInfo info = rtaudio.getDeviceInfo(j);
-            if (info.probed == true) {
-                // Don't include duplicate entries
-                if (list->contains(QString::fromStdString(info.name))) {
-                    continue;
-                }
-
-                // Skip the default device, since we already added it
-                if (QString::fromStdString(info.name) == defaultDeviceName
-                    && api == baseRtAudioApi) {
-                    continue;
-                }
-
-                if (QString::fromStdString(info.name) == "JackRouter") {
-                    continue;
-                }
-
-                if (info.probed == false) {
-                    continue;
-                }
-
-                if (isInput && info.inputChannels > 0) {
-                    list->append(QString::fromStdString(info.name));
-                    if (channels != NULL) {
-                        channels->append(info.inputChannels);
-                    }
-                } else if (!isInput && info.outputChannels > 0) {
-                    list->append(QString::fromStdString(info.name));
-                    if (channels != NULL) {
-                        channels->append(info.outputChannels);
-                    }
-                } else {
-                    continue;
-                }
-
-                if (categories == NULL) {
-                    continue;
-                }
-
-#ifdef _WIN32
-                switch (api) {
-                case RtAudio::WINDOWS_ASIO:
-                    categories->append("Low-Latency (ASIO)");
-                    break;
-                case RtAudio::WINDOWS_WASAPI:
-                    categories->append("High-Latency (Non-ASIO)");
-                    break;
-                case RtAudio::WINDOWS_DS:
-                    categories->append("High-Latency (Non-ASIO)");
-                    break;
-                default:
-                    categories->append("");
-                    break;
-                }
-#else
-                categories->append("");
-#endif
-            }
-        }
-    }
+    *index = -1;
+    *api   = "";
+    return;
 }
 
 //*******************************************************************************
-void RtAudioInterface::getDeviceInfoFromName(std::string deviceName, int* index,
-                                             std::string* api, bool isInput)
+void RtAudioInterface::scanDevices(QVector<RtAudioDevice>& devices)
 {
     std::vector<RtAudio::Api> apis;
     RtAudio::getCompiledApi(apis);
+    devices.clear();
+
+    std::cout << "RTAudio: scanning devices..." << std::endl;
 
     for (uint32_t i = 0; i < apis.size(); i++) {
 #ifdef _WIN32
@@ -629,22 +529,19 @@ void RtAudioInterface::getDeviceInfoFromName(std::string deviceName, int* index,
         }
 #endif
         RtAudio rtaudio(apis.at(i));
-        unsigned int devices = rtaudio.getDeviceCount();
-        for (unsigned int j = 0; j < devices; j++) {
+        unsigned int numDevices = rtaudio.getDeviceCount();
+        for (unsigned int j = 0; j < numDevices; j++) {
             RtAudio::DeviceInfo info = rtaudio.getDeviceInfo(j);
-            if (info.probed == true
-                && deviceName == QString::fromStdString(info.name).toStdString()) {
-                if ((isInput && info.inputChannels > 0)
-                    || (!isInput && info.outputChannels > 0)) {
-                    *index = j;
-                    *api   = RtAudio::getApiName(rtaudio.getCurrentApi());
-                    return;
-                }
-            }
+            if (!info.probed || (info.inputChannels == 0 && info.outputChannels == 0))
+                continue;
+            RtAudioDevice device;
+            device.api            = rtaudio.getCurrentApi();
+            device.apiIndex       = j;
+            device.name           = QString::fromStdString(info.name);
+            device.inputChannels  = info.inputChannels;
+            device.outputChannels = info.outputChannels;
+            devices.push_back(device);
+            device.print();
         }
     }
-
-    *index = -1;
-    *api   = "";
-    return;
 }

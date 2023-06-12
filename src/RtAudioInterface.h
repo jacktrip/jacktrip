@@ -41,11 +41,23 @@
 #include <RtAudio.h>
 
 #include <QQueue>
+#include <QString>
+#include <QVector>
 
 #include "AudioInterface.h"
 #include "StereoToMono.h"
 #include "jacktrip_globals.h"
 class JackTrip;  // Forward declaration
+
+/// \brief Simple Class that represents an audio interface available via RtAudio
+struct RtAudioDevice {
+    RtAudio::Api api;
+    QString name;
+    int apiIndex;
+    int inputChannels;
+    int outputChannels;
+    void print() const;
+};
 
 /// \brief Base Class that provides an interface with RtAudio
 class RtAudioInterface : public AudioInterface
@@ -73,10 +85,20 @@ class RtAudioInterface : public AudioInterface
     /// \brief This has no effect in RtAudio
     virtual void connectDefaultPorts() {}
 
-    static void getDeviceList(QStringList* list, QStringList* categories,
-                              QList<int>* channels, bool isInput);
-    static void getDeviceInfoFromName(std::string deviceName, int* index,
-                                      std::string* api, bool isInput);
+    // returns number of available input audio devices
+    unsigned int getNumInputDevices() const;
+
+    // returns number of available output audio devices
+    unsigned int getNumOutputDevices() const;
+
+    // populates devices with all available audio interfaces
+    static void scanDevices(QVector<RtAudioDevice>& devices);
+
+    // sets devices to available audio interfaces
+    void setDevices(QVector<RtAudioDevice>& devices) { mDevices = devices; }
+
+    // returns all available audio devices
+    inline const QVector<RtAudioDevice>& getDevices() const { return mDevices; }
 
     //--------------SETTERS---------------------------------------------
     /// \brief This has no effect in RtAudio
@@ -96,10 +118,16 @@ class RtAudioInterface : public AudioInterface
                                      const std::string& errorText);
     void printDeviceInfo(std::string api, unsigned int deviceId);
 
+    // retrieves info about an audio device by search for its name
+    void getDeviceInfoFromName(std::string deviceName, int* index, std::string* api,
+                               bool isInput) const;
+
     QVarLengthArray<float*>
         mInBuffer;  ///< Vector of Input buffers/channel read from JACK
     QVarLengthArray<float*>
-        mOutBuffer;     ///< Vector of Output buffer/channel to write to JACK
+        mOutBuffer;  ///< Vector of Output buffer/channel to write to JACK
+    QVector<RtAudioDevice>
+        mDevices;       ///< Vector of audio interfaces available via RTAudio
     RtAudio* mRtAudio;  ///< RtAudio class if the input and output device are the same
 
     unsigned int getDefaultDeviceForLinuxPulseAudio(bool isInput);

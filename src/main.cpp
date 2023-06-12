@@ -316,8 +316,9 @@ int main(int argc, char* argv[])
         app->setApplicationName(QStringLiteral("JackTrip"));
         app->setApplicationVersion(gVersion);
 
-        Settings cliSettings(true);
-        cliSettings.parseInput(argc, argv);
+        QSharedPointer<Settings> cliSettings;
+        cliSettings.reset(new Settings(true));
+        cliSettings->parseInput(argc, argv);
 
 #ifndef NO_VS
         // Register clipboard Qml type
@@ -335,9 +336,9 @@ int main(int argc, char* argv[])
         vsInit.reset(new VsInit());
         vsInit->checkForInstance(deeplink);
 #endif  // _WIN32
-        window.reset(new QJackTrip(&cliSettings, !deeplink.isEmpty()));
+        window.reset(new QJackTrip(cliSettings, !deeplink.isEmpty()));
 #else
-        window.reset(new QJackTrip(&cliSettings));
+        window.reset(new QJackTrip(cliSettings));
 #endif  // NO_VS
         QObject::connect(window.data(), &QJackTrip::signalExit, app.data(),
                          &QCoreApplication::quit, Qt::QueuedConnection);
