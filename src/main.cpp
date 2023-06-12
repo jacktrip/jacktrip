@@ -300,6 +300,14 @@ int main(int argc, char* argv[])
         // Remove the console that appears if we're on windows and not running from a
         // command line.
         if (!isRunFromCmd()) {
+            std::cout << "This extra window is caused by a bug in Microsoft Windows. "
+                      << "It can safely be ignored or closed." << std::endl
+                      << std::endl
+                      << "To fix this bug, please upgrade to the latest version of "
+                      << "Windows Terminal available in the Microsoft App Store:"
+                      << std::endl
+                      << "https://aka.ms/terminal" << std::endl;
+
             FreeConsole();
         }
 #endif  // _WIN32
