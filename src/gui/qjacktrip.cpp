@@ -432,7 +432,6 @@ void QJackTrip::showEvent(QShowEvent* event)
             settings.endGroup();
         } else {
             // If we've fallen back to RtAudio before and JACK is now installed, use JACK.
-            QSettings settings;
             settings.beginGroup(QStringLiteral("Audio"));
             if (settings.value(QStringLiteral("UsingFallback"), false).toBool()) {
                 m_ui->backendComboBox->setCurrentIndex(0);
