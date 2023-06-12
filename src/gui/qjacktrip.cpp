@@ -53,7 +53,8 @@
 #include "../Meter.h"
 #include "../Reverb.h"
 
-QJackTrip::QJackTrip(QSharedPointer<Settings> settings, bool suppressCommandlineWarning, QWidget* parent)
+QJackTrip::QJackTrip(QSharedPointer<Settings> settings, bool suppressCommandlineWarning,
+                     QWidget* parent)
     : QMainWindow(parent)
     , m_ui(new Ui::QJackTrip)
     , m_netManager(new QNetworkAccessManager(this))
@@ -400,8 +401,8 @@ void QJackTrip::showEvent(QShowEvent* event)
             }
             m_ui->typeComboBox->removeItem(HUB_SERVER);
             m_ui->backendWarningLabel->setText(
-                "JACK was not found. This means that only the RtAudio backend is available "
-                "and that JackTrip cannot be run in hub server mode.");
+                "JACK was not found. This means that only the RtAudio backend is "
+                "available and that JackTrip cannot be run in hub server mode.");
 
             QSettings settings;
             settings.beginGroup(QStringLiteral("Audio"));
@@ -442,8 +443,8 @@ void QJackTrip::showEvent(QShowEvent* event)
             QMessageBox msgBox;
             msgBox.setText(
                 "An installation of JACK was not found, and no other audio backends are "
-                "available. JackTrip will not be able to start. (Please install JACK to fix "
-                "this.)");
+                "available. JackTrip will not be able to start. (Please install JACK to "
+                "fix this.)");
             msgBox.setWindowTitle("JACK Not Available");
             msgBox.exec();
 #endif  // RT_AUDIO
