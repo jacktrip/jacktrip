@@ -53,7 +53,7 @@
 #include "../Meter.h"
 #include "../Reverb.h"
 
-QJackTrip::QJackTrip(QWidget* parent)
+QJackTrip::QJackTrip(QSharedPointer<Settings> settings, bool suppressCommandlineWarning, QWidget* parent)
     : QMainWindow(parent)
     , m_ui(new Ui::QJackTrip)
     , m_netManager(new QNetworkAccessManager(this))
@@ -64,9 +64,11 @@ QJackTrip::QJackTrip(QWidget* parent)
     , m_jackTripRunning(false)
     , m_isExiting(false)
     , m_exitSent(false)
+    , m_suppressCommandlineWarning(suppressCommandlineWarning)
     , m_hideWarning(false)
 {
     m_ui->setupUi(this);
+    m_cliSettings = settings;
 
     // Set up our debug window, and relay everything to our real cout.
     std::cout.rdbuf(m_debugDialog->getOutputStream()->rdbuf());
@@ -291,29 +293,9 @@ QJackTrip::QJackTrip(QWidget* parent)
         m_ui->optionsTabWidget->removeTab(tabIndex);
     }
 #endif
-}
 
-QJackTrip::QJackTrip(Settings* settings, bool suppressCommandlineWarning, QWidget* parent)
-    : QJackTrip(parent)
-{
-    init(settings, suppressCommandlineWarning);
-}
-
-void QJackTrip::init(Settings* settings, bool suppressCommandlineWarning)
-{
     migrateSettings();
-    loadSettings(settings);
-
-    // Display a warning about any ignored command line options.
-    if (settings->guiIgnoresArguments() && !suppressCommandlineWarning) {
-        QMessageBox msgBox;
-        msgBox.setText(
-            "You have supplied command line options that the GUI version of JackTrip "
-            "currently ignores. (Everything else will run as expected.)\n\nRun "
-            "\"jacktrip -h\" for more details.");
-        msgBox.setWindowTitle(QStringLiteral("Command line options"));
-        msgBox.exec();
-    }
+    m_ui->optionsTabWidget->setCurrentIndex(0);
 
     QVector<QLabel*> labels;
     labels << m_ui->inFreeverbLabel << m_ui->inZitarevLabel << m_ui->outFreeverbLabel;
@@ -323,55 +305,6 @@ void QJackTrip::init(Settings* settings, bool suppressCommandlineWarning)
         labels.at(index)->setToolTip(m_ui->outZitarevLabel->toolTip());
         m_ui->outZitarevLabel->setToolTip(QLatin1String(""));
     }
-
-    // Add an autoqueue indicator to the status bar.
-    m_ui->statusBar->addPermanentWidget(&m_autoQueueIndicator);
-    if (m_ui->jitterCheckBox->isChecked() && m_ui->autoQueueCheckBox->isChecked()) {
-        m_autoQueueIndicator.setText(QStringLiteral("Auto queue: enabled"));
-    } else {
-        m_autoQueueIndicator.setText(QStringLiteral("Auto queue: disabled"));
-    }
-
-#ifdef USE_WEAK_JACK
-    // Check if Jack is actually available
-    if (have_libjack() != 0) {
-#ifdef RT_AUDIO
-        m_audioFallback       = true;
-        m_usingRtAudioAlready = m_ui->backendComboBox->currentIndex() == 1;
-        m_ui->backendComboBox->setCurrentIndex(1);
-        m_ui->backendComboBox->setEnabled(false);
-        m_ui->backendLabel->setEnabled(false);
-
-        // If we're in Hub Server mode, switch us back to P2P server mode.
-        if (m_ui->typeComboBox->currentIndex() == HUB_SERVER) {
-            m_ui->typeComboBox->setCurrentIndex(P2P_SERVER);
-        }
-        m_ui->typeComboBox->removeItem(HUB_SERVER);
-        m_ui->backendWarningLabel->setText(
-            "JACK was not found. This means that only the RtAudio backend is available "
-            "and that JackTrip cannot be run in hub server mode.");
-    } else {
-        // If we've fallen back to RtAudio before and JACK is now installed, use JACK.
-        QSettings settings;
-        settings.beginGroup(QStringLiteral("Audio"));
-        if (settings.value(QStringLiteral("UsingFallback"), false).toBool()) {
-            m_ui->backendComboBox->setCurrentIndex(0);
-            settings.setValue(QStringLiteral("UsingFallback"), false);
-        }
-        settings.endGroup();
-#else   // RT_AUDIO
-        QMessageBox msgBox;
-        msgBox.setText(
-            "An installation of JACK was not found, and no other audio backends are "
-            "available. JackTrip will not be able to start. (Please install JACK to fix "
-            "this.)");
-        msgBox.setWindowTitle("JACK Not Available");
-        msgBox.exec();
-#endif  // RT_AUDIO
-    }
-#endif  // USE_WEAK_JACK
-
-    m_ui->optionsTabWidget->setCurrentIndex(0);
 }
 
 void QJackTrip::closeEvent(QCloseEvent* event)
@@ -431,29 +364,45 @@ void QJackTrip::showEvent(QShowEvent* event)
     // VirtualStudio window is shown first.
     QMainWindow::showEvent(event);
     if (m_firstShow) {
-        QSettings settings;
-        settings.beginGroup(QStringLiteral("Window"));
-        QByteArray geometry = settings.value(QStringLiteral("Geometry")).toByteArray();
-        if (geometry.size() > 0) {
-            restoreGeometry(geometry);
-        } else {
-            // Because of hidden elements in our dialog window, it's vertical size in the
-            // creator is getting rediculous. Set it to something sensible by default if
-            // this is our first load.
-            this->resize(QSize(this->size().height(), 600));
+        loadSettings(m_cliSettings.data());
+
+        // Display a warning about any ignored command line options.
+        if (m_cliSettings->guiIgnoresArguments() && !m_suppressCommandlineWarning) {
+            QMessageBox msgBox;
+            msgBox.setText(
+                "You have supplied command line options that the GUI version of JackTrip "
+                "currently ignores. (Everything else will run as expected.)\n\nRun "
+                "\"jacktrip -h\" for more details.");
+            msgBox.setWindowTitle(QStringLiteral("Command line options"));
+            msgBox.exec();
         }
-        settings.endGroup();
 
-        // Use the ipify API to find our external IP address.
-        connect(m_netManager.data(), &QNetworkAccessManager::finished, this,
-                &QJackTrip::receivedIP);
-        m_netManager->get(QNetworkRequest(QUrl(QStringLiteral("https://api.ipify.org"))));
-        m_netManager->get(
-            QNetworkRequest(QUrl(QStringLiteral("https://api6.ipify.org"))));
+        // Add an autoqueue indicator to the status bar.
+        m_ui->statusBar->addPermanentWidget(&m_autoQueueIndicator);
+        if (m_ui->jitterCheckBox->isChecked() && m_ui->autoQueueCheckBox->isChecked()) {
+            m_autoQueueIndicator.setText(QStringLiteral("Auto queue: enabled"));
+        } else {
+            m_autoQueueIndicator.setText(QStringLiteral("Auto queue: disabled"));
+        }
 
-        // Also show our JACK not found warning if needed.
+#ifdef USE_WEAK_JACK
+        // Check if Jack is actually available
+        if (have_libjack() != 0) {
 #ifdef RT_AUDIO
-        if (m_audioFallback) {
+            bool usingRtAudioAlready = m_ui->backendComboBox->currentIndex() == 1;
+            m_ui->backendComboBox->setCurrentIndex(1);
+            m_ui->backendComboBox->setEnabled(false);
+            m_ui->backendLabel->setEnabled(false);
+
+            // If we're in Hub Server mode, switch us back to P2P server mode.
+            if (m_ui->typeComboBox->currentIndex() == HUB_SERVER) {
+                m_ui->typeComboBox->setCurrentIndex(P2P_SERVER);
+            }
+            m_ui->typeComboBox->removeItem(HUB_SERVER);
+            m_ui->backendWarningLabel->setText(
+                "JACK was not found. This means that only the RtAudio backend is available "
+                "and that JackTrip cannot be run in hub server mode.");
+
             QSettings settings;
             settings.beginGroup(QStringLiteral("Audio"));
             if (!settings.value(QStringLiteral("HideJackWarning"), false).toBool()) {
@@ -475,13 +424,51 @@ void QJackTrip::showEvent(QShowEvent* event)
                 if (m_hideWarning) {
                     settings.setValue(QStringLiteral("HideJackWarning"), true);
                 }
-                if (!m_usingRtAudioAlready) {
+                if (!usingRtAudioAlready) {
                     settings.setValue(QStringLiteral("UsingFallback"), true);
                 }
             }
             settings.endGroup();
-        }
+        } else {
+            // If we've fallen back to RtAudio before and JACK is now installed, use JACK.
+            QSettings settings;
+            settings.beginGroup(QStringLiteral("Audio"));
+            if (settings.value(QStringLiteral("UsingFallback"), false).toBool()) {
+                m_ui->backendComboBox->setCurrentIndex(0);
+                settings.setValue(QStringLiteral("UsingFallback"), false);
+            }
+            settings.endGroup();
+#else   // RT_AUDIO
+            QMessageBox msgBox;
+            msgBox.setText(
+                "An installation of JACK was not found, and no other audio backends are "
+                "available. JackTrip will not be able to start. (Please install JACK to fix "
+                "this.)");
+            msgBox.setWindowTitle("JACK Not Available");
+            msgBox.exec();
 #endif  // RT_AUDIO
+        }
+#endif  // USE_WEAK_JACK
+
+        QSettings settings;
+        settings.beginGroup(QStringLiteral("Window"));
+        QByteArray geometry = settings.value(QStringLiteral("Geometry")).toByteArray();
+        if (geometry.size() > 0) {
+            restoreGeometry(geometry);
+        } else {
+            // Because of hidden elements in our dialog window, it's vertical size in the
+            // creator is getting rediculous. Set it to something sensible by default if
+            // this is our first load.
+            this->resize(QSize(this->size().height(), 600));
+        }
+        settings.endGroup();
+
+        // Use the ipify API to find our external IP address.
+        connect(m_netManager.data(), &QNetworkAccessManager::finished, this,
+                &QJackTrip::receivedIP);
+        m_netManager->get(QNetworkRequest(QUrl(QStringLiteral("https://api.ipify.org"))));
+        m_netManager->get(
+            QNetworkRequest(QUrl(QStringLiteral("https://api6.ipify.org"))));
         m_firstShow = false;
     }
 }

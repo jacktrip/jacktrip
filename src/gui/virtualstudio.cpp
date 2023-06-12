@@ -1150,9 +1150,7 @@ void VirtualStudio::joinStudio()
 void VirtualStudio::toStandard()
 {
     if (!m_standardWindow.isNull()) {
-        Settings jtSettings;
         m_view.hide();
-        m_standardWindow->init(&jtSettings);
         m_standardWindow->show();
         m_vsModeActive = false;
     }

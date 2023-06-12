@@ -66,12 +66,10 @@ class QJackTrip : public QMainWindow
     Q_OBJECT
 
    public:
-    explicit QJackTrip(QWidget* parent = nullptr);
-    explicit QJackTrip(Settings* settings, bool suppressCommandlineWarning = false,
+    explicit QJackTrip(QSharedPointer<Settings> settings, bool suppressCommandlineWarning = false,
                        QWidget* parent = nullptr);
     ~QJackTrip() override;
 
-    void init(Settings* settings, bool suppressCommandlineWarning = false);
     void closeEvent(QCloseEvent* event) override;
     void resizeEvent(QResizeEvent* event) override;
     void showEvent(QShowEvent* event) override;
@@ -144,6 +142,9 @@ class QJackTrip : public QMainWindow
     bool m_isExiting;
     bool m_exitSent;
 
+    QSharedPointer<Settings> m_cliSettings;
+    bool m_suppressCommandlineWarning;
+
     float m_meterMax = 0.0;
     float m_meterMin = -64.0;
 
@@ -160,9 +161,7 @@ class QJackTrip : public QMainWindow
 
     QLabel m_autoQueueIndicator;
     bool m_hideWarning;
-    bool m_audioFallback       = false;
-    bool m_usingRtAudioAlready = false;
-    bool m_firstShow           = true;
+    bool m_firstShow = true;
 
 #ifndef NO_VS
     QSharedPointer<VirtualStudio> m_vs;
