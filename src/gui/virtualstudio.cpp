@@ -1956,6 +1956,7 @@ void VirtualStudio::slotAuthSucceeded()
         }
     }
 
+    std::cout << "slotAuthSucceeded => getting stuff" << std::endl;
     getUserId();
     getSubscriptions();
     getServerList(true, false);
@@ -1964,8 +1965,10 @@ void VirtualStudio::slotAuthSucceeded()
 
     // attempt to join studio if requested
     if (!m_studioToJoin.isEmpty()) {
+        std::cout << "slotAuthSucceeded => joining studio" << std::endl;
         joinStudio();
     }
+    std::cout << "slotAuthSucceeded => connecting stuff" << std::endl;
     connect(m_device, &VsDevice::updateNetworkStats, this, &VirtualStudio::updatedStats);
     connect(m_device, &VsDevice::updatedCaptureVolumeFromServer, this,
             &VirtualStudio::setInputVolume);
@@ -1987,6 +1990,7 @@ void VirtualStudio::slotAuthSucceeded()
             &VsDevice::updatePlaybackMute);
     connect(this, &VirtualStudio::updatedMonitorVolume, m_device,
             &VsDevice::updateMonitorVolume);
+    std::cout << "exiting slotAuthSucceeded" << std::endl;
 }
 
 void VirtualStudio::slotAuthFailed()
@@ -2279,10 +2283,13 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
         topServerId = static_cast<VsServerInfo*>(m_servers.at(index))->id();
     }
 
+    std::cout << "in getServerList" << std::endl;
     QNetworkReply* reply = m_api->getServers();
     connect(
         reply, &QNetworkReply::finished, this,
         [&, reply, topServerId, firstLoad, signalRefresh]() {
+            std::cout << "getServerList: in QNetworkReply::finished callback" << std::endl;
+
             if (reply->error() != QNetworkReply::NoError) {
                 if (signalRefresh) {
                     emit refreshFinished(index);
@@ -2448,7 +2455,9 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
                 }
             }
             if (firstLoad) {
+                std::cout << "getServerList: emitting authSucceeded" << std::endl;
                 emit authSucceeded();
+                std::cout << "getServerList: done emitting authSucceeded" << std::endl;
                 m_refreshTimer.setInterval(10000);
                 m_refreshTimer.start();
                 m_heartbeatTimer.setInterval(5000);
@@ -2462,6 +2471,8 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
             m_refreshInProgress = false;
 
             reply->deleteLater();
+
+            std::cout << "getServerList: exiting QNetworkReply::finished callback" << std::endl;
         });
 }
 

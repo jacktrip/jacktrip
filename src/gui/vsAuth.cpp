@@ -207,6 +207,7 @@ void VsAuth::handleAuthSucceeded(QString userId, QString accessToken)
     emit updatedAuthenticationMethod(m_authenticationMethod);
 
     // notify UI and virtual studio class of success
+    std::cout << "VsAuth::handleAuthSucceeded: emitting authSucceeded" << std::endl;
     emit authSucceeded();
 }
 
