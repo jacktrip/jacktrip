@@ -121,14 +121,15 @@ void MessageDialog::receiveOutput(const QString& output)
     if (output.isEmpty()) {
         return;
     }
-    
+
     // Automatically scroll if we're at the bottom of the text box.
     int scrollLocation = (m_ui->messagesTextEdit->verticalScrollBar()->value());
-    bool autoScroll = (scrollLocation == m_ui->messagesTextEdit->verticalScrollBar()->maximum());
-    
+    bool autoScroll =
+        (scrollLocation == m_ui->messagesTextEdit->verticalScrollBar()->maximum());
+
     // Make sure our cursor is at the end.
     m_ui->messagesTextEdit->moveCursor(QTextCursor::End);
-    
+
     if (m_addTimeStamp) {
         QString timeStamp = QDateTime::currentDateTime().toString(m_timeStampFormat);
         if (m_startOfLine) {
@@ -138,13 +139,15 @@ void MessageDialog::receiveOutput(const QString& output)
             m_ui->messagesTextEdit->insertPlainText(output);
         } else {
             QStringList lines = output.split(QChar('\n'));
-            m_ui->messagesTextEdit->insertPlainText(QStringLiteral("%1\n").arg(lines.at(0)));
+            m_ui->messagesTextEdit->insertPlainText(
+                QStringLiteral("%1\n").arg(lines.at(0)));
             int length = lines.length();
             if (output.endsWith(QChar('\n'))) {
                 length--;
             }
             for (int i = 1; i < length; i++) {
-                m_ui->messagesTextEdit->insertPlainText(QStringLiteral("%1%2\n").arg(timeStamp, lines.at(i)));
+                m_ui->messagesTextEdit->insertPlainText(
+                    QStringLiteral("%1%2\n").arg(timeStamp, lines.at(i)));
             }
         }
         m_startOfLine = output.endsWith(QChar('\n'));
