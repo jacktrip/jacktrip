@@ -1,3 +1,9 @@
+- Version: "1.10.0-beta4"
+  Date: 2023-06-12
+  Description:
+  - (fixed) Windows crash caused by Realtek ASIO driver
+  - (fixed) More friendly message for Windows Terminal bug
+  - (fixed) Faster startup by reducing and deferring audio interface scans
 - Version: "1.10.0-beta3"
   Date: 2023-06-09
   Description:
