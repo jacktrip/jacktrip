@@ -67,6 +67,9 @@ class MessageDialog : public QDialog
     QVector<QSharedPointer<std::ostream>> m_outStreams;
     QVector<QSharedPointer<textbuf>> m_outBufs;
     QString m_windowFunction;
+    bool m_addTimeStamp;
+    QString m_timeStampFormat;
+    bool m_startOfLine;
 };
 
 #endif  // MESSAGEDIALOG_H
