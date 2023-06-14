@@ -1773,13 +1773,6 @@ and wetness is the essence of beauty.</string>
         <string>Scripting</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_12">
-        <item row="1" column="0">
-         <widget class="QLineEdit" name="connectScriptEdit">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-         </widget>
-        </item>
         <item row="3" column="0">
          <widget class="QLineEdit" name="disconnectScriptEdit">
           <property name="enabled">
@@ -1787,18 +1780,12 @@ and wetness is the essence of beauty.</string>
           </property>
          </widget>
         </item>
-        <item row="4" column="0">
-         <spacer name="scriptingVerticalSpacer">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
+        <item row="1" column="0">
+         <widget class="QLineEdit" name="connectScriptEdit">
+          <property name="enabled">
+           <bool>false</bool>
           </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
+         </widget>
         </item>
         <item row="1" column="1">
          <widget class="QPushButton" name="connectScriptBrowse">
@@ -1817,6 +1804,19 @@ and wetness is the essence of beauty.</string>
           </property>
          </widget>
         </item>
+        <item row="5" column="0">
+         <spacer name="scriptingVerticalSpacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
         <item row="2" column="0" colspan="2">
          <widget class="QCheckBox" name="disconnectScriptCheckBox">
           <property name="text">
@@ -1831,6 +1831,20 @@ and wetness is the essence of beauty.</string>
           </property>
           <property name="text">
            <string>Browse</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0" colspan="2">
+         <widget class="QLabel" name="environmentVariableLabel">
+          <property name="text">
+           <string>Any scripts that you write will have access to the following environment variables:
+
+CLIENT_NAME - The name of the created JACK client
+SEND_CHANNELS - The number of audio channels sent to the network
+RECV_CHANNELS - The number of audio channels received from the network</string>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
           </property>
          </widget>
         </item>

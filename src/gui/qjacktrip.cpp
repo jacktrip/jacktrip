@@ -356,6 +356,17 @@ void QJackTrip::resizeEvent(QResizeEvent* event)
     rect = metrics.boundingRect(0, 0, width, 0, Qt::TextWordWrap,
                                 m_ui->authNotVSLabel->text());
     m_ui->authNotVSLabel->setMinimumHeight(rect.height());
+
+    // The previous minimum heights should protect any further word wrapped labels,
+    // but it's worth including any additional ones here for future proofing.
+    width = m_ui->scriptingTab->contentsRect().width()
+            - m_ui->scriptingTab->contentsMargins().left()
+            - m_ui->scriptingTab->contentsMargins().right()
+            - m_ui->scriptingTab->layout()->contentsMargins().left()
+            - m_ui->scriptingTab->contentsMargins().right();
+    rect = metrics.boundingRect(0, 0, width, 0, Qt::TextWordWrap,
+                                m_ui->environmentVariableLabel->text());
+    m_ui->environmentVariableLabel->setMinimumHeight(rect.height());
 }
 
 void QJackTrip::showEvent(QShowEvent* event)
@@ -507,6 +518,13 @@ void QJackTrip::processFinished()
             disconnectScript.setArguments(arguments);
             disconnectScript.setStandardOutputFile(QProcess::nullDevice());
             disconnectScript.setStandardErrorFile(QProcess::nullDevice());
+            QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+            env.insert(QStringLiteral("CLIENT_NAME"), m_assignedClientName);
+            env.insert(QStringLiteral("SEND_CHANNELS"),
+                       QString::number(m_ui->channelSendSpinBox->value()));
+            env.insert(QStringLiteral("RECV_CHANNELS"),
+                       QString::number(m_ui->channelRecvSpinBox->value()));
+            disconnectScript.setProcessEnvironment(env);
             disconnectScript.startDetached();
         }
     }
@@ -539,6 +557,7 @@ void QJackTrip::processError(const QString& errorMessage)
 void QJackTrip::receivedConnectionFromPeer()
 {
     m_ui->statusBar->showMessage(QStringLiteral("Received Connection from Peer!"));
+    m_assignedClientName = m_jackTrip->getAssignedClientName();
     if (m_ui->connectScriptCheckBox->isChecked()) {
         QStringList arguments = m_ui->connectScriptEdit->text().split(QStringLiteral(" "),
                                                                       Qt::SkipEmptyParts);
@@ -549,6 +568,13 @@ void QJackTrip::receivedConnectionFromPeer()
             connectScript.setArguments(arguments);
             connectScript.setStandardOutputFile(QProcess::nullDevice());
             connectScript.setStandardErrorFile(QProcess::nullDevice());
+            QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+            env.insert(QStringLiteral("CLIENT_NAME"), m_assignedClientName);
+            env.insert(QStringLiteral("SEND_CHANNELS"),
+                       QString::number(m_ui->channelSendSpinBox->value()));
+            env.insert(QStringLiteral("RECV_CHANNELS"),
+                       QString::number(m_ui->channelRecvSpinBox->value()));
+            connectScript.setProcessEnvironment(env);
             connectScript.startDetached();
         }
     }
