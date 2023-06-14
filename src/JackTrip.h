@@ -434,17 +434,19 @@ class JackTrip : public QObject
     {
         return mNumAudioChansOut; /*return mAudioInterface->getNumOutputChannels();*/
     }
-#ifndef NO_JACK
     QString getAssignedClientName()
     {
+#ifndef NO_JACK
         if (mAudioInterface && mAudiointerfaceMode == JackTrip::JACK) {
             return static_cast<JackAudioInterface*>(mAudioInterface)
                 ->getAssignedClientName();
         } else {
             return QLatin1String("");
         }
-    }
+#else
+        return QLatin1String("");
 #endif
+    }
     virtual bool checkPeerSettings(int8_t* full_packet);
     void increaseSequenceNumber() { mPacketHeader->increaseSequenceNumber(); }
     int getSequenceNumber() const { return mPacketHeader->getSequenceNumber(); }

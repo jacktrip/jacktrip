@@ -245,9 +245,15 @@ if host_machine.system() == 'darwin' and get_option('novs') == false
 	deps += apple_av_dep
 endif
 
-qres_files = qt.compile_resources(sources: qres)
+qres_files = []
+if qres.length() > 0
+	qres_files = qt.compile_resources(sources: qres)
+endif
 moc_files = qt.compile_moc(headers: moc_h, extra_args: defines)
-ui_files = qt.compile_ui(sources: ui_h)
+ui_files = []
+if ui_h.length() > 0
+	ui_files = qt.compile_ui(sources: ui_h)
+endif
 
 jacktrip = executable('jacktrip', src, qres_files, ui_files, moc_files, include_directories: incdirs, dependencies: deps, c_args: c_defines, cpp_args: defines, install: true )
 

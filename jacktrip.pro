@@ -15,6 +15,8 @@ CONFIG(debug, debug|release) {
     application_id = 'org.jacktrip.JackTrip'
     name_suffix = ''
 }
+QMAKE_CFLAGS_RELEASE += -DNDEBUG
+QMAKE_CXXFLAGS_RELEASE += -DNDEBUG
 
 equals(QT_EDITION, "OpenSource") {
   DEFINES += QT_OPENSOURCE
@@ -232,7 +234,6 @@ HEADERS += src/DataProtocol.h \
            src/UdpDataProtocol.h \
            src/UdpHubListener.h \
            src/AudioInterface.h \
-           src/fftdsp.h \
            src/compressordsp.h \
            src/limiterdsp.h \
            src/freeverbdsp.h \

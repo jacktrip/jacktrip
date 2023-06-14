@@ -25,6 +25,7 @@
 
 #include "messageDialog.h"
 
+#include <QDateTime>
 #include <QMenu>
 #include <QScrollBar>
 #include <QSettings>
@@ -39,6 +40,9 @@ MessageDialog::MessageDialog(QWidget* parent, const QString& windowFunction,
     , m_outStreams(streamCount)
     , m_outBufs(streamCount)
     , m_windowFunction(windowFunction)
+    , m_addTimeStamp(true)
+    , m_timeStampFormat(QStringLiteral("hh:mm:ss: "))
+    , m_startOfLine(true)
 {
     m_ui->setupUi(this);
     for (quint32 i = 0; i < streamCount; i++) {
@@ -56,6 +60,19 @@ MessageDialog::MessageDialog(QWidget* parent, const QString& windowFunction,
 
     if (!m_windowFunction.isEmpty()) {
         setWindowTitle(m_windowFunction);
+        if (m_windowFunction == QLatin1String("Stats")) {
+            m_addTimeStamp = false;
+        } else {
+            // Create an indent for wrapped lines if we're adding a timestamp.
+            // Because we're using a fixed width font we can just multiply our
+            // timeStamp length by the average character width.
+            QTextBlockFormat indent;
+            QFontMetrics metrics(m_ui->messagesTextEdit->font());
+            int marginWidth = metrics.averageCharWidth() * m_timeStampFormat.length();
+            indent.setLeftMargin(marginWidth);
+            indent.setTextIndent(-marginWidth);
+            m_ui->messagesTextEdit->textCursor().setBlockFormat(indent);
+        }
     }
 }
 
@@ -101,15 +118,47 @@ void MessageDialog::clearOutput()
 
 void MessageDialog::receiveOutput(const QString& output)
 {
+    if (output.isEmpty()) {
+        return;
+    }
+
     // Automatically scroll if we're at the bottom of the text box.
-    bool autoScroll = (m_ui->messagesTextEdit->verticalScrollBar()->value()
-                       == m_ui->messagesTextEdit->verticalScrollBar()->maximum());
+    int scrollLocation = (m_ui->messagesTextEdit->verticalScrollBar()->value());
+    bool autoScroll =
+        (scrollLocation == m_ui->messagesTextEdit->verticalScrollBar()->maximum());
+
     // Make sure our cursor is at the end.
     m_ui->messagesTextEdit->moveCursor(QTextCursor::End);
-    m_ui->messagesTextEdit->insertPlainText(output);
+
+    if (m_addTimeStamp) {
+        QString timeStamp = QDateTime::currentDateTime().toString(m_timeStampFormat);
+        if (m_startOfLine) {
+            m_ui->messagesTextEdit->insertPlainText(timeStamp);
+        }
+        if (output.indexOf(QChar('\n')) == -1) {
+            m_ui->messagesTextEdit->insertPlainText(output);
+        } else {
+            QStringList lines = output.split(QChar('\n'));
+            m_ui->messagesTextEdit->insertPlainText(
+                QStringLiteral("%1\n").arg(lines.at(0)));
+            int length = lines.length();
+            if (output.endsWith(QChar('\n'))) {
+                length--;
+            }
+            for (int i = 1; i < length; i++) {
+                m_ui->messagesTextEdit->insertPlainText(
+                    QStringLiteral("%1%2\n").arg(timeStamp, lines.at(i)));
+            }
+        }
+        m_startOfLine = output.endsWith(QChar('\n'));
+    } else {
+        m_ui->messagesTextEdit->insertPlainText(output);
+    }
     if (autoScroll) {
         m_ui->messagesTextEdit->verticalScrollBar()->setValue(
             m_ui->messagesTextEdit->verticalScrollBar()->maximum());
+    } else {
+        m_ui->messagesTextEdit->verticalScrollBar()->setValue(scrollLocation);
     }
 }
 

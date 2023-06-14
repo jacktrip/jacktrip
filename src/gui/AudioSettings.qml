@@ -44,29 +44,26 @@ Rectangle {
     property bool isUsingRtAudio: virtualstudio.audioBackend == "RtAudio"
     property bool hasNoBackend: !isUsingJack && !isUsingRtAudio && !virtualstudio.backendAvailable;
 
-    property int inputCurrIndex: getCurrentInputDeviceIndex()
-    property int outputCurrIndex: getCurrentOutputDeviceIndex()
-
     function getCurrentInputDeviceIndex () {
         if (virtualstudio.inputDevice === "") {
-            return inputComboModel.findIndex(elem => elem.type === "element");
+            return virtualstudio.inputComboModel.findIndex(elem => elem.type === "element");
         }
 
-        let idx = inputComboModel.findIndex(elem => elem.type === "element" && elem.text === virtualstudio.inputDevice);
+        let idx = virtualstudio.inputComboModel.findIndex(elem => elem.type === "element" && elem.text === virtualstudio.inputDevice);
         if (idx < 0) {
-            idx = inputComboModel.findIndex(elem => elem.type === "element");
+            idx = virtualstudio.inputComboModel.findIndex(elem => elem.type === "element");
         }
         return idx;
     }
 
     function getCurrentOutputDeviceIndex() {
         if (virtualstudio.outputDevice === "") {
-            return outputComboModel.findIndex(elem => elem.type === "element");
+            return virtualstudio.outputComboModel.findIndex(elem => elem.type === "element");
         }
 
-        let idx = outputComboModel.findIndex(elem => elem.type === "element" && elem.text === virtualstudio.outputDevice);
+        let idx = virtualstudio.outputComboModel.findIndex(elem => elem.type === "element" && elem.text === virtualstudio.outputDevice);
         if (idx < 0) {
-            idx = outputComboModel.findIndex(elem => elem.type === "element");
+            idx = virtualstudio.outputComboModel.findIndex(elem => elem.type === "element");
         }
         return idx;
     }
@@ -180,8 +177,8 @@ Rectangle {
                 anchors.verticalCenter: outputLabel.verticalCenter
                 anchors.rightMargin: rightMargin * virtualstudio.uiScale
                 width: parent.width - leftSpacer.width - rightMargin * virtualstudio.uiScale
-                model: outputComboModel
-                currentIndex: outputCurrIndex
+                model: virtualstudio.outputComboModel
+                currentIndex: getCurrentOutputDeviceIndex()
                 delegate: ItemDelegate {
                     required property var modelData
                     required property int index
@@ -221,7 +218,7 @@ Rectangle {
                     horizontalAlignment: Text.AlignHLeft
                     verticalAlignment: Text.AlignVCenter
                     elide: Text.ElideRight
-                    text: outputCombo.model[outputCombo.currentIndex].text ? outputCombo.model[outputCombo.currentIndex].text : ""
+                    text: outputCombo.model[outputCombo.currentIndex]!=undefined && outputCombo.model[outputCombo.currentIndex].text ? outputCombo.model[outputCombo.currentIndex].text : ""
                 }
             }
 
@@ -336,9 +333,9 @@ Rectangle {
                 anchors.rightMargin: 8 * virtualstudio.uiScale
                 anchors.top: outputChannelsLabel.bottom
                 anchors.topMargin: 4 * virtualstudio.uiScale
-                model: outputChannelsComboModel
+                model: virtualstudio.outputChannelsComboModel
                 currentIndex: (() => {
-                    let idx = outputChannelsComboModel.findIndex(elem => elem.baseChannel === virtualstudio.baseOutputChannel
+                    let idx = virtualstudio.outputChannelsComboModel.findIndex(elem => elem.baseChannel === virtualstudio.baseOutputChannel
                         && elem.numChannels === virtualstudio.numOutputChannels);
                     if (idx < 0) {
                         idx = 0;
@@ -486,8 +483,8 @@ Rectangle {
 
             ComboBox {
                 id: inputCombo
-                model: inputComboModel
-                currentIndex: inputCurrIndex
+                model: virtualstudio.inputComboModel
+                currentIndex: getCurrentInputDeviceIndex()
                 anchors.left: outputCombo.left
                 anchors.right: outputCombo.right
                 anchors.verticalCenter: inputLabel.verticalCenter
@@ -530,7 +527,7 @@ Rectangle {
                     horizontalAlignment: Text.AlignHLeft
                     verticalAlignment: Text.AlignVCenter
                     elide: Text.ElideRight
-                    text: inputCombo.model[inputCombo.currentIndex].text ? inputCombo.model[inputCombo.currentIndex].text : ""
+                    text: inputCombo.model[inputCombo.currentIndex] != undefined && inputCombo.model[inputCombo.currentIndex].text ? inputCombo.model[inputCombo.currentIndex].text : ""
                 }
             }
 
@@ -654,9 +651,9 @@ Rectangle {
                 anchors.rightMargin: 8 * virtualstudio.uiScale
                 anchors.top: inputChannelsLabel.bottom
                 anchors.topMargin: 4 * virtualstudio.uiScale
-                model: inputChannelsComboModel
+                model: virtualstudio.inputChannelsComboModel
                 currentIndex: (() => {
-                    let idx = inputChannelsComboModel.findIndex(elem => elem.baseChannel === virtualstudio.baseInputChannel
+                    let idx = virtualstudio.inputChannelsComboModel.findIndex(elem => elem.baseChannel === virtualstudio.baseInputChannel
                         && elem.numChannels === virtualstudio.numInputChannels);
                     if (idx < 0) {
                         idx = 0;
@@ -712,9 +709,9 @@ Rectangle {
                 anchors.rightMargin: 8 * virtualstudio.uiScale
                 anchors.top: inputMixModeLabel.bottom
                 anchors.topMargin: 4 * virtualstudio.uiScale
-                model: inputMixModeComboModel
+                model: virtualstudio.inputMixModeComboModel
                 currentIndex: (() => {
-                    let idx = inputMixModeComboModel.findIndex(elem => elem.value === virtualstudio.inputMixMode);
+                    let idx = virtualstudio.inputMixModeComboModel.findIndex(elem => elem.value === virtualstudio.inputMixMode);
                     if (idx < 0) {
                         idx = 0;
                     }
@@ -733,7 +730,7 @@ Rectangle {
                         onClicked: {
                             inputMixModeCombo.currentIndex = index
                             inputMixModeCombo.popup.close()
-                            virtualstudio.inputMixMode = inputMixModeComboModel[index].value
+                            virtualstudio.inputMixMode = virtualstudio.inputMixModeComboModel[index].value
                             virtualstudio.validateDevicesState()
                         }
                     }

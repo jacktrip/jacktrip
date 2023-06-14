@@ -46,12 +46,12 @@ Item {
 
     function getCurrentInputDeviceIndex () {
         if (virtualstudio.inputDevice === "") {
-            return inputComboModel.findIndex(elem => elem.type === "element");
+            return virtualstudio.inputComboModel.findIndex(elem => elem.type === "element");
         }
 
-        let idx = inputComboModel.findIndex(elem => elem.type === "element" && elem.text === virtualstudio.inputDevice);
+        let idx = virtualstudio.inputComboModel.findIndex(elem => elem.type === "element" && elem.text === virtualstudio.inputDevice);
         if (idx < 0) {
-            idx = inputComboModel.findIndex(elem => elem.type === "element");
+            idx = virtualstudio.inputComboModel.findIndex(elem => elem.type === "element");
         }
 
         return idx;
@@ -59,12 +59,12 @@ Item {
 
     function getCurrentOutputDeviceIndex() {
         if (virtualstudio.outputDevice === "") {
-            return outputComboModel.findIndex(elem => elem.type === "element");
+            return virtualstudio.outputComboModel.findIndex(elem => elem.type === "element");
         }
 
-        let idx = outputComboModel.findIndex(elem => elem.type === "element" && elem.text === virtualstudio.outputDevice);
+        let idx = virtualstudio.outputComboModel.findIndex(elem => elem.type === "element" && elem.text === virtualstudio.outputDevice);
         if (idx < 0) {
-            idx = outputComboModel.findIndex(elem => elem.type === "element");
+            idx = virtualstudio.outputComboModel.findIndex(elem => elem.type === "element");
         }
 
         return idx;

@@ -46,6 +46,11 @@
 
 #include "ProcessPlugin.h"
 #include "WaitFreeFrameBuffer.h"
+#include "externals/Simple-FFT/include/simple_fft/fft.h"
+#include "externals/Simple-FFT/include/simple_fft/fft_settings.h"
+
+typedef std::vector<real_type> RealArray1D;
+typedef std::vector<complex_type> ComplexArray1D;
 
 /** \brief The Analyzer plugin adjusts the level of the signal via multiplication
  */
@@ -92,7 +97,6 @@ class Analyzer : public ProcessPlugin
     bool hasProcessedAudio     = false;
     QTimer mTimer;
 
-    void* mFftP;              // Faust plugin
     uint32_t mFftSize = 128;  // FFT size parameter
 
     // ring buffer that doesn't require locking
@@ -104,10 +108,9 @@ class Analyzer : public ProcessPlugin
     // buffer used to pull sums from circular buffer
     std::vector<float> mPullBuffer;
 
-    // mAnalysisBuffers is the buffer used for the faust plugin outputs
-    float** mAnalysisBuffers        = nullptr;
-    uint32_t mAnalysisBuffersSize   = 0;
-    uint32_t mAnalysisBufferSamples = 0;
+    // buffers used to store current points of FFT
+    std::vector<complex_type> mCurrentSpectra;
+    std::vector<float> mCurrentNorms;
 
     // mSpectra and mSpectra store a history of the spectral analyses
     int mNumSpectra               = 10;

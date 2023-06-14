@@ -39,9 +39,11 @@
 #define VSDAUDIOINTERFACE_H
 
 #include <QDebug>
+#include <QList>
 #include <QObject>
 #include <QSharedPointer>
 #include <QString>
+#include <QStringList>
 
 #ifndef NO_JACK
 #include "../JackAudioInterface.h"
@@ -94,15 +96,16 @@ class VsAudioInterface : public QObject
 
    public slots:
     void setInputDevice(QString deviceName, bool shouldRestart = true);
+    void setOutputDevice(QString deviceName, bool shouldRestart = true);
 #ifdef RT_AUDIO
     void setBaseInputChannel(int baseChannel, bool shouldRestart = true);
     void setNumInputChannels(int numChannels, bool shouldRestart = true);
     void setInputMixMode(const int mode, bool shouldRestart = true);
-#endif
-    void setOutputDevice(QString deviceName, bool shouldRestart = true);
-#ifdef RT_AUDIO
     void setBaseOutputChannel(int baseChannel, bool shouldRestart = true);
     void setNumOutputChannels(int numChannels, bool shouldRestart = true);
+    void refreshRtAudioDevices();
+    void getDeviceList(QStringList* list, QStringList* categories, QList<int>* channels,
+                       bool isInput);
 #endif
     void setAudioInterfaceMode(bool useRtAudio, bool shouldRestart = true);
     void setInputVolume(float multiplier);
@@ -163,6 +166,10 @@ class VsAudioInterface : public QObject
     Volume* m_inputVolumePlugin;
     Volume* m_outputVolumePlugin;
     Tone* m_outputTonePlugin;
+
+#ifdef RT_AUDIO
+    QVector<RtAudioDevice> m_devices;
+#endif
 
     void updateDevicesErrorMsg(const QString& msg);
     void updateDevicesWarningMsg(const QString& msg);

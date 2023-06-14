@@ -162,6 +162,16 @@ class VirtualStudio : public QObject
                    updatedOutputMeterLevels)
     Q_PROPERTY(QVector<float> inputMeterLevels READ inputMeterLevels NOTIFY
                    updatedInputMeterLevels)
+    Q_PROPERTY(
+        QJsonArray inputComboModel READ inputComboModel NOTIFY inputComboModelChanged)
+    Q_PROPERTY(
+        QJsonArray outputComboModel READ outputComboModel NOTIFY outputComboModelChanged)
+    Q_PROPERTY(QJsonArray inputChannelsComboModel READ inputChannelsComboModel NOTIFY
+                   inputChannelsComboModelChanged)
+    Q_PROPERTY(QJsonArray outputChannelsComboModel READ outputChannelsComboModel NOTIFY
+                   outputChannelsComboModelChanged)
+    Q_PROPERTY(QJsonArray inputMixModeComboModel READ inputMixModeComboModel NOTIFY
+                   inputMixModeComboModelChanged)
     Q_PROPERTY(bool inputClipped READ inputClipped NOTIFY updatedInputClipped)
     Q_PROPERTY(bool outputClipped READ outputClipped NOTIFY updatedOutputClipped)
     Q_PROPERTY(bool audioActivated READ audioActivated WRITE setAudioActivated NOTIFY
@@ -233,6 +243,11 @@ class VirtualStudio : public QObject
     QJsonObject networkStats();
     const QVector<float>& inputMeterLevels() const;
     const QVector<float>& outputMeterLevels() const;
+    const QJsonArray& inputComboModel() const;
+    const QJsonArray& outputComboModel() const;
+    const QJsonArray& inputChannelsComboModel() const;
+    const QJsonArray& outputChannelsComboModel() const;
+    const QJsonArray& inputMixModeComboModel() const;
     QString updateChannel();
     void setUpdateChannel(const QString& channel);
     bool showInactive();
@@ -372,6 +387,11 @@ class VirtualStudio : public QObject
     void updatedMonitorMuted(bool muted);
     void updatedInputMeterLevels(const QVector<float>& levels);
     void updatedOutputMeterLevels(const QVector<float>& levels);
+    void inputComboModelChanged();
+    void outputComboModelChanged();
+    void inputChannelsComboModelChanged();
+    void outputChannelsComboModelChanged();
+    void inputMixModeComboModelChanged();
     void updatedInputClipped(bool clip);
     void updatedOutputClipped(bool clip);
     void updatedNetworkOutage(bool outage);
@@ -411,8 +431,8 @@ class VirtualStudio : public QObject
     void stopAudio();
     bool readyToJoin();
 #ifdef RT_AUDIO
-    QVariant formatDeviceList(const QStringList& devices, const QStringList& categories,
-                              const QList<int>& channels);
+    QJsonArray formatDeviceList(const QStringList& devices, const QStringList& categories,
+                                const QList<int>& channels);
 #endif
 
     QScopedPointer<QWebSocketServer> m_server;
@@ -487,6 +507,11 @@ class VirtualStudio : public QObject
     Analyzer* m_outputAnalyzerPlugin;
     QVector<float> m_inputMeterLevels;
     QVector<float> m_outputMeterLevels;
+    QJsonArray m_inputComboModel;
+    QJsonArray m_outputComboModel;
+    QJsonArray m_inputChannelsComboModel;
+    QJsonArray m_outputChannelsComboModel;
+    QJsonArray m_inputMixModeComboModel;
     Meter* m_inputMeter;
     Meter* m_outputMeter;
     Meter* m_inputTestMeter;
