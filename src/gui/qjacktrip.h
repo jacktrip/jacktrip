@@ -139,6 +139,7 @@ class QJackTrip : public QMainWindow
     QScopedPointer<QGridLayout> m_outputLayout;
     std::ostream m_realCout;
     std::ostream m_realCerr;
+    QString m_assignedClientName;
     bool m_jackTripRunning;
     bool m_isExiting;
     bool m_exitSent;
