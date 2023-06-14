@@ -519,10 +519,10 @@ void QJackTrip::processFinished()
             disconnectScript.setStandardOutputFile(QProcess::nullDevice());
             disconnectScript.setStandardErrorFile(QProcess::nullDevice());
             QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
-            env.insert(QStringLiteral("CLIENT_NAME"), m_assignedClientName);
-            env.insert(QStringLiteral("SEND_CHANNELS"),
+            env.insert(QStringLiteral("JT_CLIENT_NAME"), m_assignedClientName);
+            env.insert(QStringLiteral("JT_SEND_CHANNELS"),
                        QString::number(m_ui->channelSendSpinBox->value()));
-            env.insert(QStringLiteral("RECV_CHANNELS"),
+            env.insert(QStringLiteral("JT_RECV_CHANNELS"),
                        QString::number(m_ui->channelRecvSpinBox->value()));
             disconnectScript.setProcessEnvironment(env);
             disconnectScript.startDetached();
@@ -569,10 +569,10 @@ void QJackTrip::receivedConnectionFromPeer()
             connectScript.setStandardOutputFile(QProcess::nullDevice());
             connectScript.setStandardErrorFile(QProcess::nullDevice());
             QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
-            env.insert(QStringLiteral("CLIENT_NAME"), m_assignedClientName);
-            env.insert(QStringLiteral("SEND_CHANNELS"),
+            env.insert(QStringLiteral("JT_CLIENT_NAME"), m_assignedClientName);
+            env.insert(QStringLiteral("JT_SEND_CHANNELS"),
                        QString::number(m_ui->channelSendSpinBox->value()));
-            env.insert(QStringLiteral("RECV_CHANNELS"),
+            env.insert(QStringLiteral("JT_RECV_CHANNELS"),
                        QString::number(m_ui->channelRecvSpinBox->value()));
             connectScript.setProcessEnvironment(env);
             connectScript.startDetached();

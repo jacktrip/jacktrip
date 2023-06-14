@@ -1839,9 +1839,9 @@ and wetness is the essence of beauty.</string>
           <property name="text">
            <string>Any scripts that you write will have access to the following environment variables:
 
-CLIENT_NAME - The name of the created JACK client
-SEND_CHANNELS - The number of audio channels sent to the network
-RECV_CHANNELS - The number of audio channels received from the network</string>
+JT_CLIENT_NAME - The name of the created JACK client
+JT_SEND_CHANNELS - The number of audio channels sent to the network
+JT_RECV_CHANNELS - The number of audio channels received from the network</string>
           </property>
           <property name="wordWrap">
            <bool>true</bool>
