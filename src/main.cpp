@@ -51,6 +51,7 @@
 #include <QQuickView>
 #include <QSettings>
 #include <QTextStream>
+#include <QtWebView>
 
 #include "JTApplication.h"
 #include "gui/virtualstudio.h"
@@ -80,7 +81,6 @@
 
 #ifndef NO_GUI
 #ifndef NO_VS
-#include <QtWebEngineQuick/qtwebenginequickglobal.h>
 static QTextStream* ts;
 static QFile outFile;
 #endif  // NO_VS
@@ -280,7 +280,8 @@ int main(int argc, char* argv[])
 {
 #ifndef NO_GUI
 #ifndef NO_VS
-    QtWebEngineQuick::initialize();
+    qputenv("QT_WEBVIEW_PLUGIN", "native");
+    QtWebView::initialize();
 #endif
 #endif
 

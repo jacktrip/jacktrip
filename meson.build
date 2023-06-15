@@ -175,9 +175,9 @@ else
 		endif
 
 		if get_option('qtversion') == '5'
-			qt_dep = dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'QuickControls2', 'Qml', 'Svg', 'WebSockets', 'WebEngine'], include_type: 'system')
+			qt_dep = dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'QuickControls2', 'Qml', 'Svg', 'WebSockets', 'WebView'], include_type: 'system')
 		else
-			qt_dep = dependency('qt6', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'QuickControls2', 'Qml', 'Svg', 'WebSockets', 'WebEngineQuick'], include_type: 'system')
+			qt_dep = dependency('qt6', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'QuickControls2', 'Qml', 'Svg', 'WebSockets', 'WebView'], include_type: 'system')
 		endif
 		qres = ['src/gui/qjacktrip.qrc']
 	endif

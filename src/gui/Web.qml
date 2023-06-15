@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import Qt5Compat.GraphicalEffects
-import QtWebEngine
+import QtWebView
 
 Item {
     width: parent.width; height: parent.height
@@ -14,15 +14,18 @@ Item {
         property string accessToken: auth.isAuthenticated && Boolean(auth.accessToken) ? auth.accessToken : ""
         property string studioId: virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].id : ""
 
-        WebEngineView {
+        WebView {
             id: webEngineView
             anchors.fill: parent
+            /*
             settings.javascriptCanAccessClipboard: true
             settings.javascriptCanPaste: true
             settings.screenCaptureEnabled: true
             profile.httpUserAgent: `JackTrip/${virtualstudio.versionString}`
+            */
             url: `https://${virtualstudio.apiHost}/studios/${studioId}/live?accessToken=${accessToken}`
 
+            /*
             // useful for debugging
             // onJavaScriptConsoleMessage: function(level, message, lineNumber, sourceID) {
             //     console.log(level, message, lineNumber, sourceID);
@@ -59,6 +62,7 @@ Item {
                 }
                 console.log("Render process exited with code " + exitCode + " " + status);
             }
+            */
         }
     }
 }
