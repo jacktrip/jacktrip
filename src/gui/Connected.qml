@@ -1632,6 +1632,77 @@ Item {
         }
     }
 
+    Button {
+        id: backButton
+        background: Rectangle {
+            radius: 18 * virtualstudio.uiScale
+            color: backButton.down ? browserButtonPressedColour : (backButton.hovered ? browserButtonHoverColour : browserButtonColour)
+        }
+        text: "Back"
+        visible: showStartingScreen || showStoppingScreen || showWaitingScreen
+        anchors.top: parent.top
+        anchors.topMargin: 8 * virtualstudio.uiScale;
+        anchors.left: parent.left
+        anchors.leftMargin: 8 * virtualstudio.uiScale;
+        z: 10
+        width: 132 * virtualstudio.uiScale; height: 36 * virtualstudio.uiScale
+
+        palette.buttonText: textColour
+        icon {
+            source: "refresh.svg";
+            color: textColour;
+        }
+        display: AbstractButton.TextBesideIcon
+        onClicked: virtualstudio.disconnect()
+        font {
+            family: "Poppins"
+            pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale
+        }
+    }
+
+    Button {
+        id: deviceSettingsButton2
+        background: Rectangle {
+            radius: 18 * virtualstudio.uiScale
+            color: deviceSettingsButton2.down ? browserButtonPressedColour : (deviceSettingsButton2.hovered ? browserButtonHoverColour : browserButtonColour)
+        }
+        text: "Device Settings"
+        visible: showReadyScreen
+        anchors.top: parent.top
+        anchors.topMargin: 8 * virtualstudio.uiScale;
+        anchors.left: parent.left
+        anchors.leftMargin: 8 * virtualstudio.uiScale;
+        z: 10
+        width: 132 * virtualstudio.uiScale; height: 36 * virtualstudio.uiScale
+
+        palette.buttonText: textColour
+        icon {
+            source: "refresh.svg";
+            color: textColour;
+        }
+        display: AbstractButton.TextBesideIcon
+        onClicked: popup.open()
+        font {
+            family: "Poppins"
+            pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale
+        }
+    }
+
+    Item {
+        id: studioWebItem
+        anchors.fill: parent
+
+        Loader {
+            id: studioWebLoader
+            anchors.fill: parent
+
+            property string accessToken: auth.isAuthenticated && Boolean(auth.accessToken) ? auth.accessToken : ""
+            property string studioId: virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].id : ""
+
+            source: accessToken && studioId ? "Web.qml" : "WebNull.qml"
+        }
+    }
+
     Connections {
         target: virtualstudio
 

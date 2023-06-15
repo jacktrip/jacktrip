@@ -50,6 +50,7 @@
 #include <QQuickView>
 #include <QSettings>
 #include <QTextStream>
+#include <QtWebView>
 
 #include "JTApplication.h"
 #include "gui/virtualstudio.h"
@@ -276,6 +277,13 @@ bool isRunFromCmd()
 
 int main(int argc, char* argv[])
 {
+#ifndef NO_GUI
+#ifndef NO_VS
+    qputenv("QT_WEBVIEW_PLUGIN", "native");
+    QtWebView::initialize();
+#endif  // NO_VS
+#endif  // NO_GUI
+
     QScopedPointer<QCoreApplication> app(createApplication(argc, argv));
     QScopedPointer<JackTrip> jackTrip;
     QScopedPointer<UdpHubListener> udpHub;

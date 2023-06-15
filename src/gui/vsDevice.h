@@ -42,7 +42,6 @@
 #include <QString>
 #include <QTimer>
 #include <QUuid>
-#include <QtNetworkAuth>
 #include <QtWebSockets>
 
 #include "../JackTrip.h"
