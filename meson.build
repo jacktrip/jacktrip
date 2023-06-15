@@ -237,7 +237,7 @@ endif
 
 if host_machine.system() == 'darwin' and get_option('novs') == false
 	src += ['src/gui/vsMacPermissions.mm']
-	apple_av_dep = dependency('appleframeworks', modules : ['avfoundation'])
+	apple_av_dep = dependency('appleframeworks', modules : ['avfoundation', 'webkit'])
 	deps += apple_av_dep
 endif
 
