@@ -69,7 +69,7 @@ jobs:
             # vcpkg-triplet: x64-mingw-static # used when installing rtaudio with vcpkg (Windows)
             # qt-arch: 'win64_msvc2019_64' # specify when using shared (official) qt libraries (Windows)
             static-qt-version: 5.15.9 # if set, it will enable static Qt build
-            qt-static-cache-key: 'v35' # required for static qt; update this to force rebuilding static Qt
+            qt-static-cache-key: 'v36' # required for static qt; update this to force rebuilding static Qt
             wait-for-static-qt: false # if true, the job will wait for the static qt cache to be available; set to false for the first job on the given platform to build static qt and true for subsequent jobs using static qt for the given platofrm
             jacktrip-path: jacktrip # needed for binary upload
             binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
@@ -110,7 +110,7 @@ jobs:
             novs: true
             weakjack: false
             static-qt-version: 5.15.9
-            qt-static-cache-key: 'v35' # we use the same key as the main Linux build
+            qt-static-cache-key: 'v36' # we use the same key as the main Linux build
             wait-for-static-qt: true
             jacktrip-path: jacktrip
             binary-path: binary
@@ -152,7 +152,7 @@ jobs:
             macosx-deployment-target: 10.13
             macosx-architectures: 'x86_64 arm64'
             xcode-directory: /Applications/Xcode_14.0.1.app # uses SDK macOS 12.3 which is latest supported by qt
-            qt-static-cache-key: 'v11'
+            qt-static-cache-key: 'v12'
             jacktrip-path: jacktrip
             # binary-path: binary # don't upload the binary itself since we upload the bundle
             bundle-path: bundle
@@ -196,7 +196,7 @@ jobs:
             weakjack: true
             vcpkg-triplet: x64-mingw-static
             static-qt-version: 5.15.9
-            qt-static-cache-key: 'v10'
+            qt-static-cache-key: 'v11'
             jacktrip-path: release/jacktrip.exe
             binary-path: binary
             installer-path: installer
@@ -256,7 +256,7 @@ jobs:
       QT_STATIC_OPTIONS: '-static -release -optimize-size -no-pch -no-dbus -nomake tools -nomake tests -nomake examples -opensource -confirm-license'
       QT5_FEATURE_OPTIONS: '-feature-appstore-compliant -no-feature-cups -no-feature-ocsp -no-feature-sqlmodel -no-feature-pdf -no-feature-printer -no-feature-printdialog -no-feature-printpreviewdialog -no-feature-printpreviewwidget'
       QT5_SKIP_OPTIONS: '-skip qt3d -skip qtactiveqt -skip qtandroidextras -skip qtcharts -skip qtcoap -skip qtdatavis3d -skip qtdoc -skip qtgamepad -skip qtimageformats -skip qtlocation -skip qtlottie -skip qtmqtt -skip qtmultimedia -skip qtopcua -skip qtpurchasing -skip qtquick3d -skip qtquicktimeline -skip qtscxml -skip qtremoteobjects -skip qtscript -skip qtsensors -skip qtserialbus -skip qtserialport -skip qtspeech -skip qttools -skip qttranslations -skip qtvirtualkeyboard -skip qtwebglplugin -skip qtxmlpatterns -skip qtwebengine'
-      QT6_FEATURE_OPTIONS: '-no-feature-qtpdf-build -no-feature-qtpdf-quick-build -no-feature-qtpdf-widgets-build'
+      QT6_FEATURE_OPTIONS: '-feature-appstore-compliant -no-feature-qtpdf-build -no-feature-qtpdf-quick-build -no-feature-qtpdf-widgets-build'
       QT6_SKIP_OPTIONS: '-skip qtgrpc -skip qtlanguageserver -skip qtquick3dphysics'
       CLANG_TIDY_NAME: clang-tidy-result
       CLANG_TIDY_PATH: ${{ github.workspace }}/clang-tidy-result
