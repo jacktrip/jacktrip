@@ -54,8 +54,8 @@
 
 #include "JTApplication.h"
 #include "gui/virtualstudio.h"
-#include "gui/vsInit.h"
 #include "gui/vsClipboard.h"
+#include "gui/vsInit.h"
 #include "gui/vsUrlHandler.h"
 #endif
 
