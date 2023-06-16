@@ -26,6 +26,7 @@ incdirs = []
 src = [	'src/DataProtocol.cpp',
 	'src/JackTrip.cpp',
 	'src/ProcessPlugin.cpp',
+	'src/Analyzer.cpp',
 	'src/AudioTester.cpp',
 	'src/jacktrip_globals.cpp',
 	'src/JackTripWorker.cpp',
@@ -53,6 +54,7 @@ src = [	'src/DataProtocol.cpp',
 moc_h = ['src/DataProtocol.h',
 	'src/JackTrip.h',
 	'src/ProcessPlugin.h',
+	'src/Analyzer.h',
 	'src/Meter.h',
 	'src/Monitor.h',
 	'src/StereoToMono.h',
@@ -61,6 +63,8 @@ moc_h = ['src/DataProtocol.h',
 	'src/JackTripWorker.h',
 	'src/PacketHeader.h',
 	'src/Regulator.h',
+	'src/WaitFreeRingBuffer.h',
+	'src/WaitFreeFrameBuffer.h',
 	'src/Settings.h',
 	'src/UdpDataProtocol.h',
 	'src/UdpHubListener.h',
@@ -133,6 +137,9 @@ else
 	else
 		src += [
 			'src/gui/virtualstudio.cpp',
+			'src/gui/vsAuth.cpp',
+			'src/gui/vsApi.cpp',
+			'src/gui/vsDeviceCodeFlow.cpp',
 			'src/gui/vsInit.cpp',
 			'src/gui/vsDevice.cpp',
 			'src/gui/vsAudioInterface.cpp',
@@ -146,6 +153,9 @@ else
 		]
 		moc_h += [
 			'src/gui/virtualstudio.h',
+			'src/gui/vsApi.h',
+			'src/gui/vsAuth.h',
+			'src/gui/vsDeviceCodeFlow.h',
 			'src/gui/vsInit.h',
 			'src/gui/vsDevice.h',
 			'src/gui/vsAudioInterface.h',
@@ -231,9 +241,15 @@ if host_machine.system() == 'darwin' and get_option('novs') == false
 	deps += apple_av_dep
 endif
 
-qres_files = qt.compile_resources(sources: qres)
+qres_files = []
+if qres.length() > 0
+	qres_files = qt.compile_resources(sources: qres)
+endif
 moc_files = qt.compile_moc(headers: moc_h, extra_args: defines)
-ui_files = qt.compile_ui(sources: ui_h)
+ui_files = []
+if ui_h.length() > 0
+	ui_files = qt.compile_ui(sources: ui_h)
+endif
 
 jacktrip = executable('jacktrip', src, qres_files, ui_files, moc_files, include_directories: incdirs, dependencies: deps, c_args: c_defines, cpp_args: defines, install: true )
 

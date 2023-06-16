@@ -76,7 +76,7 @@ class JackTripWorker : public QObject
         AudioInterface::audioBitResolutionT AudioBitResolution = AudioInterface::BIT16,
         const QString& clientName                              = QLatin1String(""));
     /// \brief The class destructor
-    ~JackTripWorker() = default;
+    virtual ~JackTripWorker() { stopThread(); }
 
     /// \brief Starts the jacktrip process
     void start();
@@ -104,6 +104,7 @@ class JackTripWorker : public QObject
     int getID() { return mID; }
 
     void setBufferStrategy(int BufferStrategy) { mBufferStrategy = BufferStrategy; }
+    void setRegulatorThread(QThread* ptr) { mRegulatorThreadPtr = ptr; }
     void setNetIssuesSimulation(double loss, double jitter, double delay_rel)
     {
         mSimulatedLossRate   = loss;
@@ -175,14 +176,15 @@ class JackTripWorker : public QObject
 
     int mID = 0;  ///< ID thread number
 
-    int mBufferStrategy         = 1;
-    int mBroadcastQueue         = 0;
-    double mSimulatedLossRate   = 0.0;
-    double mSimulatedJitterRate = 0.0;
-    double mSimulatedDelayRel   = 0.0;
-    bool mUseRtUdpPriority      = false;
+    int mBufferStrategy          = 1;
+    int mBroadcastQueue          = 0;
+    double mSimulatedLossRate    = 0.0;
+    double mSimulatedJitterRate  = 0.0;
+    double mSimulatedDelayRel    = 0.0;
+    bool mUseRtUdpPriority       = false;
+    int mIOStatTimeout           = 0;
+    QThread* mRegulatorThreadPtr = NULL;
 
-    int mIOStatTimeout = 0;
     QSharedPointer<std::ostream> mIOStatStream;
 #ifdef WAIR                   // wair
     int mNumNetRevChans = 0;  ///< Number of Net Channels = net combs

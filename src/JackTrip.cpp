@@ -108,6 +108,7 @@ JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
 #endif  // endwhere
     , mBufferQueueLength(BufferQueueLength)
     , mBufferStrategy(1)
+    , mRegulatorThreadPtr(NULL)
     , mBroadcastQueueLength(0)
     , mSampleRate(gDefaultSampleRate)
     , mDeviceID(gDefaultDeviceID)
@@ -431,9 +432,17 @@ void JackTrip::setupRingBuffers()
             cout << "Using experimental buffer strategy " << mBufferStrategy
                  << "-- Regulator with PLC (worker="
                  << (use_worker_thread ? "true" : "false") << ")" << endl;
-            mReceiveRingBuffer = new Regulator(mNumAudioChansOut, mAudioBitResolution,
-                                               mAudioBufferSize, mBufferQueueLength,
-                                               use_worker_thread, mBroadcastQueueLength);
+            Regulator* regulator_ptr =
+                new Regulator(mNumAudioChansOut, mAudioBitResolution, mAudioBufferSize,
+                              mBufferQueueLength, mBroadcastQueueLength, mSampleRate);
+            mReceiveRingBuffer = regulator_ptr;
+            if (use_worker_thread) {
+#ifdef REGULATOR_SHARED_WORKER_THREAD
+                regulator_ptr->enableWorkerThread(mRegulatorThreadPtr);
+#else
+                regulator_ptr->enableWorkerThread();
+#endif
+            }
             // bufStrategy 3 or 4, mBufferQueueLength is in integer msec not packets
 
             mPacketHeader->setBufferRequiresSameSettings(false);  // = asym is default
@@ -720,7 +729,7 @@ void JackTrip::onStatTimer()
     if (!mAudioTesterP.isNull() && mAudioTesterP->getEnabled()) {
         mIOStatLogStream << "\n";
     }
-    if (getBufferStrategy() != 3)
+    if (getBufferStrategy() != 3 && getBufferStrategy() != 4)
         mIOStatLogStream << now.toLocal8Bit().constData() << " "
                          << getPeerAddress().toLocal8Bit().constData()
                          << " send: " << send_io_stat.underruns << "/"
@@ -737,7 +746,7 @@ void JackTrip::onStatTimer()
                          << recv_io_stat.broadcast_delta
                          << " autoq: " << 0.1 * recv_io_stat.autoq_corr << "/"
                          << 0.1 * recv_io_stat.autoq_rate << endl;
-    else {  // bufstrategy 3
+    else {  // bufstrategy 3 or 4
         mIOStatLogStream
             << now.toLocal8Bit().constData() << " "
             << getPeerAddress().toLocal8Bit().constData()

@@ -5,12 +5,12 @@ import QtGraphicalEffects 1.12
 Item {
     width: parent.width; height: parent.height
     clip: true
-    
+
     property int leftMargin: 16
     property int fontBig: 28
     property int fontMedium: 18
     property int fontSmall: 11
-    
+
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
     property string buttonColour: virtualstudio.darkMode ? "#FAFBFB" : "#F0F1F1"
     property string buttonHoverColour: virtualstudio.darkMode ? "#E9E9E9" : "#E4E5E5"
@@ -38,7 +38,7 @@ Item {
         saturation: 0
         lightness: imageLightnessValue
     }
-    
+
     Text {
         id: ohnoHeader
         text: "Oh no!"

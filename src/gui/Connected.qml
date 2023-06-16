@@ -42,7 +42,7 @@ Item {
     property string muteButtonMutedColor: "#FCB6B6"
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
     property string meterColor: virtualstudio.darkMode ? "gray" : "#E0E0E0"
-    property real imageLightnessValue: virtualstudio.darkMode ? 1.0 : 0.0
+    property real imageLightnessValue: virtualstudio.darkMode ? 0.8 : 0.2
     property real muteButtonLightnessValue: virtualstudio.darkMode ? 1.0 : 0.0
     property real muteButtonMutedLightnessValue: 0.24
     property real muteButtonMutedSaturationValue: 0.73
@@ -65,12 +65,12 @@ Item {
 
     function getCurrentInputDeviceIndex () {
         if (virtualstudio.inputDevice === "") {
-            return inputComboModel.findIndex(elem => elem.type === "element");
+            return virtualstudio.inputComboModel.findIndex(elem => elem.type === "element");
         }
 
-        let idx = inputComboModel.findIndex(elem => elem.type === "element" && elem.text === virtualstudio.inputDevice);
+        let idx = virtualstudio.inputComboModel.findIndex(elem => elem.type === "element" && elem.text === virtualstudio.inputDevice);
         if (idx < 0) {
-            idx = inputComboModel.findIndex(elem => elem.type === "element");
+            idx = virtualstudio.inputComboModel.findIndex(elem => elem.type === "element");
         }
 
         return idx;
@@ -78,23 +78,29 @@ Item {
 
     function getCurrentOutputDeviceIndex() {
         if (virtualstudio.outputDevice === "") {
-            return outputComboModel.findIndex(elem => elem.type === "element");
+            return virtualstudio.outputComboModel.findIndex(elem => elem.type === "element");
         }
 
-        let idx = outputComboModel.findIndex(elem => elem.type === "element" && elem.text === virtualstudio.outputDevice);
+        let idx = virtualstudio.outputComboModel.findIndex(elem => elem.type === "element" && elem.text === virtualstudio.outputDevice);
         if (idx < 0) {
-            idx = outputComboModel.findIndex(elem => elem.type === "element");
+            idx = virtualstudio.outputComboModel.findIndex(elem => elem.type === "element");
         }
 
         return idx;
     }
 
-    function getNetworkStatsText (networkStats) {
-        let minRtt = networkStats.minRtt;
-        let maxRtt = networkStats.maxRtt;
-        let avgRtt = networkStats.avgRtt;
+    function getNetworkStatsText () {
+        let minRtt = virtualstudio.networkStats.minRtt;
+        let maxRtt = virtualstudio.networkStats.maxRtt;
+        let avgRtt = virtualstudio.networkStats.avgRtt;
 
-        let texts = ["Measuring stats ...", ""];
+        let texts = ["<b>Outage detected! Your connection is unstable.</b>", "Please plug into Ethernet & turn off WIFI."];
+
+        if (virtualstudio.networkOutage) {
+            return texts;
+        }
+
+        texts = ["Measuring stats ...", ""];
 
         if (!minRtt || !maxRtt) {
             return texts;
@@ -256,14 +262,6 @@ Item {
 
                         property bool showToolTip: false
 
-                        Colorize {
-                            anchors.fill: parent
-                            source: parent
-                            hue: 0
-                            saturation: 0
-                            lightness: virtualstudio.darkMode ? 0.8 : 0.2
-                        }
-
                         MouseArea {
                             id: outputMouseArea
                             anchors.fill: parent
@@ -297,6 +295,14 @@ Item {
                         }
                     }
 
+                    Colorize {
+                        anchors.fill: outputHelpIcon
+                        source: outputHelpIcon
+                        hue: 0
+                        saturation: 0
+                        lightness: imageLightnessValue
+                    }
+
                     Image {
                         id: headphonesIcon
                         anchors.left: outputLabel.left
@@ -306,14 +312,14 @@ Item {
                         sourceSize: Qt.size(28 * virtualstudio.uiScale, 28 * virtualstudio.uiScale)
                         fillMode: Image.PreserveAspectFit
                         smooth: true
+                    }
 
-                        Colorize {
-                            anchors.fill: parent
-                            source: parent
-                            hue: 0
-                            saturation: 0
-                            lightness: virtualstudio.darkMode ? 1 : 0
-                        }
+                    Colorize {
+                        anchors.fill: headphonesIcon
+                        source: headphonesIcon
+                        hue: 0
+                        saturation: 0
+                        lightness: imageLightnessValue
                     }
 
                     ComboBox {
@@ -323,7 +329,7 @@ Item {
                         anchors.rightMargin: rightMargin * virtualstudio.uiScale
                         width: parent.width - leftSpacer.width - rightMargin * virtualstudio.uiScale
                         enabled: virtualstudio.connectionState == "Connected"
-                        model: outputComboModel
+                        model: virtualstudio.outputComboModel
                         currentIndex: getCurrentOutputDeviceIndex()
                         delegate: ItemDelegate {
                             required property var modelData
@@ -334,7 +340,7 @@ Item {
                             width: parent.width
                             contentItem: Text {
                                 leftPadding: modelData.type === "element" && outputCombo.model.filter(it => it.type === "header").length > 0 ? 24 : 12
-                                text: modelData.text
+                                text: modelData.text || ""
                                 font.bold: modelData.type === "header"
                             }
                             highlighted: outputCombo.highlightedIndex === index
@@ -363,7 +369,7 @@ Item {
                             horizontalAlignment: Text.AlignHLeft
                             verticalAlignment: Text.AlignVCenter
                             elide: Text.ElideRight
-                            text: outputCombo.model[outputCombo.currentIndex].text ? outputCombo.model[outputCombo.currentIndex].text : ""
+                            text: outputCombo.model[outputCombo.currentIndex] && outputCombo.model[outputCombo.currentIndex].text ? outputCombo.model[outputCombo.currentIndex].text : ""
                         }
                     }
 
@@ -387,9 +393,9 @@ Item {
                         anchors.top: outputChannelsLabel.bottom
                         anchors.topMargin: 4 * virtualstudio.uiScale
                         enabled: virtualstudio.connectionState == "Connected"
-                        model: outputChannelsComboModel
+                        model: virtualstudio.outputChannelsComboModel
                         currentIndex: (() => {
-                            let idx = outputChannelsComboModel.findIndex(elem => elem.baseChannel === virtualstudio.baseOutputChannel
+                            let idx = virtualstudio.outputChannelsComboModel.findIndex(elem => elem.baseChannel === virtualstudio.baseOutputChannel
                                 && elem.numChannels === virtualstudio.numOutputChannels);
                             if (idx < 0) {
                                 idx = 0;
@@ -447,14 +453,6 @@ Item {
 
                         property bool showToolTip: false
 
-                        Colorize {
-                            anchors.fill: parent
-                            source: parent
-                            hue: 0
-                            saturation: 0
-                            lightness: virtualstudio.darkMode ? 0.8 : 0.2
-                        }
-
                         MouseArea {
                             id: inputMouseArea
                             anchors.fill: parent
@@ -488,6 +486,14 @@ Item {
                         }
                     }
 
+                    Colorize {
+                        anchors.fill: inputHelpIcon
+                        source: inputHelpIcon
+                        hue: 0
+                        saturation: 0
+                        lightness: imageLightnessValue
+                    }
+
                     Image {
                         id: microphoneIcon
                         anchors.left: inputLabel.left
@@ -497,19 +503,19 @@ Item {
                         sourceSize: Qt.size(32 * virtualstudio.uiScale, 32 * virtualstudio.uiScale)
                         fillMode: Image.PreserveAspectFit
                         smooth: true
+                    }
 
-                        Colorize {
-                            anchors.fill: parent
-                            source: parent
-                            hue: 0
-                            saturation: 0
-                            lightness: virtualstudio.darkMode ? 1 : 0
-                        }
+                    Colorize {
+                        anchors.fill: microphoneIcon
+                        source: microphoneIcon
+                        hue: 0
+                        saturation: 0
+                        lightness: imageLightnessValue
                     }
 
                     ComboBox {
                         id: inputCombo
-                        model: inputComboModel
+                        model: virtualstudio.inputComboModel
                         currentIndex: getCurrentInputDeviceIndex()
                         anchors.left: outputCombo.left
                         anchors.right: outputCombo.right
@@ -524,7 +530,7 @@ Item {
                             width: parent.width
                             contentItem: Text {
                                 leftPadding: modelData.type === "element" && inputCombo.model.filter(it => it.type === "header").length > 0 ? 24 : 12
-                                text: modelData.text
+                                text: modelData.text || ""
                                 font.bold: modelData.type === "header"
                             }
                             highlighted: inputCombo.highlightedIndex === index
@@ -553,7 +559,7 @@ Item {
                             horizontalAlignment: Text.AlignHLeft
                             verticalAlignment: Text.AlignVCenter
                             elide: Text.ElideRight
-                            text: inputCombo.model[inputCombo.currentIndex].text ? inputCombo.model[inputCombo.currentIndex].text : ""
+                            text: inputCombo.model[inputCombo.currentIndex] && inputCombo.model[inputCombo.currentIndex].text ? inputCombo.model[inputCombo.currentIndex].text : ""
                         }
                     }
 
@@ -577,9 +583,9 @@ Item {
                         anchors.top: inputChannelsLabel.bottom
                         anchors.topMargin: 4 * virtualstudio.uiScale
                         enabled: virtualstudio.connectionState == "Connected"
-                        model: inputChannelsComboModel
+                        model: virtualstudio.inputChannelsComboModel
                         currentIndex: (() => {
-                            let idx = inputChannelsComboModel.findIndex(elem => elem.baseChannel === virtualstudio.baseInputChannel
+                            let idx = virtualstudio.inputChannelsComboModel.findIndex(elem => elem.baseChannel === virtualstudio.baseInputChannel
                                 && elem.numChannels === virtualstudio.numInputChannels);
                             if (idx < 0) {
                                 idx = 0;
@@ -636,9 +642,9 @@ Item {
                         anchors.top: inputMixModeLabel.bottom
                         anchors.topMargin: 4 * virtualstudio.uiScale
                         enabled: virtualstudio.connectionState == "Connected"
-                        model: inputMixModeComboModel
+                        model: virtualstudio.inputMixModeComboModel
                         currentIndex: (() => {
-                            let idx = inputMixModeComboModel.findIndex(elem => elem.value === virtualstudio.inputMixMode);
+                            let idx = virtualstudio.inputMixModeComboModel.findIndex(elem => elem.value === virtualstudio.inputMixMode);
                             if (idx < 0) {
                                 idx = 0;
                             }
@@ -657,7 +663,7 @@ Item {
                                 onClicked: {
                                     inputMixModeCombo.currentIndex = index
                                     inputMixModeCombo.popup.close()
-                                    virtualstudio.inputMixMode = inputMixModeComboModel[index].value
+                                    virtualstudio.inputMixMode = virtualstudio.inputMixModeComboModel[index].value
                                     virtualstudio.validateDevicesState()
                                 }
                             }
@@ -769,6 +775,107 @@ Item {
                             pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale
                         }
                     }
+                }
+            }
+        }
+
+        Popup {
+            id: feedbackDetectedModal
+            padding: 1
+            width: parent.width
+            height: 232 * virtualstudio.uiScale
+            anchors.centerIn: parent
+            modal: true
+            focus: true
+            closePolicy: Popup.NoAutoClose
+
+            background: Rectangle {
+                anchors.fill: parent
+                color: "transparent"
+                radius: 6 * virtualstudio.uiScale
+                border.width: 1
+                border.color: buttonStroke
+                clip: true
+            }
+
+            contentItem: Rectangle {
+                width: parent.width
+                height: 232 * virtualstudio.uiScale
+                color: backgroundColour
+                radius: 6 * virtualstudio.uiScale
+
+                Item {
+                    id: feedbackDetectedContent
+                    anchors.top: parent.top
+                    anchors.topMargin: 24 * virtualstudio.uiScale
+                    anchors.bottom: parent.bottom
+                    anchors.left: parent.left
+                    anchors.leftMargin: 24 * virtualstudio.uiScale
+                    anchors.right: parent.right
+
+                    Text {
+                        id: feedbackDetectedHeader
+                        anchors.top: parent.top
+                        anchors.topMargin: 16 * virtualstudio.uiScale
+                        width: parent.width
+                        text: "Audio feedback detected!"
+                        font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale; bold: true }
+                        color: textColour
+                        elide: Text.ElideRight
+                        wrapMode: Text.WordWrap
+                    }
+
+                    Text {
+                        id: feedbackDetectedText
+                        anchors.top: feedbackDetectedHeader.bottom
+                        anchors.topMargin: 16 * virtualstudio.uiScale
+                        width: parent.width
+                        text: "JackTrip detected a feedback loop. Your monitor and input volume have automatically been disabled."
+                        font {family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                        color: textColour
+                        elide: Text.ElideRight
+                        wrapMode: Text.WordWrap
+                    }
+
+                    Text {
+                        id: feedbackDetectedText2
+                        anchors.top: feedbackDetectedText.bottom
+                        anchors.topMargin: 16 * virtualstudio.uiScale
+                        width: parent.width
+                        text: "You can disable this behavior under <b>Settings</b> > <b>Advanced</b>"
+                        textFormat: Text.RichText
+                        font {family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                        color: textColour
+                        elide: Text.ElideRight
+                        wrapMode: Text.WordWrap
+                    }
+
+                    Button {
+                        id: closeFeedbackDetectedModalButton
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        anchors.bottomMargin: rightMargin * virtualstudio.uiScale
+                        anchors.bottom: parent.bottom
+                        width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+                        onClicked: feedbackDetectedModal.close()
+
+                        background: Rectangle {
+                            radius: 6 * virtualstudio.uiScale
+                            color: closeFeedbackDetectedModalButton.down ? browserButtonPressedColour : (closeFeedbackDetectedModalButton.hovered ? browserButtonHoverColour : browserButtonColour)
+                            border.width: 1
+                            border.color: closeFeedbackDetectedModalButton.down ? browserButtonPressedStroke : (closeFeedbackDetectedModalButton.hovered ? browserButtonHoverStroke : browserButtonStroke)
+                        }
+
+                        Text {
+                            text: "Ok"
+                            font.family: "Poppins"
+                            font.pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale
+                            font.weight: Font.Bold
+                            color: !Boolean(virtualstudio.devicesError) && virtualstudio.backendAvailable ? saveButtonText : disabledButtonText
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+                    }
+
                 }
             }
         }
@@ -886,8 +993,8 @@ Item {
             x: 0; y: 0
             width: parent.width
             height: 100 * virtualstudio.uiScale
-            model: inputMeterModel
-            clipped: inputClipped
+            model: virtualstudio.inputMeterLevels
+            clipped: virtualstudio.inputClipped
         }
 
         Slider {
@@ -1018,14 +1125,6 @@ Item {
 
             property bool showToolTip: false
 
-            Colorize {
-                anchors.fill: parent
-                source: parent
-                hue: 0
-                saturation: 0
-                lightness: virtualstudio.darkMode ? 0.8 : 0.2
-            }
-
             MouseArea {
                 id: inputStudioMouseArea
                 anchors.fill: parent
@@ -1058,6 +1157,14 @@ Item {
                 }
             }
         }
+
+        Colorize {
+            anchors.fill: inputStudioHelpIcon
+            source: inputStudioHelpIcon
+            hue: 0
+            saturation: 0
+            lightness: imageLightnessValue
+        }
     }
 
     Item {
@@ -1072,8 +1179,8 @@ Item {
             x: 0; y: 0
             width: parent.width
             height: 100 * virtualstudio.uiScale
-            model: outputMeterModel
-            clipped: outputClipped
+            model: virtualstudio.outputMeterLevels
+            clipped: virtualstudio.outputClipped
         }
 
         Slider {
@@ -1184,14 +1291,6 @@ Item {
 
             property bool showToolTip: false
 
-            Colorize {
-                anchors.fill: parent
-                source: parent
-                hue: 0
-                saturation: 0
-                lightness: virtualstudio.darkMode ? 0.8 : 0.2
-            }
-
             MouseArea {
                 id: outputStudioMouseArea
                 anchors.fill: parent
@@ -1225,6 +1324,14 @@ Item {
             }
         }
 
+        Colorize {
+            anchors.fill: outputStudioHelpIcon
+            source: outputStudioHelpIcon
+            hue: 0
+            saturation: 0
+            lightness: imageLightnessValue
+        }
+
         Text {
             id: outputMonText
             width: 40 * virtualstudio.uiScale
@@ -1250,14 +1357,6 @@ Item {
             smooth: true
 
             property bool showToolTip: false
-
-            Colorize {
-                anchors.fill: parent
-                source: parent
-                hue: 0
-                saturation: 0
-                lightness: virtualstudio.darkMode ? 0.8 : 0.2
-            }
 
             MouseArea {
                 id: outputMonMouseArea
@@ -1290,6 +1389,14 @@ Item {
                     color: "transparent"
                 }
             }
+        }
+
+        Colorize {
+            anchors.fill: outputMonHelpIcon
+            source: outputMonHelpIcon
+            hue: 0
+            saturation: 0
+            lightness: imageLightnessValue
         }
     }
 
@@ -1340,7 +1447,7 @@ Item {
         Text {
             id: netstat0
             x: 0; y: 0
-            text: getNetworkStatsText(virtualstudio.networkStats)[0]
+            text: getNetworkStatsText()[0]
             font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
         }
@@ -1348,7 +1455,7 @@ Item {
         Text {
             id: netstat1
             x: 0
-            text: getNetworkStatsText(virtualstudio.networkStats)[1]
+            text: getNetworkStatsText()[1]
             font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
             topPadding: 8 * virtualstudio.uiScale
             anchors.top: netstat0.bottom
@@ -1522,6 +1629,14 @@ Item {
             font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             text: "This studio is shutting down, please wait to start it again."
             wrapMode: Text.WordWrap
+        }
+    }
+
+    Connections {
+        target: virtualstudio
+
+        function onFeedbackDetected() {
+            feedbackDetectedModal.visible = true;
         }
     }
 }

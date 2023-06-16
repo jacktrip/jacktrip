@@ -7,7 +7,7 @@ Rectangle {
     width: 664; height: 83 * virtualstudio.uiScale
     radius: 6 * virtualstudio.uiScale
     color: backgroundColour
-    
+
     property string serverLocation: "Germany - Berlin"
     property string flagImage: "flags/DE.svg"
     property string hostname: "app.jacktrip.org"
@@ -19,16 +19,16 @@ Rectangle {
     property bool available: true
     property bool connected: false
     property bool inviteCopied: false
-    
+
     property int leftMargin: 81
     property int topMargin: 13
     property int bottomToolTipMargin: 8
     property int rightToolTipMargin: 4
-    
+
     property real fontBig: 18
     property real fontMedium: 11
     property real fontSmall: 8
-    
+
     property string backgroundColour: virtualstudio.darkMode ? "#494646" : "#F4F6F6"
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
     property string shadowColour: virtualstudio.darkMode ? "#40000000" : "#80A1A1A1"
@@ -45,7 +45,7 @@ Rectangle {
     property string joinAvailableHoverColour: virtualstudio.darkMode ? "#BAC7B8" : "#B0DCAB"
     property string joinAvailablePressedColour: virtualstudio.darkMode ? "#D8E2D6" : "#BAE8B5"
     property string joinAvailableStroke: virtualstudio.darkMode ? "#748F70" : "#5DB752"
-    
+
     property string joinUnavailableColour: baseButtonColour
     property string joinUnavailableHoverColour: baseButtonHoverColour
     property string joinUnavailablePressedColour: baseButtonPressedColour
@@ -105,14 +105,14 @@ Rectangle {
         fillMode: Image.PreserveAspectFit
         smooth: true
     }
-    
+
     Rectangle {
         x: 33 * virtualstudio.uiScale; y: 8 * virtualstudio.uiScale
         width: 32 * virtualstudio.uiScale; height: width
         radius: width / 2
         color: available ? "#0C1424" : "#B3B3B3"
     }
-    
+
     Image {
         id: flag
         source: flagImage
@@ -136,7 +136,7 @@ Rectangle {
             radius: width / 2
         }
     }
-    
+
     Text {
         x: leftMargin * virtualstudio.uiScale; y: 11 * virtualstudio.uiScale;
         width: (admin || connected) ? parent.width - (310 * virtualstudio.uiScale) : parent.width - (233 * virtualstudio.uiScale)
@@ -147,7 +147,7 @@ Rectangle {
         verticalAlignment: Text.AlignVCenter
         color: textColour
     }
-    
+
     Rectangle {
         id: publicRect
         x: leftMargin * virtualstudio.uiScale; y: 52 * virtualstudio.uiScale
@@ -163,7 +163,7 @@ Rectangle {
             smooth: true
         }
     }
-    
+
     Text {
         anchors.verticalCenter: publicRect.verticalCenter
         x: (leftMargin + 22) * virtualstudio.uiScale
@@ -173,7 +173,7 @@ Rectangle {
         elide: Text.ElideRight
         color: textColour
     }
-    
+
     Button {
         id: joinButton
         x: (admin || connected) ? parent.width - (219 * virtualstudio.uiScale) : parent.width - (142 * virtualstudio.uiScale)
@@ -225,7 +225,7 @@ Rectangle {
             smooth: true
         }
     }
-    
+
     Text {
         anchors.horizontalCenter: joinButton.horizontalCenter
         y: 56 * virtualstudio.uiScale
@@ -250,7 +250,7 @@ Rectangle {
             interval: 2000; running: false; repeat: false
             onTriggered: inviteCopied = false;
         }
-        onClicked: { 
+        onClicked: {
             inviteCopied = true;
             if (virtualstudio.testMode) {
                 hostname = "test.jacktrip.org";
@@ -300,7 +300,7 @@ Rectangle {
             }
         }
     }
-    
+
     Text {
         anchors.horizontalCenter: inviteButton.horizontalCenter
         y: 56 * virtualstudio.uiScale
@@ -309,7 +309,7 @@ Rectangle {
         visible: true
         color: textColour
     }
-    
+
     Button {
         id: manageOrVideoButton
         x: parent.width - (65 * virtualstudio.uiScale); y: topMargin * virtualstudio.uiScale
@@ -320,7 +320,7 @@ Rectangle {
             border.width:  manageOrVideoButton.down ? 1 : 0
             border.color: manageStroke
         }
-        onClicked: { 
+        onClicked: {
             if (connected) {
                 virtualstudio.launchVideo(-1)
             } else {
@@ -338,7 +338,7 @@ Rectangle {
             smooth: true
         }
     }
-    
+
     Text {
         anchors.horizontalCenter: manageOrVideoButton.horizontalCenter
         y: 56 * virtualstudio.uiScale

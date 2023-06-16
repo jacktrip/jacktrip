@@ -46,12 +46,12 @@ Item {
 
     function getCurrentInputDeviceIndex () {
         if (virtualstudio.inputDevice === "") {
-            return inputComboModel.findIndex(elem => elem.type === "element");
+            return virtualstudio.inputComboModel.findIndex(elem => elem.type === "element");
         }
 
-        let idx = inputComboModel.findIndex(elem => elem.type === "element" && elem.text === virtualstudio.inputDevice);
+        let idx = virtualstudio.inputComboModel.findIndex(elem => elem.type === "element" && elem.text === virtualstudio.inputDevice);
         if (idx < 0) {
-            idx = inputComboModel.findIndex(elem => elem.type === "element");
+            idx = virtualstudio.inputComboModel.findIndex(elem => elem.type === "element");
         }
 
         return idx;
@@ -59,12 +59,12 @@ Item {
 
     function getCurrentOutputDeviceIndex() {
         if (virtualstudio.outputDevice === "") {
-            return outputComboModel.findIndex(elem => elem.type === "element");
+            return virtualstudio.outputComboModel.findIndex(elem => elem.type === "element");
         }
 
-        let idx = outputComboModel.findIndex(elem => elem.type === "element" && elem.text === virtualstudio.outputDevice);
+        let idx = virtualstudio.outputComboModel.findIndex(elem => elem.type === "element" && elem.text === virtualstudio.outputDevice);
         if (idx < 0) {
-            idx = outputComboModel.findIndex(elem => elem.type === "element");
+            idx = virtualstudio.outputComboModel.findIndex(elem => elem.type === "element");
         }
 
         return idx;
@@ -402,7 +402,16 @@ Item {
                 border.width: 1
                 border.color: modeButton.down ? buttonPressedStroke : (modeButton.hovered ? buttonHoverStroke : buttonStroke)
             }
-            onClicked: { virtualstudio.windowState = "login"; virtualstudio.toStandard(); }
+            onClicked: {
+                // essentially the same here as clicking the cancel button
+                virtualstudio.windowState = "browse";
+                inputCurrIndex = virtualstudio.previousInput;
+                outputCurrIndex = virtualstudio.previousOutput;
+                virtualstudio.revertSettings();
+
+                // switch mode
+                virtualstudio.toStandard();
+            }
             x: 234 * virtualstudio.uiScale; y: 100 * virtualstudio.uiScale
             width: 216 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
             Text {
@@ -489,7 +498,6 @@ Item {
             currentIndex: virtualstudio.bufferStrategy
             onActivated: { virtualstudio.bufferStrategy = currentIndex }
             font.family: "Poppins"
-            visible: virtualstudio.audioBackend != "JACK"
         }
 
         Text {
@@ -497,9 +505,33 @@ Item {
             x: 48 * virtualstudio.uiScale
             text: "Buffer Strategy"
             font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-            visible: virtualstudio.audioBackend != "JACK"
             color: textColour
         }
+
+        ComboBox {
+            id: feedbackDetectionCombo
+            x: updateChannelCombo.x; y: bufferStrategyCombo.y + (48 * virtualstudio.uiScale)
+            width: updateChannelCombo.width; height: updateChannelCombo.height
+            model: feedbackDetectionComboModel
+            currentIndex: virtualstudio.feedbackDetectionEnabled ? 0 : 1
+            onActivated: {
+                if (currentIndex === 1) {
+                    virtualstudio.feedbackDetectionEnabled = false;
+                } else {
+                    virtualstudio.feedbackDetectionEnabled = true;
+                }
+            }
+            font.family: "Poppins"
+        }
+
+        Text {
+            anchors.verticalCenter: feedbackDetectionCombo.verticalCenter
+            x: 48 * virtualstudio.uiScale
+            text: "Feedback Detection"
+            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+        }
+
     }
 
     Rectangle {
@@ -566,7 +598,7 @@ Item {
                 border.width: 1
                 border.color: logoutButton.down ? buttonPressedStroke : (logoutButton.hovered ? buttonHoverStroke : buttonStroke)
             }
-            onClicked: { virtualstudio.windowState = "login"; virtualstudio.logout() }
+            onClicked: { virtualstudio.showFirstRun = false; virtualstudio.logout(); }
             anchors.horizontalCenter: parent.horizontalCenter
             y: editButton.y + (48 * virtualstudio.uiScale)
             width: 260 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
@@ -586,7 +618,7 @@ Item {
                 border.width: 1
                 border.color: testModeButton.down ? buttonPressedStroke : (testModeButton.hovered ? buttonHoverStroke : buttonStroke)
             }
-            onClicked: { virtualstudio.testMode = !virtualstudio.testMode; virtualstudio.windowState = "login"; virtualstudio.logout() }
+            onClicked: { virtualstudio.testMode = !virtualstudio.testMode; }
             anchors.horizontalCenter: parent.horizontalCenter
             y: logoutButton.y + (48 * virtualstudio.uiScale)
             width: 260 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale

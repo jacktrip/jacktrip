@@ -30,70 +30,95 @@
 //*****************************************************************
 
 /**
- * \file Meter.h
+ * \file Analyzer.h
  * \author Dominick Hing
- * \date August 2022
+ * \date May 2023
  * \license MIT
  */
 
-#ifndef __METER_H__
-#define __METER_H__
+#ifndef __ANALYZER_H__
+#define __ANALYZER_H__
 
+#include <QMutex>
 #include <QObject>
 #include <QTimer>
 #include <vector>
 
 #include "ProcessPlugin.h"
+#include "WaitFreeFrameBuffer.h"
+#include "externals/Simple-FFT/include/simple_fft/fft.h"
+#include "externals/Simple-FFT/include/simple_fft/fft_settings.h"
 
-/** \brief The Meter class measures the live audio loudness level
+typedef std::vector<real_type> RealArray1D;
+typedef std::vector<complex_type> ComplexArray1D;
+
+/** \brief The Analyzer plugin adjusts the level of the signal via multiplication
  */
-class Meter : public ProcessPlugin
+class Analyzer : public ProcessPlugin
 {
     Q_OBJECT;
 
    public:
     /// \brief The class constructor sets the number of channels to measure
-    Meter(int numchans, bool verboseFlag = false);
+    Analyzer(int numchans, bool verboseFlag = false);
 
     /// \brief The class destructor
-    virtual ~Meter();
+    virtual ~Analyzer();
 
     void init(int samplingRate, int bufferSize) override;
     int getNumInputs() override { return (mNumChannels); }
     int getNumOutputs() override { return (mNumChannels); }
     void compute(int nframes, float** inputs, float** outputs) override;
-    const char* getName() const override { return "VU Meter"; };
+    const char* getName() const override { return "Analyzer"; };
 
     void updateNumChannels(int nChansIn, int nChansOut) override;
-
-    void setIsMonitoringMeter(bool isMonitoringMeter)
-    {
-        mIsMonitoringMeter = isMonitoringMeter;
-    };
-    bool getIsMonitoringMeter() { return mIsMonitoringMeter; };
+    void setIsMonitoringAnalyzer(bool isMonitoringAnalyzer);
 
    private:
-    void setupValues();
+    void addFramesToQueue(int nframes, float* samples);
+    void resizeRingBuffer();
+    void onTick();
+    void updateSpectra();
+    void updateSpectraDifferentials();
+    bool checkForAudioFeedback();
+
+    bool testSpectralPeakAboveThreshold();
+    bool testSpectralPeakAbnormallyHigh();
+    bool testSpectralPeakGrowing();
+
+    int mInterval                           = 100;
+    float mPeakThresholdMultipler           = 0.5;
+    float mPeakDeviationThresholdMultiplier = 0.4;
+    float mDifferentialThresholdMultiplier  = 0.05;
 
     float fs;
-    bool mIsMonitoringMeter = false;
-
     int mNumChannels;
-    float threshold = -80.0;
-    std::vector<void*> meterP;
-    bool hasProcessedAudio = false;
-
+    bool mIsMonitoringAnalyzer = false;
+    bool hasProcessedAudio     = false;
     QTimer mTimer;
-    float* mValues    = nullptr;
-    float* mOutValues = nullptr;
-    float* mBuffer    = nullptr;
-    int mBufSize      = 0;
 
-   private slots:
-    void onTick();
+    uint32_t mFftSize = 128;  // FFT size parameter
+
+    // ring buffer that doesn't require locking
+    WaitFreeFrameBuffer<4096>* mCircularBufferPtr;
+
+    // buffer used to push sums into circular buffer
+    std::vector<float> mPushBuffer;
+
+    // buffer used to pull sums from circular buffer
+    std::vector<float> mPullBuffer;
+
+    // buffers used to store current points of FFT
+    std::vector<complex_type> mCurrentSpectra;
+    std::vector<float> mCurrentNorms;
+
+    // mSpectra and mSpectra store a history of the spectral analyses
+    int mNumSpectra               = 10;
+    float** mSpectra              = nullptr;
+    float** mSpectraDifferentials = nullptr;
 
    signals:
-    void onComputedVolumeMeasurements(float* values, int n);
+    void signalFeedbackDetected();
 };
 
 #endif

@@ -44,6 +44,6 @@ modules:
     buildsystem: meson
     sources:
       - type: git
-        disable-submodules: true
+        disable-submodules: false
         url: https://github.com/jacktrip/jacktrip.git
         branch: main

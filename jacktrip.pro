@@ -15,6 +15,8 @@ CONFIG(debug, debug|release) {
     application_id = 'org.jacktrip.JackTrip'
     name_suffix = ''
 }
+QMAKE_CFLAGS_RELEASE += -DNDEBUG
+QMAKE_CXXFLAGS_RELEASE += -DNDEBUG
 
 equals(QT_EDITION, "OpenSource") {
   DEFINES += QT_OPENSOURCE
@@ -204,11 +206,14 @@ INSTALLS += target
 # Input
 HEADERS += src/DataProtocol.h \
            src/JackTrip.h \
+           src/Analyzer.h \
            src/Effects.h \
            src/Compressor.h \
            src/CompressorPresets.h \
            src/Limiter.h \
            src/Regulator.h \
+           src/WaitFreeRingBuffer.h \
+           src/WaitFreeFrameBuffer.h \
            src/Reverb.h \
            src/Meter.h \
            src/Monitor.h \
@@ -253,6 +258,9 @@ HEADERS += src/DataProtocol.h \
              src/gui/vuMeter.h
   !novs {
     HEADERS += src/gui/virtualstudio.h \
+               src/gui/vsApi.h \
+               src/gui/vsAuth.h \
+               src/gui/vsDeviceCodeFlow.h \
                src/gui/vsInit.h \
                src/gui/vsDevice.h \
                src/gui/vsAudioInterface.h \
@@ -280,6 +288,7 @@ rtaudio|bundled_rtaudio {
 
 SOURCES += src/DataProtocol.cpp \
            src/JackTrip.cpp \
+           src/Analyzer.cpp \
            src/Compressor.cpp \
            src/Limiter.cpp \
            src/Regulator.cpp \
@@ -319,6 +328,9 @@ SOURCES += src/DataProtocol.cpp \
              src/gui/vuMeter.cpp
   !novs {
     SOURCES += src/gui/virtualstudio.cpp \
+               src/gui/vsApi.cpp \
+               src/gui/vsAuth.cpp \
+               src/gui/vsDeviceCodeFlow.cpp \
                src/gui/vsInit.cpp \
                src/gui/vsDevice.cpp \
                src/gui/vsAudioInterface.cpp \

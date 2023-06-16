@@ -13,6 +13,9 @@ desktop-file-install --dir=$HOME/.local/share/applications org.jacktrip.JackTrip
 update-desktop-database $HOME/.local/share/applications
 ```
 
+When using jacktrip with the JACK Audio Connection Kit (or Pipewire), ensure that your user account has permission to schedule realtime processes.
+`ulimit -r` should return a value greater than 40.
+
 Further information and instructions are available on https://jacktrip.github.io/jacktrip/. 
 
 Please report any security concerns to vulnerabilities@jacktrip.org

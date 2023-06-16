@@ -46,6 +46,7 @@
 #include <algorithm>
 #include <iostream>
 
+#include "../Settings.h"
 #include "../jacktrip_globals.h"
 #include "about.h"
 #include "qjacktrip.h"
@@ -62,7 +63,17 @@
 #endif
 
 VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
-    : QObject(parent), m_showFirstRun(firstRun)
+    : QObject(parent)
+    , m_showFirstRun(firstRun)
+    , m_inputMeterLevels(2, 0)
+    , m_outputMeterLevels(2, 0)
+    , m_inputComboModel(QJsonArray::fromStringList(QStringList(QLatin1String(""))))
+    , m_outputComboModel(QJsonArray::fromStringList(QStringList(QLatin1String(""))))
+    , m_inputChannelsComboModel(
+          QJsonArray::fromStringList(QStringList(QLatin1String(""))))
+    , m_outputChannelsComboModel(
+          QJsonArray::fromStringList(QStringList(QLatin1String(""))))
+    , m_inputMixModeComboModel(QJsonArray::fromStringList(QStringList(QLatin1String(""))))
 {
     QSettings settings;
     m_updateChannel =
@@ -80,6 +91,31 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     settings.endGroup();
     m_previousUiScale = m_uiScale;
 
+    // use a singleton QNetworkAccessManager
+    m_networkAccessManager.reset(new QNetworkAccessManager);
+
+    // instantiate API
+    m_api.reset(new VsApi(m_networkAccessManager.data()));
+    m_api->setApiHost(PROD_API_HOST);
+    if (m_testMode) {
+        m_api->setApiHost(TEST_API_HOST);
+    }
+
+    // instantiate auth
+    m_auth.reset(new VsAuth(&m_view, m_networkAccessManager.data(), m_api.data()));
+    connect(m_auth.data(), &VsAuth::authSucceeded, this,
+            &VirtualStudio::slotAuthSucceeded);
+    connect(m_auth.data(), &VsAuth::authFailed, this, &VirtualStudio::slotAuthFailed);
+    connect(m_auth.data(), &VsAuth::refreshTokenFailed, this, [=]() {
+        m_auth->authenticate(QStringLiteral(""));  // retry without using refresh token
+    });
+    connect(m_auth.data(), &VsAuth::fetchUserInfoFailed, this, [=]() {
+        m_auth->authenticate(QStringLiteral(""));  // retry without using refresh token
+    });
+    connect(m_auth.data(), &VsAuth::deviceCodeExpired, this, [=]() {
+        m_auth->authenticate(QStringLiteral(""));  // retry without using refresh token
+    });
+
     // Load our font for our qml interface
     QFontDatabase::addApplicationFont(QStringLiteral(":/vs/Poppins-Regular.ttf"));
     QFontDatabase::addApplicationFont(QStringLiteral(":/vs/Poppins-Bold.ttf"));
@@ -90,21 +126,31 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_fontScale = 4.0 / 3.0;
 
     // Initialize timers needed for clip indicators
-    m_inputClipTimer.setTimerType(Qt::PreciseTimer);
+    m_inputClipTimer.setTimerType(Qt::CoarseTimer);
     m_inputClipTimer.setSingleShot(true);
     m_inputClipTimer.setInterval(3000);
-    m_outputClipTimer.setTimerType(Qt::PreciseTimer);
+    m_outputClipTimer.setTimerType(Qt::CoarseTimer);
     m_outputClipTimer.setSingleShot(true);
     m_outputClipTimer.setInterval(3000);
-
     m_inputClipTimer.callOnTimeout([&]() {
-        m_view.engine()->rootContext()->setContextProperty(QStringLiteral("inputClipped"),
-                                                           QVariant::fromValue(false));
+        m_inputClipped = false;
+        emit updatedInputClipped(m_inputClipped);
+    });
+    m_outputClipTimer.callOnTimeout([&]() {
+        m_outputClipped = false;
+        emit updatedOutputClipped(m_outputClipped);
     });
 
-    m_outputClipTimer.callOnTimeout([&]() {
-        m_view.engine()->rootContext()->setContextProperty(
-            QStringLiteral("outputClipped"), QVariant::fromValue(false));
+    m_inputMeterLevels[0] = m_inputMeterLevels[1] = 0;
+    m_outputMeterLevels[0] = m_outputMeterLevels[1] = 0;
+
+    // Initialize timer needed for network outage indicator
+    m_networkOutageTimer.setTimerType(Qt::CoarseTimer);
+    m_networkOutageTimer.setSingleShot(true);
+    m_networkOutageTimer.setInterval(5000);
+    m_networkOutageTimer.callOnTimeout([&]() {
+        m_networkOutage = false;
+        emit updatedNetworkOutage(m_networkOutage);
     });
 
     settings.beginGroup(QStringLiteral("Audio"));
@@ -112,6 +158,9 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_outMultiplier = settings.value(QStringLiteral("OutMultiplier"), 1).toFloat();
     m_inMuted       = settings.value(QStringLiteral("InMuted"), false).toBool();
     m_outMuted      = settings.value(QStringLiteral("OutMuted"), false).toBool();
+    m_feedbackDetectionEnabled =
+        settings.value(QStringLiteral("FeedbackDetectionEnabled"), true).toBool();
+
 #ifdef RT_AUDIO
     m_useRtAudio   = settings.value(QStringLiteral("Backend"), 1).toInt() == 1;
     m_inputDevice  = settings.value(QStringLiteral("InputDevice"), "").toString();
@@ -158,7 +207,6 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
 
     m_bufferSize     = settings.value(QStringLiteral("BufferSize"), 128).toInt();
     m_previousBuffer = m_bufferSize;
-    refreshDevices();
     m_previousInput  = m_inputDevice;
     m_previousOutput = m_outputDevice;
 
@@ -167,49 +215,27 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     }
 #else
     m_selectableBackend = false;
-    m_vsAudioInterface.reset(new VsAudioInterface());
+    QJsonObject element;
 
-    // Set our combo box models to an empty list to avoid a reference error
-    m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("inputComboModel"),
-        QVariant::fromValue(QStringList(QLatin1String(""))));
-    m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("outputComboModel"),
-        QVariant::fromValue(QStringList(QLatin1String(""))));
+    element.insert(QString::fromStdString("label"), QString::fromStdString("Mono"));
+    element.insert(QString::fromStdString("value"),
+                   static_cast<int>(AudioInterface::MONO));
+    m_inputMixModeComboModel = QJsonArray();
+    m_inputMixModeComboModel.push_back(element);
 
-    QJsonObject inputMixModeComboElement = QJsonObject();
-    inputMixModeComboElement.insert(QString::fromStdString("label"),
-                                    QString::fromStdString("Mono"));
-    inputMixModeComboElement.insert(QString::fromStdString("value"),
-                                    static_cast<int>(AudioInterface::MONO));
-    m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("inputMixModeComboModel"),
-        QVariant::fromValue(
-            QVariant(QVariantList() << QVariant(QJsonValue(inputMixModeComboElement)))));
+    element = QJsonObject();
+    element.insert(QString::fromStdString("label"), QString::fromStdString("1"));
+    element.insert(QString::fromStdString("baseChannel"), QVariant(0).toInt());
+    element.insert(QString::fromStdString("numChannels"), QVariant(1).toInt());
+    m_inputChannelsComboModel = QJsonArray();
+    m_inputChannelsComboModel.push_back(element);
 
-    QJsonObject inputChannelsComboElement = QJsonObject();
-    inputChannelsComboElement.insert(QString::fromStdString("label"),
-                                     QString::fromStdString("1"));
-    inputChannelsComboElement.insert(QString::fromStdString("baseChannel"),
-                                     QVariant(0).toInt());
-    inputChannelsComboElement.insert(QString::fromStdString("numChannels"),
-                                     QVariant(1).toInt());
-    m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("inputChannelsComboModel"),
-        QVariant::fromValue(
-            QVariant(QVariantList() << QVariant(QJsonValue(inputChannelsComboElement)))));
-
-    QJsonObject outputChannelsComboElement = QJsonObject();
-    outputChannelsComboElement.insert(QString::fromStdString("label"),
-                                      QString::fromStdString("1 & 2"));
-    outputChannelsComboElement.insert(QString::fromStdString("baseChannel"),
-                                      QVariant(0).toInt());
-    outputChannelsComboElement.insert(QString::fromStdString("numChannels"),
-                                      QVariant(2).toInt());
-    m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("outputChannelsComboModel"),
-        QVariant::fromValue(QVariant(
-            QVariantList() << QVariant(QJsonValue(outputChannelsComboElement)))));
+    element = QJsonObject();
+    element.insert(QString::fromStdString("label"), QString::fromStdString("1 & 2"));
+    element.insert(QString::fromStdString("baseChannel"), QVariant(0).toInt());
+    element.insert(QString::fromStdString("numChannels"), QVariant(2).toInt());
+    m_outputChannelsComboModel = QJsonArray();
+    m_outputChannelsComboModel.push_back(element);
 
 #endif
     m_bufferStrategy = settings.value(QStringLiteral("BufferStrategy"), 2).toInt();
@@ -239,6 +265,9 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_view.engine()->rootContext()->setContextProperty(
         QStringLiteral("updateChannelComboModel"),
         QVariant::fromValue(m_updateChannelOptions));
+    m_view.engine()->rootContext()->setContextProperty(
+        QStringLiteral("feedbackDetectionComboModel"),
+        QVariant::fromValue(m_feedbackDetectionOptions));
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("virtualstudio"),
                                                        this);
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("serverModel"),
@@ -262,14 +291,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
         QStringLiteral("permissions"), QVariant::fromValue(m_permissions.data()));
 #endif
 
-    m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("inputMeterModel"), QVariant::fromValue(QVector<float>()));
-    m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("outputMeterModel"), QVariant::fromValue(QVector<float>()));
-    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("inputClipped"),
-                                                       QVariant::fromValue(false));
-    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("outputClipped"),
-                                                       QVariant::fromValue(false));
+    resetMeters();
 
     m_view.engine()->rootContext()->setContextProperty(
         QStringLiteral("backendComboModel"),
@@ -342,9 +364,8 @@ void VirtualStudio::show()
         }
         m_checkSsl = false;
     }
-
-    if (!m_showFirstRun) {
-        toVirtualStudio();
+    if (m_windowState == "login") {
+        login();
     }
     m_view.show();
 }
@@ -647,6 +668,21 @@ bool VirtualStudio::audioReady()
     return m_audioReady;
 }
 
+bool VirtualStudio::inputClipped()
+{
+    return m_inputClipped;
+}
+
+bool VirtualStudio::outputClipped()
+{
+    return m_outputClipped;
+}
+
+bool VirtualStudio::networkOutage()
+{
+    return m_networkOutage;
+}
+
 bool VirtualStudio::backendAvailable()
 {
     if constexpr ((isBackendAvailable<AudioInterfaceMode::JACK>()
@@ -756,6 +792,22 @@ void VirtualStudio::setBufferStrategy(int index)
     settings.endGroup();
 }
 
+bool VirtualStudio::feedbackDetectionEnabled()
+{
+    return m_feedbackDetectionEnabled;
+}
+
+void VirtualStudio::setFeedbackDetectionEnabled(bool enabled)
+{
+    m_feedbackDetectionEnabled = enabled;
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("Audio"));
+    settings.setValue(QStringLiteral("FeedbackDetectionEnabled"),
+                      m_feedbackDetectionEnabled);
+    settings.endGroup();
+    emit feedbackDetectionEnabledChanged();
+}
+
 void VirtualStudio::setAudioActivated(bool activated)
 {
     m_audioActivated = activated;
@@ -791,6 +843,41 @@ QString VirtualStudio::connectionState()
 QJsonObject VirtualStudio::networkStats()
 {
     return m_networkStats;
+}
+
+const QVector<float>& VirtualStudio::inputMeterLevels() const
+{
+    return m_inputMeterLevels;
+}
+
+const QVector<float>& VirtualStudio::outputMeterLevels() const
+{
+    return m_outputMeterLevels;
+}
+
+const QJsonArray& VirtualStudio::inputComboModel() const
+{
+    return m_inputComboModel;
+}
+
+const QJsonArray& VirtualStudio::outputComboModel() const
+{
+    return m_outputComboModel;
+}
+
+const QJsonArray& VirtualStudio::inputChannelsComboModel() const
+{
+    return m_inputChannelsComboModel;
+}
+
+const QJsonArray& VirtualStudio::outputChannelsComboModel() const
+{
+    return m_outputChannelsComboModel;
+}
+
+const QJsonArray& VirtualStudio::inputMixModeComboModel() const
+{
+    return m_inputMixModeComboModel;
 }
 
 QString VirtualStudio::updateChannel()
@@ -945,11 +1032,39 @@ void VirtualStudio::setTestMode(bool test)
         qDebug() << "Not allowed";
         return;
     }
+
     m_testMode = test;
+
+    // clear existing auth state
+    m_auth->logout();
+
+    // Clear existing registers - any existing instance data will be overwritten
+    // when m_auth->authenticate finishes and slotAuthSucceeded() is called again
     QSettings settings;
     settings.beginGroup(QStringLiteral("VirtualStudio"));
     settings.setValue(QStringLiteral("TestMode"), m_testMode);
+    settings.remove(QStringLiteral("RefreshToken"));
+    settings.remove(QStringLiteral("UserId"));
+    settings.remove(QStringLiteral("ShowInactive"));
+    settings.remove(QStringLiteral("ShowSelfHosted"));
+    settings.remove(QStringLiteral("ShowDeviceSetup"));
+    settings.remove(QStringLiteral("ShowWarnings"));
     settings.endGroup();
+
+    // deregister app
+    if (m_device != nullptr) {
+        m_device->removeApp();
+    }
+
+    // stop timers, clear data, etc.
+    m_refreshTimer.stop();
+    m_heartbeatTimer.stop();
+    m_userMetadata = QJsonObject();
+    m_userId.clear();
+
+    // re-run authentication. This should not require another browser flow since
+    // we're starting with the existing refresh token
+    m_auth->authenticate(m_refreshToken);
     emit testModeChanged();
 }
 
@@ -989,11 +1104,12 @@ QString VirtualStudio::failedMessage()
 
 void VirtualStudio::joinStudio()
 {
-    if (!m_authenticated || m_studioToJoin.isEmpty() || m_servers.isEmpty()) {
+    bool authenticated = m_auth->isAuthenticated();
+    if (!authenticated || m_studioToJoin.isEmpty() || m_servers.isEmpty()) {
         // No servers yet. Making sure we have them.
         // getServerList emits refreshFinished which
         // will come back to this function.
-        if (m_authenticated && !m_studioToJoin.isEmpty() && m_servers.isEmpty()) {
+        if (authenticated && !m_studioToJoin.isEmpty() && m_servers.isEmpty()) {
             getServerList(true, true);
         }
         return;
@@ -1051,34 +1167,18 @@ void VirtualStudio::toStandard()
 
 void VirtualStudio::toVirtualStudio()
 {
-    if (!m_refreshToken.isEmpty()) {
-        // Attempt to refresh our virtual studio auth token
-        setupAuthenticator();
-
-        // Something about this is required for refreshing auth tokens:
-        // https://bugreports.qt.io/browse/QTBUG-84866
-        m_authenticator->setModifyParametersFunction([](QAbstractOAuth2::Stage stage,
-                                                        QVariantMap* parameters) {
-            if (stage == QAbstractOAuth2::Stage::RequestingAccessToken) {
-                QByteArray code = parameters->value(QStringLiteral("code")).toByteArray();
-                (*parameters)[QStringLiteral("code")] = QUrl::fromPercentEncoding(code);
-            } else if (stage == QAbstractOAuth2::Stage::RequestingAuthorization) {
-                parameters->insert(QStringLiteral("audience"), AUTH_AUDIENCE);
-            }
-            if (!parameters->contains("client_id")) {
-                parameters->insert("client_id", AUTH_CLIENT_ID);
-            }
-        });
-
-        m_authenticator->setRefreshToken(m_refreshToken);
-        m_authenticator->refreshAccessToken();
+    if (m_windowState == "login") {
+        login();
     }
 }
 
 void VirtualStudio::login()
 {
-    setupAuthenticator();
-    m_authenticator->grant();
+    if (m_refreshToken.isEmpty()) {
+        m_auth->authenticate(QStringLiteral(""));
+    } else {
+        m_auth->authenticate(m_refreshToken);
+    }
 }
 
 void VirtualStudio::logout()
@@ -1101,8 +1201,7 @@ void VirtualStudio::logout()
     logoutURL.setQuery(query);
     launchBrowser(logoutURL);
 
-    m_authenticator->setToken(QLatin1String(""));
-    m_authenticator->setRefreshToken(QLatin1String(""));
+    m_auth->logout();
 
     QSettings settings;
     settings.beginGroup(QStringLiteral("VirtualStudio"));
@@ -1121,6 +1220,9 @@ void VirtualStudio::logout()
     m_userMetadata = QJsonObject();
     m_userId.clear();
     emit hasRefreshTokenChanged();
+
+    // reset window state
+    setWindowState(QStringLiteral("login"));
 }
 
 void VirtualStudio::refreshStudios(int index, bool signalRefresh)
@@ -1132,38 +1234,30 @@ void VirtualStudio::refreshStudios(int index, bool signalRefresh)
 void VirtualStudio::refreshDevices()
 {
 #ifdef RT_AUDIO
-    if (!m_vsAudioInterface.isNull()) {
-        m_vsAudioInterface->closeAudio();
-        setAudioReady(false);
-    }
-
-    refreshRtAudioDevices();
-    validateDevicesState();
-    if (!m_vsAudioInterface.isNull()) {
-        restartAudio();
-    }
+    if (m_vsAudioInterface.isNull())
+        return;
+    m_vsAudioInterface->closeAudio();
+    setAudioReady(false);
+    restartAudio();
 #endif
 }
 
 void VirtualStudio::refreshRtAudioDevices()
 {
-    if (!m_useRtAudio) {
+    if (!m_useRtAudio || m_vsAudioInterface.isNull())
         return;
-    }
 #ifdef RT_AUDIO
-    RtAudioInterface::getDeviceList(&m_inputDeviceList, &m_inputDeviceCategories,
-                                    &m_inputDeviceChannels, true);
-    RtAudioInterface::getDeviceList(&m_outputDeviceList, &m_outputDeviceCategories,
-                                    &m_outputDeviceChannels, false);
-
-    QVariant inputComboModel = formatDeviceList(
-        m_inputDeviceList, m_inputDeviceCategories, m_inputDeviceChannels);
-    QVariant outputComboModel = formatDeviceList(
-        m_outputDeviceList, m_outputDeviceCategories, m_outputDeviceChannels);
-    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("inputComboModel"),
-                                                       inputComboModel);
-    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("outputComboModel"),
-                                                       outputComboModel);
+    m_vsAudioInterface->refreshRtAudioDevices();
+    m_vsAudioInterface->getDeviceList(&m_inputDeviceList, &m_inputDeviceCategories,
+                                      &m_inputDeviceChannels, true);
+    m_vsAudioInterface->getDeviceList(&m_outputDeviceList, &m_outputDeviceCategories,
+                                      &m_outputDeviceChannels, false);
+    m_inputComboModel  = formatDeviceList(m_inputDeviceList, m_inputDeviceCategories,
+                                          m_inputDeviceChannels);
+    m_outputComboModel = formatDeviceList(m_outputDeviceList, m_outputDeviceCategories,
+                                          m_outputDeviceChannels);
+    emit inputComboModelChanged();
+    emit outputComboModelChanged();
 #endif
 }
 
@@ -1214,23 +1308,21 @@ void VirtualStudio::validateInputDevicesState()
                                         QString::fromStdString("Mono"));
         inputMixModeComboElement.insert(QString::fromStdString("value"),
                                         static_cast<int>(AudioInterface::MONO));
-        m_view.engine()->rootContext()->setContextProperty(
-            QStringLiteral("inputMixModeComboModel"),
-            QVariant::fromValue(QVariant(
-                QVariantList() << QVariant(QJsonValue(inputMixModeComboElement)))));
+        m_inputMixModeComboModel = QJsonArray();
+        m_inputMixModeComboModel.push_back(inputMixModeComboElement);
+        emit inputMixModeComboModelChanged();
 
         // Set the input channels combo to only have channel 1 as an option
-        QJsonObject inputChannelsComboElement = QJsonObject();
+        QJsonObject inputChannelsComboElement;
         inputChannelsComboElement.insert(QString::fromStdString("label"),
                                          QString::fromStdString("1"));
         inputChannelsComboElement.insert(QString::fromStdString("baseChannel"),
                                          QVariant(0).toInt());
         inputChannelsComboElement.insert(QString::fromStdString("numChannels"),
                                          QVariant(1).toInt());
-        m_view.engine()->rootContext()->setContextProperty(
-            QStringLiteral("inputChannelsComboModel"),
-            QVariant::fromValue(QVariant(
-                QVariantList() << QVariant(QJsonValue(inputChannelsComboElement)))));
+        m_inputChannelsComboModel = QJsonArray();
+        m_inputChannelsComboModel.push_back(inputChannelsComboElement);
+        emit inputChannelsComboModelChanged();
 
         // Set the only allowed options for these variables automatically
         m_baseInputChannel = 0;
@@ -1243,13 +1335,13 @@ void VirtualStudio::validateInputDevicesState()
     } else {
         // set the input channels selector to have the options based on the currently
         // selected device
-        QVariantList items = QVariantList();
+        m_inputChannelsComboModel = QJsonArray();
         for (int i = 0; i < numDevicesChannelsAvailable; i++) {
             QJsonObject element = QJsonObject();
             element.insert(QString::fromStdString("label"), QVariant(i + 1).toString());
             element.insert(QString::fromStdString("baseChannel"), QVariant(i).toInt());
             element.insert(QString::fromStdString("numChannels"), QVariant(1).toInt());
-            items.push_back(QVariant(QJsonValue(element)));
+            m_inputChannelsComboModel.push_back(element);
         }
         for (int i = 0; i < numDevicesChannelsAvailable; i++) {
             if (i % 2 == 0) {
@@ -1261,11 +1353,10 @@ void VirtualStudio::validateInputDevicesState()
                                QVariant(i).toInt());
                 element.insert(QString::fromStdString("numChannels"),
                                QVariant(2).toInt());
-                items.push_back(QVariant(QJsonValue(element)));
+                m_inputChannelsComboModel.push_back(element);
             }
         }
-        m_view.engine()->rootContext()->setContextProperty(
-            QStringLiteral("inputChannelsComboModel"), QVariant(items));
+        emit inputChannelsComboModelChanged();
 
         // if the current m_baseInputChannel or m_numInputChannels is invalid based on
         // this device's option, use the first two channels by default
@@ -1290,12 +1381,10 @@ void VirtualStudio::validateInputDevicesState()
                                              QString::fromStdString("Mix to Mono"));
             inputMixModeComboElement2.insert(QString::fromStdString("value"),
                                              static_cast<int>(AudioInterface::MIXTOMONO));
-
-            m_view.engine()->rootContext()->setContextProperty(
-                QStringLiteral("inputMixModeComboModel"),
-                QVariant::fromValue(QVariant(
-                    QVariantList() << QVariant(QJsonValue(inputMixModeComboElement1))
-                                   << QVariant(QJsonValue(inputMixModeComboElement2)))));
+            m_inputMixModeComboModel = QJsonArray();
+            m_inputMixModeComboModel.push_back(inputMixModeComboElement1);
+            m_inputMixModeComboModel.push_back(inputMixModeComboElement2);
+            emit inputMixModeComboModelChanged();
 
             // if m_inputMixMode is an invalid value, set it to "stereo" by default
             // given that we are using 2 channels
@@ -1312,10 +1401,9 @@ void VirtualStudio::validateInputDevicesState()
                                             QString::fromStdString("Mono"));
             inputMixModeComboElement.insert(QString::fromStdString("value"),
                                             static_cast<int>(AudioInterface::MONO));
-            m_view.engine()->rootContext()->setContextProperty(
-                QStringLiteral("inputMixModeComboModel"),
-                QVariant::fromValue(QVariant(
-                    QVariantList() << QVariant(QJsonValue(inputMixModeComboElement)))));
+            m_inputMixModeComboModel = QJsonArray();
+            m_inputMixModeComboModel.push_back(inputMixModeComboElement);
+            emit inputMixModeComboModelChanged();
 
             // if m_inputMixMode is an invalid value, set it to AudioInterface::MONO
             if (m_inputMixMode != static_cast<int>(AudioInterface::MONO)) {
@@ -1367,10 +1455,9 @@ void VirtualStudio::validateOutputDevicesState()
                                           QVariant(0).toInt());
         outputChannelsComboElement.insert(QString::fromStdString("numChannels"),
                                           QVariant(1).toInt());
-        m_view.engine()->rootContext()->setContextProperty(
-            QStringLiteral("outputChannelsComboModel"),
-            QVariant::fromValue(QVariant(
-                QVariantList() << QVariant(QJsonValue(outputChannelsComboElement)))));
+        m_outputChannelsComboModel = QJsonArray();
+        m_outputChannelsComboModel.push_back(outputChannelsComboElement);
+        emit outputChannelsComboModelChanged();
 
         // Set the only allowed options for these variables automatically
         m_baseOutputChannel = 0;
@@ -1381,7 +1468,7 @@ void VirtualStudio::validateOutputDevicesState()
     } else {
         // set the output channels selector to have the options based on the currently
         // selected device
-        QVariantList items = QVariantList();
+        m_outputChannelsComboModel = QJsonArray();
         for (int i = 0; i < numDevicesChannelsAvailable; i++) {
             if (i % 2 == 0) {
                 QJsonObject element = QJsonObject();
@@ -1392,11 +1479,10 @@ void VirtualStudio::validateOutputDevicesState()
                                QVariant(i).toInt());
                 element.insert(QString::fromStdString("numChannels"),
                                QVariant(2).toInt());
-                items.push_back(QVariant(QJsonValue(element)));
+                m_outputChannelsComboModel.push_back(element);
             }
         }
-        m_view.engine()->rootContext()->setContextProperty(
-            QStringLiteral("outputChannelsComboModel"), QVariant(items));
+        emit outputChannelsComboModelChanged();
 
         // if the current m_baseOutputChannel or m_numOutputChannels is invalid based on
         // this device's option, use the first two channels by default
@@ -1465,6 +1551,8 @@ void VirtualStudio::applySettings()
     settings.setValue(QStringLiteral("InputMixMode"), m_inputMixMode);
     settings.setValue(QStringLiteral("BaseOutputChannel"), m_baseOutputChannel);
     settings.setValue(QStringLiteral("NumOutputChannels"), m_numOutputChannels);
+    settings.setValue(QStringLiteral("FeedbackDetectionEnabled"),
+                      m_feedbackDetectionEnabled);
     settings.endGroup();
 
     m_previousUseRtAudio = m_useRtAudio;
@@ -1508,8 +1596,8 @@ void VirtualStudio::connectToStudio(int studioIndex)
 
     m_studioSocket = new VsWebSocket(
         QUrl(QStringLiteral("wss://%1/api/servers/%2?auth_code=%3")
-                 .arg(m_apiHost, studioInfo->id(), m_authenticator->token())),
-        m_authenticator->token(), QString(), QString());
+                 .arg(m_api->getApiHost(), studioInfo->id(), m_auth->accessToken())),
+        m_auth->accessToken(), QString(), QString());
     connect(m_studioSocket, &VsWebSocket::textMessageReceived, this,
             [&](QString message) {
                 handleWebsocketMessage(message);
@@ -1564,14 +1652,10 @@ void VirtualStudio::completeConnection()
             numOutputChannels = m_numOutputChannels;
         }
 #endif
-        int bufferStrategy = m_bufferStrategy;
-        if (bufferStrategy == 2) {
-            bufferStrategy = 3;
-        }
-        JackTrip* jackTrip =
-            m_device->initJackTrip(m_useRtAudio, input, output, baseInputChannel,
-                                   numInputChannels, baseOutputChannel, numOutputChannels,
-                                   inputMixMode, buffer_size, bufferStrategy, studioInfo);
+        JackTrip* jackTrip = m_device->initJackTrip(
+            m_useRtAudio, input, output, baseInputChannel, numInputChannels,
+            baseOutputChannel, numOutputChannels, inputMixMode, buffer_size,
+            m_bufferStrategy, studioInfo);
         if (jackTrip == 0) {
             processError("Could not bind port");
             return;
@@ -1584,6 +1668,8 @@ void VirtualStudio::completeConnection()
         QObject::connect(jackTrip, &JackTrip::signalReceivedConnectionFromPeer, this,
                          &VirtualStudio::receivedConnectionFromPeer,
                          Qt::QueuedConnection);
+        QObject::connect(jackTrip, &JackTrip::signalUdpWaitingTooLong, this,
+                         &VirtualStudio::udpWaitingTooLong, Qt::QueuedConnection);
 
         setAudioActivated(false);
 
@@ -1616,6 +1702,15 @@ void VirtualStudio::completeConnection()
         jackTrip->appendProcessPluginToMonitor(m_monitor);
         connect(this, &VirtualStudio::updatedMonitorVolume, m_monitor,
                 &Monitor::volumeUpdated);
+
+        // Setup output analyzer
+        if (m_feedbackDetectionEnabled) {
+            m_outputAnalyzerPlugin = new Analyzer(jackTrip->getNumOutputChannels());
+            m_outputAnalyzerPlugin->setIsMonitoringAnalyzer(true);
+            jackTrip->appendProcessPluginToMonitor(m_outputAnalyzerPlugin);
+            connect(m_outputAnalyzerPlugin, &Analyzer::signalFeedbackDetected, this,
+                    &VirtualStudio::detectedFeedbackLoop);
+        }
 
         // Setup output meter
         // Note: Add this to monitor process to include self-volume
@@ -1652,15 +1747,7 @@ void VirtualStudio::completeConnection()
         }
 #endif
         m_device->startJackTrip();
-
-        m_view.engine()->rootContext()->setContextProperty(
-            QStringLiteral("inputMeterModel"),
-            QVariant::fromValue(QVector<float>(jackTrip->getNumInputChannels())));
-
-        m_view.engine()->rootContext()->setContextProperty(
-            QStringLiteral("outputMeterModel"),
-            QVariant::fromValue(QVector<float>(jackTrip->getNumOutputChannels())));
-
+        resetMeters();
         m_device->startPinger(studioInfo);
     } catch (const std::exception& e) {
         // Let the user know what our exception was.
@@ -1738,7 +1825,7 @@ void VirtualStudio::manageStudio(int studioIndex, bool start)
     QUrl url;
     if (!start) {
         url = QUrl(QStringLiteral("https://%1/studios/%2")
-                       .arg(m_apiHost,
+                       .arg(m_api->getApiHost(),
                             static_cast<VsServerInfo*>(m_servers.at(studioIndex))->id()));
     } else {
         QString expiration =
@@ -1747,10 +1834,8 @@ void VirtualStudio::manageStudio(int studioIndex, bool start)
                             {QLatin1String("expiresAt"), expiration}};
         QJsonDocument request = QJsonDocument(json);
 
-        QNetworkReply* reply = m_authenticator->put(
-            QStringLiteral("https://%1/api/servers/%2")
-                .arg(m_apiHost,
-                     static_cast<VsServerInfo*>(m_servers.at(studioIndex))->id()),
+        QNetworkReply* reply = m_api->updateServer(
+            (static_cast<VsServerInfo*>(m_servers.at(studioIndex)))->id(),
             request.toJson());
         connect(reply, &QNetworkReply::finished, this, [&, reply]() {
             if (reply->error() != QNetworkReply::NoError) {
@@ -1786,21 +1871,22 @@ void VirtualStudio::launchVideo(int studioIndex)
         // We're here from a connected screen. Use our current studio.
         studioIndex = m_currentStudio;
     }
-    QUrl url = QUrl(
-        QStringLiteral("https://%1/studios/%2/live")
-            .arg(m_apiHost, static_cast<VsServerInfo*>(m_servers.at(studioIndex))->id()));
+    QUrl url =
+        QUrl(QStringLiteral("https://%1/studios/%2/live")
+                 .arg(m_api->getApiHost(),
+                      static_cast<VsServerInfo*>(m_servers.at(studioIndex))->id()));
     QDesktopServices::openUrl(url);
 }
 
 void VirtualStudio::createStudio()
 {
-    QUrl url = QUrl(QStringLiteral("https://%1/studios/create").arg(m_apiHost));
+    QUrl url = QUrl(QStringLiteral("https://%1/studios/create").arg(m_api->getApiHost()));
     QDesktopServices::openUrl(url);
 }
 
 void VirtualStudio::editProfile()
 {
-    QUrl url = QUrl(QStringLiteral("https://%1/profile").arg(m_apiHost));
+    QUrl url = QUrl(QStringLiteral("https://%1/profile").arg(m_api->getApiHost()));
     QDesktopServices::openUrl(url);
 }
 
@@ -1818,8 +1904,13 @@ void VirtualStudio::openLink(const QString& link)
 
 void VirtualStudio::exit()
 {
+    m_startTimer.stop();
+    m_retryPeriodTimer.stop();
     m_refreshTimer.stop();
     m_heartbeatTimer.stop();
+    m_inputClipTimer.stop();
+    m_outputClipTimer.stop();
+    m_networkOutageTimer.stop();
     if (m_onConnectedScreen) {
         m_isExiting = true;
 
@@ -1834,16 +1925,16 @@ void VirtualStudio::exit()
     }
 }
 
-void VirtualStudio::slotAuthSucceded()
+void VirtualStudio::slotAuthSucceeded()
 {
     // Determine which API host to use
     m_apiHost = PROD_API_HOST;
     if (m_testMode) {
         m_apiHost = TEST_API_HOST;
     }
+    m_api->setApiHost(m_apiHost);
 
-    m_authenticated = true;
-    m_refreshToken  = m_authenticator->refreshToken();
+    m_refreshToken = m_auth->refreshToken();
     emit hasRefreshTokenChanged();
     QSettings settings;
     settings.setValue(QStringLiteral("UiMode"), QJackTrip::VIRTUAL_STUDIO);
@@ -1852,29 +1943,25 @@ void VirtualStudio::slotAuthSucceded()
     settings.endGroup();
     m_vsModeActive = true;
 
-    m_device = new VsDevice(m_authenticator.data(), m_testMode);
+    m_device = new VsDevice(m_auth.data(), m_api.data());
     m_device->registerApp();
 
-    if (m_showDeviceSetup) {
-        if constexpr (isBackendAvailable<AudioInterfaceMode::JACK>()
-                      || isBackendAvailable<AudioInterfaceMode::RTAUDIO>()) {
-            setAudioActivated(true);
-        }
+    // always activate audio at startup for now.
+    // otherwise, IF someone has the device setup disabled/unchecked,
+    // AND IF they don't manually navigate to audio settings before connecting,
+    // the "Change Device Settings" dialog will have all empty dropdown lists
+    // TODO: rework so it can be deferred properly
+    // if (m_showDeviceSetup) {
+    if constexpr (isBackendAvailable<AudioInterfaceMode::JACK>()
+                  || isBackendAvailable<AudioInterfaceMode::RTAUDIO>()) {
+        setAudioActivated(true);
     }
 
-    if (m_userId.isEmpty()) {
-        getUserId();
-    } else {
-        getSubscriptions();
-        getServerList(true, false);
-    }
-
-    if (m_regions.isEmpty()) {
-        getRegions();
-    }
-    if (m_userMetadata.isEmpty() && !m_userId.isEmpty()) {
-        getUserMetadata();
-    }
+    getUserId();
+    getSubscriptions();
+    getServerList(true, false);
+    getRegions();
+    getUserMetadata();
 
     // attempt to join studio if requested
     if (!m_studioToJoin.isEmpty()) {
@@ -1905,7 +1992,6 @@ void VirtualStudio::slotAuthSucceded()
 
 void VirtualStudio::slotAuthFailed()
 {
-    m_authenticated = false;
     emit authFailed();
 }
 
@@ -2084,7 +2170,6 @@ void VirtualStudio::updatedDevicesWarningHelpUrl(const QString& url)
 void VirtualStudio::updatedInputVuMeasurements(const float* valuesInDecibels,
                                                int numChannels)
 {
-    QJsonArray uiValues;
     bool detectedClip = false;
 
     // Always output 2 meter readings to the UI
@@ -2096,16 +2181,13 @@ void VirtualStudio::updatedInputVuMeasurements(const float* valuesInDecibels,
         }
 
         // Produce a normalized value from 0 to 1
-        float meter = (dB - m_meterMin) / (m_meterMax - m_meterMin);
-
-        QJsonObject object{{QStringLiteral("dB"), dB}, {QStringLiteral("level"), meter}};
-        uiValues.push_back(object);
+        m_inputMeterLevels[i] = (dB - m_meterMin) / (m_meterMax - m_meterMin);
 
         // Signal a clip if we haven't done so already
         if (dB >= -0.05 && !detectedClip) {
             m_inputClipTimer.start();
-            m_view.engine()->rootContext()->setContextProperty(
-                QStringLiteral("inputClipped"), QVariant::fromValue(true));
+            m_inputClipped = true;
+            emit updatedInputClipped(m_inputClipped);
             detectedClip = true;
         }
     }
@@ -2117,18 +2199,16 @@ void VirtualStudio::updatedInputVuMeasurements(const float* valuesInDecibels,
          && m_numInputChannels == 1)
         || (m_inputMixMode == static_cast<int>(AudioInterface::MIXTOMONO)
             && m_numInputChannels == 2)) {
-        uiValues[1] = uiValues[0];
+        m_inputMeterLevels[1] = m_inputMeterLevels[0];
     }
 #endif
 
-    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("inputMeterModel"),
-                                                       QVariant::fromValue(uiValues));
+    emit updatedInputMeterLevels(m_inputMeterLevels);
 }
 
 void VirtualStudio::updatedOutputVuMeasurements(const float* valuesInDecibels,
                                                 int numChannels)
 {
-    QJsonArray uiValues;
     bool detectedClip = false;
 
     // Always output 2 meter readings to the UI
@@ -2140,77 +2220,36 @@ void VirtualStudio::updatedOutputVuMeasurements(const float* valuesInDecibels,
         }
 
         // Produce a normalized value from 0 to 1
-        float meter = (dB - m_meterMin) / (m_meterMax - m_meterMin);
-
-        QJsonObject object{{QStringLiteral("dB"), dB}, {QStringLiteral("level"), meter}};
-        uiValues.push_back(object);
+        m_outputMeterLevels[i] = (dB - m_meterMin) / (m_meterMax - m_meterMin);
 
         // Signal a clip if we haven't done so already
         if (dB >= -0.05 && !detectedClip) {
             m_outputClipTimer.start();
-            m_view.engine()->rootContext()->setContextProperty(
-                QStringLiteral("outputClipped"), QVariant::fromValue(true));
+            m_outputClipped = true;
+            emit updatedOutputClipped(m_outputClipped);
             detectedClip = true;
         }
     }
 #ifdef RT_AUDIO
     if (m_numOutputChannels == 1) {
-        uiValues[1] = uiValues[0];
+        m_outputMeterLevels[1] = m_outputMeterLevels[0];
     }
 #endif
-    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("outputMeterModel"),
-                                                       QVariant::fromValue(uiValues));
+    emit updatedOutputMeterLevels(m_outputMeterLevels);
 }
 
-void VirtualStudio::setupAuthenticator()
+void VirtualStudio::detectedFeedbackLoop()
 {
-    if (m_authenticator.isNull()) {
-        // Set up our authorization flow
-        m_authenticator.reset(new QOAuth2AuthorizationCodeFlow);
-        m_authenticator->setScope(
-            QStringLiteral("openid profile email offline_access read:servers"));
-        connect(m_authenticator.data(),
-                &QOAuth2AuthorizationCodeFlow::authorizeWithBrowser, this,
-                &VirtualStudio::launchBrowser);
+    setInputMuted(true);
+    setMonitorVolume(0);
+    emit feedbackDetected();
+}
 
-        const quint16 port = 52424;
-
-        m_authenticator->setAuthorizationUrl(AUTH_AUTHORIZE_URI);
-        m_authenticator->setClientIdentifier(AUTH_CLIENT_ID);
-        m_authenticator->setAccessTokenUrl(AUTH_TOKEN_URI);
-
-        m_authenticator->setModifyParametersFunction([](QAbstractOAuth2::Stage stage,
-                                                        QVariantMap* parameters) {
-            if (stage == QAbstractOAuth2::Stage::RequestingAccessToken) {
-                QByteArray code = parameters->value(QStringLiteral("code")).toByteArray();
-                (*parameters)[QStringLiteral("code")] = QUrl::fromPercentEncoding(code);
-            } else if (stage == QAbstractOAuth2::Stage::RequestingAuthorization) {
-                parameters->insert(QStringLiteral("audience"),
-                                   QStringLiteral("https://api.jacktrip.org"));
-            }
-        });
-
-        QOAuthHttpServerReplyHandler* replyHandler =
-            new QOAuthHttpServerReplyHandler(port, this);
-        replyHandler->setCallbackText(QStringLiteral(
-            "<div id=\"container\" style=\"width:100%; max-width:1200px; height: auto; "
-            "margin: 100px auto; text-align:center;\">\n"
-            "<img src=\"https://files.jacktrip.org/logos/jacktrip_icon.svg\" "
-            "alt=\"JackTrip\">\n"
-            "<h1 style=\"font-size: 30px; font-weight: 600; padding-top:20px;\">Virtual "
-            "Studio Login Successful</h1>\n"
-            "<p style=\"font-size: 21px; font-weight:300;\">You may close this window "
-            "and return to the JackTrip application.</p>\n"
-            "<p style=\"font-size: 21px; font-weight:300;\">Alternatively, "
-            "&nbsp;<a href=\"https://app.jacktrip.org/studios/create\">click "
-            "here</a>&nbsp; to create your first studio.</p>\n"
-            "</div>\n"));
-        m_authenticator->setReplyHandler(replyHandler);
-        connect(m_authenticator.data(), &QOAuth2AuthorizationCodeFlow::granted, this,
-                &VirtualStudio::slotAuthSucceded);
-        connect(m_authenticator.data(), &QOAuth2AuthorizationCodeFlow::requestFailed,
-                this, &VirtualStudio::slotAuthFailed);
-    }
+void VirtualStudio::udpWaitingTooLong()
+{
+    m_networkOutageTimer.start();
+    m_networkOutage = true;
+    emit updatedNetworkOutage(m_networkOutage);
 }
 
 void VirtualStudio::sendHeartbeat()
@@ -2241,8 +2280,7 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
         topServerId = static_cast<VsServerInfo*>(m_servers.at(index))->id();
     }
 
-    QNetworkReply* reply =
-        m_authenticator->get(QStringLiteral("https://%1/api/servers").arg(m_apiHost));
+    QNetworkReply* reply = m_api->getServers();
     connect(
         reply, &QNetworkReply::finished, this,
         [&, reply, topServerId, firstLoad, signalRefresh]() {
@@ -2430,39 +2468,21 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
 
 void VirtualStudio::getUserId()
 {
-    QNetworkReply* reply =
-        m_authenticator->get(QStringLiteral("https://auth.jacktrip.org/userinfo"));
-    connect(reply, &QNetworkReply::finished, this, [=]() {
-        if (reply->error() != QNetworkReply::NoError) {
-            std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
-            emit authFailed();
-            reply->deleteLater();
-            return;
-        }
+    m_userId = m_auth->userId();
+    if (m_userId.isEmpty()) {
+        emit authFailed();
+        return;
+    }
 
-        QByteArray response    = reply->readAll();
-        QJsonDocument userInfo = QJsonDocument::fromJson(response);
-        m_userId               = userInfo.object()[QStringLiteral("sub")].toString();
-
-        QSettings settings;
-        settings.beginGroup(QStringLiteral("VirtualStudio"));
-        settings.setValue(QStringLiteral("UserId"), m_userId);
-        settings.endGroup();
-        getSubscriptions();
-        getServerList(true, false);
-
-        if (m_userMetadata.isEmpty() && !m_userId.isEmpty()) {
-            getUserMetadata();
-        }
-
-        reply->deleteLater();
-    });
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("VirtualStudio"));
+    settings.setValue(QStringLiteral("UserId"), m_userId);
+    settings.endGroup();
 }
 
 void VirtualStudio::getSubscriptions()
 {
-    QNetworkReply* reply = m_authenticator->get(
-        QStringLiteral("https://%1/api/users/%2/subscriptions").arg(m_apiHost, m_userId));
+    QNetworkReply* reply = m_api->getSubscriptions(m_userId);
     connect(reply, &QNetworkReply::finished, this, [&, reply]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
@@ -2490,8 +2510,7 @@ void VirtualStudio::getSubscriptions()
 
 void VirtualStudio::getRegions()
 {
-    QNetworkReply* reply = m_authenticator->get(
-        QStringLiteral("https://%1/api/users/%2/regions").arg(m_apiHost, m_userId));
+    QNetworkReply* reply = m_api->getRegions(m_userId);
     connect(reply, &QNetworkReply::finished, this, [&, reply]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
@@ -2508,8 +2527,7 @@ void VirtualStudio::getRegions()
 
 void VirtualStudio::getUserMetadata()
 {
-    QNetworkReply* reply = m_authenticator->get(
-        QStringLiteral("https://%1/api/users/%2").arg(m_apiHost, m_userId));
+    QNetworkReply* reply = m_api->getUser(m_userId);
     connect(reply, &QNetworkReply::finished, this, [&, reply]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
@@ -2526,6 +2544,7 @@ void VirtualStudio::getUserMetadata()
 
 void VirtualStudio::startAudio()
 {
+    std::cout << "Starting Audio" << std::endl;
 #ifdef __APPLE__
     if (m_permissions->micPermission() != "granted") {
         return;
@@ -2537,6 +2556,7 @@ void VirtualStudio::startAudio()
             QStringLiteral("audioInterface"), m_vsAudioInterface.data());
     }
 #ifdef RT_AUDIO
+    refreshRtAudioDevices();
     validateDevicesState();
     m_vsAudioInterface->setInputDevice(m_inputDevice, false);
     m_vsAudioInterface->setOutputDevice(m_outputDevice, false);
@@ -2589,20 +2609,14 @@ void VirtualStudio::startAudio()
 
     m_audioReady = true;
     emit audioReadyChanged();
-
-    m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("inputMeterModel"),
-        QVariant::fromValue(QVector<float>(m_vsAudioInterface->getNumInputChannels())));
-
-    m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("outputMeterModel"),
-        QVariant::fromValue(QVector<float>(m_vsAudioInterface->getNumOutputChannels())));
+    resetMeters();
 
     m_vsAudioInterface->startProcess();
 }
 
 void VirtualStudio::restartAudio()
 {
+    std::cout << "Restarting Audio" << std::endl;
 #ifdef __APPLE__
     if (m_permissions->micPermission() != "granted") {
         return;
@@ -2611,6 +2625,7 @@ void VirtualStudio::restartAudio()
     // Start VsAudioInterface again
     if (!m_vsAudioInterface.isNull()) {
 #ifdef RT_AUDIO
+        refreshRtAudioDevices();
         validateDevicesState();
         m_vsAudioInterface->setInputDevice(m_inputDevice, false);
         m_vsAudioInterface->setOutputDevice(m_outputDevice, false);
@@ -2620,21 +2635,23 @@ void VirtualStudio::restartAudio()
 
         m_audioReady = true;
         emit audioReadyChanged();
-
-        m_view.engine()->rootContext()->setContextProperty(
-            QStringLiteral("inputMeterModel"),
-            QVariant::fromValue(
-                QVector<float>(m_vsAudioInterface->getNumInputChannels())));
-
-        m_view.engine()->rootContext()->setContextProperty(
-            QStringLiteral("outputMeterModel"),
-            QVariant::fromValue(
-                QVector<float>(m_vsAudioInterface->getNumOutputChannels())));
+        resetMeters();
 
         m_vsAudioInterface->startProcess();
     } else {
         startAudio();
     }
+}
+
+void VirtualStudio::resetMeters()
+{
+    m_inputMeterLevels[0] = m_inputMeterLevels[1] = 0;
+    m_outputMeterLevels[0] = m_outputMeterLevels[1] = 0;
+    m_inputClipped = m_outputClipped = false;
+    emit updatedInputMeterLevels(m_inputMeterLevels);
+    emit updatedOutputMeterLevels(m_outputMeterLevels);
+    emit updatedInputClipped(m_inputClipped);
+    emit updatedOutputClipped(m_outputClipped);
 }
 
 void VirtualStudio::stopAudio()
@@ -2676,9 +2693,7 @@ void VirtualStudio::stopStudio()
     QJsonObject json         = {{QLatin1String("enabled"), false}};
     QJsonDocument request    = QJsonDocument(json);
     studioInfo->setHost(QLatin1String(""));
-    QNetworkReply* reply = m_authenticator->put(
-        QStringLiteral("https://%1/api/servers/%2").arg(m_apiHost, studioInfo->id()),
-        request.toJson());
+    QNetworkReply* reply = m_api->updateServer(studioInfo->id(), request.toJson());
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (m_isExiting && !m_jackTripRunning) {
             emit signalExit();
@@ -2697,9 +2712,9 @@ bool VirtualStudio::readyToJoin()
 }
 
 #ifdef RT_AUDIO
-QVariant VirtualStudio::formatDeviceList(const QStringList& devices,
-                                         const QStringList& categories,
-                                         const QList<int>& channels)
+QJsonArray VirtualStudio::formatDeviceList(const QStringList& devices,
+                                           const QStringList& categories,
+                                           const QList<int>& channels)
 {
     QStringList uniqueCategories = QStringList(categories);
     uniqueCategories.removeDuplicates();
@@ -2711,7 +2726,7 @@ QVariant VirtualStudio::formatDeviceList(const QStringList& devices,
         containsCategories = false;
     }
 
-    QVariantList items = QVariantList();
+    QJsonArray items;
     for (int i = 0; i < uniqueCategories.size(); i++) {
         QString category = uniqueCategories.at(i);
 
@@ -2721,7 +2736,7 @@ QVariant VirtualStudio::formatDeviceList(const QStringList& devices,
             header.insert(QString::fromStdString("type"),
                           QString::fromStdString("header"));
             header.insert(QString::fromStdString("category"), category);
-            items.push_back(QVariant(QJsonValue(header)));
+            items.push_back(header);
         }
 
         for (int j = 0; j < devices.size(); j++) {
@@ -2732,12 +2747,12 @@ QVariant VirtualStudio::formatDeviceList(const QStringList& devices,
                                QString::fromStdString("element"));
                 element.insert(QString::fromStdString("channels"), channels.at(j));
                 element.insert(QString::fromStdString("category"), category);
-                items.push_back(QVariant(QJsonValue(element)));
+                items.push_back(element);
             }
         }
     }
 
-    return QVariant(items);
+    return items;
 }
 #endif
 

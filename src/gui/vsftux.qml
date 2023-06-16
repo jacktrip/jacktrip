@@ -4,7 +4,7 @@ import QtQuick.Controls 2.12
 Rectangle {
     property string backgroundColour: virtualstudio.darkMode ? "#272525" : "#FAFBFB"
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
-    
+
     width: 696
     height: 577
     color: backgroundColour
@@ -15,7 +15,7 @@ Rectangle {
     states: [
         State {
             name: "login"
-            PropertyChanges { target: loginScreen; x: 0; failTextVisible: false }
+            PropertyChanges { target: loginScreen; x: 0 }
             PropertyChanges { target: setupScreen; x: window.width }
             PropertyChanges { target: browseScreen; x: window.width }
             PropertyChanges { target: settingsScreen; x: window.width }
@@ -77,7 +77,7 @@ Rectangle {
     transitions: Transition {
         NumberAnimation { properties: "x"; duration: 800; easing.type: Easing.InOutQuad }
     }
-    
+
     Setup {
         id: setupScreen
     }
@@ -85,10 +85,9 @@ Rectangle {
     Browse {
         id: browseScreen
     }
-    
+
     Login {
         id: loginScreen
-        showBackButton: false
     }
 
     Settings {
@@ -106,14 +105,15 @@ Rectangle {
     Connections {
         target: virtualstudio
         function onAuthSucceeded() {
+            if (virtualstudio.windowState !== "login") {
+                // can happen on settings screen when switching between prod and test
+                return;
+            }
             if (virtualstudio.showDeviceSetup) {
                 virtualstudio.windowState = "setup";
             } else {
                 virtualstudio.windowState = "browse";
             }
-        }
-        function onAuthFailed() {
-            loginScreen.failTextVisible = true;
         }
         function onConnected() {
             virtualstudio.windowState = "connected";
@@ -123,6 +123,11 @@ Rectangle {
         }
         function onDisconnected() {
             virtualstudio.windowState = "browse";
+        }
+        function onWindowStateUpdated() {
+            if (virtualstudio.windowState === "login") {
+                virtualstudio.login();
+            }
         }
     }
 }
