@@ -168,7 +168,7 @@ else
 			'src/gui/vsPinger.h',
 			'src/gui/vsPing.h',
 			'src/gui/vsUrlHandler.h',
-			'src/gui/vsQmlClipboard.h',
+			'src/gui/vsClipboard.h',
 			'src/JTApplication.h',
 			'src/gui/websocketclientwrapper.h',
 			'src/gui/websockettransport.h'

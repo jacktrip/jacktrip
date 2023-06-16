@@ -25,6 +25,8 @@ Item {
                     new QWebChannel(socket, function(channel) {
                         // make core object accessible globally
                         window.virtualstudio = channel.objects.virtualstudio;
+                        window.auth = channel.objects.auth;
+                        window.clipboard = channel.objects.clipboard;
                         console.log("[QT6] Connected to WebChannel, ready to send/receive messages!");
                     });
                 }

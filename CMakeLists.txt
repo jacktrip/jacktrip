@@ -205,7 +205,7 @@ if (NOT nogui)
       src/Tone.cpp
       # Need to include this for AUTOMOC to do its thing
       src/JTApplication.h
-      src/gui/vsQmlClipboard.h
+      src/gui/vsClipboard.h
     )
     if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
       set (qjacktrip_SRC ${qjacktrip_SRC} src/gui/vsMacPermissions.mm)

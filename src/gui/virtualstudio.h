@@ -57,6 +57,7 @@
 #include "vsApi.h"
 #include "vsAudioInterface.h"
 #include "vsAuth.h"
+#include "vsClipboard.h"
 #include "vsConstants.h"
 #include "vsDevice.h"
 #include "vsQuickView.h"
@@ -451,6 +452,7 @@ class VirtualStudio : public QObject
     QScopedPointer<VsAuth> m_auth;
     QScopedPointer<VsApi> m_api;
     QScopedPointer<QNetworkAccessManager> m_networkAccessManager;
+    QScopedPointer<VsClipboard> m_clipboard;
 
     QList<QObject*> m_servers;
     QStringList m_subscribedServers;

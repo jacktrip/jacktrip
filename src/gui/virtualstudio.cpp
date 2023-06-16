@@ -116,6 +116,8 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
         m_auth->authenticate(QStringLiteral(""));  // retry without using refresh token
     });
 
+    m_clipboard.reset(new VsClipboard());
+
     m_server.reset(new QWebSocketServer(QStringLiteral("Qt6 Virtual Studio Server"),
                                         QWebSocketServer::NonSecureMode));
     m_clientWrapper.reset(new WebSocketClientWrapper(m_server.data()));
@@ -125,6 +127,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
             m_webChannel.data(), &QWebChannel::connectTo);
     m_webChannel->registerObject(QStringLiteral("virtualstudio"), this);
     m_webChannel->registerObject(QStringLiteral("auth"), m_auth.data());
+    m_webChannel->registerObject(QStringLiteral("clipboard"), m_clipboard.data());
 
     // Load our font for our qml interface
     QFontDatabase::addApplicationFont(QStringLiteral(":/vs/Poppins-Regular.ttf"));

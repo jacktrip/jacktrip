@@ -1,15 +1,15 @@
-#ifndef VSQMLCLIPBOARD_H
-#define VSQMLCLIPBOARD_H
+#ifndef VSCLIPBOARD_H
+#define VSCLIPBOARD_H
 
 #include <QApplication>
 #include <QClipboard>
 #include <QObject>
 
-class VsQmlClipboard : public QObject
+class VsClipboard : public QObject
 {
     Q_OBJECT
    public:
-    explicit VsQmlClipboard(QObject* parent = 0) : QObject(parent)
+    explicit VsClipboard(QObject* parent = 0) : QObject(parent)
     {
         clipboard = QApplication::clipboard();
     }
@@ -19,8 +19,13 @@ class VsQmlClipboard : public QObject
         clipboard->setText(text, QClipboard::Clipboard);
     }
 
+    Q_INVOKABLE void copyText(QString text)
+    {
+        clipboard->setText(text, QClipboard::Clipboard);
+    }
+
    private:
     QClipboard* clipboard;
 };
 
-#endif  // VSQMLCLIPBOARD_H
+#endif  // VSCLIPBOARD_H
