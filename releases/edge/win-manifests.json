@@ -2,6 +2,56 @@
   "app_name": "JackTrip",
   "releases": [
     {
+      "version": "1.10.0",
+      "changelog": "Full changelog at https://github.com/jacktrip/jacktrip/releases/tag/v1.10.0",
+      "download": {
+        "date": "2023-06-16T00:00:00Z",
+        "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.10.0-Windows-x64-signed-installer.msi",
+        "downloadSize": "46432256",
+        "sha256": "6d08a83a8a2c153e0fdd43cdb913ebe244552f4f96d873ea4887e3d5be6d235e"
+      }
+    },
+    {
+      "version": "1.10.0-beta4",
+      "changelog": "Full changelog at https://github.com/jacktrip/jacktrip/releases/tag/v1.10.0-beta4",
+      "download": {
+        "date": "2023-06-13T00:00:00Z",
+        "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.10.0-beta4-Windows-x64-signed-installer.msi",
+        "downloadSize": "46428160",
+        "sha256": "e9c15938fba55d3391a705394fbf4d0b1d2d83851fbd3ba58d9480739b4452c0"
+      }
+    },
+    {
+      "version": "1.10.0-beta3",
+      "changelog": "Full changelog at https://github.com/jacktrip/jacktrip/releases/tag/v1.10.0-beta3",
+      "download": {
+        "date": "2023-06-10T00:00:00Z",
+        "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.10.0-beta3-Windows-x64-signed-installer.msi",
+        "downloadSize": "46436352",
+        "sha256": "2b377eaf1ded51b198274071ad564fbd78d066646f22e6230fca2743233e0d41"
+      }
+    },
+    {
+      "version": "1.10.0-beta2",
+      "changelog": "Full changelog at https://github.com/jacktrip/jacktrip/releases/tag/v1.10.0-beta2",
+      "download": {
+        "date": "2023-06-02T00:00:00Z",
+        "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.10.0-beta2-Windows-x64-signed-installer.msi",
+        "downloadSize": "46530560",
+        "sha256": "973c24a27e1594092c0b0c84cd029dce904404bd56d1f7c9bef1e1831425a2d5"
+      }
+    },
+    {
+      "version": "1.10.0-beta1",
+      "changelog": "Full changelog at https://github.com/jacktrip/jacktrip/releases/tag/v1.10.0-beta1",
+      "download": {
+        "date": "2023-05-30T00:00:00Z",
+        "url": "https://files.jacktrip.org/app-builds/JackTrip-v1.10.0-beta1-Windows-x64-signed-installer.msi",
+        "downloadSize": "46403584",
+        "sha256": "6a415fbd4fbc7843c88cd2a635a50000aae13800aa00bd5ba6381e91f252e29a"
+      }
+    },
+    {
       "version": "1.9.0",
       "changelog": "Full changelog at https://github.com/jacktrip/jacktrip/releases/tag/v1.9.0",
       "download": {
