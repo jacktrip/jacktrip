@@ -1,0 +1,5 @@
+/qt-everywhere-src-*/
+/openssl-build/
+/openssl-src/
+qt.tar.xz
+openssl.tar.xz
