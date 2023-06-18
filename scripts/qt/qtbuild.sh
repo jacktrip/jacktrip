@@ -150,7 +150,7 @@ if [[ "$OS" == "osx" ]]; then
     else
         # configure qt for osx
         echo "QT Configure command"
-        "$QT_SRC_PATH/configure" -prefix "$QT_STATIC_BUILD_PATH" $QT_STATIC_OPTIONS -- -DCMAKE_OSX_ARCHITECTURES=x86_64;arm64
+        "$QT_SRC_PATH/configure" -prefix "$QT_STATIC_BUILD_PATH" $QT_STATIC_OPTIONS -- "-DCMAKE_OSX_ARCHITECTURES=x86_64;arm64"
     fi
 fi
 
