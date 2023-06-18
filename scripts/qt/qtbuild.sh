@@ -67,7 +67,7 @@ MAKE_OPTIONS="-j4"
 CMAKE_OPTIONS="--parallel"
 
 # update static options for major qt version
-if [[ "QT_MAJOR_VERSION" == "5" ]]; then
+if [[ "$QT_MAJOR_VERSION" == "5" ]]; then
     QT_STATIC_OPTIONS="$QT_STATIC_OPTIONS $QT5_FEATURE_OPTIONS $QT5_SKIP_OPTIONS"
 else
     QT_STATIC_OPTIONS="$QT_STATIC_OPTIONS $QT5_FEATURE_OPTIONS $QT6_FEATURE_OPTIONS $QT5_SKIP_OPTIONS $QT6_SKIP_OPTIONS"
@@ -121,7 +121,7 @@ if [[ "$OS" == "linux" ]]; then
     # this seems to be necessary for qt cmake to find ssl
     CMAKE_PREFIX_PATH=$OPENSSL_BUILD_PATH
 
-    if [[ "QT_MAJOR_VERSION" == "5" ]]; then
+    if [[ "$QT_MAJOR_VERSION" == "5" ]]; then
         # Linux QT5 only: apply patch for openssl v3 compatibility from https://bugreports.qt.io/browse/QTBUG-103820
         patch -p1 -d "$QT_SRC_PATH/qtbase" < "./qt5-linux-1d21c39.patch"
     fi
@@ -139,7 +139,7 @@ if [[ "$OS" == "linux" ]]; then
 fi
 
 if [[ "$OS" == "osx" ]]; then
-    if [[ "QT_MAJOR_VERSION" == "5" ]]; then
+    if [[ "$QT_MAJOR_VERSION" == "5" ]]; then
         # OSX QT5 only: this patch force enables the arm64 neon feature for universal binary builds on osx
         # without it, qt builds fail with undefined symbols due to configure only taking first architecture into account
         patch -d "$QT_SRC_PATH/qtbase" < "./qt5-osx-configure.json.patch"
@@ -154,7 +154,7 @@ if [[ "$OS" == "osx" ]]; then
     fi
 fi
 
-if [[ "QT_MAJOR_VERSION" == "5" ]]; then
+if [[ "$QT_MAJOR_VERSION" == "5" ]]; then
     make $MAKE_OPTIONS
     make install
 else
