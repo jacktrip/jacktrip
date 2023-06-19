@@ -92,11 +92,6 @@ if [[ ! -d "$QT_SRC_PATH" ]]; then
     QT_SRC_URL="https://download.qt.io/archive/qt/$QT_MAJOR_MINOR_VERSION/$QT_FULL_VERSION/single/${QT_ARCHIVE_BASE_NAME}src-$QT_FULL_VERSION.tar.xz"
     curl -L $QT_SRC_URL -o qt.tar.xz
     tar -xf qt.tar.xz
-
-    if [[ "$QT_MAJOR_VERSION" == "5" && "$OS" == "linux" ]]; then
-        # Linux QT5 only: apply patch for openssl v3 compatibility from https://bugreports.qt.io/browse/QTBUG-103820
-        patch -p1 -d "$QT_SRC_PATH/qtbase" < "./qt5-linux-1d21c39.patch"
-    fi
 fi
 
 # Linux
