@@ -9,6 +9,7 @@
     <file>vsftux.qml</file>
     <file>FirstLaunch.qml</file>
     <file>Login.qml</file>
+    <file>ChangeDevices.qml</file>
     <file>Studio.qml</file>
     <file>Browse.qml</file>
     <file>AudioSettings.qml</file>
@@ -19,6 +20,8 @@
     <file>Failed.qml</file>
     <file>Setup.qml</file>
     <file>SectionHeading.qml</file>
+    <file>Web.qml</file>
+    <file>WebNull.qml</file>
     <file>logo.svg</file>
     <file>wedge.svg</file>
     <file>wedge_inactive.svg</file>

@@ -173,9 +173,9 @@ else
 		endif
 
 		if get_option('qtversion') == '5'
-			qt_dep = dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'QuickControls2', 'Qml', 'Svg', 'NetworkAuth', 'WebSockets'], include_type: 'system')
+			qt_dep = dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'QuickControls2', 'Qml', 'Svg', 'NetworkAuth', 'WebSockets', 'WebView'], include_type: 'system')
 		else
-			qt_dep = dependency('qt6', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'QuickControls2', 'Qml', 'Svg', 'NetworkAuth', 'WebSockets'], include_type: 'system')
+			qt_dep = dependency('qt6', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'QuickControls2', 'Qml', 'Svg', 'NetworkAuth', 'WebSockets', 'WebView'], include_type: 'system')
 		endif
 		qres = ['src/gui/qjacktrip.qrc']
 	endif
@@ -235,7 +235,7 @@ endif
 
 if host_machine.system() == 'darwin' and get_option('novs') == false
 	src += ['src/gui/vsMacPermissions.mm']
-	apple_av_dep = dependency('appleframeworks', modules : ['avfoundation'])
+	apple_av_dep = dependency('appleframeworks', modules : ['avfoundation', 'webkit'])
 	deps += apple_av_dep
 endif
 

@@ -20,6 +20,7 @@ Rectangle {
             PropertyChanges { target: browseScreen; x: window.width }
             PropertyChanges { target: settingsScreen; x: window.width }
             PropertyChanges { target: connectedScreen; x: window.width }
+            PropertyChanges { target: changeDevicesScreen; x: 2*window.width }
             PropertyChanges { target: failedScreen; x: window.width }
         },
 
@@ -30,6 +31,7 @@ Rectangle {
             PropertyChanges { target: browseScreen; x: window.width }
             PropertyChanges { target: settingsScreen; x: window.width }
             PropertyChanges { target: connectedScreen; x: window.width }
+            PropertyChanges { target: changeDevicesScreen; x: 2*window.width }
             PropertyChanges { target: failedScreen; x: window.width }
         },
 
@@ -40,6 +42,7 @@ Rectangle {
             PropertyChanges { target: browseScreen; x: 0 }
             PropertyChanges { target: settingsScreen; x: window.width }
             PropertyChanges { target: connectedScreen; x: window.width }
+            PropertyChanges { target: changeDevicesScreen; x: 2*window.width }
             PropertyChanges { target: failedScreen; x: window.width }
         },
 
@@ -50,6 +53,7 @@ Rectangle {
             PropertyChanges { target: browseScreen; x: -browseScreen.width }
             PropertyChanges { target: settingsScreen; x: 0 }
             PropertyChanges { target: connectedScreen; x: window.width }
+            PropertyChanges { target: changeDevicesScreen; x: 2*window.width }
             PropertyChanges { target: failedScreen; x: window.width }
         },
 
@@ -60,6 +64,18 @@ Rectangle {
             PropertyChanges { target: browseScreen; x: -browseScreen.width }
             PropertyChanges { target: settingsScreen; x: window.width }
             PropertyChanges { target: connectedScreen; x: 0 }
+            PropertyChanges { target: changeDevicesScreen; x: window.width }
+            PropertyChanges { target: failedScreen; x: window.width }
+        },
+
+        State {
+            name: "change_devices"
+            PropertyChanges { target: loginScreen; x: -loginScreen.width }
+            PropertyChanges { target: setupScreen; x: -setupScreen.width }
+            PropertyChanges { target: browseScreen; x: -browseScreen.width }
+            PropertyChanges { target: settingsScreen; x: window.width }
+            PropertyChanges { target: connectedScreen; x: x: -connectedScreen.width }
+            PropertyChanges { target: changeDevicesScreen; x: 0 }
             PropertyChanges { target: failedScreen; x: window.width }
         },
 
@@ -70,6 +86,7 @@ Rectangle {
             PropertyChanges { target: browseScreen; x: -browseScreen.width }
             PropertyChanges { target: settingsScreen; x: window.width }
             PropertyChanges { target: connectedScreen; x: window.width }
+            PropertyChanges { target: changeDevicesScreen; x: 2*window.width }
             PropertyChanges { target: failedScreen; x: 0 }
         }
     ]
@@ -96,6 +113,10 @@ Rectangle {
 
     Connected {
         id: connectedScreen
+    }
+
+    ChangeDevices {
+        id: changeDevicesScreen
     }
 
     Failed {
