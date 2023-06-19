@@ -12,8 +12,6 @@ set -e
 QT_DYNAMIC_BUILD=0
 QT_FULL_VERSION=6.2.4
 OPENSSL_FULL_VERSION=3.1.0
-QT_BUILD_PATH=/opt/qt-${QT_FULL_VERSION}
-OPENSSL_BUILD_PATH="/opt/openssl-${OPENSSL_FULL_VERSION}"
 
 # display help information
 qtbuild_help() {
@@ -51,6 +49,7 @@ elif [ "x$1" != "x" ]; then
 fi
 if [[ ! "$QT_FULL_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     echo "error: VERSION does not match #.#.#: $QT_FULL_VERSION"
+    exit 1
 fi
 
 QT_MAJOR_VERSION=`echo $QT_FULL_VERSION | cut -d '.' -f1`
@@ -80,12 +79,19 @@ QT_LINUX_OPTIONS="-qt-zlib -qt-libpng -qt-libjpeg -system-freetype -fontconfig -
 MAKE_OPTIONS="-j4"
 CMAKE_OPTIONS="--parallel"
 
+QT_BUILD_PATH=/opt/qt-${QT_FULL_VERSION}
+OPENSSL_BUILD_PATH="/opt/openssl-${OPENSSL_FULL_VERSION}"
 if [[ $QT_DYNAMIC_BUILD -eq 1 ]]; then
     echo "Building dynamic qt-$QT_FULL_VERSION on $OS"
     QT_BUILD_PATH="$QT_BUILD_PATH-dynamic"
     QT_LINUX_OPTIONS="-openssl-runtime $QT_LINUX_OPTIONS"
-    # WARNING: QtWebEngine won't be built. Python2 version 2.7.5 or later is required.
-    echo "Note: Building WebEngine requires python2 version 2.7.5 or later!"
+    if [[ $QT_MAJOR_VERSION -gt 6 || $QT_MAJOR_VERSION -eq 6 && $QT_MINOR_VERSION > 4 ]]; then
+        # WARNING: QtWebEngine won't be built. Python3 html5lib is missing.
+        echo "Note: Building WebEngine requires python3 html5lib!"
+    else
+        # WARNING: QtWebEngine won't be built. Python2 version 2.7.5 or later is required.
+        echo "Note: Building WebEngine requires python2 version 2.7.5 or later!"
+    fi
 else
     echo "Building static qt-$QT_FULL_VERSION on $OS"
     QT_BUILD_PATH="$QT_BUILD_PATH-static"
@@ -130,8 +136,8 @@ fi
 mkdir -p $QT_BUILD_PATH
 
 # Linux
-if [[ "$OS" == "linux" && $QT_DYNAMIC_BUILD -ne 1 ]]; then
-    if [[ ! -d "$OPENSSL_BUILD_PATH" ]]; then
+if [[ "$OS" == "linux" ]]; then
+    if [[ ! -d "$OPENSSL_BUILD_PATH" && $QT_DYNAMIC_BUILD -ne 1 ]]; then
         # Build static openssl
         # see https://doc.qt.io/qt-6/ssl.html#enabling-and-disabling-ssl-support-when-building-qt-from-source
         OPENSSL_SRC_PATH="${PWD}/openssl-src"
