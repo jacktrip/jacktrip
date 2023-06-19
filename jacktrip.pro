@@ -38,6 +38,7 @@ nogui {
     QT += svg
     QT += websockets
     QT += webview
+    QT += webchannel
     vsftux {
       DEFINES += VS_FTUX
     }
@@ -273,7 +274,9 @@ HEADERS += src/DataProtocol.h \
                src/gui/vsPing.h \
                src/gui/vsUrlHandler.h \
                src/gui/vsQmlClipboard.h \
-               src/JTApplication.h
+               src/JTApplication.h \
+               src/gui/websocketclientwrapper.h \
+               src/gui/websockettransport.h
   }
   !noupdater:!linux-g++:!linux-g++-64 {
     HEADERS += src/dblsqd/feed.h \
@@ -341,6 +344,8 @@ SOURCES += src/DataProtocol.cpp \
                src/gui/vsPermissions.cpp \
                src/gui/vsPinger.cpp \
                src/gui/vsPing.cpp \
+               src/gui/websocketclientwrapper.cpp \
+               src/gui/websockettransport.cpp \
                src/gui/vsUrlHandler.cpp
   }
   !noupdater:!linux-g++:!linux-g++-64 {

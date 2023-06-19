@@ -116,6 +116,16 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
         m_auth->authenticate(QStringLiteral(""));  // retry without using refresh token
     });
 
+    m_server.reset(new QWebSocketServer(QStringLiteral("Qt6 Virtual Studio Server"),
+                                        QWebSocketServer::NonSecureMode));
+    m_clientWrapper.reset(new WebSocketClientWrapper(m_server.data()));
+    m_webChannel.reset(new QWebChannel());
+
+    connect(m_clientWrapper.data(), &WebSocketClientWrapper::clientConnected,
+            m_webChannel.data(), &QWebChannel::connectTo);
+    m_webChannel->registerObject(QStringLiteral("virtualstudio"), this);
+    m_webChannel->registerObject(QStringLiteral("auth"), m_auth.data());
+
     // Load our font for our qml interface
     QFontDatabase::addApplicationFont(QStringLiteral(":/vs/Poppins-Regular.ttf"));
     QFontDatabase::addApplicationFont(QStringLiteral(":/vs/Poppins-Bold.ttf"));
@@ -379,6 +389,11 @@ void VirtualStudio::raiseToTop()
 bool VirtualStudio::vsModeActive()
 {
     return m_vsModeActive;
+}
+
+int VirtualStudio::port()
+{
+    return m_port;
 }
 
 bool VirtualStudio::showFirstRun()
@@ -1953,6 +1968,13 @@ void VirtualStudio::slotAuthSucceeded()
             setAudioActivated(true);
         }
     }
+
+    if (!m_server->listen(QHostAddress::LocalHost)) {
+        // shouldn't happen
+        std::cout << "ERROR: Failed to start server!" << std::endl;
+    }
+    m_port = m_server->serverPort();
+    emit portChanged(m_port);
 
     getUserId();
     getSubscriptions();
