@@ -126,6 +126,11 @@ if [[ ! -d "$QT_SRC_PATH" ]]; then
         # without it, qt builds fail with undefined symbols due to configure only taking first architecture into account
         echo "Patching $QT_SRC_PATH for osx universal builds with qmake"
         patch -d "$QT_SRC_PATH/qtbase" < "./qt5-osx-configure.json.patch"
+    elif [[ "$OS" == "linux" && $QT_MAJOR_VERSION -eq 6 && $QT_MINOR_VERSION -lt 5 ]]; then
+        # QT6 (cmake) on Linux only: fix bug with building WebEngine
+        # Unknown CMake command "check_for_ulimit".
+        # see https://bugreports.qt.io/browse/QTBUG-109046
+        patch -p1 -d "$QT_SRC_PATH" < "./qt6-linux-ulimit.patch"
     fi
 fi
 
