@@ -62,7 +62,7 @@ QT6_FEATURE_OPTIONS="-no-feature-qtpdf-build -no-feature-qtpdf-quick-build -no-f
 QT6_SKIP_OPTIONS="-skip qtgrpc -skip qtlanguageserver -skip qtquick3dphysics -skip qtimageformats"
 #QT6_WEBENGINE_OPTIONS="-no-webengine-alsa -no-webengine-pulseaudio -no-webengine-embedded-build -no-webengine-icu -no-webengine-ffmpeg -no-webengine-opus -no-webengine-pepper-plugins -no-webengine-printing-and-pdf -no-webengine-spellchecker -webengine-webrtc"
 QT_STATIC_OPTIONS="-static -release -optimize-size -no-pch -no-dbus -nomake tools -nomake tests -nomake examples -opensource -confirm-license -feature-appstore-compliant"
-QT_LINUX_OPTIONS="-openssl -openssl-linked -qt-zlib -qt-libpng -qt-libjpeg -system-freetype -fontconfig -qt-pcre -qt-harfbuzz -no-icu -opengl desktop"
+QT_LINUX_OPTIONS="-openssl-linked -qt-zlib -qt-libpng -qt-libjpeg -system-freetype -fontconfig -qt-pcre -qt-harfbuzz -no-icu -opengl desktop"
 MAKE_OPTIONS="-j4"
 CMAKE_OPTIONS="--parallel"
 
@@ -92,6 +92,11 @@ if [[ ! -d "$QT_SRC_PATH" ]]; then
     QT_SRC_URL="https://download.qt.io/archive/qt/$QT_MAJOR_MINOR_VERSION/$QT_FULL_VERSION/single/${QT_ARCHIVE_BASE_NAME}src-$QT_FULL_VERSION.tar.xz"
     curl -L $QT_SRC_URL -o qt.tar.xz
     tar -xf qt.tar.xz
+
+    if [[ "$QT_MAJOR_VERSION" == "5" && "$OS" == "linux" ]]; then
+        # Linux QT5 only: apply patch for openssl v3 compatibility from https://bugreports.qt.io/browse/QTBUG-103820
+        patch -p1 -d "$QT_SRC_PATH/qtbase" < "./qt5-linux-1d21c39.patch"
+    fi
 fi
 
 # Linux
@@ -118,18 +123,15 @@ if [[ "$OS" == "linux" ]]; then
         cd ..
     fi
 
-    # this seems to be necessary for qt cmake to find ssl
-    CMAKE_PREFIX_PATH=$OPENSSL_BUILD_PATH
-
     if [[ "$QT_MAJOR_VERSION" == "5" ]]; then
-        # Linux QT5 only: apply patch for openssl v3 compatibility from https://bugreports.qt.io/browse/QTBUG-103820
-        patch -p1 -d "$QT_SRC_PATH/qtbase" < "./qt5-linux-1d21c39.patch"
+        # we have to use a single process for make because qt's build system has dependency problems on Linux,
+        # where some processes can try to use libraries while another one is creating them, i.e.
+        # g++: error: /home/runner/work/jacktrip/jacktrip/qtwayland/plugins/wayland-graphics-integration-client/libqt-plugin-wayland-egl.a: No such file or directory
+        MAKE_OPTIONS=""
+    else
+        # this seems to be necessary for qt cmake to find ssl
+        CMAKE_PREFIX_PATH=$OPENSSL_BUILD_PATH
     fi
-
-    # we have to use a single process for make because qt's build system has dependency problems on Linux,
-    # where some processes can try to use libraries while another one is creating them, i.e.
-    # g++: error: /home/runner/work/jacktrip/jacktrip/qtwayland/plugins/wayland-graphics-integration-client/libqt-plugin-wayland-egl.a: No such file or directory
-    MAKE_OPTIONS=""
 
     # configure qt for linux
     echo "QT Configure command"
