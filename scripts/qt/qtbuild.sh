@@ -1,16 +1,23 @@
 #!/bin/bash
 # qtbuild.sh: cross-platform script to build static qt for jacktrip
+#
+# Copyright (c) 2023 JackTrip Labs, Inc.
+#
+# Author: Mike Dickey <mike@jacktrip.com>
 
 # exit on error
 set -e
 
 # default versions
-QT_FULL_VERSION=6.5.1
+QT_DYNAMIC_BUILD=0
+QT_FULL_VERSION=6.2.4
 OPENSSL_FULL_VERSION=3.1.0
+QT_BUILD_PATH=/opt/qt-${QT_FULL_VERSION}
+OPENSSL_BUILD_PATH="/opt/openssl-${OPENSSL_FULL_VERSION}"
 
 # display help information
 qtbuild_help() {
-    echo "qtbuild.sh ["-h" | "clean" | <VERSION>]"
+    echo "qtbuild.sh ( -h | -clean | [-dynamic] [<VERSION>] )"
 }
 
 # clean build directory
@@ -24,19 +31,28 @@ qtbuild_clean() {
 }
 
 # check for specific options
-if [[ $1 == "clean" ]]; then
-    qtbuild_clean
+if [[ "$1" == "-h" ]]; then
+    qtbuild_help
     exit 0
 fi
-if [[ $1 == "-h" ]]; then
-    qtbuild_help
+if [[ "$1" == "-clean" ]]; then
+    qtbuild_clean
     exit 0
 fi
 
 # get qt version from parameters
-if [ "x$1" != "x" ]; then
+if [[ "$1" == "-dynamic" ]]; then
+    QT_DYNAMIC_BUILD=1
+    if [[ "x$2" != "x" ]]; then
+        QT_FULL_VERSION=$2
+    fi
+elif [ "x$1" != "x" ]; then
     QT_FULL_VERSION=$1
 fi
+if [[ ! "$QT_FULL_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    echo "error: VERSION does not match #.#.#: $QT_FULL_VERSION"
+fi
+
 QT_MAJOR_VERSION=`echo $QT_FULL_VERSION | cut -d '.' -f1`
 QT_MAJOR_MINOR_VERSION=`echo $QT_FULL_VERSION | cut -d '.' -f1-2`
 QT_PATCH_VERSION=`echo $QT_FULL_VERSION | cut -d '.' -f3`
@@ -54,32 +70,36 @@ else
     exit 1
 fi
 
-echo "Building qt-$QT_FULL_VERSION on $OS"
-
 # preferred build settings for various versions and OS
 QT5_FEATURE_OPTIONS="-no-feature-cups -no-feature-ocsp -no-feature-sqlmodel -no-feature-pdf -no-feature-printer -no-feature-printdialog -no-feature-printpreviewdialog -no-feature-printpreviewwidget"
-QT5_SKIP_OPTIONS="-skip qt3d -skip qtactiveqt -skip qtandroidextras -skip qtcharts -skip qtcoap -skip qtdatavis3d -skip qtdoc -skip qtgamepad -skip qtimageformats -skip qtlocation -skip qtlottie -skip qtmqtt -skip qtmultimedia -skip qtopcua -skip qtpurchasing -skip qtquick3d -skip qtquicktimeline -skip qtscxml -skip qtremoteobjects -skip qtscript -skip qtsensors -skip qtserialbus -skip qtserialport -skip qtspeech -skip qttools -skip qttranslations -skip qtvirtualkeyboard -skip qtwebglplugin -skip qtxmlpatterns -skip qtwebengine"
+QT5_SKIP_OPTIONS="-skip qt3d -skip qtactiveqt -skip qtandroidextras -skip qtcharts -skip qtcoap -skip qtdatavis3d -skip qtdoc -skip qtgamepad -skip qtimageformats -skip qtlocation -skip qtlottie -skip qtmqtt -skip qtmultimedia -skip qtopcua -skip qtpurchasing -skip qtquick3d -skip qtquicktimeline -skip qtscxml -skip qtremoteobjects -skip qtscript -skip qtsensors -skip qtserialbus -skip qtserialport -skip qtspeech -skip qttools -skip qttranslations -skip qtvirtualkeyboard -skip qtwebglplugin -skip qtxmlpatterns"
 QT6_FEATURE_OPTIONS="-no-feature-qtpdf-build -no-feature-qtpdf-quick-build -no-feature-qtpdf-widgets-build"
 QT6_SKIP_OPTIONS="-skip qtgrpc -skip qtlanguageserver -skip qtquick3dphysics -skip qtimageformats"
-#QT6_WEBENGINE_OPTIONS="-no-webengine-alsa -no-webengine-pulseaudio -no-webengine-embedded-build -no-webengine-icu -no-webengine-ffmpeg -no-webengine-opus -no-webengine-pepper-plugins -no-webengine-printing-and-pdf -no-webengine-spellchecker -webengine-webrtc"
-QT_STATIC_OPTIONS="-static -release -optimize-size -no-pch -no-dbus -nomake tools -nomake tests -nomake examples -opensource -confirm-license -feature-appstore-compliant"
-QT_LINUX_OPTIONS="-openssl-linked -qt-zlib -qt-libpng -qt-libjpeg -system-freetype -fontconfig -qt-pcre -qt-harfbuzz -no-icu -opengl desktop"
+QT_CONFIGURE_OPTIONS="-release -optimize-size -no-pch -no-dbus -nomake tools -nomake tests -nomake examples -opensource -confirm-license -feature-appstore-compliant"
+QT_LINUX_OPTIONS="-qt-zlib -qt-libpng -qt-libjpeg -system-freetype -fontconfig -qt-pcre -qt-harfbuzz -no-icu -opengl desktop"
 MAKE_OPTIONS="-j4"
 CMAKE_OPTIONS="--parallel"
 
-# update static options for major qt version
-if [[ "$QT_MAJOR_VERSION" == "5" ]]; then
-    QT_STATIC_OPTIONS="$QT_STATIC_OPTIONS $QT5_FEATURE_OPTIONS $QT5_SKIP_OPTIONS"
+if [[ $QT_DYNAMIC_BUILD -eq 1 ]]; then
+    echo "Building dynamic qt-$QT_FULL_VERSION on $OS"
+    QT_BUILD_PATH="$QT_BUILD_PATH-dynamic"
+    QT_LINUX_OPTIONS="-openssl-runtime $QT_LINUX_OPTIONS"
+    # WARNING: QtWebEngine won't be built. Python2 version 2.7.5 or later is required.
+    echo "Note: Building WebEngine requires python2 version 2.7.5 or later!"
 else
-    QT_STATIC_OPTIONS="$QT_STATIC_OPTIONS $QT5_FEATURE_OPTIONS $QT6_FEATURE_OPTIONS $QT5_SKIP_OPTIONS $QT6_SKIP_OPTIONS"
+    echo "Building static qt-$QT_FULL_VERSION on $OS"
+    QT_BUILD_PATH="$QT_BUILD_PATH-static"
+    QT_CONFIGURE_OPTIONS="-static $QT_CONFIGURE_OPTIONS"
+    QT_LINUX_OPTIONS="-openssl-linked $QT_LINUX_OPTIONS"
+    QT5_SKIP_OPTIONS="$QT5_SKIP_OPTIONS -skip qtwebengine"
 fi
 
-# prepare qt build target
-QT_STATIC_BUILD_PATH=/opt/qt-${QT_FULL_VERSION}
-if [[ -d "$QT_STATIC_BUILD_PATH" ]]; then
-    rm -rf $QT_STATIC_BUILD_PATH
+# update static options for major qt version
+if [[ "$QT_MAJOR_VERSION" == "5" ]]; then
+    QT_CONFIGURE_OPTIONS="$QT_CONFIGURE_OPTIONS $QT5_FEATURE_OPTIONS $QT5_SKIP_OPTIONS"
+else
+    QT_CONFIGURE_OPTIONS="$QT_CONFIGURE_OPTIONS $QT5_FEATURE_OPTIONS $QT6_FEATURE_OPTIONS $QT5_SKIP_OPTIONS $QT6_SKIP_OPTIONS"
 fi
-mkdir -p $QT_STATIC_BUILD_PATH
 
 # Download qt source code
 QT_SRC_PATH="qt-everywhere-src-${QT_FULL_VERSION}"
@@ -95,9 +115,14 @@ if [[ ! -d "$QT_SRC_PATH" ]]; then
     tar -xf qt.tar.xz
 fi
 
+# prepare qt build target
+if [[ -d "$QT_BUILD_PATH" ]]; then
+    rm -rf $QT_BUILD_PATH
+fi
+mkdir -p $QT_BUILD_PATH
+
 # Linux
-if [[ "$OS" == "linux" ]]; then
-    OPENSSL_BUILD_PATH="/opt/openssl-${OPENSSL_FULL_VERSION}"
+if [[ "$OS" == "linux" && $QT_DYNAMIC_BUILD -ne 1 ]]; then
     if [[ ! -d "$OPENSSL_BUILD_PATH" ]]; then
         # Build static openssl
         # see https://doc.qt.io/qt-6/ssl.html#enabling-and-disabling-ssl-support-when-building-qt-from-source
@@ -131,9 +156,13 @@ if [[ "$OS" == "linux" ]]; then
 
     # configure qt for linux
     echo "QT Configure command"
-    QT_STATIC_OPTIONS="$QT_LINUX_OPTIONS $QT_STATIC_OPTIONS"
-    echo "\"$QT_SRC_PATH/configure\" -prefix \"$QT_STATIC_BUILD_PATH\" $QT_STATIC_OPTIONS OPENSSL_LIBS=\"$OPENSSL_BUILD_PATH/lib64/libssl.a $OPENSSL_BUILD_PATH/lib64/libcrypto.a\" -I \"$OPENSSL_BUILD_PATH/include\""
-    "$QT_SRC_PATH/configure" -prefix "$QT_STATIC_BUILD_PATH" $QT_STATIC_OPTIONS OPENSSL_LIBS="$OPENSSL_BUILD_PATH/lib64/libssl.a $OPENSSL_BUILD_PATH/lib64/libcrypto.a" -I "$OPENSSL_BUILD_PATH/include"
+    if [[ $QT_DYNAMIC_BUILD -eq 1 ]]; then
+        echo "\"$QT_SRC_PATH/configure\" -prefix \"$QT_BUILD_PATH\" $QT_LINUX_OPTIONS $QT_CONFIGURE_OPTIONS"
+        "$QT_SRC_PATH/configure" -prefix "$QT_BUILD_PATH" $QT_LINUX_OPTIONS $QT_CONFIGURE_OPTIONS
+    else
+        echo "\"$QT_SRC_PATH/configure\" -prefix \"$QT_BUILD_PATH\" $QT_LINUX_OPTIONS $QT_CONFIGURE_OPTIONS OPENSSL_LIBS=\"$OPENSSL_BUILD_PATH/lib64/libssl.a $OPENSSL_BUILD_PATH/lib64/libcrypto.a\" -I \"$OPENSSL_BUILD_PATH/include\""
+        "$QT_SRC_PATH/configure" -prefix "$QT_BUILD_PATH" $QT_LINUX_OPTIONS $QT_CONFIGURE_OPTIONS OPENSSL_LIBS="$OPENSSL_BUILD_PATH/lib64/libssl.a $OPENSSL_BUILD_PATH/lib64/libcrypto.a" -I "$OPENSSL_BUILD_PATH/include"
+    fi
 fi
 
 if [[ "$OS" == "osx" ]]; then
@@ -144,11 +173,11 @@ if [[ "$OS" == "osx" ]]; then
 
         # configure qt for osx
         echo "QT Configure command"
-        "$QT_SRC_PATH/configure" -prefix "$QT_STATIC_BUILD_PATH" $QT_STATIC_OPTIONS "QMAKE_APPLE_DEVICE_ARCHS=x86_64 arm64"
+        "$QT_SRC_PATH/configure" -prefix "$QT_BUILD_PATH" $QT_CONFIGURE_OPTIONS "QMAKE_APPLE_DEVICE_ARCHS=x86_64 arm64"
     else
         # configure qt for osx
         echo "QT Configure command"
-        "$QT_SRC_PATH/configure" -prefix "$QT_STATIC_BUILD_PATH" $QT_STATIC_OPTIONS -- "-DCMAKE_OSX_ARCHITECTURES=x86_64;arm64"
+        "$QT_SRC_PATH/configure" -prefix "$QT_BUILD_PATH" $QT_CONFIGURE_OPTIONS -- "-DCMAKE_OSX_ARCHITECTURES=x86_64;arm64"
     fi
 fi
 
@@ -162,6 +191,6 @@ fi
 
 if [[ "$OS" == "linux" ]]; then
     # copy static openssl into qt build
-    cp -r $OPENSSL_BUILD_PATH/lib64 $QT_STATIC_BUILD_PATH
-    cp -r $OPENSSL_BUILD_PATH/include/openssl $QT_STATIC_BUILD_PATH/include
+    cp -r $OPENSSL_BUILD_PATH/lib64 $QT_BUILD_PATH
+    cp -r $OPENSSL_BUILD_PATH/include/openssl $QT_BUILD_PATH/include
 fi
