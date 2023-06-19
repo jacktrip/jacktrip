@@ -279,7 +279,9 @@ int main(int argc, char* argv[])
 {
 #ifndef NO_GUI
 #ifndef NO_VS
+#ifdef Q_OS_MACOS
     qputenv("QT_WEBVIEW_PLUGIN", "native");
+#endif  // Q_OS_MACOS
     QtWebView::initialize();
 #endif  // NO_VS
 #endif  // NO_GUI
