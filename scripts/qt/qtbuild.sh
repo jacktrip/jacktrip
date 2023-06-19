@@ -54,7 +54,7 @@ if [[ ! "$QT_FULL_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
 fi
 
 QT_MAJOR_VERSION=`echo $QT_FULL_VERSION | cut -d '.' -f1`
-QT_MAJOR_MINOR_VERSION=`echo $QT_FULL_VERSION | cut -d '.' -f1-2`
+QT_MINOR_VERSION=`echo $QT_FULL_VERSION | cut -d '.' -f2`
 QT_PATCH_VERSION=`echo $QT_FULL_VERSION | cut -d '.' -f3`
 
 # get OS
@@ -95,7 +95,7 @@ else
 fi
 
 # update static options for major qt version
-if [[ "$QT_MAJOR_VERSION" == "5" ]]; then
+if [[ $QT_MAJOR_VERSION -eq 5 ]]; then
     QT_CONFIGURE_OPTIONS="$QT_CONFIGURE_OPTIONS $QT5_FEATURE_OPTIONS $QT5_SKIP_OPTIONS"
 else
     QT_CONFIGURE_OPTIONS="$QT_CONFIGURE_OPTIONS $QT5_FEATURE_OPTIONS $QT6_FEATURE_OPTIONS $QT5_SKIP_OPTIONS $QT6_SKIP_OPTIONS"
@@ -105,14 +105,22 @@ fi
 QT_SRC_PATH="qt-everywhere-src-${QT_FULL_VERSION}"
 if [[ ! -d "$QT_SRC_PATH" ]]; then
     echo "Downloading qt-${QT_FULL_VERSION}"
+
     QT_ARCHIVE_BASE_NAME=qt-everywhere-
     # filename changed to qt-everywhere-opensource-src-<version> in Qt 5.15.3
-    if [[ "$QT_MAJOR_MINOR_VERSION" == "5.15" && "$QT_PATCH_VERSION" -gt 2 ]]; then
+    if [[ $QT_MAJOR_VERSION -eq 5 && $QT_MINOR_VERSION -eq 15 && $QT_PATCH_VERSION -gt 2 ]]; then
         QT_ARCHIVE_BASE_NAME=${QT_ARCHIVE_BASE_NAME}opensource-
     fi
-    QT_SRC_URL="https://download.qt.io/archive/qt/$QT_MAJOR_MINOR_VERSION/$QT_FULL_VERSION/single/${QT_ARCHIVE_BASE_NAME}src-$QT_FULL_VERSION.tar.xz"
+    QT_SRC_URL="https://download.qt.io/archive/qt/$QT_MAJOR_VERSION.$QT_MINOR_VERSION/$QT_FULL_VERSION/single/${QT_ARCHIVE_BASE_NAME}src-$QT_FULL_VERSION.tar.xz"
     curl -L $QT_SRC_URL -o qt.tar.xz
     tar -xf qt.tar.xz
+
+    if [[ "$OS" == "osx" && $QT_MAJOR_VERSION -eq 5 ]]; then
+        # QT5 (qmake) on OSX only: this patch force enables the arm64 neon feature for universal binary builds on osx
+        # without it, qt builds fail with undefined symbols due to configure only taking first architecture into account
+        echo "Patching $QT_SRC_PATH for osx universal builds with qmake"
+        patch -d "$QT_SRC_PATH/qtbase" < "./qt5-osx-configure.json.patch"
+    fi
 fi
 
 # prepare qt build target
@@ -144,7 +152,7 @@ if [[ "$OS" == "linux" && $QT_DYNAMIC_BUILD -ne 1 ]]; then
         cd ..
     fi
 
-    if [[ "$QT_MAJOR_VERSION" == "5" ]]; then
+    if [[ $QT_MAJOR_VERSION -eq 5 ]]; then
         # we have to use a single process for make because qt's build system has dependency problems on Linux,
         # where some processes can try to use libraries while another one is creating them, i.e.
         # g++: error: /home/runner/work/jacktrip/jacktrip/qtwayland/plugins/wayland-graphics-integration-client/libqt-plugin-wayland-egl.a: No such file or directory
@@ -165,23 +173,45 @@ if [[ "$OS" == "linux" && $QT_DYNAMIC_BUILD -ne 1 ]]; then
     fi
 fi
 
+# OSX
 if [[ "$OS" == "osx" ]]; then
-    if [[ "$QT_MAJOR_VERSION" == "5" ]]; then
-        # OSX QT5 only: this patch force enables the arm64 neon feature for universal binary builds on osx
-        # without it, qt builds fail with undefined symbols due to configure only taking first architecture into account
-        patch -d "$QT_SRC_PATH/qtbase" < "./qt5-osx-configure.json.patch"
+    QT_UNIVERSAL_BUILD=1
+    if [[ $QT_DYNAMIC_BUILD -eq 1 ]]; then
+        # don't try to build universal dynamic builds on osx due to this bug
+        # https://bugreports.qt.io/browse/QTBUG-100672
+        if [[ $QT_MAJOR_VERSION -eq 5 ]]; then
+            QT_UNIVERSAL_BUILD=0
+        elif [[ $QT_MAJOR_VERSION -eq 6 && $QT_MINOR_VERSION -lt 4 ]]; then
+            QT_UNIVERSAL_BUILD=0
+        fi
+    fi
 
+    if [[ $QT_MAJOR_VERSION -eq 5 ]]; then
         # configure qt for osx
-        echo "QT Configure command"
-        "$QT_SRC_PATH/configure" -prefix "$QT_BUILD_PATH" $QT_CONFIGURE_OPTIONS "QMAKE_APPLE_DEVICE_ARCHS=x86_64 arm64"
+        if [[ $QT_UNIVERSAL_BUILD -eq 1 ]]; then
+            echo "QT Configure command (universal)"
+            echo "\"$QT_SRC_PATH/configure\" -prefix \"$QT_BUILD_PATH\" $QT_CONFIGURE_OPTIONS \"QMAKE_APPLE_DEVICE_ARCHS=x86_64 arm64\""
+            "$QT_SRC_PATH/configure" -prefix "$QT_BUILD_PATH" $QT_CONFIGURE_OPTIONS "QMAKE_APPLE_DEVICE_ARCHS=x86_64 arm64"
+        else
+            echo "QT Configure command (NOT universal)"
+            echo "\"$QT_SRC_PATH/configure\" -prefix \"$QT_BUILD_PATH\" $QT_CONFIGURE_OPTIONS"
+            "$QT_SRC_PATH/configure" -prefix "$QT_BUILD_PATH" $QT_CONFIGURE_OPTIONS
+        fi
     else
         # configure qt for osx
-        echo "QT Configure command"
-        "$QT_SRC_PATH/configure" -prefix "$QT_BUILD_PATH" $QT_CONFIGURE_OPTIONS -- "-DCMAKE_OSX_ARCHITECTURES=x86_64;arm64"
+        if [[ $QT_UNIVERSAL_BUILD -eq 1 ]]; then
+            echo "QT Configure command (universal)"
+            echo "\"$QT_SRC_PATH/configure\" -prefix \"$QT_BUILD_PATH\" $QT_CONFIGURE_OPTIONS -- \"-DCMAKE_OSX_ARCHITECTURES=x86_64;arm64\""
+            "$QT_SRC_PATH/configure" -prefix "$QT_BUILD_PATH" $QT_CONFIGURE_OPTIONS -- "-DCMAKE_OSX_ARCHITECTURES=x86_64;arm64"
+        else
+            echo "QT Configure command (NOT universal)"
+            echo "\"$QT_SRC_PATH/configure\" -prefix \"$QT_BUILD_PATH\" $QT_CONFIGURE_OPTIONS"
+            "$QT_SRC_PATH/configure" -prefix "$QT_BUILD_PATH" $QT_CONFIGURE_OPTIONS
+        fi
     fi
 fi
 
-if [[ "$QT_MAJOR_VERSION" == "5" ]]; then
+if [[ $QT_MAJOR_VERSION -eq 5 ]]; then
     make $MAKE_OPTIONS
     make install
 else
