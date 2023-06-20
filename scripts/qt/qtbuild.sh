@@ -74,7 +74,7 @@ QT5_FEATURE_OPTIONS="-no-feature-cups -no-feature-ocsp -no-feature-sqlmodel -no-
 QT5_SKIP_OPTIONS="-skip qt3d -skip qtactiveqt -skip qtandroidextras -skip qtcharts -skip qtcoap -skip qtdatavis3d -skip qtdoc -skip qtgamepad -skip qtimageformats -skip qtlocation -skip qtlottie -skip qtmqtt -skip qtmultimedia -skip qtopcua -skip qtpurchasing -skip qtquick3d -skip qtquicktimeline -skip qtscxml -skip qtremoteobjects -skip qtscript -skip qtsensors -skip qtserialbus -skip qtserialport -skip qtspeech -skip qttools -skip qttranslations -skip qtvirtualkeyboard -skip qtwebglplugin -skip qtxmlpatterns"
 QT6_FEATURE_OPTIONS="-no-feature-qtpdf-build -no-feature-qtpdf-quick-build -no-feature-qtpdf-widgets-build"
 QT6_SKIP_OPTIONS="-skip qtgrpc -skip qtlanguageserver -skip qtquick3dphysics -skip qtimageformats"
-QT_CONFIGURE_OPTIONS="-release -optimize-size -no-pch -no-dbus -nomake tools -nomake tests -nomake examples -opensource -confirm-license -feature-appstore-compliant"
+QT_CONFIGURE_OPTIONS="-release -optimize-size -no-pch -nomake tools -nomake tests -nomake examples -opensource -confirm-license -feature-appstore-compliant"
 QT_LINUX_OPTIONS="-qt-zlib -qt-libpng -qt-libjpeg -system-freetype -fontconfig -qt-pcre -qt-harfbuzz -no-icu -opengl desktop"
 MAKE_OPTIONS="-j4"
 CMAKE_OPTIONS="--parallel"
@@ -85,13 +85,8 @@ if [[ $QT_DYNAMIC_BUILD -eq 1 ]]; then
     echo "Building dynamic qt-$QT_FULL_VERSION on $OS"
     QT_BUILD_PATH="$QT_BUILD_PATH-dynamic"
     QT_LINUX_OPTIONS="-openssl-runtime $QT_LINUX_OPTIONS"
-    if [[ $QT_MAJOR_VERSION -gt 6 || $QT_MAJOR_VERSION -eq 6 && $QT_MINOR_VERSION > 4 ]]; then
-        # WARNING: QtWebEngine won't be built. Python3 html5lib is missing.
-        echo "Note: Building WebEngine requires python3 html5lib!"
-    else
-        # WARNING: QtWebEngine won't be built. Python2 version 2.7.5 or later is required.
-        echo "Note: Building WebEngine requires python2 version 2.7.5 or later!"
-    fi
+    echo "Please ensure you meet the requirements for building QtWebEngine!"
+    echo "See https://doc.qt.io/qt-$QT_MAJOR_VERSION/qtwebengine-platform-notes.html"
 else
     echo "Building static qt-$QT_FULL_VERSION on $OS"
     QT_BUILD_PATH="$QT_BUILD_PATH-static"
@@ -130,6 +125,7 @@ if [[ ! -d "$QT_SRC_PATH" ]]; then
         # QT6 (cmake) on Linux only: fix bug with building WebEngine
         # Unknown CMake command "check_for_ulimit".
         # see https://bugreports.qt.io/browse/QTBUG-109046
+        echo "Patching $QT_SRC_PATH for linux ulimit bug with cmake"
         patch -p1 -d "$QT_SRC_PATH" < "./qt6-linux-ulimit.patch"
     fi
 fi
