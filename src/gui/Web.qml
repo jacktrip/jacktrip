@@ -29,6 +29,9 @@ Item {
                         window.auth = channel.objects.auth;
                         window.clipboard = channel.objects.clipboard;
                         console.log("[QT6] Connected to WebChannel, ready to send/receive messages!");
+
+                        var event = new CustomEvent("qwebchannelinitialized");
+                        document.dispatchEvent(event);
                     });
                 }
             }
@@ -40,7 +43,7 @@ Item {
 
             script.setAttribute("type", "text/javascript");
             script.setAttribute("crossorigin", "anonymous");
-            script.setAttribute("src", "http://localhost:8000/qt5/qwebchannel.js"); // using qrc protocol leads to CORS error
+            script.setAttribute("src", "https://${virtualstudio.apiHost}/qt-utils/qt5/qwebchannel.js"); // using qrc protocol leads to CORS error
             document.head.appendChild(script);
         `
     }
@@ -59,7 +62,7 @@ Item {
             // settings.javascriptCanPaste: true
             // settings.screenCaptureEnabled: true
             // profile.httpUserAgent: `JackTrip/${virtualstudio.versionString}`
-            url: `http://localhost:3000/studios/${studioId}/live?accessToken=${accessToken}`
+            url: `https://${virtualstudio.apiHost}/studios/${studioId}/live?accessToken=${accessToken}`
 
             // useful for debugging
             // onJavaScriptConsoleMessage: function(level, message, lineNumber, sourceID) {
