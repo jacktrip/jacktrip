@@ -1638,15 +1638,15 @@ Item {
             radius: 6 * virtualstudio.uiScale
             color: deviceSettingsButton2.down ? browserButtonPressedColour : (deviceSettingsButton2.hovered ? browserButtonHoverColour : browserButtonColour)
         }
-        onClicked: virtualstudio.windowState = "change_devices";
+        onClicked: studioStatus === "Ready" ? virtualstudio.windowState = "change_devices" : virtualstudio.disconnect() ;
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: 8 * virtualstudio.uiScale;
+        anchors.bottomMargin: 24 * virtualstudio.uiScale;
         anchors.left: parent.left
         anchors.leftMargin: 8 * virtualstudio.uiScale;
-        width: 132 * virtualstudio.uiScale; height: 36 * virtualstudio.uiScale
+        width: 132 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
 
         Text {
-            text: "Device Settings"
+            text: studioStatus === "Ready" ? "Device Settings" : "Back"
             font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale}
             anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
             color: textColour
@@ -1658,7 +1658,7 @@ Item {
         x: 0
         y: 0
         width: parent.width
-        height: parent.height-52
+        height: parent.height-62
 
         Loader {
             id: studioWebLoader
@@ -1670,6 +1670,8 @@ Item {
             source: accessToken && studioId ? "Web.qml" : "WebNull.qml"
         }
     }
+
+    Footer {}
 
     Connections {
         target: virtualstudio

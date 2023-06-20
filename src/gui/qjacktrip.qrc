@@ -20,6 +20,7 @@
     <file>Failed.qml</file>
     <file>Setup.qml</file>
     <file>SectionHeading.qml</file>
+    <file>Footer.qml</file>
     <file>Web.qml</file>
     <file>WebNull.qml</file>
     <file>logo.svg</file>
@@ -30,6 +31,7 @@
     <file>join.svg</file>
     <file>leave.svg</file>
     <file>manage.svg</file>
+    <file>speed.svg</file>
     <file>share.svg</file>
     <file>start.svg</file>
     <file>cog.svg</file>
