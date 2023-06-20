@@ -4,12 +4,11 @@ import QtQuick.Layouts 1.15
 import QtGraphicalEffects 1.12
 
 Item {
+    id: footer
     width: parent.width
     height: 20
     anchors.bottom: parent.bottom
     clip: true
-
-    property string strokeColor: virtualstudio.darkMode ? "#80827D7D" : "#34979797"
 
     function getConnectionStateColor() {
         if (virtualstudio.connectionState == "Connected") {
@@ -63,7 +62,7 @@ Item {
     RowLayout {
         id: layout
         anchors.fill: parent
-        spacing: 6
+        spacing: 4
 
         Rectangle {
             color: backgroundColour
@@ -103,6 +102,7 @@ Item {
 
         Item {
             Layout.fillWidth: true
+            Layout.fillHeight: true
         }
 
         Rectangle {
@@ -152,7 +152,7 @@ Item {
         id: backgroundBorder
         width: parent.width
         height: 1
-        y: parent.height - 20
+        y: parent.height - footer.height
         color: strokeColor
     }
 }

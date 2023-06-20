@@ -160,6 +160,9 @@ Rectangle {
             }
         }
         function onConnected() {
+            if (virtualstudio.windowState == "change_devices") {
+                return;
+            }
             virtualstudio.windowState = "connected";
         }
         function onFailed() {

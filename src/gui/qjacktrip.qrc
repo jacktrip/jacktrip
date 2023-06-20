@@ -21,6 +21,9 @@
     <file>Setup.qml</file>
     <file>SectionHeading.qml</file>
     <file>Footer.qml</file>
+    <file>DeviceControls.qml</file>
+    <file>DeviceControlsGroup.qml</file>
+    <file>InfoTooltip.qml</file>
     <file>Web.qml</file>
     <file>WebNull.qml</file>
     <file>logo.svg</file>
@@ -43,6 +46,8 @@
     <file>refresh.svg</file>
     <file>ethernet.png</file>
     <file>check.svg</file>
+    <file>expand_less.svg</file>
+    <file>expand_more.svg</file>
     <file>ohno.png</file>
     <file>headphones.svg</file>
     <file>Prompt.svg</file>
