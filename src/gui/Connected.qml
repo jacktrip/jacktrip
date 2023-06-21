@@ -1587,10 +1587,12 @@ Item {
     DeviceControlsGroup {
         id: deviceControlsGroup
         showMinified: false
+        anchors.bottom: footer.top
     }
 
     Footer {
         id: footer
+        anchors.bottom: parent.bottom
     }
 
     Connections {

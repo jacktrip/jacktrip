@@ -21,6 +21,7 @@
     <file>Setup.qml</file>
     <file>SectionHeading.qml</file>
     <file>Footer.qml</file>
+    <file>VolumeSlider.qml</file>
     <file>DeviceControls.qml</file>
     <file>DeviceControlsGroup.qml</file>
     <file>InfoTooltip.qml</file>

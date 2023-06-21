@@ -6,7 +6,7 @@ import QtGraphicalEffects 1.12
 Item {
     id: footer
     width: parent.width
-    height: 20
+    height: 24
     anchors.bottom: parent.bottom
     clip: true
 

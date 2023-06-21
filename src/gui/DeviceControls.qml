@@ -11,7 +11,7 @@ Item {
     required property bool isInput
 
     Component {
-        id: indicatorIcon
+        id: controlIndicator
 
         Button {
             id: iconButton
@@ -50,28 +50,26 @@ Item {
             }
 
             ToolTip {
-                parent: iconButton
                 visible: isInput && iconButton.hovered
+                x: iconButton.x + iconButton.width
+                y: iconButton.y + iconButton.height
 
-                contentItem: Rectangle {
-                    color: toolTipBackgroundColour
-                    radius: 3
-                    anchors.top: parent.bottom
-                    anchors.topMargin: 20 * virtualstudio.uiScale
-                    anchors.rightMargin: rightToolTipMargin * virtualstudio.uiScale
-                    layer.enabled: true
-                    border.width: 1
-                    border.color: buttonStroke
-
-                    Text {
-                        anchors.centerIn: parent
-                        font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-                        text: virtualstudio.inputMuted ?  qsTr("Click to unmute yourself") : qsTr("Click to mute yourself")
-                        color: toolTipTextColour
-                    }
+                contentItem: Text {
+                    text: virtualstudio.inputMuted ? qsTr("Click to unmute yourself") : qsTr("Click to mute yourself")
+                    font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
+                    color: textColour
                 }
+
                 background: Rectangle {
-                    color: "transparent"
+                    color: toolTipBackgroundColour
+                    radius: 4
+                    layer.enabled: true
+                    layer.effect: Glow {
+                        samples: 17
+                        color: "#66000000"
+                        transparentBorder: true
+                    }
+
                 }
             }
         }
@@ -80,145 +78,34 @@ Item {
     Component {
         id: inputControls
 
-        Slider {
-            visible: isInput
-            id: inputSlider
-            from: 0.0
-            value: virtualstudio ? virtualstudio.inputVolume : 0.5
-            onMoved: { virtualstudio.inputVolume = value }
-            to: 1.0
-            enabled: !virtualstudio.inputMuted
-            padding: 0
-
-            anchors.left: parent.left
-            anchors.leftMargin: 16 * virtualstudio.uiScale
-            anchors.right: parent.right
-            anchors.rightMargin: 16 * virtualstudio.uiScale
-            anchors.verticalCenter: parent.verticalCenter
-
-            opacity: virtualstudio.inputMuted ? 0.3 : 1
-
-            background: Rectangle {
-                x: inputSlider.leftPadding
-                y: inputSlider.topPadding + inputSlider.availableHeight / 2 - height / 2
-                implicitWidth: parent.width
-                implicitHeight: 6
-                width: inputSlider.availableWidth
-                height: implicitHeight
-                radius: 4
-                color: sliderTrackColour
-
-                Rectangle {
-                    width: inputSlider.visualPosition * parent.width
-                    height: parent.height
-                    color: sliderActiveTrackColour
-                    radius: 4
-                }
-            }
-
-            handle: Rectangle {
-                x: inputSlider.leftPadding + inputSlider.visualPosition * (inputSlider.availableWidth - width)
-                y: inputSlider.topPadding + inputSlider.availableHeight / 2 - height / 2
-                implicitWidth: 16 * virtualstudio.uiScale
-                implicitHeight: 16 * virtualstudio.uiScale
-                radius: 8 * virtualstudio.uiScale
-                color: inputSlider.pressed ? sliderPressedColour : sliderColour
-                border.color: buttonStroke
-            }
+        VolumeSlider {
+            labelText: "Send"
+            tooltipText: "How loudly other participants hear you"
+            sliderEnabled: !virtualstudio.inputMuted
         }
     }
 
     Component {
         id: outputControls
 
-        Item {
+        ColumnLayout {
             anchors.fill: parent
-            anchors.verticalCenter: parent.verticalCenter
+            spacing: 2
 
-            Slider {
-                id: outputSlider
-                from: 0.0
-                value: virtualstudio ? virtualstudio.outputVolume : 0.5
-                onMoved: { virtualstudio.outputVolume = value }
-                to: 1.0
-                padding: 0
-
-                anchors.left: parent.left
-                anchors.leftMargin: 16 * virtualstudio.uiScale
-                anchors.right: parent.right
-                anchors.rightMargin: 16 * virtualstudio.uiScale
-
-                background: Rectangle {
-                    x: outputSlider.leftPadding
-                    y: outputSlider.topPadding + outputSlider.availableHeight / 2 - height / 2
-                    implicitWidth: parent.width
-                    implicitHeight: 6
-                    width: outputSlider.availableWidth
-                    height: implicitHeight
-                    radius: 4
-                    color: sliderTrackColour
-
-                    Rectangle {
-                        width: outputSlider.visualPosition * parent.width
-                        height: parent.height
-                        color: sliderActiveTrackColour
-                        radius: 4
-                    }
-                }
-
-                handle: Rectangle {
-                    x: outputSlider.leftPadding + outputSlider.visualPosition * (outputSlider.availableWidth - width)
-                    y: outputSlider.topPadding + outputSlider.availableHeight / 2 - height / 2
-                    implicitWidth: 16 * virtualstudio.uiScale
-                    implicitHeight: 16 * virtualstudio.uiScale
-                    radius: 8 * virtualstudio.uiScale
-                    color: outputSlider.pressed ? sliderPressedColour : sliderColour
-                    border.color: buttonStroke
-                }
+            VolumeSlider {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                labelText: "Studio"
+                tooltipText: "How loudly you hear other participants"
+                sliderEnabled: true
             }
 
-            Slider {
-                id: monitorSlider
-                from: 0.0
-                value: virtualstudio ? virtualstudio.monitorVolume : 0.5
-                onMoved: { virtualstudio.monitorVolume = value }
-                to: 1.0
-                padding: 0
-
-                anchors.top: outputSlider.bottom
-                anchors.topMargin: 4 * virtualstudio.uiScale
-                anchors.left: parent.left
-                anchors.leftMargin: 16 * virtualstudio.uiScale
-                anchors.right: parent.right
-                anchors.rightMargin: 16 * virtualstudio.uiScale
-
-                background: Rectangle {
-                    x: monitorSlider.leftPadding
-                    y: monitorSlider.topPadding + monitorSlider.availableHeight / 2 - height / 2
-                    implicitWidth: parent.width
-                    implicitHeight: 6
-                    width: monitorSlider.availableWidth
-                    height: implicitHeight
-                    radius: 4
-                    color: sliderTrackColour
-
-                    Rectangle {
-                        width: monitorSlider.visualPosition * parent.width
-                        height: parent.height
-                        color: sliderActiveTrackColour
-                        radius: 4
-                    }
-                }
-
-                handle: Rectangle {
-                    x: monitorSlider.leftPadding + monitorSlider.visualPosition * (monitorSlider.availableWidth - width)
-                    y: monitorSlider.topPadding + monitorSlider.availableHeight / 2 - height / 2
-                    implicitWidth: 16 * virtualstudio.uiScale
-                    implicitHeight: 16 * virtualstudio.uiScale
-                    radius: 8 * virtualstudio.uiScale
-                    color: monitorSlider.pressed ? sliderPressedColour : sliderColour
-                    border.color: buttonStroke
-                }
+            VolumeSlider {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                labelText: "Monitor"
+                tooltipText: "How loudly you hear yourself"
+                sliderEnabled: true
             }
         }
     }
@@ -228,9 +115,7 @@ Item {
         spacing: 2
 
         Item {
-            Layout.preferredHeight: 24
-            Layout.minimumHeight: 24
-            Layout.maximumHeight: 24
+            Layout.preferredHeight: minifiedHeight
             Layout.fillWidth: true
 
             RowLayout {
@@ -239,13 +124,13 @@ Item {
 
                 Item {
                     Layout.fillHeight: true
-                    Layout.preferredWidth: 104
+                    Layout.preferredWidth: 100
 
                     Loader {
                         id: typeIconIndicator
                         anchors.left: parent.left
                         anchors.verticalCenter: parent.verticalCenter
-                        sourceComponent: indicatorIcon
+                        sourceComponent: controlIndicator
                     }
 
                     Text {
@@ -262,25 +147,21 @@ Item {
                     InfoTooltip {
                         content: isInput ? qsTr("Audio sent to the studio (microphone, instrument, mixer, etc.)") : qsTr("How you'll hear the studio audio")
                         size: 12
-                        width: 12
-                        height: 12
                         anchors.left: label.right
-                        anchors.leftMargin: 4 * virtualstudio.uiScale
+                        anchors.leftMargin: 2 * virtualstudio.uiScale
                         anchors.verticalCenter: label.verticalCenter
                     }
                 }
 
                 Item {
-                    id: meters
                     Layout.fillHeight: true
                     Layout.fillWidth: true
                     Layout.preferredWidth: 200
-                    Layout.topMargin: 2
-                    Layout.rightMargin: 8
 
                     Meter {
                         anchors.fill: parent
-                        height: parent.height
+                        anchors.topMargin: 5 * virtualstudio.uiScale
+                        anchors.rightMargin: 8 * virtualstudio.uiScale
                         model: isInput ? virtualstudio.inputMeterLevels : virtualstudio.outputMeterLevels
                         clipped: isInput ? virtualstudio.inputClipped : virtualstudio.outputClipped
                         enabled: true
@@ -299,13 +180,16 @@ Item {
                 anchors.fill: parent
                 spacing: 2
 
-                Rectangle {
-                    color: "transparent"
+                Item {
                     Layout.fillHeight: true
                     Layout.fillWidth: true
+                    Layout.alignment: Qt.AlignVCenter
+                    Layout.leftMargin: 8 * virtualstudio.uiScale
+                    Layout.rightMargin: 8 * virtualstudio.uiScale
 
                     Loader {
                         anchors.fill: parent
+                        anchors.verticalCenter: parent.verticalCenter
                         sourceComponent: isInput ? inputControls : outputControls
                     }
                 }

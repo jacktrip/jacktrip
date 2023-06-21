@@ -2081,10 +2081,17 @@ void VirtualStudio::receivedConnectionFromPeer()
 
 void VirtualStudio::handleWebsocketMessage(const QString& msg)
 {
-    QJsonObject serverState  = QJsonDocument::fromJson(msg.toUtf8()).object();
-    QString serverStatus     = serverState[QStringLiteral("status")].toString();
-    bool serverEnabled       = serverState[QStringLiteral("enabled")].toBool();
-    QString serverCloudId    = serverState[QStringLiteral("cloudId")].toString();
+    QJsonObject serverState = QJsonDocument::fromJson(msg.toUtf8()).object();
+    QString serverStatus    = serverState[QStringLiteral("status")].toString();
+    bool serverEnabled      = serverState[QStringLiteral("enabled")].toBool();
+    QString serverCloudId   = serverState[QStringLiteral("cloudId")].toString();
+
+    // server notifications are also transmitted along this websocket, so ignore data if
+    // it contains "message"
+    QString message = serverState[QStringLiteral("message")].toString();
+    if (!message.isEmpty()) {
+        return;
+    }
     VsServerInfo* studioInfo = static_cast<VsServerInfo*>(m_servers.at(m_currentStudio));
     studioInfo->setStatus(serverStatus);
     studioInfo->setEnabled(serverEnabled);

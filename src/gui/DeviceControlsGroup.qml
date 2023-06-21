@@ -6,11 +6,12 @@ import QtGraphicalEffects 1.12
 Item {
     required property bool showMinified
 
+    property int minifiedHeight: 36
+    property int fullHeight: 80
+
     id: deviceControlsGroup
     width: parent.width
-    height: 66
-    anchors.bottom: parent.bottom
-    anchors.bottomMargin: 20
+    height: showMinified ? minifiedHeight : fullHeight
 
     Rectangle {
         anchors.fill: parent
@@ -22,8 +23,7 @@ Item {
         anchors.fill: parent
         spacing: 2
 
-        Rectangle {
-            color: backgroundColour
+        Item {
             Layout.fillHeight: true
             Layout.fillWidth: true
 
@@ -32,8 +32,7 @@ Item {
             }
         }
 
-        Rectangle {
-            color: backgroundColour
+        Item {
             Layout.fillHeight: true
             Layout.fillWidth: true
 
@@ -42,34 +41,31 @@ Item {
             }
         }
 
-        Rectangle {
-            color: backgroundColour
+        Item {
             Layout.fillHeight: true
             Layout.preferredWidth: 48
-            Layout.minimumWidth: 48
-            Layout.maximumWidth: 48
 
             ColumnLayout {
                 anchors.fill: parent
                 spacing: 2
 
                 Button {
-                    Layout.fillWidth: true
-                    Layout.leftMargin: 4 * virtualstudio.uiScale
-                    Layout.rightMargin: 4 * virtualstudio.uiScale
+                    Layout.preferredHeight: 20
+                    Layout.preferredWidth: 40
+                    Layout.alignment: Qt.AlignHCenter
+
                     id: expandButton
-                    height: 30
                     background: Rectangle {
                         radius: 4 * virtualstudio.uiScale
                         color: expandButton.down ? browserButtonPressedColour : (expandButton.hovered ? browserButtonHoverColour : browserButtonColour)
                     }
-                    onClicked: console.log("yo")
+                    onClicked: showMinified = !showMinified
 
                     Image {
                         id: expandIcon
                         width: 20 * virtualstudio.uiScale; height: 20 * virtualstudio.uiScale
                         anchors { verticalCenter: parent.verticalCenter; horizontalCenter: parent.horizontalCenter }
-                        source: showMinified ? "expand_more.svg" : "expand_less.svg"
+                        source: showMinified ? "expand_less.svg" : "expand_more.svg"
                         sourceSize: Qt.size(expandIcon.width, expandIcon.height)
                         fillMode: Image.PreserveAspectFit
                         smooth: true
@@ -85,10 +81,11 @@ Item {
                 }
 
                 Button {
-                    Layout.fillWidth: true
+                    Layout.preferredHeight: 32
+                    Layout.preferredWidth: 32
+                    Layout.alignment: Qt.AlignHCenter
                     id: settingsButton
-                    width: 32
-                    height: 32
+                    visible: !showMinified
                     background: Rectangle {
                         radius: 8 * virtualstudio.uiScale
                         color: settingsButton.down ? browserButtonPressedColour : (settingsButton.hovered ? browserButtonHoverColour : browserButtonColour)
@@ -97,16 +94,16 @@ Item {
                     icon.source: "cog.svg"
                     icon.color: textColour
                     onClicked: studioStatus === "Ready" ? virtualstudio.windowState = "change_devices" : virtualstudio.disconnect() ;
-
-                    Text {
-                        anchors.top: settingsButton.bottom
-                        text: studioStatus === "Ready" ? "Settings" : "Back"
-                        font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale}
-                        anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-                        color: textColour
-                    }
                 }
             }
         }
+    }
+
+    Rectangle {
+        id: backgroundBorder
+        width: parent.width
+        height: 1
+        anchors.top: layout.top
+        color: strokeColor
     }
 }

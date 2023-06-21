@@ -4,65 +4,64 @@ import QtQuick.Layouts 1.15
 import QtGraphicalEffects 1.12
 
 Item {
-    width: parent.width
-    height: parent.height
-
     required property string content
     required property int size
+    property string iconSource: "help.svg"
+
+    width: size * virtualstudio.uiScale
+    height: size * virtualstudio.uiScale
 
     property string toolTipBackgroundColour: virtualstudio.darkMode ? "#323232" : "#F3F3F3"
-    property real imageLightnessValue: virtualstudio.darkMode ? 0.8 : 0.2
-    property int rightToolTipMargin: 4
+    property bool showToolTip: false
 
     Item {
+        anchors.fill: parent
+
         Image {
-            id: helpIcon
-            source: "help.svg"
-            sourceSize: Qt.size(size * virtualstudio.uiScale, size * virtualstudio.uiScale)
+            id: tooltipIcon
+            source: iconSource
+            sourceSize: Qt.size(parent.width, parent.height)
             fillMode: Image.PreserveAspectFit
             smooth: true
-
-            property bool showToolTip: false
-
-            MouseArea {
-                id: mouseArea
-                anchors.fill: parent
-                hoverEnabled: true
-                onEntered: helpIcon.showToolTip = true
-                onExited: helpIcon.showToolTip = false
-            }
-
-            ToolTip {
-                visible: helpIcon.showToolTip
-                contentItem: Rectangle {
-                    color: toolTipBackgroundColour
-                    radius: 3
-                    anchors.top: parent.bottom
-                    anchors.topMargin: 20 * virtualstudio.uiScale
-                    anchors.rightMargin: 4 * virtualstudio.uiScale
-                    layer.enabled: true
-                    border.width: 1
-                    border.color: buttonStroke
-
-                    Text {
-                        anchors.centerIn: parent
-                        font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale}
-                        text: content
-                        color: textColour
-                    }
-                }
-                background: Rectangle {
-                    color: "transparent"
-                }
-            }
         }
 
         Colorize {
-            anchors.fill: helpIcon
-            source: helpIcon
+            anchors.fill: tooltipIcon
+            source: tooltipIcon
             hue: 0
             saturation: 0
-            lightness: imageLightnessValue
+            lightness: 0.6
+        }
+
+        MouseArea {
+            id: mouseArea
+            anchors.fill: tooltipIcon
+            hoverEnabled: true
+            onEntered: showToolTip = true
+            onExited: showToolTip = false
+        }
+
+        ToolTip {
+            visible: showToolTip
+            x: tooltipIcon.x + tooltipIcon.width
+            y: tooltipIcon.y + tooltipIcon.height
+
+            contentItem: Text {
+                text: content
+                font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
+                color: textColour
+            }
+
+            background: Rectangle {
+                color: backgroundColour
+                radius: 4
+                layer.enabled: true
+                layer.effect: Glow {
+                    samples: 17
+                    color: "#55000000"
+                    transparentBorder: true
+                }
+            }
         }
     }
 }
