@@ -1033,6 +1033,12 @@ void VirtualStudio::setTestMode(bool test)
         return;
     }
 
+    // deregister app
+    if (m_device != nullptr) {
+        m_device->removeApp();
+        delete m_device;
+    }
+
     m_testMode = test;
 
     // clear existing auth state
@@ -1050,11 +1056,6 @@ void VirtualStudio::setTestMode(bool test)
     settings.remove(QStringLiteral("ShowDeviceSetup"));
     settings.remove(QStringLiteral("ShowWarnings"));
     settings.endGroup();
-
-    // deregister app
-    if (m_device != nullptr) {
-        m_device->removeApp();
-    }
 
     // stop timers, clear data, etc.
     m_refreshTimer.stop();
@@ -1943,7 +1944,30 @@ void VirtualStudio::slotAuthSucceeded()
     settings.endGroup();
     m_vsModeActive = true;
 
+    // initialize new VsDevice and wire up signals/slots before registering app
     m_device = new VsDevice(m_auth.data(), m_api.data());
+    connect(m_device, &VsDevice::updateNetworkStats, this, &VirtualStudio::updatedStats);
+    connect(m_device, &VsDevice::updatedCaptureVolumeFromServer, this,
+            &VirtualStudio::setInputVolume);
+    connect(m_device, &VsDevice::updatedCaptureMuteFromServer, this,
+            &VirtualStudio::setInputMuted);
+    connect(m_device, &VsDevice::updatedPlaybackVolumeFromServer, this,
+            &VirtualStudio::setOutputVolume);
+    connect(m_device, &VsDevice::updatedPlaybackMuteFromServer, this,
+            &VirtualStudio::setOutputMuted);
+    connect(m_device, &VsDevice::updatedMonitorVolume, this,
+            &VirtualStudio::setMonitorVolume);
+    connect(this, &VirtualStudio::updatedInputVolume, m_device,
+            &VsDevice::updateCaptureVolume);
+    connect(this, &VirtualStudio::updatedInputMuted, m_device,
+            &VsDevice::updateCaptureMute);
+    connect(this, &VirtualStudio::updatedOutputVolume, m_device,
+            &VsDevice::updatePlaybackVolume);
+    connect(this, &VirtualStudio::updatedOutputMuted, m_device,
+            &VsDevice::updatePlaybackMute);
+    connect(this, &VirtualStudio::updatedMonitorVolume, m_device,
+            &VsDevice::updateMonitorVolume);
+
     m_device->registerApp();
 
     // always activate audio at startup for now.
@@ -1967,27 +1991,6 @@ void VirtualStudio::slotAuthSucceeded()
     if (!m_studioToJoin.isEmpty()) {
         joinStudio();
     }
-    connect(m_device, &VsDevice::updateNetworkStats, this, &VirtualStudio::updatedStats);
-    connect(m_device, &VsDevice::updatedCaptureVolumeFromServer, this,
-            &VirtualStudio::setInputVolume);
-    connect(m_device, &VsDevice::updatedCaptureMuteFromServer, this,
-            &VirtualStudio::setInputMuted);
-    connect(m_device, &VsDevice::updatedPlaybackVolumeFromServer, this,
-            &VirtualStudio::setOutputVolume);
-    connect(m_device, &VsDevice::updatedPlaybackMuteFromServer, this,
-            &VirtualStudio::setOutputMuted);
-    connect(m_device, &VsDevice::updatedMonitorVolume, this,
-            &VirtualStudio::setMonitorVolume);
-    connect(this, &VirtualStudio::updatedInputVolume, m_device,
-            &VsDevice::updateCaptureVolume);
-    connect(this, &VirtualStudio::updatedInputMuted, m_device,
-            &VsDevice::updateCaptureMute);
-    connect(this, &VirtualStudio::updatedOutputVolume, m_device,
-            &VsDevice::updatePlaybackVolume);
-    connect(this, &VirtualStudio::updatedOutputMuted, m_device,
-            &VsDevice::updatePlaybackMute);
-    connect(this, &VirtualStudio::updatedMonitorVolume, m_device,
-            &VsDevice::updateMonitorVolume);
 }
 
 void VirtualStudio::slotAuthFailed()
@@ -2601,6 +2604,10 @@ void VirtualStudio::startAudio()
     connect(this, &VirtualStudio::numOutputChannelsChanged, m_vsAudioInterface.data(),
             &VsAudioInterface::setNumOutputChannels);
 #endif
+    connect(this, &VirtualStudio::updatedInputVolume, m_vsAudioInterface.data(),
+            &VsAudioInterface::setInputVolume);
+    connect(this, &VirtualStudio::updatedOutputVolume, m_vsAudioInterface.data(),
+            &VsAudioInterface::setOutputVolume);
     connect(this, &VirtualStudio::audioBackendChanged, m_vsAudioInterface.data(),
             &VsAudioInterface::setAudioInterfaceMode);
     connect(this, &VirtualStudio::triggerPlayOutputAudio, m_vsAudioInterface.data(),

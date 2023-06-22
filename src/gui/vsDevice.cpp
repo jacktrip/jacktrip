@@ -141,7 +141,6 @@ void VsDevice::registerApp()
 
     // check if device exists
     QNetworkReply* reply = m_api->getDevice(m_appID);
-    ;
     connect(reply, &QNetworkReply::finished, this, [=]() {
         // Got error
         if (reply->error() != QNetworkReply::NoError) {
@@ -360,6 +359,16 @@ void VsDevice::sendLevels()
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
             reply->deleteLater();
             return;
+        } else {
+            // update settings object with new levels
+            QSettings settings;
+            settings.beginGroup(QStringLiteral("Audio"));
+            settings.setValue(QStringLiteral("InMultiplier"), m_captureVolume);
+            settings.setValue(QStringLiteral("InMuted"), m_captureMute);
+            settings.setValue(QStringLiteral("OutMultiplier"), m_playbackVolume);
+            settings.setValue(QStringLiteral("OutMuted"), m_playbackMute);
+            settings.setValue(QStringLiteral("MonMultiplier"), m_monitorVolume);
+            settings.endGroup();
         }
         reply->deleteLater();
     });
@@ -667,8 +676,28 @@ void VsDevice::registerJTAsDevice()
             return;
         } else {
             QJsonDocument response = QJsonDocument::fromJson(reply->readAll());
+            QJsonObject newObject  = response.object();
 
-            m_appID = response.object()[QStringLiteral("id")].toString();
+            m_appID = newObject[QStringLiteral("id")].toString();
+            // capture (input) volume
+            m_captureVolume =
+                (float)(newObject[QStringLiteral("captureVolume")].toDouble() / 100.0);
+            m_captureMute = newObject[QStringLiteral("captureMute")].toBool();
+            emit updatedCaptureVolumeFromServer(m_captureVolume);
+            emit updatedCaptureMuteFromServer(m_captureMute);
+
+            // playback (output) volume
+            m_playbackVolume =
+                (float)(newObject[QStringLiteral("playbackVolume")].toDouble() / 100.0);
+            m_playbackMute = newObject[QStringLiteral("playbackMute")].toBool();
+            emit updatedPlaybackVolumeFromServer(m_playbackVolume);
+            emit updatedPlaybackMuteFromServer(m_playbackMute);
+
+            // monitor volume
+            m_monitorVolume =
+                (float)(newObject[QStringLiteral("monitorVolume")].toDouble() / 100.0);
+            emit updatedMonitorVolume(m_monitorVolume);
+
             QSettings settings;
             settings.beginGroup(QStringLiteral("VirtualStudio"));
             settings.setValue(QStringLiteral("AppID"), m_appID);
