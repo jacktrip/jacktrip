@@ -5,8 +5,6 @@ Rectangle {
     property string backgroundColour: virtualstudio.darkMode ? "#272525" : "#FAFBFB"
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
 
-    width: 696
-    height: 577
     color: backgroundColour
     state: virtualstudio.windowState
     anchors.fill: parent
@@ -74,7 +72,7 @@ Rectangle {
             PropertyChanges { target: setupScreen; x: -setupScreen.width }
             PropertyChanges { target: browseScreen; x: -browseScreen.width }
             PropertyChanges { target: settingsScreen; x: window.width }
-            PropertyChanges { target: connectedScreen; x: x: -connectedScreen.width }
+            PropertyChanges { target: connectedScreen; x: -connectedScreen.width }
             PropertyChanges { target: changeDevicesScreen; x: 0 }
             PropertyChanges { target: failedScreen; x: window.width }
         },

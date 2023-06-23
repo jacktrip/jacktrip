@@ -302,10 +302,10 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
 #else
     m_view.setSource(QUrl(QStringLiteral("qrc:/vs/vs.qml")));
 #endif  // VS_FTUX
-    m_view.setMinimumSize(QSize(594, 519));
+    m_view.setMinimumSize(QSize(800, 640));
     // m_view.setMaximumSize(QSize(696, 577));
     m_view.setResizeMode(QQuickView::SizeRootObjectToView);
-    m_view.resize(696 * m_uiScale, 676 * m_uiScale);
+    m_view.resize(800 * m_uiScale, 640 * m_uiScale);
 
     // Connect our timers
     connect(&m_retryPeriodTimer, &QTimer::timeout, this, &VirtualStudio::endRetryPeriod);

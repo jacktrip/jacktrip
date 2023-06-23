@@ -1533,55 +1533,17 @@ Item {
         }
     }
 
-    ColumnLayout {
-        id: layout
+    Loader {
+        id: studioWebLoader
         anchors.top: parent.top
         anchors.right: parent.right
         anchors.left: parent.left
         anchors.bottom: deviceControlsGroup.top
-        spacing: 0
 
-        Item {
-            id: studioWebItem
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            Layout.alignment: Qt.AlignTop
-            //height: parent.height-deviceControlsGroup.height
+        property string accessToken: auth.isAuthenticated && Boolean(auth.accessToken) ? auth.accessToken : ""
+        property string studioId: virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].id : ""
 
-            Loader {
-                id: studioWebLoader
-                anchors.fill: parent
-
-                property string accessToken: auth.isAuthenticated && Boolean(auth.accessToken) ? auth.accessToken : ""
-                property string studioId: virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].id : ""
-
-                source: accessToken && studioId ? "Web.qml" : "WebNull.qml"
-            }
-        }
-
-        /*
-        Rectangle {
-            color: "transparent"
-            id: deviceControlsGroup
-            Layout.fillWidth: true
-            Layout.fillHeight: false
-            anchors.bottom: parent.bottom
-            height: 60
-
-            DeviceControlsGroup {
-                visible: deviceControlsGroup.height == 60
-                showMinified: deviceControlsGroup.height == 24
-                z: 2
-                anchors.fill: parent
-            }
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: deviceControlsGroup.height = deviceControlsGroup.height == 24 ? 60: 24
-                enabled: deviceControlsGroup.height == 24
-            }
-        }
-        */
+        source: accessToken && studioId ? "Web.qml" : "WebNull.qml"
     }
 
     DeviceControlsGroup {

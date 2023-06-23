@@ -15,6 +15,7 @@ Item {
     property int bottomToolTipMargin: 8
     property int rightToolTipMargin: 4
 
+    property string saveButtonText: "#DB0A0A"
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
     property string meterColor: virtualstudio.darkMode ? "gray" : "#E0E0E0"
     property real imageLightnessValue: virtualstudio.darkMode ? 0.8 : 0.2
@@ -65,8 +66,8 @@ Item {
     }
 
     Rectangle {
-        width: parent.width; height: parent.height-52
-        anchors.centerIn: parent
+        width: parent.width; height: 360
+        anchors.verticalCenter: parent.verticalCenter
         color: backgroundColour
         radius: 6 * virtualstudio.uiScale
 
@@ -571,16 +572,36 @@ Item {
         }
         onClicked: virtualstudio.windowState = "connected";
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: 8 * virtualstudio.uiScale;
+        anchors.bottomMargin: 16 * virtualstudio.uiScale;
         anchors.left: parent.left
-        anchors.leftMargin: 8 * virtualstudio.uiScale;
-        width: 132 * virtualstudio.uiScale; height: 36 * virtualstudio.uiScale
+        anchors.leftMargin: 16 * virtualstudio.uiScale;
+        width: 150 * virtualstudio.uiScale; height: 36 * virtualstudio.uiScale
 
         Text {
             text: "Back"
-            font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale}
+            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale}
             anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
             color: textColour
+        }
+    }
+
+    Button {
+        id: leaveButton
+        background: Rectangle {
+            radius: 6 * virtualstudio.uiScale
+            color: leaveButton.down ? browserButtonPressedColour : (leaveButton.hovered ? browserButtonHoverColour : browserButtonColour)
+        }
+        onClicked: virtualstudio.disconnect()
+        anchors.left: backButton.right
+        anchors.leftMargin: 16 * virtualstudio.uiScale;
+        anchors.verticalCenter: backButton.verticalCenter
+        width: 150 * virtualstudio.uiScale; height: 36 * virtualstudio.uiScale
+
+        Text {
+            text: "Leave"
+            font { family: "Poppins"; weight: Font.Bold; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale}
+            anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
+            color: saveButtonText
         }
     }
 }

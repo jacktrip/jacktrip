@@ -26,6 +26,32 @@ Item {
         Item {
             Layout.fillHeight: true
             Layout.fillWidth: true
+            visible: studioStatus !== "Ready"
+
+            Button {
+                id: backButton
+                anchors.centerIn: parent
+                width: 180 * virtualstudio.uiScale
+                height: 40 * virtualstudio.uiScale
+                background: Rectangle {
+                    radius: 8 * virtualstudio.uiScale
+                    color: backButton.down ? browserButtonPressedColour : (backButton.hovered ? browserButtonHoverColour : browserButtonColour)
+                }
+                onClicked: virtualstudio.disconnect()
+
+                Text {
+                    text: "Back to Studios"
+                    font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale}
+                    anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
+                    color: textColour
+                }
+            }
+        }
+
+        Item {
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+            visible: studioStatus === "Ready"
 
             DeviceControls {
                 isInput: true
@@ -35,6 +61,7 @@ Item {
         Item {
             Layout.fillHeight: true
             Layout.fillWidth: true
+            visible: studioStatus === "Ready"
 
             DeviceControls {
                 isInput: false
@@ -44,6 +71,7 @@ Item {
         Item {
             Layout.fillHeight: true
             Layout.preferredWidth: 48
+            visible: studioStatus === "Ready"
 
             ColumnLayout {
                 anchors.fill: parent
@@ -93,7 +121,7 @@ Item {
                     icon.name: "edit-cut"
                     icon.source: "cog.svg"
                     icon.color: textColour
-                    onClicked: studioStatus === "Ready" ? virtualstudio.windowState = "change_devices" : virtualstudio.disconnect() ;
+                    onClicked: virtualstudio.windowState = "change_devices"
                 }
             }
         }
