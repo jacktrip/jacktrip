@@ -10,8 +10,8 @@ set -e
 
 # default versions
 QT_DYNAMIC_BUILD=0
-QT_FULL_VERSION=6.2.4
-OPENSSL_FULL_VERSION=3.1.0
+QT_FULL_VERSION=5.15.10
+OPENSSL_FULL_VERSION=3.1.1
 
 # display help information
 qtbuild_help() {
@@ -29,11 +29,11 @@ qtbuild_clean() {
 }
 
 # check for specific options
-if [[ "$1" == "-h" ]]; then
+if [[ "$1" == "-h" || "$1" == "help" ]]; then
     qtbuild_help
     exit 0
 fi
-if [[ "$1" == "-clean" ]]; then
+if [[ "$1" == "-clean" || "$1" == "clean" ]]; then
     qtbuild_clean
     exit 0
 fi
@@ -76,6 +76,7 @@ QT6_FEATURE_OPTIONS="-no-feature-qtpdf-build -no-feature-qtpdf-quick-build -no-f
 QT6_SKIP_OPTIONS="-skip qtgrpc -skip qtlanguageserver -skip qtquick3dphysics -skip qtimageformats"
 QT_CONFIGURE_OPTIONS="-release -optimize-size -no-pch -nomake tools -nomake tests -nomake examples -opensource -confirm-license -feature-appstore-compliant"
 QT_LINUX_OPTIONS="-qt-zlib -qt-libpng -qt-libjpeg -system-freetype -fontconfig -qt-pcre -qt-harfbuzz -no-icu -opengl desktop"
+QT_WINDOWS_OPTIONS="-opengl desktop -no-feature-d3d12 -platform win32-g++"
 MAKE_OPTIONS="-j4"
 CMAKE_OPTIONS="--parallel"
 
@@ -85,6 +86,7 @@ if [[ $QT_DYNAMIC_BUILD -eq 1 ]]; then
     echo "Building dynamic qt-$QT_FULL_VERSION on $OS"
     QT_BUILD_PATH="$QT_BUILD_PATH-dynamic"
     QT_LINUX_OPTIONS="-openssl-runtime $QT_LINUX_OPTIONS"
+    QT_WINDOWS_OPTIONS="-openssl-runtime $QT_WINDOWS_OPTIONS"
     echo "Please ensure you meet the requirements for building QtWebEngine!"
     echo "See https://doc.qt.io/qt-$QT_MAJOR_VERSION/qtwebengine-platform-notes.html"
 else
@@ -92,6 +94,7 @@ else
     QT_BUILD_PATH="$QT_BUILD_PATH-static"
     QT_CONFIGURE_OPTIONS="-static $QT_CONFIGURE_OPTIONS"
     QT_LINUX_OPTIONS="-openssl-linked $QT_LINUX_OPTIONS"
+    QT_WINDOWS_OPTIONS="-static-runtime -openssl-linked $QT_WINDOWS_OPTIONS"
     QT5_SKIP_OPTIONS="$QT5_SKIP_OPTIONS -skip qtwebengine"
 fi
 
@@ -136,9 +139,9 @@ if [[ -d "$QT_BUILD_PATH" ]]; then
 fi
 mkdir -p $QT_BUILD_PATH
 
-# Linux
-if [[ "$OS" == "linux" ]]; then
-    if [[ ! -d "$OPENSSL_BUILD_PATH" && $QT_DYNAMIC_BUILD -ne 1 ]]; then
+# OpenSSL
+if [[ $QT_DYNAMIC_BUILD -ne 1 && "$OS" != "osx" ]]; then
+    if [[ ! -d "$OPENSSL_BUILD_PATH" ]]; then
         # Build static openssl
         # see https://doc.qt.io/qt-6/ssl.html#enabling-and-disabling-ssl-support-when-building-qt-from-source
         OPENSSL_SRC_PATH="${PWD}/openssl-src"
@@ -158,7 +161,14 @@ if [[ "$OS" == "linux" ]]; then
         make install
         cd ..
     fi
+    # copy static openssl into qt build
+    cp -r $OPENSSL_BUILD_PATH/lib64 $QT_BUILD_PATH
+    mkdir -p $QT_BUILD_PATH/include
+    cp -r $OPENSSL_BUILD_PATH/include/openssl $QT_BUILD_PATH/include
+fi
 
+# Linux
+if [[ "$OS" == "linux" ]]; then
     if [[ $QT_MAJOR_VERSION -eq 5 ]]; then
         # we have to use a single process for make because qt's build system has dependency problems on Linux,
         # where some processes can try to use libraries while another one is creating them, i.e.
@@ -218,16 +228,22 @@ if [[ "$OS" == "osx" ]]; then
     fi
 fi
 
+# Windows
+if [[ "$OS" == "windows" ]]; then
+    echo "QT Configure command"
+    if [[ $QT_DYNAMIC_BUILD -eq 1 ]]; then
+        echo "\"$QT_SRC_PATH/configure.bat\" -prefix \"$QT_BUILD_PATH\" $QT_WINDOWS_OPTIONS $QT_CONFIGURE_OPTIONS -L \"$VCPKG_INSTALLATION_ROOT/installed/$VCPKG_TRIPLET/lib\" -I \"$VCPKG_INSTALLATION_ROOT/installed/$VCPKG_TRIPLET/include\""
+        "$QT_SRC_PATH/configure.bat" -prefix "$QT_BUILD_PATH" $QT_WINDOWS_OPTIONS $QT_CONFIGURE_OPTIONS -L "$VCPKG_INSTALLATION_ROOT/installed/$VCPKG_TRIPLET/lib" -I "$VCPKG_INSTALLATION_ROOT/installed/$VCPKG_TRIPLET/include"
+    else
+        echo "\"$QT_SRC_PATH/configure.bat\" -prefix \"$QT_BUILD_PATH\" $QT_WINDOWS_OPTIONS $QT_CONFIGURE_OPTIONS -L \"$VCPKG_INSTALLATION_ROOT/installed/$VCPKG_TRIPLET/lib\" -I \"$VCPKG_INSTALLATION_ROOT/installed/$VCPKG_TRIPLET/include\" -I \"$OPENSSL_BUILD_PATH/include\" -L \"$OPENSSL_BUILD_PATH/lib64\" OPENSSL_LIBS=\"-llibssl -llibcrypto -lcrypt32 -lws2_32\""
+        "$QT_SRC_PATH/configure.bat" -prefix "$QT_BUILD_PATH" $QT_WINDOWS_OPTIONS $QT_CONFIGURE_OPTIONS -L "$VCPKG_INSTALLATION_ROOT/installed/$VCPKG_TRIPLET/lib" -I "$VCPKG_INSTALLATION_ROOT/installed/$VCPKG_TRIPLET/include" -I "$OPENSSL_BUILD_PATH/include" -L "$OPENSSL_BUILD_PATH/lib64" OPENSSL_LIBS="-llibssl -llibcrypto -lcrypt32 -lws2_32"
+    fi
+fi
+
 if [[ $QT_MAJOR_VERSION -eq 5 ]]; then
     make $MAKE_OPTIONS
     make install
 else
     cmake --build . $CMAKE_OPTIONS
     cmake --install .
-fi
-
-if [[ "$OS" == "linux" ]]; then
-    # copy static openssl into qt build
-    cp -r $OPENSSL_BUILD_PATH/lib64 $QT_BUILD_PATH
-    cp -r $OPENSSL_BUILD_PATH/include/openssl $QT_BUILD_PATH/include
 fi
