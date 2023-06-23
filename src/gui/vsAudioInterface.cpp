@@ -446,7 +446,8 @@ void VsAudioInterface::getDeviceList(QStringList* list, QStringList* categories,
 #ifdef _WIN32
         // Realtek ASIO: seems to crash any computer that tries to use it
         QString::fromUtf8("Realtek ASIO"),
-        // Generic Low Latency ASIO Driver: driver from steinberg that also crashes everything with a weird popup
+        // Generic Low Latency ASIO Driver: driver from steinberg that also crashes
+        // everything with a weird popup
         QString::fromUtf8("Generic Low Latency ASIO Driver"),
 #endif
         // JackRouter: crashes if not running; use Jack backend instead
