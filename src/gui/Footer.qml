@@ -38,7 +38,7 @@ Item {
             return texts;
         }
 
-        texts[1] = "<b>" + minRtt + " ms - " + maxRtt + " ms</b>, avg " + avgRtt + " ms round-trip time";
+        texts[1] = "<b>" + minRtt + " ms - " + maxRtt + " ms</b>, avg " + avgRtt + " ms";
         let quality = "Poor";
         let color = meterRed;
         if (avgRtt <= 25) {
@@ -69,90 +69,17 @@ Item {
 
         Rectangle {
             color: backgroundColour
-            Layout.minimumWidth: 96
-            Layout.preferredWidth: 128
-            Layout.maximumWidth: 160
-            Layout.fillHeight: true
-
-            Item {
-                id: connectionStatus
-                anchors.verticalCenter: parent.verticalCenter
-
-                Rectangle {
-                    id: connectionStatusDot
-                    anchors.left: parent.left
-                    anchors.leftMargin: 8 * virtualstudio.uiScale
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: 12
-                    height: connectionStatusDot.width
-                    radius: connectionStatusDot.height / 2
-                    color: getConnectionStateColor()
-                }
-
-                Text {
-                    id: connectionStatusText
-                    anchors.left: connectionStatusDot.right
-                    anchors.leftMargin: 4 * virtualstudio.uiScale
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: virtualstudio.connectionState
-                    font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
-                    color: textColour
-                }
-            }
-        }
-
-        Item {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-        }
-
-        Rectangle {
-            color: backgroundColour
             Layout.minimumWidth: 256
             Layout.preferredWidth: 512
             Layout.maximumWidth: 640
             Layout.fillHeight: true
             Layout.fillWidth: true
-            Layout.alignment: Qt.AlignRight
             visible: studioStatus === "Ready"
-
-            Text {
-                id: connectionQualityTime
-                anchors.right: parent.right
-                anchors.rightMargin: 8 * virtualstudio.uiScale
-                anchors.verticalCenter: parent.verticalCenter
-                horizontalAlignment: Text.AlignRight
-                text: getNetworkStatsText()[1]
-                font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
-                color: textColour
-            }
-
-            Text {
-                id: connectionQualityName
-                anchors.right: connectionQualityTime.left
-                anchors.rightMargin: 8 * virtualstudio.uiScale
-                anchors.verticalCenter: parent.verticalCenter
-                horizontalAlignment: Text.AlignRight
-                text: getNetworkStatsText()[0]
-                font { family: "Poppins"; weight: Font.Bold; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
-                color: getNetworkStatsText()[2]
-            }
-
-            Text {
-                id: connectionQualityText
-                anchors.right: connectionQualityName.left
-                anchors.rightMargin: 2 * virtualstudio.uiScale
-                anchors.verticalCenter: parent.verticalCenter
-                horizontalAlignment: Text.AlignRight
-                text: "Connection Quality:"
-                font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
-                color: textColour
-            }
 
             Image {
                 id: connectionQualityIcon
-                anchors.right: connectionQualityText.left
-                anchors.rightMargin: 2 * virtualstudio.uiScale
+                anchors.left: parent.left
+                anchors.leftMargin: 8 * virtualstudio.uiScale
                 anchors.verticalCenter: parent.verticalCenter
                 source: "speed.svg"
                 width: 16 * virtualstudio.uiScale; height: 16 * virtualstudio.uiScale
@@ -167,6 +94,70 @@ Item {
                 hue: 0
                 saturation: 0
                 lightness: imageLightnessValue
+            }
+
+            Text {
+                id: connectionQualityText
+                anchors.left: connectionQualityIcon.right
+                anchors.leftMargin: 4 * virtualstudio.uiScale
+                anchors.verticalCenter: parent.verticalCenter
+                text: "Connection:"
+                font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
+                color: textColour
+            }
+
+            Text {
+                id: connectionQualityName
+                anchors.left: connectionQualityText.right
+                anchors.leftMargin: 2 * virtualstudio.uiScale
+                anchors.verticalCenter: parent.verticalCenter
+                text: getNetworkStatsText()[0]
+                font { family: "Poppins"; weight: Font.Bold; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
+                color: getNetworkStatsText()[2]
+            }
+
+            Text {
+                id: connectionQualityTime
+                anchors.left: connectionQualityName.right
+                anchors.leftMargin: 8 * virtualstudio.uiScale
+                anchors.verticalCenter: parent.verticalCenter
+                text: getNetworkStatsText()[1]
+                font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
+                color: textColour
+            }
+        }
+
+        Item {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+        }
+
+        Rectangle {
+            color: backgroundColour
+            Layout.minimumWidth: 96
+            Layout.preferredWidth: 128
+            Layout.maximumWidth: 160
+            Layout.fillHeight: true
+
+            Rectangle {
+                id: connectionStatusDot
+                anchors.right: connectionStatusText.left
+                anchors.rightMargin: 4 * virtualstudio.uiScale
+                anchors.verticalCenter: parent.verticalCenter
+                width: 12
+                height: connectionStatusDot.width
+                radius: connectionStatusDot.height / 2
+                color: getConnectionStateColor()
+            }
+
+            Text {
+                id: connectionStatusText
+                anchors.right: parent.right
+                anchors.rightMargin: 8 * virtualstudio.uiScale
+                anchors.verticalCenter: parent.verticalCenter
+                text: studioStatus === "Starting" ? "Starting..." : virtualstudio.connectionState
+                font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
+                color: textColour
             }
         }
     }
