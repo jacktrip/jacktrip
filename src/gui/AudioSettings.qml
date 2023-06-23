@@ -70,7 +70,7 @@ Rectangle {
 
     Loader {
         anchors.fill: parent
-        sourceComponent: isUsingRtAudio ? usingRtAudio : (isUsingJack ? usingJACK : noBackend)
+        sourceComponent: Boolean(audioInterface) ? (isUsingRtAudio ? usingRtAudio : (isUsingJack ? usingJACK : noBackend)) : noBackend
     }
 
     Component {
@@ -237,7 +237,7 @@ Rectangle {
             Slider {
                 id: outputSlider
                 from: 0.0
-                value: audioInterface ? audioInterface.outputVolume : 0.5
+                value: audioInterface.outputVolume
                 onMoved: { audioInterface.outputVolume = value }
                 to: 1.0
                 padding: 0
@@ -546,7 +546,7 @@ Rectangle {
             Slider {
                 id: inputSlider
                 from: 0.0
-                value: audioInterface ? audioInterface.inputVolume : 0.5
+                value: audioInterface.inputVolume
                 onMoved: { audioInterface.inputVolume = value }
                 to: 1.0
                 padding: 0
@@ -896,7 +896,7 @@ Rectangle {
             Slider {
                 id: jackOutputVolumeSlider
                 from: 0.0
-                value: audioInterface ? audioInterface.outputVolume : 0.5
+                value: audioInterface.outputVolume
                 onMoved: { audioInterface.outputVolume = value }
                 to: 1.0
                 padding: 0
@@ -1018,7 +1018,7 @@ Rectangle {
             Slider {
                 id: jackInputVolumeSlider
                 from: 0.0
-                value: audioInterface ? audioInterface.inputVolume : 0.5
+                value: audioInterface.inputVolume
                 onMoved: { audioInterface.inputVolume = value }
                 to: 1.0
                 padding: 0

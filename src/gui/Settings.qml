@@ -78,7 +78,7 @@ Item {
         y: header.height
         visible: settingsGroupView == "Audio"
 
-        AudioSettings{
+        AudioSettings {
             id: audioSettings
         }
     }

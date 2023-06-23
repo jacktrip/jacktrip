@@ -964,7 +964,7 @@ Item {
         Slider {
             id: inputSlider
             from: 0.0
-            value: virtualstudio ? virtualstudio.inputVolume : 0.5
+            value: virtualstudio.inputVolume
             onMoved: { virtualstudio.inputVolume = value }
             to: 1.0
             enabled: !virtualstudio.inputMuted
@@ -1150,7 +1150,7 @@ Item {
         Slider {
             id: outputSlider
             from: 0.0
-            value: virtualstudio ? virtualstudio.outputVolume : 0.5
+            value: virtualstudio.outputVolume
             onMoved: { virtualstudio.outputVolume = value }
             to: 1.0
             padding: 0
@@ -1191,7 +1191,7 @@ Item {
         Slider {
             id: monitorSlider
             from: 0.0
-            value: virtualstudio ? virtualstudio.monitorVolume : 0.5
+            value: virtualstudio.monitorVolume
             onMoved: { virtualstudio.monitorVolume = value }
             to: 1.0
             padding: 0
