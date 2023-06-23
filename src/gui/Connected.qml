@@ -89,44 +89,6 @@ Item {
         return idx;
     }
 
-    function getNetworkStatsText () {
-        let minRtt = virtualstudio.networkStats.minRtt;
-        let maxRtt = virtualstudio.networkStats.maxRtt;
-        let avgRtt = virtualstudio.networkStats.avgRtt;
-
-        let texts = ["<b>Outage detected! Your connection is unstable.</b>", "Please plug into Ethernet & turn off WIFI."];
-
-        if (virtualstudio.networkOutage) {
-            return texts;
-        }
-
-        texts = ["Measuring stats ...", ""];
-
-        if (!minRtt || !maxRtt) {
-            return texts;
-        }
-
-        texts[0] = "<b>" + minRtt + " ms - " + maxRtt + " ms</b>, avg " + avgRtt + " ms round-trip time";
-
-        let quality = "poor";
-        if (avgRtt <= 25) {
-
-            if (maxRtt <= 30) {
-                quality = "excellent";
-            } else {
-                quality = "good";
-            }
-
-        } else if (avgRtt <= 30) {
-            quality = "good";
-        } else if (avgRtt <= 35) {
-            quality = "fair";
-        }
-
-        texts[1] = "Your connection quality is <b>" + quality + "</b>."
-        return texts;
-    }
-
     Connections {
         target: virtualstudio
         function onInputDeviceChanged() {
@@ -1401,74 +1363,11 @@ Item {
     }
 
     Item {
-        id: networkStatsHeader
-        visible: showReadyScreen
-        x: bodyMargin * virtualstudio.uiScale; y: 450 * virtualstudio.uiScale
-        width: Math.min(parent.width / 2, 320 * virtualstudio.uiScale) - x
-        height: 128 * virtualstudio.uiScale
-        anchors.top: outputDevice.bottom
-
-        Image {
-            id: network
-            source: "network.svg"
-            x: 0; y: 0
-            width: 28 * virtualstudio.uiScale; height: 28 * virtualstudio.uiScale
-            sourceSize: Qt.size(network.width,network.height)
-            fillMode: Image.PreserveAspectFit
-            smooth: true
-        }
-
-        Colorize {
-            anchors.fill: network
-            source: network
-            hue: 0
-            saturation: 0
-            lightness: imageLightnessValue
-        }
-
-        Text {
-            id: networkStatsHeaderText
-            text: "<b>Network</b>"
-            font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-            x: 64 * virtualstudio.uiScale
-            anchors.verticalCenter: network.verticalCenter
-            color: textColour
-        }
-    }
-
-    Item {
-        id: networkStatsText
-        visible: showReadyScreen
-        x: networkStatsHeader.x + networkStatsHeader.width; y: 450 * virtualstudio.uiScale
-        width: parent.width - networkStatsHeader.width - 2 * bodyMargin * virtualstudio.uiScale
-        height: 72 * virtualstudio.uiScale
-        anchors.top: outputDevice.bottom
-
-        Text {
-            id: netstat0
-            x: 0; y: 0
-            text: getNetworkStatsText()[0]
-            font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
-            color: textColour
-        }
-
-        Text {
-            id: netstat1
-            x: 0
-            text: getNetworkStatsText()[1]
-            font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
-            topPadding: 8 * virtualstudio.uiScale
-            anchors.top: netstat0.bottom
-            color: textColour
-        }
-    }
-
-    Item {
         id: devicesWarning
         visible: showReadyScreen && Boolean(virtualstudio.devicesWarning)
         x: bodyMargin * virtualstudio.uiScale
         width: parent.width - (2 * x)
-        anchors.top: networkStatsText.bottom
+        anchors.top: outputDevice.bottom
         anchors.topMargin: 12 * virtualstudio.uiScale
 
         Text {
@@ -1630,6 +1529,11 @@ Item {
             text: "This studio is shutting down, please wait to start it again."
             wrapMode: Text.WordWrap
         }
+    }
+
+    Footer {
+        id: footer
+        anchors.bottom: parent.bottom
     }
 
     Connections {
