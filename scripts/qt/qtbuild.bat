@@ -68,12 +68,10 @@ set vnum=0
 Set OS=windows
 Set QT5_FEATURE_OPTIONS=-no-feature-cups -no-feature-ocsp -no-feature-sqlmodel -no-feature-pdf -no-feature-printer -no-feature-printdialog -no-feature-printpreviewdialog -no-feature-printpreviewwidget
 Set QT5_SKIP_OPTIONS=-skip qt3d -skip qtactiveqt -skip qtandroidextras -skip qtcharts -skip qtcoap -skip qtdatavis3d -skip qtdoc -skip qtgamepad -skip qtimageformats -skip qtlocation -skip qtlottie -skip qtmqtt -skip qtmultimedia -skip qtopcua -skip qtpurchasing -skip qtquick3d -skip qtquicktimeline -skip qtscxml -skip qtremoteobjects -skip qtscript -skip qtsensors -skip qtserialbus -skip qtserialport -skip qtspeech -skip qttools -skip qttranslations -skip qtvirtualkeyboard -skip qtwebglplugin -skip qtxmlpatterns
-Set QT6_FEATURE_OPTIONS=-no-feature-qtpdf-build -no-feature-qtpdf-quick-build -no-feature-qtpdf-widgets-build
+Set QT6_FEATURE_OPTIONS=-no-feature-qtpdf-build -no-feature-qtpdf-quick-build -no-feature-qtpdf-widgets-build -no-feature-printsupport
 Set QT6_SKIP_OPTIONS=-skip qtgrpc -skip qtlanguageserver -skip qtquick3dphysics -skip qtimageformats
 Set QT_CONFIGURE_OPTIONS=-release -optimize-size -no-pch -nomake tools -nomake tests -nomake examples -opensource -confirm-license -feature-appstore-compliant
-Set QT_WINDOWS_OPTIONS=-opengl desktop -platform win32-msvc
-Set MAKE_OPTIONS=-j4
-Set CMAKE_OPTIONS=--parallel
+Set QT_WINDOWS_OPTIONS=-platform win32-msvc
 
 Set QT_BUILD_PATH=C:\qt\%QT_FULL_VERSION%
 if %QT_DYNAMIC_BUILD% EQU 1 (
@@ -99,10 +97,10 @@ if %QT_MAJOR_VERSION% EQU 5 (
 
 :: Download qt source code
 Set QT_SRC_PATH=qt-everywhere-src-%QT_FULL_VERSION%
-if NOT exist %QT_SRC_PATH%\ (
-    echo Downloading qt-%QT_FULL_VERSION%"
+Set QT_ARCHIVE_BASE_NAME=qt-everywhere-
 
-    QT_ARCHIVE_BASE_NAME=qt-everywhere-
+if NOT exist %QT_SRC_PATH%\ (
+    echo Downloading qt-%QT_FULL_VERSION%
     :: filename changed to qt-everywhere-opensource-src-<version> in Qt 5.15.3
     if %QT_MAJOR_VERSION% EQU 5 (
         if %QT_MINOR_VERSION% EQU 15 (
@@ -111,9 +109,9 @@ if NOT exist %QT_SRC_PATH%\ (
             )
         )
     )
-    Set QT_SRC_URL=https://download.qt.io/archive/qt/%QT_MAJOR_VERSION%.%QT_MINOR_VERSION%/%QT_FULL_VERSION%/single/%QT_ARCHIVE_BASE_NAME%src-%QT_FULL_VERSION%.tar.xz
-    curl -L %QT_SRC_URL% -o qt.tar.xz
-    tar -xf qt.tar.xz
+    Set QT_SRC_URL=https://download.qt.io/archive/qt/%QT_MAJOR_VERSION%.%QT_MINOR_VERSION%/%QT_FULL_VERSION%/single/!QT_ARCHIVE_BASE_NAME!src-%QT_FULL_VERSION%.zip
+    curl -L !QT_SRC_URL! -o qt.zip
+    unzip qt.zip
 )
 
 :: prepare qt build target
@@ -124,7 +122,6 @@ mkdir %QT_BUILD_PATH%
 
 :: build for Windows
 if %QT_MAJOR_VERSION% EQU 5 (
-    Set QT_WINDOWS_OPTIONS=%QT_WINDOWS_OPTIONS% -no-feature-d3d12
     :: help pkgconfig find the packages we've installed using vcpkg
     Set PKG_CONFIG_PATH=%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/lib/pkgconfig
 ) else (
@@ -135,18 +132,24 @@ if %QT_MAJOR_VERSION% EQU 5 (
 echo "QT Configure command"
 if %QT_DYNAMIC_BUILD% EQU 1 (
     echo "%QT_SRC_PATH%/configure.bat" -prefix "%QT_BUILD_PATH%" %QT_WINDOWS_OPTIONS% %QT_CONFIGURE_OPTIONS% -L "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/lib" -I "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/include"
-    "%QT_SRC_PATH%/configure.bat" -prefix "%QT_BUILD_PATH%" %QT_WINDOWS_OPTIONS% %QT_CONFIGURE_OPTIONS% -L "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/lib" -I "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/include"
+    call "%QT_SRC_PATH%/configure.bat" -prefix "%QT_BUILD_PATH%" %QT_WINDOWS_OPTIONS% %QT_CONFIGURE_OPTIONS% -L "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/lib" -I "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/include"
 ) else (
     echo "%QT_SRC_PATH%/configure.bat" -prefix "%QT_BUILD_PATH%" %QT_WINDOWS_OPTIONS% %QT_CONFIGURE_OPTIONS% -L "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/lib" -I "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/include" OPENSSL_LIBS="-llibssl -llibcrypto -lcrypt32 -lws2_32"
-    "%QT_SRC_PATH%/configure.bat" -prefix "%QT_BUILD_PATH%" %QT_WINDOWS_OPTIONS% %QT_CONFIGURE_OPTIONS% -L "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/lib" -I "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/include" OPENSSL_LIBS="-llibssl -llibcrypto -lcrypt32 -lws2_32"
+    call "%QT_SRC_PATH%/configure.bat" -prefix "%QT_BUILD_PATH%" %QT_WINDOWS_OPTIONS% %QT_CONFIGURE_OPTIONS% -L "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/lib" -I "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/include" OPENSSL_LIBS="-llibssl -llibcrypto -lcrypt32 -lws2_32"
 )
+if %ERRORLEVEL% NEQ 0 EXIT /B 0
 
 if %QT_MAJOR_VERSION% EQU 5 (
-    make $MAKE_OPTIONS
-    make install
+    where jom.exe
+    if %ERRORLEVEL% EQU 0 (
+        echo To build, run "jom /j #" where # is number of cores to use
+    ) else (
+        echo To build, run "nmake"
+    )
+    echo To install, run "nmake install"
 ) else (
-    cmake --build . $CMAKE_OPTIONS
-    cmake --install .
+    echo To build, run "cmake --build . --parallel"
+    echo To install, run "cmake --install ."
 )
 
 EXIT /B 0
@@ -159,8 +162,8 @@ EXIT /B 0
 :: clean build directory
 :qtbuild_clean
     echo Cleaning up...
-    del /q /s config.tests CMakeFiles .qt openssl-build openssl-src
-    del /q /s qtbase bin mkspecs qmake qtconnectivity qtdeclarative qtquick3d qtquickcontrols2 qtscxml qtwayland qtgraphicaleffects qtlottie qtmacextras qtnetworkauth qtquickcontrols qtquicktimeline qtsvg qtwebsockets qtwinextras qtx11extras
-    del /q /s qt5compat qtcoap qtgrpc qthttpserver qtlanguageserver qtmqtt qtopcua qtpositioning qtquick3dphysics qtquickeffectmaker qtshadertools qttools qttranslations qtwebengine qtwebview qtwebchannel qt3d qtactiveqt qtcharts qtdatavis3d qtimageformats qtmultimedia
-    del /q .config.notes .qmake.* config.* Makefile CMakeCache.txt CTestTestfile.cmake cmake_install.cmake .ninja_deps .ninja_log build.ninja install_manifest.txt
+    rmdir /q /s config.tests CMakeFiles .qt openssl-build openssl-src
+    rmdir /q /s qtbase bin mkspecs qmake qtconnectivity qtdeclarative qtquick3d qtquickcontrols2 qtscxml qtwayland qtgraphicaleffects qtlottie qtmacextras qtnetworkauth qtquickcontrols qtquicktimeline qtsvg qtwebsockets qtwinextras qtx11extras
+    rmdir /q /s qt5compat qtcoap qtgrpc qthttpserver qtlanguageserver qtmqtt qtopcua qtpositioning qtquick3dphysics qtquickeffectmaker qtshadertools qttools qttranslations qtwebengine qtwebview qtwebchannel qt3d qtactiveqt qtcharts qtdatavis3d qtimageformats qtmultimedia
+    del /q .config.notes .qmake.cache .qmake.stash .qmake.super config.cache config.log config.opt config.opt.in config.status.bat config.summary Makefile CMakeCache.txt CTestTestfile.cmake cmake_install.cmake .ninja_deps .ninja_log build.ninja install_manifest.txt
 EXIT /B 0

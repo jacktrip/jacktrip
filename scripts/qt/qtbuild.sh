@@ -134,6 +134,11 @@ if [[ ! -d "$QT_SRC_PATH" ]]; then
         # see https://bugreports.qt.io/browse/QTBUG-109046
         echo "Patching $QT_SRC_PATH for linux ulimit bug with cmake"
         patch -p1 -d "$QT_SRC_PATH" < "./qt6-linux-ulimit.patch"
+    elif [[ $"OS" == "windows" ]]; then
+        if [[ $QT_MAJOR_VERSIONM -eq 6 ]]; then
+            echo "Patching $QT_SRC_PATH for winrt webview backend"
+            patch -p0 -d "$QT_SRC_PATH" < "./qt6-winrt-webview.patch"
+        fi
     fi
 fi
 
@@ -239,6 +244,7 @@ if [[ "$OS" == "windows" ]]; then
         # help pkgconfig find the packages we've installed using vcpkg
         PKG_CONFIG_PATH=$VCPKG_INSTALLATION_ROOT/installed/$VCPKG_TRIPLET/lib/pkgconfig
     else
+        QT_WINDOWS_OPTIONS="$QT_WINDOWS_OPTIONS -no-feature-printsupport"
         # help cmake find the packages we've installed using vcpkg
         CMAKE_PREFIX_PATH=$VCPKG_INSTALLATION_ROOT/installed/$VCPKG_TRIPLET
     fi
