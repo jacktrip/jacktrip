@@ -76,12 +76,16 @@ QT6_FEATURE_OPTIONS="-no-feature-qtpdf-build -no-feature-qtpdf-quick-build -no-f
 QT6_SKIP_OPTIONS="-skip qtgrpc -skip qtlanguageserver -skip qtquick3dphysics -skip qtimageformats"
 QT_CONFIGURE_OPTIONS="-release -optimize-size -no-pch -nomake tools -nomake tests -nomake examples -opensource -confirm-license -feature-appstore-compliant"
 QT_LINUX_OPTIONS="-qt-zlib -qt-libpng -qt-libjpeg -system-freetype -fontconfig -qt-pcre -qt-harfbuzz -no-icu -opengl desktop"
-QT_WINDOWS_OPTIONS="-opengl desktop -no-feature-d3d12 -platform win32-g++"
+QT_WINDOWS_OPTIONS="-opengl desktop -platform win32-msvc"
 MAKE_OPTIONS="-j4"
 CMAKE_OPTIONS="--parallel"
 
 QT_BUILD_PATH=/opt/qt-${QT_FULL_VERSION}
 OPENSSL_BUILD_PATH="/opt/openssl-${OPENSSL_FULL_VERSION}"
+if [[ "$OS" == "windows" ]]; then
+    QT_BUILD_PATH="C:/qt/${QT_FULL_VERSION}"
+fi
+
 if [[ $QT_DYNAMIC_BUILD -eq 1 ]]; then
     echo "Building dynamic qt-$QT_FULL_VERSION on $OS"
     QT_BUILD_PATH="$QT_BUILD_PATH-dynamic"
@@ -140,7 +144,7 @@ fi
 mkdir -p $QT_BUILD_PATH
 
 # OpenSSL
-if [[ $QT_DYNAMIC_BUILD -ne 1 && "$OS" != "osx" ]]; then
+if [[ $QT_DYNAMIC_BUILD -ne 1 && "$OS" == "linux" ]]; then
     if [[ ! -d "$OPENSSL_BUILD_PATH" ]]; then
         # Build static openssl
         # see https://doc.qt.io/qt-6/ssl.html#enabling-and-disabling-ssl-support-when-building-qt-from-source
@@ -230,13 +234,22 @@ fi
 
 # Windows
 if [[ "$OS" == "windows" ]]; then
+    if [[ $QT_MAJOR_VERSION -eq 5 ]]; then
+        QT_WINDOWS_OPTIONS="$QT_WINDOWS_OPTIONS -no-feature-d3d12"
+        # help pkgconfig find the packages we've installed using vcpkg
+        PKG_CONFIG_PATH=$VCPKG_INSTALLATION_ROOT/installed/$VCPKG_TRIPLET/lib/pkgconfig
+    else
+        # help cmake find the packages we've installed using vcpkg
+        CMAKE_PREFIX_PATH=$VCPKG_INSTALLATION_ROOT/installed/$VCPKG_TRIPLET
+    fi
+
     echo "QT Configure command"
     if [[ $QT_DYNAMIC_BUILD -eq 1 ]]; then
         echo "\"$QT_SRC_PATH/configure.bat\" -prefix \"$QT_BUILD_PATH\" $QT_WINDOWS_OPTIONS $QT_CONFIGURE_OPTIONS -L \"$VCPKG_INSTALLATION_ROOT/installed/$VCPKG_TRIPLET/lib\" -I \"$VCPKG_INSTALLATION_ROOT/installed/$VCPKG_TRIPLET/include\""
         "$QT_SRC_PATH/configure.bat" -prefix "$QT_BUILD_PATH" $QT_WINDOWS_OPTIONS $QT_CONFIGURE_OPTIONS -L "$VCPKG_INSTALLATION_ROOT/installed/$VCPKG_TRIPLET/lib" -I "$VCPKG_INSTALLATION_ROOT/installed/$VCPKG_TRIPLET/include"
     else
-        echo "\"$QT_SRC_PATH/configure.bat\" -prefix \"$QT_BUILD_PATH\" $QT_WINDOWS_OPTIONS $QT_CONFIGURE_OPTIONS -L \"$VCPKG_INSTALLATION_ROOT/installed/$VCPKG_TRIPLET/lib\" -I \"$VCPKG_INSTALLATION_ROOT/installed/$VCPKG_TRIPLET/include\" -I \"$OPENSSL_BUILD_PATH/include\" -L \"$OPENSSL_BUILD_PATH/lib64\" OPENSSL_LIBS=\"-llibssl -llibcrypto -lcrypt32 -lws2_32\""
-        "$QT_SRC_PATH/configure.bat" -prefix "$QT_BUILD_PATH" $QT_WINDOWS_OPTIONS $QT_CONFIGURE_OPTIONS -L "$VCPKG_INSTALLATION_ROOT/installed/$VCPKG_TRIPLET/lib" -I "$VCPKG_INSTALLATION_ROOT/installed/$VCPKG_TRIPLET/include" -I "$OPENSSL_BUILD_PATH/include" -L "$OPENSSL_BUILD_PATH/lib64" OPENSSL_LIBS="-llibssl -llibcrypto -lcrypt32 -lws2_32"
+        echo "\"$QT_SRC_PATH/configure.bat\" -prefix \"$QT_BUILD_PATH\" $QT_WINDOWS_OPTIONS $QT_CONFIGURE_OPTIONS -L \"$VCPKG_INSTALLATION_ROOT/installed/$VCPKG_TRIPLET/lib\" -I \"$VCPKG_INSTALLATION_ROOT/installed/$VCPKG_TRIPLET/include\" OPENSSL_LIBS=\"-llibssl -llibcrypto -lcrypt32 -lws2_32\""
+        "$QT_SRC_PATH/configure.bat" -prefix "$QT_BUILD_PATH" $QT_WINDOWS_OPTIONS $QT_CONFIGURE_OPTIONS -L "$VCPKG_INSTALLATION_ROOT/installed/$VCPKG_TRIPLET/lib" -I "$VCPKG_INSTALLATION_ROOT/installed/$VCPKG_TRIPLET/include" OPENSSL_LIBS="-llibssl -llibcrypto -lcrypt32 -lws2_32"
     fi
 fi
 
