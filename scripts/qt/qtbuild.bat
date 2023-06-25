@@ -10,6 +10,7 @@ setlocal EnableDelayedExpansion
 :: default versions
 set QT_DYNAMIC_BUILD=0
 set QT_FULL_VERSION=5.15.10
+set OPENSSL_FULL_VERSION=3.1.1
 
 :: check for specific options
 if "%1" == "-h" (
@@ -64,16 +65,23 @@ set vnum=0
         goto NextQtVersionChar    
     )
 
+:: check for jom
+Set HAVE_JOM=0
+where jom.exe >nul 2>nul
+if %ERRORLEVEL% EQU 0 Set HAVE_JOM=1
+
 :: preferred build settings for various versions and OS
 Set OS=windows
 Set QT5_FEATURE_OPTIONS=-no-feature-cups -no-feature-ocsp -no-feature-sqlmodel -no-feature-pdf -no-feature-printer -no-feature-printdialog -no-feature-printpreviewdialog -no-feature-printpreviewwidget
 Set QT5_SKIP_OPTIONS=-skip qt3d -skip qtactiveqt -skip qtandroidextras -skip qtcharts -skip qtcoap -skip qtdatavis3d -skip qtdoc -skip qtgamepad -skip qtimageformats -skip qtlocation -skip qtlottie -skip qtmqtt -skip qtmultimedia -skip qtopcua -skip qtpurchasing -skip qtquick3d -skip qtquicktimeline -skip qtscxml -skip qtremoteobjects -skip qtscript -skip qtsensors -skip qtserialbus -skip qtserialport -skip qtspeech -skip qttools -skip qttranslations -skip qtvirtualkeyboard -skip qtwebglplugin -skip qtxmlpatterns
-Set QT6_FEATURE_OPTIONS=-no-feature-qtpdf-build -no-feature-qtpdf-quick-build -no-feature-qtpdf-widgets-build -no-feature-printsupport
+Set QT6_FEATURE_OPTIONS=-no-feature-qtpdf-build -no-feature-qtpdf-quick-build -no-feature-qtpdf-widgets-build -no-feature-printsupport -no-feature-testlib
 Set QT6_SKIP_OPTIONS=-skip qtgrpc -skip qtlanguageserver -skip qtquick3dphysics -skip qtimageformats
 Set QT_CONFIGURE_OPTIONS=-release -optimize-size -no-pch -nomake tools -nomake tests -nomake examples -opensource -confirm-license -feature-appstore-compliant
 Set QT_WINDOWS_OPTIONS=-platform win32-msvc
 
-Set QT_BUILD_PATH=C:\qt\%QT_FULL_VERSION%
+Set QT_BUILD_PATH=\qt\qt-%QT_FULL_VERSION%
+Set OPENSSL_BUILD_PATH=\qt\openssl-%OPENSSL_FULL_VERSION%
+
 if %QT_DYNAMIC_BUILD% EQU 1 (
     echo Building dynamic qt-%QT_FULL_VERSION% on windows
     Set QT_BUILD_PATH=%QT_BUILD_PATH%-dynamic
@@ -115,10 +123,41 @@ if NOT exist %QT_SRC_PATH%\ (
 )
 
 :: prepare qt build target
-if NOT exist %QT_BUILD_PATH%\ (
-    del /s %QT_BUILD_PATH%
+if exist %QT_BUILD_PATH%\ (
+    rmdir /q /s %QT_BUILD_PATH%
 )
 mkdir %QT_BUILD_PATH%
+
+:: OpenSSL
+if %QT_DYNAMIC_BUILD% NEQ 1 (
+    if NOT exist %OPENSSL_BUILD_PATH%\ (
+        :: Build static openssl
+        :: see https://doc.qt.io/qt-6/ssl.html#enabling-and-disabling-ssl-support-when-building-qt-from-source
+        if NOT exist openssl-%OPENSSL_FULL_VERSION%\ (
+            echo Downloading openssl-%OPENSSL_FULL_VERSION%
+            Set OPENSSL_SRC_URL=https://github.com/openssl/openssl/releases/download/openssl-%OPENSSL_FULL_VERSION%/openssl-%OPENSSL_FULL_VERSION%.tar.gz
+            curl -L !OPENSSL_SRC_URL! -o openssl.tar.gz
+            tar -xf openssl.tar.gz
+        )
+        echo Building openssl-%OPENSSL_FULL_VERSION%
+        mkdir %OPENSSL_BUILD_PATH%
+        mkdir openssl-build
+        cd openssl-build
+        perl ..\openssl-%OPENSSL_FULL_VERSION%\Configure --prefix=%OPENSSL_BUILD_PATH% --openssldir=%OPENSSL_BUILD_PATH%\ssl VC-WIN64A threads no-shared no-pic no-tests -static
+        if %HAVE_JOM% EQU 1 (
+            jom /j 4
+        ) else (
+            nmake
+        )
+        nmake install
+        cd ..
+    )
+    :: copy static openssl into qt build
+    mkdir "%QT_BUILD_PATH%/lib"
+    mkdir "%QT_BUILD_PATH%/include"
+    xcopy "%OPENSSL_BUILD_PATH%/lib" %QT_BUILD_PATH%/lib
+    xcopy "%OPENSSL_BUILD_PATH%/include/openssl" "%QT_BUILD_PATH%/include"
+)
 
 :: build for Windows
 if %QT_MAJOR_VERSION% EQU 5 (
@@ -129,27 +168,29 @@ if %QT_MAJOR_VERSION% EQU 5 (
     Set CMAKE_PREFIX_PATH=%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%
 )
 
-echo "QT Configure command"
+echo QT Configure command
 if %QT_DYNAMIC_BUILD% EQU 1 (
     echo "%QT_SRC_PATH%/configure.bat" -prefix "%QT_BUILD_PATH%" %QT_WINDOWS_OPTIONS% %QT_CONFIGURE_OPTIONS% -L "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/lib" -I "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/include"
     call "%QT_SRC_PATH%/configure.bat" -prefix "%QT_BUILD_PATH%" %QT_WINDOWS_OPTIONS% %QT_CONFIGURE_OPTIONS% -L "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/lib" -I "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/include"
 ) else (
-    echo "%QT_SRC_PATH%/configure.bat" -prefix "%QT_BUILD_PATH%" %QT_WINDOWS_OPTIONS% %QT_CONFIGURE_OPTIONS% -L "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/lib" -I "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/include" OPENSSL_LIBS="-llibssl -llibcrypto -lcrypt32 -lws2_32"
-    call "%QT_SRC_PATH%/configure.bat" -prefix "%QT_BUILD_PATH%" %QT_WINDOWS_OPTIONS% %QT_CONFIGURE_OPTIONS% -L "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/lib" -I "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/include" OPENSSL_LIBS="-llibssl -llibcrypto -lcrypt32 -lws2_32"
+    echo "%QT_SRC_PATH%/configure.bat" -prefix "%QT_BUILD_PATH%" %QT_WINDOWS_OPTIONS% %QT_CONFIGURE_OPTIONS% -L "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/lib" -I "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/include" -I "%OPENSSL_BUILD_PATH:\=/%/include" -L "%OPENSSL_BUILD_PATH:\=/%/lib" OPENSSL_LIBS="%OPENSSL_BUILD_PATH:\=/%/lib/libcrypto.lib %OPENSSL_BUILD_PATH:\=/%/lib/libssl.lib -lAdvapi32 -lUser32 -lcrypt32 -lws2_32"
+    call "%QT_SRC_PATH%/configure.bat" -prefix "%QT_BUILD_PATH%" %QT_WINDOWS_OPTIONS% %QT_CONFIGURE_OPTIONS% -L "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/lib" -I "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/include" -I "%OPENSSL_BUILD_PATH:\=/%/include" -L "%OPENSSL_BUILD_PATH:\=/%/lib" OPENSSL_LIBS="%OPENSSL_BUILD_PATH:\=/%/lib/libcrypto.lib %OPENSSL_BUILD_PATH:\=/%/lib/libssl.lib -lAdvapi32 -lUser32 -lcrypt32 -lws2_32"
 )
 if %ERRORLEVEL% NEQ 0 EXIT /B 0
 
+echo Building QT %QT_FULL_VERSION%
 if %QT_MAJOR_VERSION% EQU 5 (
-    where jom.exe
-    if %ERRORLEVEL% EQU 0 (
-        echo To build, run "jom /j #" where # is number of cores to use
+    if %HAVE_JOM% EQU 1 (
+        jom /j 4
     ) else (
-        echo To build, run "nmake"
+        nmake
     )
-    echo To install, run "nmake install"
+    if %ERRORLEVEL% NEQ 0 EXIT /B 0
+    nmake install
 ) else (
-    echo To build, run "cmake --build . --parallel"
-    echo To install, run "cmake --install ."
+    cmake --build . --parallel
+    if %ERRORLEVEL% NEQ 0 EXIT /B 0
+    cmake --install .
 )
 
 EXIT /B 0
@@ -162,8 +203,8 @@ EXIT /B 0
 :: clean build directory
 :qtbuild_clean
     echo Cleaning up...
-    rmdir /q /s config.tests CMakeFiles .qt openssl-build openssl-src
+    rmdir /q /s config.tests CMakeFiles .qt openssl-build openssl-%OPENSSL_FULL_VERSION%
     rmdir /q /s qtbase bin mkspecs qmake qtconnectivity qtdeclarative qtquick3d qtquickcontrols2 qtscxml qtwayland qtgraphicaleffects qtlottie qtmacextras qtnetworkauth qtquickcontrols qtquicktimeline qtsvg qtwebsockets qtwinextras qtx11extras
     rmdir /q /s qt5compat qtcoap qtgrpc qthttpserver qtlanguageserver qtmqtt qtopcua qtpositioning qtquick3dphysics qtquickeffectmaker qtshadertools qttools qttranslations qtwebengine qtwebview qtwebchannel qt3d qtactiveqt qtcharts qtdatavis3d qtimageformats qtmultimedia
-    del /q .config.notes .qmake.cache .qmake.stash .qmake.super config.cache config.log config.opt config.opt.in config.status.bat config.summary Makefile CMakeCache.txt CTestTestfile.cmake cmake_install.cmake .ninja_deps .ninja_log build.ninja install_manifest.txt
+    del /q qt.zip openssl.tar.gz .config.notes .qmake.cache .qmake.stash .qmake.super config.cache config.log config.opt config.opt.in config.status.bat config.summary Makefile CMakeCache.txt CTestTestfile.cmake cmake_install.cmake .ninja_deps .ninja_log build.ninja install_manifest.txt
 EXIT /B 0

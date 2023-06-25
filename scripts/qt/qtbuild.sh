@@ -137,7 +137,8 @@ if [[ ! -d "$QT_SRC_PATH" ]]; then
     elif [[ $"OS" == "windows" ]]; then
         if [[ $QT_MAJOR_VERSIONM -eq 6 ]]; then
             echo "Patching $QT_SRC_PATH for winrt webview backend"
-            patch -p0 -d "$QT_SRC_PATH" < "./qt6-winrt-webview.patch"
+            # This hasn't been ported to qt6 yet
+            # patch -p0 -d "$QT_SRC_PATH" < "./qt6-winrt-webview.patch"
         fi
     fi
 fi
@@ -165,7 +166,7 @@ if [[ $QT_DYNAMIC_BUILD -ne 1 && "$OS" == "linux" ]]; then
         mkdir $OPENSSL_BUILD_PATH
         mkdir -p openssl-build
         cd openssl-build
-        "$OPENSSL_SRC_PATH/Configure" --prefix=$OPENSSL_BUILD_PATH threads no-shared no-pic -static
+        "$OPENSSL_SRC_PATH/Configure" --prefix=$OPENSSL_BUILD_PATH threads no-shared no-pic no-tests -static
         make -j4
         make install
         cd ..
