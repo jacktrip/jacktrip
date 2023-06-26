@@ -123,11 +123,16 @@ if [[ ! -d "$QT_SRC_PATH" ]]; then
     curl -L $QT_SRC_URL -o qt.tar.xz
     tar -xf qt.tar.xz
 
-    if [[ "$OS" == "osx" && $QT_MAJOR_VERSION -eq 5 ]]; then
-        # QT5 (qmake) on OSX only: this patch force enables the arm64 neon feature for universal binary builds on osx
-        # without it, qt builds fail with undefined symbols due to configure only taking first architecture into account
-        echo "Patching $QT_SRC_PATH for osx universal builds with qmake"
-        patch -d "$QT_SRC_PATH/qtbase" < "./qt5-osx-configure.json.patch"
+    if [[ "$OS" == "osx" ]]; then
+        if [[ $QT_MAJOR_VERSION -eq 5 ]]; then
+            # QT5 (qmake) on OSX only: this patch force enables the arm64 neon feature for universal binary builds on osx
+            # without it, qt builds fail with undefined symbols due to configure only taking first architecture into account
+            echo "Patching $QT_SRC_PATH for osx universal builds with qmake"
+            patch -d "$QT_SRC_PATH/qtbase" < "./qt5-osx-configure.json.patch"
+        elif [[ $QT_MAJOR_VERSION -eq 6 && $QT_MINOR_VERSION -lt 3 ]]; then
+            # QT6.2.4 on OSX only: this patch fixes a bug in a third-party dependency of WebEngine
+            patch -d "$QT_SRC_PATH/qtbase" < "./qt6-harfbuzz.patch"
+        fi
     elif [[ "$OS" == "linux" && $QT_MAJOR_VERSION -eq 6 && $QT_MINOR_VERSION -lt 5 ]]; then
         # QT6 (cmake) on Linux only: fix bug with building WebEngine
         # Unknown CMake command "check_for_ulimit".
@@ -204,11 +209,12 @@ fi
 if [[ "$OS" == "osx" ]]; then
     QT_UNIVERSAL_BUILD=1
     if [[ $QT_DYNAMIC_BUILD -eq 1 ]]; then
-        # don't try to build universal dynamic builds on osx due to this bug
+        # don't try to build universal dynamic builds on osx arm due to this bug
         # https://bugreports.qt.io/browse/QTBUG-100672
+        PROCESSOR=$(uname -p)
         if [[ $QT_MAJOR_VERSION -eq 5 ]]; then
             QT_UNIVERSAL_BUILD=0
-        elif [[ $QT_MAJOR_VERSION -eq 6 && $QT_MINOR_VERSION -lt 4 ]]; then
+        elif [[ $QT_MAJOR_VERSION -eq 6 && $QT_MINOR_VERSION -lt 3 && "$PROCESSOR" == "arm" ]]; then
             QT_UNIVERSAL_BUILD=0
         fi
     fi
