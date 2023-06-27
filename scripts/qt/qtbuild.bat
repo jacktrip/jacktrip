@@ -72,20 +72,19 @@ if %ERRORLEVEL% EQU 0 Set HAVE_JOM=1
 
 :: preferred build settings for various versions and OS
 Set OS=windows
-Set QT5_FEATURE_OPTIONS=-no-feature-cups -no-feature-ocsp -no-feature-sqlmodel -no-feature-pdf -no-feature-printer -no-feature-printdialog -no-feature-printpreviewdialog -no-feature-printpreviewwidget
+Set QT5_FEATURE_OPTIONS=-no-feature-cups -no-feature-ocsp -no-feature-sqlmodel -no-feature-linguist -no-feature-pdf -no-feature-printer -no-feature-printsupport -no-feature-printdialog -no-feature-printpreviewdialog -no-feature-printpreviewwidget
 Set QT5_SKIP_OPTIONS=-skip qt3d -skip qtactiveqt -skip qtandroidextras -skip qtcharts -skip qtcoap -skip qtdatavis3d -skip qtdoc -skip qtgamepad -skip qtimageformats -skip qtlocation -skip qtlottie -skip qtmqtt -skip qtmultimedia -skip qtopcua -skip qtpurchasing -skip qtquick3d -skip qtquicktimeline -skip qtscxml -skip qtremoteobjects -skip qtscript -skip qtsensors -skip qtserialbus -skip qtserialport -skip qtspeech -skip qttranslations -skip qtvirtualkeyboard -skip qtwebglplugin -skip qtxmlpatterns
-Set QT6_FEATURE_OPTIONS=-no-feature-qtpdf-build -no-feature-qtpdf-quick-build -no-feature-qtpdf-widgets-build -no-feature-printsupport -no-feature-testlib
+Set QT6_FEATURE_OPTIONS=-no-feature-qtpdf-build -no-feature-qtpdf-quick-build -no-feature-qtpdf-widgets-build
 Set QT6_SKIP_OPTIONS=-skip qtgrpc -skip qtlanguageserver -skip qtquick3dphysics
 Set QT_CONFIGURE_OPTIONS=-release -optimize-size -no-pch -nomake tools -nomake tests -nomake examples -opensource -confirm-license -feature-appstore-compliant
 Set QT_WINDOWS_OPTIONS=-platform win32-msvc
-
-Set QT_BUILD_PATH=\qt\qt-%QT_FULL_VERSION%
-Set OPENSSL_BUILD_PATH=\qt\openssl-%OPENSSL_FULL_VERSION%
+Set QT_BUILD_PATH=c:\qt\qt-%QT_FULL_VERSION%
+Set OPENSSL_BUILD_PATH=c:\qt\openssl-%OPENSSL_FULL_VERSION%
 
 if %QT_DYNAMIC_BUILD% EQU 1 (
     echo Building dynamic qt-%QT_FULL_VERSION% on windows
     Set QT_BUILD_PATH=%QT_BUILD_PATH%-dynamic
-    Set QT_WINDOWS_OPTIONS=-openssl-runtime %QT_WINDOWS_OPTIONS%
+    Set QT_WINDOWS_OPTIONS=-openssl-linked %QT_WINDOWS_OPTIONS%
     echo Please ensure you meet the requirements for building QtWebEngine!
     echo See https://doc.qt.io/qt-%QT_MAJOR_VERSION%/qtwebengine-platform-notes.html
 ) else (
@@ -169,13 +168,8 @@ if %QT_MAJOR_VERSION% EQU 5 (
 )
 
 echo QT Configure command
-if %QT_DYNAMIC_BUILD% EQU 1 (
-    echo "%QT_SRC_PATH%/configure.bat" -prefix "%QT_BUILD_PATH%" %QT_WINDOWS_OPTIONS% %QT_CONFIGURE_OPTIONS% -L "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/lib" -I "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/include"
-    call "%QT_SRC_PATH%/configure.bat" -prefix "%QT_BUILD_PATH%" %QT_WINDOWS_OPTIONS% %QT_CONFIGURE_OPTIONS% -L "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/lib" -I "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/include"
-) else (
-    echo "%QT_SRC_PATH%/configure.bat" -prefix "%QT_BUILD_PATH%" %QT_WINDOWS_OPTIONS% %QT_CONFIGURE_OPTIONS% -L "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/lib" -I "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/include" -I "%OPENSSL_BUILD_PATH:\=/%/include" -L "%OPENSSL_BUILD_PATH:\=/%/lib" OPENSSL_LIBS="%OPENSSL_BUILD_PATH:\=/%/lib/libcrypto.lib %OPENSSL_BUILD_PATH:\=/%/lib/libssl.lib -lAdvapi32 -lUser32 -lcrypt32 -lws2_32"
-    call "%QT_SRC_PATH%/configure.bat" -prefix "%QT_BUILD_PATH%" %QT_WINDOWS_OPTIONS% %QT_CONFIGURE_OPTIONS% -L "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/lib" -I "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/include" -I "%OPENSSL_BUILD_PATH:\=/%/include" -L "%OPENSSL_BUILD_PATH:\=/%/lib" OPENSSL_LIBS="%OPENSSL_BUILD_PATH:\=/%/lib/libcrypto.lib %OPENSSL_BUILD_PATH:\=/%/lib/libssl.lib -lAdvapi32 -lUser32 -lcrypt32 -lws2_32"
-)
+echo "%QT_SRC_PATH:\=/%/configure.bat" -prefix "%QT_BUILD_PATH:\=/%" %QT_WINDOWS_OPTIONS% %QT_CONFIGURE_OPTIONS% -L "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/lib" -I "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/include" -I "%OPENSSL_BUILD_PATH:\=/%/include" -L "%OPENSSL_BUILD_PATH:\=/%/lib" OPENSSL_ROOT_DIR="%OPENSSL_BUILD_PATH:\=/%" OPENSSL_LIBS="%OPENSSL_BUILD_PATH:\=/%/lib/libcrypto.lib %OPENSSL_BUILD_PATH:\=/%/lib/libssl.lib -lAdvapi32 -lUser32 -lcrypt32 -lws2_32"
+call "%QT_SRC_PATH:\=/%/configure.bat" -prefix "%QT_BUILD_PATH:\=/%" %QT_WINDOWS_OPTIONS% %QT_CONFIGURE_OPTIONS% -L "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/lib" -I "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/include" -I "%OPENSSL_BUILD_PATH:\=/%/include" -L "%OPENSSL_BUILD_PATH:\=/%/lib" OPENSSL_ROOT_DIR="%OPENSSL_BUILD_PATH:\=/%" OPENSSL_LIBS="%OPENSSL_BUILD_PATH:\=/%/lib/libcrypto.lib %OPENSSL_BUILD_PATH:\=/%/lib/libssl.lib -lAdvapi32 -lUser32 -lcrypt32 -lws2_32"
 if %ERRORLEVEL% NEQ 0 EXIT /B 0
 
 echo Building QT %QT_FULL_VERSION%
