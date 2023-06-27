@@ -70,7 +70,7 @@ else
 fi
 
 # preferred build settings for various versions and OS
-QT5_FEATURE_OPTIONS="-no-feature-cups -no-feature-ocsp -no-feature-sqlmodel -no-feature-pdf -no-feature-printer -no-feature-printdialog -no-feature-printpreviewdialog -no-feature-printpreviewwidget"
+QT5_FEATURE_OPTIONS="-no-feature-cups -no-feature-ocsp -no-feature-sqlmodel"
 QT5_SKIP_OPTIONS="-skip qt3d -skip qtactiveqt -skip qtandroidextras -skip qtcharts -skip qtcoap -skip qtdatavis3d -skip qtdoc -skip qtgamepad -skip qtimageformats -skip qtlocation -skip qtlottie -skip qtmqtt -skip qtmultimedia -skip qtopcua -skip qtpurchasing -skip qtquick3d -skip qtquicktimeline -skip qtscxml -skip qtremoteobjects -skip qtscript -skip qtsensors -skip qtserialbus -skip qtserialport -skip qtspeech -skip qttranslations -skip qtvirtualkeyboard -skip qtwebglplugin -skip qtxmlpatterns"
 QT6_FEATURE_OPTIONS="-no-feature-qtpdf-build -no-feature-qtpdf-quick-build -no-feature-qtpdf-widgets-build"
 QT6_SKIP_OPTIONS="-skip qtgrpc -skip qtlanguageserver -skip qtquick3dphysics"
@@ -100,6 +100,14 @@ else
     QT_LINUX_OPTIONS="-openssl-linked $QT_LINUX_OPTIONS"
     QT_WINDOWS_OPTIONS="-static-runtime -openssl-linked $QT_WINDOWS_OPTIONS"
     QT5_SKIP_OPTIONS="$QT5_SKIP_OPTIONS -skip qtwebengine"
+fi
+
+# qttools includes the macdeployqt and windeployqt tools, which we need for packaging
+# unfortunately, qttools 6.2 and earlier fails to build unless printing is enabled
+if [[ $QT_MAJOR_VERSION -lt 6 || ($QT_MAJOR_VERSION -eq 6 && $QT_MINOR_VERSION -lt 5) ]]; then
+    QT5_FEATURE_OPTIONS="$QT5_FEATURE_OPTIONS -feature-pdf -feature-printer -feature-printdialog"
+else
+    QT5_FEATURE_OPTIONS="$QT5_FEATURE_OPTIONS -no-feature-pdf -no-feature-printer -no-feature-printsupport -no-feature-printdialog -no-feature-printpreviewdialog -no-feature-printpreviewwidget"
 fi
 
 # update static options for major qt version
@@ -251,7 +259,6 @@ if [[ "$OS" == "windows" ]]; then
         # help pkgconfig find the packages we've installed using vcpkg
         PKG_CONFIG_PATH=$VCPKG_INSTALLATION_ROOT/installed/$VCPKG_TRIPLET/lib/pkgconfig
     else
-        QT_WINDOWS_OPTIONS="$QT_WINDOWS_OPTIONS -no-feature-printsupport"
         # help cmake find the packages we've installed using vcpkg
         CMAKE_PREFIX_PATH=$VCPKG_INSTALLATION_ROOT/installed/$VCPKG_TRIPLET
     fi
