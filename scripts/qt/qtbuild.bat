@@ -168,8 +168,13 @@ if %QT_MAJOR_VERSION% EQU 5 (
 )
 
 echo QT Configure command
-echo "%QT_SRC_PATH:\=/%/configure.bat" -prefix "%QT_BUILD_PATH:\=/%" %QT_WINDOWS_OPTIONS% %QT_CONFIGURE_OPTIONS% -L "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/lib" -I "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/include" -I "%OPENSSL_BUILD_PATH:\=/%/include" -L "%OPENSSL_BUILD_PATH:\=/%/lib" OPENSSL_ROOT_DIR="%OPENSSL_BUILD_PATH:\=/%" OPENSSL_LIBS="%OPENSSL_BUILD_PATH:\=/%/lib/libcrypto.lib %OPENSSL_BUILD_PATH:\=/%/lib/libssl.lib -lAdvapi32 -lUser32 -lcrypt32 -lws2_32"
-call "%QT_SRC_PATH:\=/%/configure.bat" -prefix "%QT_BUILD_PATH:\=/%" %QT_WINDOWS_OPTIONS% %QT_CONFIGURE_OPTIONS% -L "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/lib" -I "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/include" -I "%OPENSSL_BUILD_PATH:\=/%/include" -L "%OPENSSL_BUILD_PATH:\=/%/lib" OPENSSL_ROOT_DIR="%OPENSSL_BUILD_PATH:\=/%" OPENSSL_LIBS="%OPENSSL_BUILD_PATH:\=/%/lib/libcrypto.lib %OPENSSL_BUILD_PATH:\=/%/lib/libssl.lib -lAdvapi32 -lUser32 -lcrypt32 -lws2_32"
+if %QT_MAJOR_VERSION% EQU 5 (
+    echo "%QT_SRC_PATH:\=/%/configure.bat" -prefix "%QT_BUILD_PATH:\=/%" %QT_WINDOWS_OPTIONS% %QT_CONFIGURE_OPTIONS% -L "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/lib" -I "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/include" -I "%OPENSSL_BUILD_PATH:\=/%/include" -L "%OPENSSL_BUILD_PATH:\=/%/lib" OPENSSL_LIBS="%OPENSSL_BUILD_PATH:\=/%/lib/libcrypto.lib %OPENSSL_BUILD_PATH:\=/%/lib/libssl.lib -lAdvapi32 -lUser32 -lcrypt32 -lws2_32"
+    call "%QT_SRC_PATH:\=/%/configure.bat" -prefix "%QT_BUILD_PATH:\=/%" %QT_WINDOWS_OPTIONS% %QT_CONFIGURE_OPTIONS% -L "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/lib" -I "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/include" -I "%OPENSSL_BUILD_PATH:\=/%/include" -L "%OPENSSL_BUILD_PATH:\=/%/lib" OPENSSL_LIBS="%OPENSSL_BUILD_PATH:\=/%/lib/libcrypto.lib %OPENSSL_BUILD_PATH:\=/%/lib/libssl.lib -lAdvapi32 -lUser32 -lcrypt32 -lws2_32"
+) else (
+    echo "%QT_SRC_PATH:\=/%/configure.bat" -prefix "%QT_BUILD_PATH:\=/%" %QT_WINDOWS_OPTIONS% %QT_CONFIGURE_OPTIONS% -L "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/lib" -I "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/include" -I "%OPENSSL_BUILD_PATH:\=/%/include" -L "%OPENSSL_BUILD_PATH:\=/%/lib" OPENSSL_ROOT_DIR="%OPENSSL_BUILD_PATH:\=/%" OPENSSL_LIBS="%OPENSSL_BUILD_PATH:\=/%/lib/libcrypto.lib %OPENSSL_BUILD_PATH:\=/%/lib/libssl.lib -lAdvapi32 -lUser32 -lcrypt32 -lws2_32"
+    call "%QT_SRC_PATH:\=/%/configure.bat" -prefix "%QT_BUILD_PATH:\=/%" %QT_WINDOWS_OPTIONS% %QT_CONFIGURE_OPTIONS% -L "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/lib" -I "%VCPKG_INSTALLATION_ROOT:\=/%/installed/%VCPKG_TRIPLET%/include" -I "%OPENSSL_BUILD_PATH:\=/%/include" -L "%OPENSSL_BUILD_PATH:\=/%/lib" OPENSSL_ROOT_DIR="%OPENSSL_BUILD_PATH:\=/%" OPENSSL_LIBS="%OPENSSL_BUILD_PATH:\=/%/lib/libcrypto.lib %OPENSSL_BUILD_PATH:\=/%/lib/libssl.lib -lAdvapi32 -lUser32 -lcrypt32 -lws2_32"
+)
 if %ERRORLEVEL% NEQ 0 EXIT /B 0
 
 echo Building QT %QT_FULL_VERSION%
