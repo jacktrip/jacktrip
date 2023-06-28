@@ -78,6 +78,9 @@ jobs:
             build-system: qmake # qmake, meson, cmake (todo)
             # meson-library-type: shared # shared, static, both
             # static-analysis: true # run clang-tidy static analysis (meson/Linux only)
+            qt-cache-key: 'v01-x86_64'
+            qt-cache-version: '5.15.10'
+            qt-cache-type: 'static'
             
           - name: Linux-x64-qmake-gcc-shared-no_rtaudio
             runs-on: ubuntu-22.04
@@ -115,6 +118,9 @@ jobs:
             jacktrip-path: jacktrip
             binary-path: binary
             build-system: qmake
+            qt-cache-key: 'v01-x86_64'
+            qt-cache-version: '6.2.4'
+            qt-cache-type: 'static'
 
           - name: Linux-x64-meson-gcc-shared-bundled_rtaudio
             runs-on: ubuntu-22.04
@@ -158,9 +164,12 @@ jobs:
             bundle-path: bundle
             installer-path: installer
             build-system: qmake
+            qt-cache-key: 'v01-universal'
+            qt-cache-version: '5.15.10'
+            qt-cache-type: 'static'
 
           - name: macOS-x64-qmake-clang-shared
-            runs-on: macos-11
+            runs-on: macos-12
             system-rtaudio: true
             bundled-rtaudio: false
             nogui: false
@@ -171,9 +180,14 @@ jobs:
             # bundle-path: bundle
             # installer-path: installer
             build-system: qmake
+            xcode-directory: /Applications/Xcode_14.0.1.app # uses SDK macOS 12.3 which is latest supported by qt
+            qt-cache-key: 'v01-x86_64'
+            qt-cache-arch: 'x86_64'
+            qt-cache-version: '5.15.10'
+            qt-cache-type: 'dynamic'
 
           - name: macOS-x64-meson-clang-shared-bundled_rtaudio
-            runs-on: macos-11
+            runs-on: macos-12
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
@@ -185,7 +199,31 @@ jobs:
             # installer-path: installer
             build-system: meson
             meson-library-type: both
+            xcode-directory: /Applications/Xcode_14.0.1.app # uses SDK macOS 12.3 which is latest supported by qt
+            qt-cache-key: 'v01-x86_64'
+            qt-cache-arch: 'x86_64'
+            qt-cache-version: '6.2.4'
+            qt-cache-type: 'dynamic'
             
+          - name: macOS-x64-meson-clang-shared
+            runs-on: macos-12
+            system-rtaudio: true
+            bundled-rtaudio: false
+            nogui: false
+            novs: false
+            weakjack: true
+            # jacktrip-path: jacktrip
+            # binary-path: binary
+            # bundle-path: bundle
+            # installer-path: installer
+            build-system: meson
+            meson-library-type: both
+            xcode-directory: /Applications/Xcode_14.0.1.app # uses SDK macOS 12.3 which is latest supported by qt
+            qt-cache-key: 'v01-x86_64'
+            qt-cache-arch: 'x86_64'
+            qt-cache-version: '6.2.4'
+            qt-cache-type: 'static'
+
           - name: Windows-x64-qmake-gcc-static-bundled_rtaudio
             release-name: Windows-x64
             runs-on: windows-2019
@@ -196,7 +234,10 @@ jobs:
             weakjack: true
             vcpkg-triplet: x64-mingw-static
             static-qt-version: 5.15.9
-            qt-static-cache-key: 'v12'
+            qt-static-cache-key: 'v11'
+            qt-cache-key: 'v01-x86_64'
+            qt-cache-version: '5.15.10'
+            qt-cache-type: 'static'
             jacktrip-path: release/jacktrip.exe
             binary-path: binary
             installer-path: installer
@@ -211,7 +252,9 @@ jobs:
             weakjack: true
             vcpkg-triplet: x64-mingw-dynamic
             qt-arch: 'win64_mingw81'
-            qt-cache-key: 'v01'
+            qt-cache-key: 'v01-x86_64'
+            qt-cache-version: '5.15.10'
+            qt-cache-type: 'dynamic'
             # jacktrip-path: release/jacktrip.exe
             # binary-path: binary
             build-system: qmake
@@ -225,7 +268,9 @@ jobs:
             weakjack: true
             vcpkg-triplet: x64-windows
             qt-arch: 'win64_msvc2019_64'
-            qt-cache-key: 'v01'
+            qt-cache-key: 'v01-x86_64'
+            qt-cache-version: '6.2.4'
+            qt-cache-type: 'static'
             # jacktrip-path: jacktrip.exe
             # binary-path: binary
             build-system: meson
@@ -239,7 +284,9 @@ jobs:
             novs: false
             weakjack: true
             qt-arch: 'win64_msvc2019_64'
-            qt-cache-key: 'v01'
+            qt-cache-key: 'v01-x86_64'
+            qt-cache-version: '6.2.4'
+            qt-cache-type: 'dynamic'
             # jacktrip-path: jacktrip.exe
             # binary-path: binary
             build-system: meson
@@ -312,7 +359,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install --yes libjack-dev
+          sudo apt-get install --yes libjack-dev libclang-dev
           if [[ -n "${{ matrix.static-qt-version }}" ]]; then 
             sudo apt-get install --yes libfreetype6-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev libx11-xcb-dev libdrm-dev libglu1-mesa-dev libwayland-dev libwayland-egl1-mesa libgles2-mesa-dev libwayland-server0 libwayland-egl-backend-dev libxcb1-dev libxext-dev libfontconfig1-dev libxrender-dev libxcb-keysyms1-dev libxcb-image0-dev libxcb-shm0-dev libxcb-icccm4-dev '^libxcb.*-dev' libxcb-render-util0-dev libxcomposite-dev libgtk-3-dev
           else
@@ -367,7 +414,6 @@ jobs:
           choco install jack --version=1.9.17 --no-progress
           if [[ "${{ matrix.build-system }}" == "qmake" && -n "${{ matrix.static-qt-version }}" && -n "${{ matrix.vcpkg-triplet }}" ]]; then 
             vcpkg install openssl --triplet="${{ matrix.vcpkg-triplet }}"
-            vcpkg install webview2 --triplet="${{ matrix.vcpkg-triplet }}"
           fi
           if [[ "${{ matrix.system-rtaudio }}" == true && -n "${{ matrix.vcpkg-triplet }}" ]]; then 
             choco install pkgconfiglite --no-progress
@@ -387,6 +433,40 @@ jobs:
       - name: setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
         if: runner.os == 'Windows' && matrix.build-system == 'meson' # MSVC used only by meson
+      - name: Unix - load Qt from cache
+        id: qt-cache-load-unix
+        if: matrix.qt-cache-version && matrix.qt-cache-type && matrix.qt-cache-key && runner.os != 'Windows'
+        uses: actions/cache@v3
+        with:
+          path: /opt/qt-${{ matrix.qt-cache-version }}-${{ matrix.qt-cache-type }}
+          key: qt-cache-${{ matrix.qt-cache-version }}-${{ matrix.qt-cache-type }}-${{ runner.os }}-${{ matrix.qt-cache-key }}
+      - name: Unix - build Qt from source
+        if: matrix.qt-cache-version && matrix.qt-cache-type && matrix.qt-cache-key && runner.os != 'Windows' && steps.qt-cache-load-unix.outputs.cache-hit != 'true'
+        env:
+          QT_BUILD_ARCH: ${{ matrix.qt-cache-arch }}
+        run: |
+          sudo chmod a+rwx /opt
+          mkdir -p /opt/qtbuild
+          cp scripts/qt/* /opt/qtbuild
+          cd /opt/qtbuild
+          if [[ "${{ matrix.qt-cache-type }}" == "dynamic" ]]; then ./qtbuild.sh -dynamic ${{ matrix.qt-cache-version }}; else ./qtbuild.sh ${{ matrix.qt-cache-version }}; fi
+      - name: Windows - load Qt from cache
+        id: qt-cache-load-windows
+        if: matrix.qt-cache-version && matrix.qt-cache-type && matrix.qt-cache-key && runner.os == 'Windows'
+        uses: actions/cache@v3
+        with:
+          path: c:\qt\qt-${{ matrix.qt-cache-version }}-${{ matrix.qt-cache-type }}
+          key: qt-cache-${{ matrix.qt-cache-version }}-${{ matrix.qt-cache-type }}-${{ runner.os }}-${{ matrix.qt-cache-key }}
+      - name: Windows - build Qt from source
+        if: matrix.qt-cache-version && matrix.qt-cache-type && matrix.qt-cache-key && runner.os == 'Windows' && steps.qt-cache-load-windows.outputs.cache-hit != 'true'
+        env:
+          QT_BUILD_ARCH: ${{ matrix.qt-cache-arch }}
+        run: |
+          mkdir C:\qt
+          mkdir C:\qt\build
+          copy scripts\qt\qtbuild.bat c:\qt\build\qtbuild.bat
+          cd c:\qt\build
+          if ( "${{ matrix.qt-cache-type }}" -eq "dynamic" ) { c:\qt\build\qtbuild.bat -dynamic ${{ matrix.qt-cache-version }} } else { c:\qt\build\qtbuild.bat ${{ matrix.qt-cache-version }} }
       - name: install Qt
         uses: jurplel/install-qt-action@v3
         if: runner.os == 'Windows' && !matrix.static-qt-version
@@ -508,7 +588,6 @@ jobs:
           mingw32-make -j4
           echo "installing Qt"
           mingw32-make install
-          dir "%QT_STATIC_BUILD_PATH%/plugins/webview"
         env:
           VCPKG_TRIPLET: ${{ matrix.vcpkg-triplet }}
       - name: set Qt environment variables # needed to find qmake depending on the way qt was installed

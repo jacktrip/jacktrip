@@ -131,7 +131,7 @@ if [[ ! -d "$QT_SRC_PATH" ]]; then
             patch -d "$QT_SRC_PATH/qtbase" < "./qt5-osx-configure.json.patch"
         elif [[ $QT_MAJOR_VERSION -eq 6 && $QT_MINOR_VERSION -lt 3 ]]; then
             # QT6.2.4 on OSX only: this patch fixes a bug in a third-party dependency of WebEngine
-            patch -d "$QT_SRC_PATH/qtbase" < "./qt6-harfbuzz.patch"
+            patch -p0 -d "$QT_SRC_PATH" < "./qt6-harfbuzz.patch"
         fi
     elif [[ "$OS" == "linux" && $QT_MAJOR_VERSION -eq 6 && $QT_MINOR_VERSION -lt 5 ]]; then
         # QT6 (cmake) on Linux only: fix bug with building WebEngine
@@ -209,39 +209,46 @@ fi
 
 # OSX
 if [[ "$OS" == "osx" ]]; then
-    QT_UNIVERSAL_BUILD=1
-    if [[ $QT_DYNAMIC_BUILD -eq 1 ]]; then
-        # don't try to build universal dynamic builds on osx arm due to this bug
-        # https://bugreports.qt.io/browse/QTBUG-100672
-        PROCESSOR=$(uname -p)
+    if [[ "x$QT_BUILD_ARCH" == "x" ]]; then
+        # default to universal builds
         if [[ $QT_MAJOR_VERSION -eq 5 ]]; then
-            QT_UNIVERSAL_BUILD=0
-        elif [[ $QT_MAJOR_VERSION -eq 6 && $QT_MINOR_VERSION -lt 3 && "$PROCESSOR" == "arm" ]]; then
-            QT_UNIVERSAL_BUILD=0
+            QT_BUILD_ARCH="x86_64 arm64"
+        else
+            QT_BUILD_ARCH="x86_64;arm64"
+        fi
+        if [[ $QT_DYNAMIC_BUILD -eq 1 ]]; then
+            # don't try to build universal dynamic builds on osx arm due to this bug
+            # https://bugreports.qt.io/browse/QTBUG-100672
+            PROCESSOR=$(uname -p)
+            if [[ $QT_MAJOR_VERSION -eq 5 ]]; then
+                QT_BUILD_ARCH=""
+            elif [[ $QT_MAJOR_VERSION -eq 6 && $QT_MINOR_VERSION -lt 3 && "$PROCESSOR" == "arm" ]]; then
+                QT_BUILD_ARCH=""
+            fi
         fi
     fi
 
     if [[ $QT_MAJOR_VERSION -eq 5 ]]; then
         # configure qt for osx
-        if [[ $QT_UNIVERSAL_BUILD -eq 1 ]]; then
-            echo "QT Configure command (universal)"
-            echo "\"$QT_SRC_PATH/configure\" -prefix \"$QT_BUILD_PATH\" $QT_CONFIGURE_OPTIONS \"QMAKE_APPLE_DEVICE_ARCHS=x86_64 arm64\""
-            "$QT_SRC_PATH/configure" -prefix "$QT_BUILD_PATH" $QT_CONFIGURE_OPTIONS "QMAKE_APPLE_DEVICE_ARCHS=x86_64 arm64"
-        else
+        if [[ "x$QT_BUILD_ARCH" == "x" ]]; then
             echo "QT Configure command (NOT universal)"
             echo "\"$QT_SRC_PATH/configure\" -prefix \"$QT_BUILD_PATH\" $QT_CONFIGURE_OPTIONS"
             "$QT_SRC_PATH/configure" -prefix "$QT_BUILD_PATH" $QT_CONFIGURE_OPTIONS
+        else
+            echo "QT Configure command (universal)"
+            echo "\"$QT_SRC_PATH/configure\" -prefix \"$QT_BUILD_PATH\" $QT_CONFIGURE_OPTIONS \"QMAKE_APPLE_DEVICE_ARCHS=$QT_BUILD_ARCH\""
+            "$QT_SRC_PATH/configure" -prefix "$QT_BUILD_PATH" $QT_CONFIGURE_OPTIONS "QMAKE_APPLE_DEVICE_ARCHS=$QT_BUILD_ARCH"
         fi
     else
         # configure qt for osx
-        if [[ $QT_UNIVERSAL_BUILD -eq 1 ]]; then
-            echo "QT Configure command (universal)"
-            echo "\"$QT_SRC_PATH/configure\" -prefix \"$QT_BUILD_PATH\" $QT_CONFIGURE_OPTIONS -- \"-DCMAKE_OSX_ARCHITECTURES=x86_64;arm64\""
-            "$QT_SRC_PATH/configure" -prefix "$QT_BUILD_PATH" $QT_CONFIGURE_OPTIONS -- "-DCMAKE_OSX_ARCHITECTURES=x86_64;arm64"
-        else
+        if [[ "x$QT_BUILD_ARCH" == "x" ]]; then
             echo "QT Configure command (NOT universal)"
             echo "\"$QT_SRC_PATH/configure\" -prefix \"$QT_BUILD_PATH\" $QT_CONFIGURE_OPTIONS"
             "$QT_SRC_PATH/configure" -prefix "$QT_BUILD_PATH" $QT_CONFIGURE_OPTIONS
+        else
+            echo "QT Configure command (universal)"
+            echo "\"$QT_SRC_PATH/configure\" -prefix \"$QT_BUILD_PATH\" $QT_CONFIGURE_OPTIONS -- \"-DCMAKE_OSX_ARCHITECTURES=$QT_BUILD_ARCH\""
+            "$QT_SRC_PATH/configure" -prefix "$QT_BUILD_PATH" $QT_CONFIGURE_OPTIONS -- "-DCMAKE_OSX_ARCHITECTURES=$QT_BUILD_ARCH"
         fi
     fi
 fi
