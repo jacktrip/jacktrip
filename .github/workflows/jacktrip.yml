@@ -183,8 +183,8 @@ jobs:
             xcode-directory: /Applications/Xcode_14.0.1.app # uses SDK macOS 12.3 which is latest supported by qt
             qt-cache-key: 'v01-x86_64'
             qt-cache-arch: 'x86_64'
-            qt-cache-version: '5.15.10'
-            qt-cache-type: 'dynamic'
+            qt-cache-version: '6.2.4'
+            qt-cache-type: 'static'
 
           - name: macOS-x64-meson-clang-shared-bundled_rtaudio
             runs-on: macos-12
@@ -199,30 +199,6 @@ jobs:
             # installer-path: installer
             build-system: meson
             meson-library-type: both
-            xcode-directory: /Applications/Xcode_14.0.1.app # uses SDK macOS 12.3 which is latest supported by qt
-            qt-cache-key: 'v01-x86_64'
-            qt-cache-arch: 'x86_64'
-            qt-cache-version: '6.2.4'
-            qt-cache-type: 'dynamic'
-            
-          - name: macOS-x64-meson-clang-shared
-            runs-on: macos-12
-            system-rtaudio: true
-            bundled-rtaudio: false
-            nogui: false
-            novs: false
-            weakjack: true
-            # jacktrip-path: jacktrip
-            # binary-path: binary
-            # bundle-path: bundle
-            # installer-path: installer
-            build-system: meson
-            meson-library-type: both
-            xcode-directory: /Applications/Xcode_14.0.1.app # uses SDK macOS 12.3 which is latest supported by qt
-            qt-cache-key: 'v01-x86_64'
-            qt-cache-arch: 'x86_64'
-            qt-cache-version: '6.2.4'
-            qt-cache-type: 'static'
 
           - name: Windows-x64-qmake-gcc-static-bundled_rtaudio
             release-name: Windows-x64
@@ -358,8 +334,9 @@ jobs:
       - name: install dependencies for Linux
         if: runner.os == 'Linux'
         run: |
+          sudo chmod a+rwx /opt
           sudo apt-get update
-          sudo apt-get install --yes libjack-dev libclang-dev
+          sudo apt-get install --yes libjack-dev libclang-dev ninja-build
           if [[ -n "${{ matrix.static-qt-version }}" ]]; then 
             sudo apt-get install --yes libfreetype6-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev libx11-xcb-dev libdrm-dev libglu1-mesa-dev libwayland-dev libwayland-egl1-mesa libgles2-mesa-dev libwayland-server0 libwayland-egl-backend-dev libxcb1-dev libxext-dev libfontconfig1-dev libxrender-dev libxcb-keysyms1-dev libxcb-image0-dev libxcb-shm0-dev libxcb-icccm4-dev '^libxcb.*-dev' libxcb-render-util0-dev libxcomposite-dev libgtk-3-dev
           else
@@ -376,7 +353,7 @@ jobs:
           if [[ "${{ matrix.build-system }}" == "meson" ]]; then
             sudo apt-get install --yes help2man clang-tidy
             python -m pip install --upgrade pip
-            pip install meson ninja pyyaml Jinja2
+            pip install meson pyyaml Jinja2
           fi
           if [[ "${{ matrix.nogui }}" == false ]]; then 
             sudo apt-get install --yes desktop-file-utils
@@ -393,6 +370,8 @@ jobs:
           curl -L https://github.com/jackaudio/jack2-releases/releases/download/v1.9.16/jack2-macOS-v1.9.16.tar.gz -o jack2.tar.gz
           tar -xf jack2.tar.gz
           sudo installer -pkg jack2-osx-1.9.16.pkg -target /
+          sudo chmod a+rwx /opt
+          brew install ninja
           if [[ -z "${{ matrix.static-qt-version }}" ]]; then 
             brew install qt5
             brew link qt5 --force
@@ -445,7 +424,6 @@ jobs:
         env:
           QT_BUILD_ARCH: ${{ matrix.qt-cache-arch }}
         run: |
-          sudo chmod a+rwx /opt
           mkdir -p /opt/qtbuild
           cp scripts/qt/* /opt/qtbuild
           cd /opt/qtbuild
