@@ -78,7 +78,7 @@ jobs:
             build-system: qmake # qmake, meson, cmake (todo)
             # meson-library-type: shared # shared, static, both
             # static-analysis: true # run clang-tidy static analysis (meson/Linux only)
-            qt-cache-key: 'v01-x86_64'
+            qt-cache-key: 'v02-x86_64'
             qt-cache-version: '5.15.10'
             qt-cache-type: 'static'
             
@@ -118,7 +118,7 @@ jobs:
             jacktrip-path: jacktrip
             binary-path: binary
             build-system: qmake
-            qt-cache-key: 'v01-x86_64'
+            qt-cache-key: 'v02-x86_64'
             qt-cache-version: '6.2.4'
             qt-cache-type: 'static'
 
@@ -164,7 +164,7 @@ jobs:
             bundle-path: bundle
             installer-path: installer
             build-system: qmake
-            qt-cache-key: 'v01-universal'
+            qt-cache-key: 'v02-universal'
             qt-cache-version: '5.15.10'
             qt-cache-type: 'static'
 
@@ -181,7 +181,7 @@ jobs:
             # installer-path: installer
             build-system: qmake
             xcode-directory: /Applications/Xcode_14.0.1.app # uses SDK macOS 12.3 which is latest supported by qt
-            qt-cache-key: 'v01-x86_64'
+            qt-cache-key: 'v02-x86_64'
             qt-cache-arch: 'x86_64'
             qt-cache-version: '6.2.4'
             qt-cache-type: 'static'
@@ -211,7 +211,7 @@ jobs:
             vcpkg-triplet: x64-mingw-static
             static-qt-version: 5.15.9
             qt-static-cache-key: 'v11'
-            qt-cache-key: 'v01-x86_64'
+            qt-cache-key: 'v02-x86_64'
             qt-cache-version: '5.15.10'
             qt-cache-type: 'static'
             jacktrip-path: release/jacktrip.exe
@@ -228,7 +228,7 @@ jobs:
             weakjack: true
             vcpkg-triplet: x64-mingw-dynamic
             qt-arch: 'win64_mingw81'
-            qt-cache-key: 'v01-x86_64'
+            qt-cache-key: 'v02-x86_64'
             qt-cache-version: '5.15.10'
             qt-cache-type: 'dynamic'
             # jacktrip-path: release/jacktrip.exe
@@ -244,7 +244,7 @@ jobs:
             weakjack: true
             vcpkg-triplet: x64-windows
             qt-arch: 'win64_msvc2019_64'
-            qt-cache-key: 'v01-x86_64'
+            qt-cache-key: 'v02-x86_64'
             qt-cache-version: '6.2.4'
             qt-cache-type: 'static'
             # jacktrip-path: jacktrip.exe
@@ -260,7 +260,7 @@ jobs:
             novs: false
             weakjack: true
             qt-arch: 'win64_msvc2019_64'
-            qt-cache-key: 'v01-x86_64'
+            qt-cache-key: 'v02-x86_64'
             qt-cache-version: '6.2.4'
             qt-cache-type: 'dynamic'
             # jacktrip-path: jacktrip.exe
@@ -417,7 +417,9 @@ jobs:
         if: matrix.qt-cache-version && matrix.qt-cache-type && matrix.qt-cache-key && runner.os != 'Windows'
         uses: actions/cache@v3
         with:
-          path: /opt/qt-${{ matrix.qt-cache-version }}-${{ matrix.qt-cache-type }}
+          path: |
+            /opt/qt-${{ matrix.qt-cache-version }}-${{ matrix.qt-cache-type }}
+            /opt/openssl-*
           key: qt-cache-${{ matrix.qt-cache-version }}-${{ matrix.qt-cache-type }}-${{ runner.os }}-${{ matrix.qt-cache-key }}
       - name: Unix - build Qt from source
         if: matrix.qt-cache-version && matrix.qt-cache-type && matrix.qt-cache-key && runner.os != 'Windows' && steps.qt-cache-load-unix.outputs.cache-hit != 'true'
@@ -433,7 +435,9 @@ jobs:
         if: matrix.qt-cache-version && matrix.qt-cache-type && matrix.qt-cache-key && runner.os == 'Windows'
         uses: actions/cache@v3
         with:
-          path: c:\qt\qt-${{ matrix.qt-cache-version }}-${{ matrix.qt-cache-type }}
+          path: |
+            c:\qt\qt-${{ matrix.qt-cache-version }}-${{ matrix.qt-cache-type }}
+            c:\qt\openssl-*
           key: qt-cache-${{ matrix.qt-cache-version }}-${{ matrix.qt-cache-type }}-${{ runner.os }}-${{ matrix.qt-cache-key }}
       - name: Windows - build Qt from source
         if: matrix.qt-cache-version && matrix.qt-cache-type && matrix.qt-cache-key && runner.os == 'Windows' && steps.qt-cache-load-windows.outputs.cache-hit != 'true'
