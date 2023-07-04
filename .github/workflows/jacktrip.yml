@@ -211,9 +211,6 @@ jobs:
             vcpkg-triplet: x64-mingw-static
             static-qt-version: 5.15.9
             qt-static-cache-key: 'v11'
-            qt-cache-key: 'v02-x86_64'
-            qt-cache-version: '5.15.10'
-            qt-cache-type: 'static'
             jacktrip-path: release/jacktrip.exe
             binary-path: binary
             installer-path: installer
@@ -228,9 +225,6 @@ jobs:
             weakjack: true
             vcpkg-triplet: x64-mingw-dynamic
             qt-arch: 'win64_mingw81'
-            qt-cache-key: 'v02-x86_64'
-            qt-cache-version: '5.15.10'
-            qt-cache-type: 'dynamic'
             # jacktrip-path: release/jacktrip.exe
             # binary-path: binary
             build-system: qmake
@@ -267,6 +261,40 @@ jobs:
             # binary-path: binary
             build-system: meson
             meson-library-type: both
+
+          - name: Windows-x64-for-5.15.10-static-remove-me
+            runs-on: windows-2019
+            system-rtaudio: true
+            bundled-rtaudio: false
+            nogui: false
+            novs: false
+            weakjack: true
+            vcpkg-triplet: x64-windows
+            qt-arch: 'win64_msvc2019_64'
+            qt-cache-key: 'v03-x86_64'
+            qt-cache-version: '5.15.10'
+            qt-cache-type: 'static'
+            # jacktrip-path: jacktrip.exe
+            # binary-path: binary
+            build-system: meson
+            meson-library-type: shared
+
+          - name: Windows-x64-for-5.15.10-dynamic-remove-me
+            runs-on: windows-2019
+            system-rtaudio: true
+            bundled-rtaudio: false
+            nogui: false
+            novs: false
+            weakjack: true
+            vcpkg-triplet: x64-windows
+            qt-arch: 'win64_msvc2019_64'
+            qt-cache-key: 'v03-x86_64'
+            qt-cache-version: '5.15.10'
+            qt-cache-type: 'dynamic'
+            # jacktrip-path: jacktrip.exe
+            # binary-path: binary
+            build-system: meson
+            meson-library-type: shared
 
     env:
       BUILD_PATH: ${{ github.workspace }}/builddir
