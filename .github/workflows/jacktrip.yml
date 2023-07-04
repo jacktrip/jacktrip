@@ -271,7 +271,7 @@ jobs:
             weakjack: true
             vcpkg-triplet: x64-windows
             qt-arch: 'win64_msvc2019_64'
-            qt-cache-key: 'v03-x86_64'
+            qt-cache-key: 'v05-x86_64'
             qt-cache-version: '5.15.10'
             qt-cache-type: 'static'
             # jacktrip-path: jacktrip.exe
@@ -288,7 +288,7 @@ jobs:
             weakjack: true
             vcpkg-triplet: x64-windows
             qt-arch: 'win64_msvc2019_64'
-            qt-cache-key: 'v03-x86_64'
+            qt-cache-key: 'v05-x86_64'
             qt-cache-version: '5.15.10'
             qt-cache-type: 'dynamic'
             # jacktrip-path: jacktrip.exe
@@ -421,6 +421,10 @@ jobs:
           choco install jack --version=1.9.17 --no-progress
           if [[ "${{ matrix.build-system }}" == "qmake" && -n "${{ matrix.static-qt-version }}" && -n "${{ matrix.vcpkg-triplet }}" ]]; then 
             vcpkg install openssl --triplet="${{ matrix.vcpkg-triplet }}"
+          fi
+          if [[ -n "${{ matrix.qt-cache-key }}" ]]; then
+            choco install nasm --no-progress
+            echo "c:\Program Files\NASM" >> $GITHUB_PATH
           fi
           if [[ "${{ matrix.system-rtaudio }}" == true && -n "${{ matrix.vcpkg-triplet }}" ]]; then 
             choco install pkgconfiglite --no-progress
