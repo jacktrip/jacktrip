@@ -23,6 +23,11 @@ defines = ['-DWAIRTOHUB']
 c_defines = []
 incdirs = []
 
+if get_option('buildtype') == 'release'
+	defines += ['-DNDEBUG']
+	c_defines += ['-DNDEBUG']
+endif
+
 src = [	'src/DataProtocol.cpp',
 	'src/JackTrip.cpp',
 	'src/ProcessPlugin.cpp',
@@ -252,7 +257,7 @@ endif
 jacktrip = executable('jacktrip', src, qres_files, ui_files, moc_files, include_directories: incdirs, dependencies: deps, c_args: c_defines, cpp_args: defines, install: true )
 
 help2man = find_program('help2man', required: false)
-if not (host_machine.system() == 'windows')
+if (host_machine.system() == 'linux')
 	if help2man.found()
 		help2man_opts = [
 			'--no-info',

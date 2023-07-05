@@ -112,10 +112,10 @@ if [[ $platform == 'linux' ]]; then
     echo "Using qmake-qt5"
     QCMD=qmake-qt5
   elif hash qmake 2>/dev/null; then #in case qt was compiled by user
-  echo "Using qmake"
-  QCMD=qmake
-fi
-MCMD=make
+    echo "Using qmake"
+    QCMD=qmake
+  fi
+  MCMD=make
 elif [[ $platform == 'macosx' ]]; then
   QCMD=qmake
   # if qmake is not in path, try homebrew qt5
@@ -144,6 +144,15 @@ fi
 # detect spec
 QSPEC=`$QCMD -query | grep QMAKE_SPEC`
 QSPEC=${QSPEC##QMAKE_SPEC:}
+
+# check spec for windows to update make command
+if [[ $QSPEC == "win32-msvc" ]]; then
+  MCMD=nmake
+  JOM=$(which jom.exe)
+  if [[ "x$JOM" != "x" ]]; then
+    MCMD=$JOM
+  fi
+fi
 
 # check for RtAudio
 if [[ $RTAUDIO == 1 ]]; then
@@ -183,7 +192,11 @@ $QCMD -spec $QSPEC $CONFIG "${UNKNOWN_OPTIONS[@]}" $PRO_FILE
 if [[ $clean == 1 ]]; then
   $MCMD clean
 fi
-$MCMD -j$jobs release
+if [[ "$MCMD" == "nmake" ]]; then
+  $MCMD release
+else
+  $MCMD -j$jobs release
+fi
 if [[ "$install" == 1 ]]; then
   echo "*** Installing JackTrip ***"
   echo "We need elevated privileges to install JackTrip in the system location"
