@@ -254,47 +254,14 @@ jobs:
             novs: false
             weakjack: true
             qt-arch: 'win64_msvc2019_64'
-            qt-cache-key: 'v02-x86_64'
-            qt-cache-version: '6.2.4'
-            qt-cache-type: 'dynamic'
+            qt-cache-key: 'v05-x86_64'
+            qt-cache-version: '5.15.10'
+            qt-cache-type: 'static'
+            vcpkg-triplet: x64-windows
             # jacktrip-path: jacktrip.exe
             # binary-path: binary
             build-system: meson
             meson-library-type: both
-
-          - name: Windows-x64-for-5.15.10-static-remove-me
-            runs-on: windows-2019
-            system-rtaudio: true
-            bundled-rtaudio: false
-            nogui: false
-            novs: false
-            weakjack: true
-            vcpkg-triplet: x64-windows
-            qt-arch: 'win64_msvc2019_64'
-            qt-cache-key: 'v05-x86_64'
-            qt-cache-version: '5.15.10'
-            qt-cache-type: 'static'
-            # jacktrip-path: jacktrip.exe
-            # binary-path: binary
-            build-system: meson
-            meson-library-type: shared
-
-          - name: Windows-x64-for-5.15.10-dynamic-remove-me
-            runs-on: windows-2019
-            system-rtaudio: true
-            bundled-rtaudio: false
-            nogui: false
-            novs: false
-            weakjack: true
-            vcpkg-triplet: x64-windows
-            qt-arch: 'win64_msvc2019_64'
-            qt-cache-key: 'v05-x86_64'
-            qt-cache-version: '5.15.10'
-            qt-cache-type: 'dynamic'
-            # jacktrip-path: jacktrip.exe
-            # binary-path: binary
-            build-system: meson
-            meson-library-type: shared
 
     env:
       BUILD_PATH: ${{ github.workspace }}/builddir
