@@ -1,6 +1,5 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
-import QtGraphicalEffects 1.12
 
 Item {
     width: parent.width; height: parent.height
@@ -22,21 +21,13 @@ Item {
 
     property real imageLightnessValue: virtualstudio.darkMode ? 1.0 : 0.0
 
-    Image {
+    AppIcon {
         id: ohnoImage
-        source: "ohno.png"
-        width: 180
-        height: 180
         y: 60
         anchors.horizontalCenter: parent.horizontalCenter
-    }
-
-    Colorize {
-        anchors.fill: ohnoImage
-        source: ohnoImage
-        hue: 0
-        saturation: 0
-        lightness: imageLightnessValue
+        width: 180
+        height: 180
+        icon.source: "sentiment_very_dissatisfied.svg"
     }
 
     Text {

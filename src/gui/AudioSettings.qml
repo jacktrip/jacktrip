@@ -1,6 +1,5 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
-import QtGraphicalEffects 1.12
 
 Rectangle {
     width: parent.width
@@ -100,15 +99,14 @@ Rectangle {
                 color: textColour
             }
 
-            Image {
+            AppIcon {
                 id: outputHelpIcon
                 anchors.left: outputLabel.right
                 anchors.bottom: outputLabel.top
                 anchors.bottomMargin: -8 * virtualstudio.uiScale
-                source: "help.svg"
-                sourceSize: Qt.size(12 * virtualstudio.uiScale, 12 * virtualstudio.uiScale)
-                fillMode: Image.PreserveAspectFit
-                smooth: true
+                width: 16 * virtualstudio.uiScale
+                height: 16 * virtualstudio.uiScale
+                icon.source: "help.svg"
 
                 property bool showToolTip: false
 
@@ -145,30 +143,13 @@ Rectangle {
                 }
             }
 
-            Colorize {
-                anchors.fill: outputHelpIcon
-                source: outputHelpIcon
-                hue: 0
-                saturation: 0
-                lightness: imageLightnessValue
-            }
-
-            Image {
+            AppIcon {
                 id: headphonesIcon
                 anchors.left: outputLabel.left
                 anchors.verticalCenter: outputDeviceMeters.verticalCenter
-                source: "headphones.svg"
-                sourceSize: Qt.size(28 * virtualstudio.uiScale, 28 * virtualstudio.uiScale)
-                fillMode: Image.PreserveAspectFit
-                smooth: true
-            }
-
-            Colorize {
-                anchors.fill: headphonesIcon
-                source: headphonesIcon
-                hue: 0
-                saturation: 0
-                lightness: imageLightnessValue
+                width: 28 * virtualstudio.uiScale
+                height: 28 * virtualstudio.uiScale
+                icon.source: "headphones.svg"
             }
 
             ComboBox {
@@ -277,41 +258,23 @@ Rectangle {
                 }
             }
 
-            Image {
+            AppIcon {
                 id: outputQuieterIcon
                 anchors.left: outputCombo.left
                 anchors.verticalCenter: outputSlider.verticalCenter
-                source: "quiet.svg"
-                sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
-                fillMode: Image.PreserveAspectFit
-                smooth: true
+                width: 18 * virtualstudio.uiScale
+                height: 18 * virtualstudio.uiScale
+                icon.source: "quiet.svg"
             }
 
-            Colorize {
-                anchors.fill: outputQuieterIcon
-                source: outputQuieterIcon
-                hue: 0
-                saturation: 0
-                lightness: imageLightnessValue
-            }
-
-            Image {
+            AppIcon {
                 id: outputLouderIcon
                 anchors.right: parent.right
                 anchors.rightMargin: rightMargin * virtualstudio.uiScale
                 anchors.verticalCenter: outputSlider.verticalCenter
-                source: "loud.svg"
-                sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
-                fillMode: Image.PreserveAspectFit
-                smooth: true
-            }
-
-            Colorize {
-                anchors.fill: outputLouderIcon
-                source: outputLouderIcon
-                hue: 0
-                saturation: 0
-                lightness: imageLightnessValue
+                width: 20 * virtualstudio.uiScale
+                height: 20 * virtualstudio.uiScale
+                icon.source: "loud.svg"
             }
 
             Text {
@@ -410,15 +373,14 @@ Rectangle {
                 color: textColour
             }
 
-            Image {
+            AppIcon {
                 id: inputHelpIcon
                 anchors.left: inputLabel.right
                 anchors.bottom: inputLabel.top
                 anchors.bottomMargin: -8 * virtualstudio.uiScale
-                source: "help.svg"
-                sourceSize: Qt.size(12 * virtualstudio.uiScale, 12 * virtualstudio.uiScale)
-                fillMode: Image.PreserveAspectFit
-                smooth: true
+                width: 16 * virtualstudio.uiScale
+                height: 16 * virtualstudio.uiScale
+                icon.source: "help.svg"
 
                 property bool showToolTip: false
 
@@ -455,30 +417,13 @@ Rectangle {
                 }
             }
 
-            Colorize {
-                anchors.fill: inputHelpIcon
-                source: inputHelpIcon
-                hue: 0
-                saturation: 0
-                lightness: imageLightnessValue
-            }
-
-            Image {
+            AppIcon {
                 id: microphoneIcon
                 anchors.left: outputLabel.left
                 anchors.verticalCenter: inputDeviceMeters.verticalCenter
-                source: "mic.svg"
-                sourceSize: Qt.size(32 * virtualstudio.uiScale, 32 * virtualstudio.uiScale)
-                fillMode: Image.PreserveAspectFit
-                smooth: true
-            }
-
-            Colorize {
-                anchors.fill: microphoneIcon
-                source: microphoneIcon
-                hue: 0
-                saturation: 0
-                lightness: imageLightnessValue
+                width: 32 * virtualstudio.uiScale
+                height: 32 * virtualstudio.uiScale
+                icon.source: "mic.svg"
             }
 
             ComboBox {
@@ -586,41 +531,23 @@ Rectangle {
                 }
             }
 
-            Image {
+            AppIcon {
                 id: inputQuieterIcon
                 anchors.left: inputDeviceMeters.left
                 anchors.verticalCenter: inputSlider.verticalCenter
-                source: "quiet.svg"
-                sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
-                fillMode: Image.PreserveAspectFit
-                smooth: true
+                width: 18 * virtualstudio.uiScale
+                height: 18 * virtualstudio.uiScale
+                icon.source: "quiet.svg"
             }
 
-            Colorize {
-                anchors.fill: inputQuieterIcon
-                source: inputQuieterIcon
-                hue: 0
-                saturation: 0
-                lightness: imageLightnessValue
-            }
-
-            Image {
+            AppIcon {
                 id: inputLouderIcon
                 anchors.right: parent.right
                 anchors.rightMargin: rightMargin * virtualstudio.uiScale
                 anchors.verticalCenter: inputSlider.verticalCenter
-                source: "loud.svg"
-                sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
-                fillMode: Image.PreserveAspectFit
-                smooth: true
-            }
-
-            Colorize {
-                anchors.fill: inputLouderIcon
-                source: inputLouderIcon
-                hue: 0
-                saturation: 0
-                lightness: imageLightnessValue
+                width: 20 * virtualstudio.uiScale
+                height: 20 * virtualstudio.uiScale
+                icon.source: "loud.svg"
             }
 
             Button {
@@ -842,22 +769,13 @@ Rectangle {
                 color: textColour
             }
 
-            Image {
+            AppIcon {
                 id: jackHeadphonesIcon
                 anchors.left: jackOutputLabel.left
                 anchors.verticalCenter: jackOutputVolumeSlider.verticalCenter
-                source: "headphones.svg"
-                sourceSize: Qt.size(28 * virtualstudio.uiScale, 28 * virtualstudio.uiScale)
-                fillMode: Image.PreserveAspectFit
-                smooth: true
-            }
-
-            Colorize {
-                anchors.fill: jackHeadphonesIcon
-                source: jackHeadphonesIcon
-                hue: 0
-                saturation: 0
-                lightness: imageLightnessValue
+                width: 28 * virtualstudio.uiScale
+                height: 28 * virtualstudio.uiScale
+                icon.source: "headphones.svg"
             }
 
             Meter {
@@ -936,41 +854,23 @@ Rectangle {
                 }
             }
 
-            Image {
+            AppIcon {
                 id: jackOutputQuieterButton
                 anchors.left: jackOutputMeters.left
                 anchors.verticalCenter: jackOutputVolumeSlider.verticalCenter
-                source: "quiet.svg"
-                sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
-                fillMode: Image.PreserveAspectFit
-                smooth: true
+                width: 18 * virtualstudio.uiScale
+                height: 18 * virtualstudio.uiScale
+                icon.source: "quiet.svg"
             }
 
-            Colorize {
-                anchors.fill: jackOutputQuieterButton
-                source: jackOutputQuieterButton
-                hue: 0
-                saturation: 0
-                lightness: imageLightnessValue
-            }
-
-            Image {
+            AppIcon {
                 id: jackOutputLouderIcon
                 anchors.right: jackTestOutputAudioButton.left
                 anchors.rightMargin: rightMargin * virtualstudio.uiScale
                 anchors.verticalCenter: jackOutputVolumeSlider.verticalCenter
-                source: "loud.svg"
-                sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
-                fillMode: Image.PreserveAspectFit
-                smooth: true
-            }
-
-            Colorize {
-                anchors.fill: jackOutputLouderIcon
-                source: jackOutputLouderIcon
-                hue: 0
-                saturation: 0
-                lightness: imageLightnessValue
+                width: 20 * virtualstudio.uiScale
+                height: 20 * virtualstudio.uiScale
+                icon.source: "loud.svg"
             }
 
             Text {
@@ -985,22 +885,13 @@ Rectangle {
                 color: textColour
             }
 
-            Image {
+            AppIcon {
                 id: jackMicrophoneIcon
                 anchors.left: jackInputLabel.left
                 anchors.verticalCenter: jackInputVolumeSlider.verticalCenter
-                source: "mic.svg"
-                sourceSize: Qt.size(32 * virtualstudio.uiScale, 32 * virtualstudio.uiScale)
-                fillMode: Image.PreserveAspectFit
-                smooth: true
-            }
-
-            Colorize {
-                anchors.fill: jackMicrophoneIcon
-                source: jackMicrophoneIcon
-                hue: 0
-                saturation: 0
-                lightness: imageLightnessValue
+                width: 32 * virtualstudio.uiScale
+                height: 32 * virtualstudio.uiScale
+                icon.source: "mic.svg"
             }
 
             Meter {
@@ -1058,41 +949,23 @@ Rectangle {
                 }
             }
 
-            Image {
+            AppIcon {
                 id: jackInputQuieterButton
                 anchors.left: jackInputMeters.left
                 anchors.verticalCenter: jackInputVolumeSlider.verticalCenter
-                source: "quiet.svg"
-                sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
-                fillMode: Image.PreserveAspectFit
-                smooth: true
+                width: 18 * virtualstudio.uiScale
+                height: 18 * virtualstudio.uiScale
+                icon.source: "quiet.svg"
             }
 
-            Colorize {
-                anchors.fill: jackInputQuieterButton
-                source: jackInputQuieterButton
-                hue: 0
-                saturation: 0
-                lightness: imageLightnessValue
-            }
-
-            Image {
+            AppIcon {
                 id: jackInputLouderIcon
                 anchors.right: parent.right
                 anchors.rightMargin: rightMargin * virtualstudio.uiScale
                 anchors.verticalCenter: jackInputVolumeSlider.verticalCenter
-                source: "loud.svg"
-                sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
-                fillMode: Image.PreserveAspectFit
-                smooth: true
-            }
-
-            Colorize {
-                anchors.fill: jackInputLouderIcon
-                source: jackInputLouderIcon
-                hue: 0
-                saturation: 0
-                lightness: imageLightnessValue
+                width: 20 * virtualstudio.uiScale
+                height: 20 * virtualstudio.uiScale
+                icon.source: "loud.svg"
             }
 
             Button {

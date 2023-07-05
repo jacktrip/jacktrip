@@ -1,7 +1,6 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
 import QtQuick.Layouts 1.15
-import QtGraphicalEffects 1.12
 
 Item {
     id: footer
@@ -76,24 +75,14 @@ Item {
             Layout.fillWidth: true
             visible: studioStatus === "Ready"
 
-            Image {
+            AppIcon {
                 id: connectionQualityIcon
                 anchors.left: parent.left
                 anchors.leftMargin: 8 * virtualstudio.uiScale
                 anchors.verticalCenter: parent.verticalCenter
-                source: "speed.svg"
-                width: 16 * virtualstudio.uiScale; height: 16 * virtualstudio.uiScale
-                sourceSize: Qt.size(connectionQualityIcon.width, connectionQualityIcon.height)
-                fillMode: Image.PreserveAspectFit
-                smooth: true
-            }
-
-            Colorize {
-                anchors.fill: connectionQualityIcon
-                source: connectionQualityIcon
-                hue: 0
-                saturation: 0
-                lightness: imageLightnessValue
+                width: 20 * virtualstudio.uiScale
+                height: 20 * virtualstudio.uiScale
+                icon.source: "speed.svg"
             }
 
             Text {

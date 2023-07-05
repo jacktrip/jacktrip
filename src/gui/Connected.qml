@@ -1,6 +1,5 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
-import QtGraphicalEffects 1.12
 
 Item {
     width: parent.width; height: parent.height
@@ -212,15 +211,14 @@ Item {
                         color: textColour
                     }
 
-                    Image {
+                    AppIcon {
                         id: outputHelpIcon
                         anchors.left: outputLabel.right
                         anchors.bottom: outputLabel.top
                         anchors.bottomMargin: -8 * virtualstudio.uiScale
-                        source: "help.svg"
-                        sourceSize: Qt.size(12 * virtualstudio.uiScale, 12 * virtualstudio.uiScale)
-                        fillMode: Image.PreserveAspectFit
-                        smooth: true
+                        width: 16 * virtualstudio.uiScale
+                        height: 16 * virtualstudio.uiScale
+                        icon.source: "help.svg"
 
                         property bool showToolTip: false
 
@@ -257,31 +255,14 @@ Item {
                         }
                     }
 
-                    Colorize {
-                        anchors.fill: outputHelpIcon
-                        source: outputHelpIcon
-                        hue: 0
-                        saturation: 0
-                        lightness: imageLightnessValue
-                    }
-
-                    Image {
+                    AppIcon {
                         id: headphonesIcon
                         anchors.left: outputLabel.left
                         anchors.top: outputLabel.bottom
                         anchors.topMargin: bottomToolTipMargin * virtualstudio.uiScale
-                        source: "headphones.svg"
-                        sourceSize: Qt.size(28 * virtualstudio.uiScale, 28 * virtualstudio.uiScale)
-                        fillMode: Image.PreserveAspectFit
-                        smooth: true
-                    }
-
-                    Colorize {
-                        anchors.fill: headphonesIcon
-                        source: headphonesIcon
-                        hue: 0
-                        saturation: 0
-                        lightness: imageLightnessValue
+                        width: 28 * virtualstudio.uiScale
+                        height: 28 * virtualstudio.uiScale
+                        icon.source: "headphones.svg"
                     }
 
                     ComboBox {
@@ -403,15 +384,14 @@ Item {
                         color: textColour
                     }
 
-                    Image {
+                    AppIcon {
                         id: inputHelpIcon
                         anchors.left: inputLabel.right
                         anchors.bottom: inputLabel.top
                         anchors.bottomMargin: -8 * virtualstudio.uiScale
-                        source: "help.svg"
-                        sourceSize: Qt.size(12 * virtualstudio.uiScale, 12 * virtualstudio.uiScale)
-                        fillMode: Image.PreserveAspectFit
-                        smooth: true
+                        width: 16 * virtualstudio.uiScale
+                        height: 16 * virtualstudio.uiScale
+                        icon.source: "help.svg"
 
                         property bool showToolTip: false
 
@@ -448,31 +428,14 @@ Item {
                         }
                     }
 
-                    Colorize {
-                        anchors.fill: inputHelpIcon
-                        source: inputHelpIcon
-                        hue: 0
-                        saturation: 0
-                        lightness: imageLightnessValue
-                    }
-
-                    Image {
+                    AppIcon {
                         id: microphoneIcon
                         anchors.left: inputLabel.left
                         anchors.top: inputLabel.bottom
                         anchors.topMargin: bottomToolTipMargin * virtualstudio.uiScale
-                        source: "mic.svg"
-                        sourceSize: Qt.size(32 * virtualstudio.uiScale, 32 * virtualstudio.uiScale)
-                        fillMode: Image.PreserveAspectFit
-                        smooth: true
-                    }
-
-                    Colorize {
-                        anchors.fill: microphoneIcon
-                        source: microphoneIcon
-                        hue: 0
-                        saturation: 0
-                        lightness: imageLightnessValue
+                        width: 32 * virtualstudio.uiScale
+                        height: 32 * virtualstudio.uiScale
+                        icon.source: "mic.svg"
                     }
 
                     ComboBox {
@@ -851,22 +814,12 @@ Item {
         height: 100 * virtualstudio.uiScale
         clip: true
 
-        Image {
+        AppIcon {
             id: mic
-            source: "mic.svg"
             x: 0; y: 0
-            width: 28 * virtualstudio.uiScale; height: 28 * virtualstudio.uiScale
-            sourceSize: Qt.size(mic.width,mic.height)
-            fillMode: Image.PreserveAspectFit
-            smooth: true
-        }
-
-        Colorize {
-            anchors.fill: mic
-            source: mic
-            hue: 0
-            saturation: 0
-            lightness: imageLightnessValue
+            width: 28 * virtualstudio.uiScale
+            height: 28 * virtualstudio.uiScale
+            icon.source: "mic.svg"
         }
 
         Text {
@@ -902,22 +855,12 @@ Item {
         clip: true
         anchors.top: inputDevice.bottom
 
-        Image {
+        AppIcon {
             id: headphones
-            source: "headphones.svg"
             x: 0; y: 0
-            width: 28 * virtualstudio.uiScale; height: 28 * virtualstudio.uiScale
-            sourceSize: Qt.size(headphones.width,headphones.height)
-            fillMode: Image.PreserveAspectFit
-            smooth: true
-        }
-
-        Colorize {
-            anchors.fill: headphones
-            source: headphones
-            hue: 0
-            saturation: 0
-            lightness: imageLightnessValue
+            width: 28 * virtualstudio.uiScale
+            height: 28 * virtualstudio.uiScale
+            icon.source: "headphones.svg"
         }
 
         Text {
@@ -1016,22 +959,17 @@ Item {
                 radius: 4 * virtualstudio.uiScale
             }
             onClicked: { virtualstudio.inputMuted = !virtualstudio.inputMuted }
-            Image {
+
+            AppIcon {
                 id: micMute
-                width: 18 * virtualstudio.uiScale; height: 18 * virtualstudio.uiScale
                 anchors { verticalCenter: parent.verticalCenter; horizontalCenter: parent.horizontalCenter }
-                source: virtualstudio.inputMuted ? "micoff.svg" : "mic.svg"
-                sourceSize: Qt.size(micMute.width,micMute.height)
-                fillMode: Image.PreserveAspectFit
-                smooth: true
+                width: 18 * virtualstudio.uiScale
+                height: 18 * virtualstudio.uiScale
+                color: virtualstudio.inputMuted ? "red" : ( virtualstudio.darkMode ? "#CCCCCC" : "#333333" )
+                icon.source: virtualstudio.inputMuted ? "micoff.svg" : "mic.svg"
+                onClicked: { virtualstudio.inputMuted = !virtualstudio.inputMuted }
             }
-            Colorize {
-                anchors.fill: micMute
-                source: micMute
-                hue: 0
-                saturation: virtualstudio.inputMuted ? muteButtonMutedSaturationValue : 0
-                lightness: virtualstudio.inputMuted ? (inputMute.hovered ? muteButtonMutedLightnessValue + .1 : muteButtonMutedLightnessValue) : (inputMute.hovered ? muteButtonLightnessValue - .1 : muteButtonLightnessValue)
-            }
+
             ToolTip {
                 parent: inputMute
                 visible: inputMute.hovered
@@ -1075,15 +1013,14 @@ Item {
             color: textColour
         }
 
-        Image {
+        AppIcon {
             id: inputStudioHelpIcon
             anchors.left: inputStudioText.right
             anchors.verticalCenter: inputStudioText.verticalCenter
             anchors.bottomMargin: -8 * virtualstudio.uiScale
-            source: "help.svg"
-            sourceSize: Qt.size(12 * virtualstudio.uiScale, 12 * virtualstudio.uiScale)
-            fillMode: Image.PreserveAspectFit
-            smooth: true
+            width: 16 * virtualstudio.uiScale
+            height: 16 * virtualstudio.uiScale
+            icon.source: "help.svg"
 
             property bool showToolTip: false
 
@@ -1118,14 +1055,6 @@ Item {
                     color: "transparent"
                 }
             }
-        }
-
-        Colorize {
-            anchors.fill: inputStudioHelpIcon
-            source: inputStudioHelpIcon
-            hue: 0
-            saturation: 0
-            lightness: imageLightnessValue
         }
     }
 
@@ -1241,15 +1170,14 @@ Item {
             color: textColour
         }
 
-        Image {
+        AppIcon {
             id: outputStudioHelpIcon
             anchors.left: outputStudioText.right
             anchors.verticalCenter: outputStudioText.verticalCenter
             anchors.bottomMargin: -8 * virtualstudio.uiScale
-            source: "help.svg"
-            sourceSize: Qt.size(12 * virtualstudio.uiScale, 12 * virtualstudio.uiScale)
-            fillMode: Image.PreserveAspectFit
-            smooth: true
+            width: 16 * virtualstudio.uiScale
+            height: 16 * virtualstudio.uiScale
+            icon.source: "help.svg"
 
             property bool showToolTip: false
 
@@ -1286,14 +1214,6 @@ Item {
             }
         }
 
-        Colorize {
-            anchors.fill: outputStudioHelpIcon
-            source: outputStudioHelpIcon
-            hue: 0
-            saturation: 0
-            lightness: imageLightnessValue
-        }
-
         Text {
             id: outputMonText
             width: 40 * virtualstudio.uiScale
@@ -1308,15 +1228,14 @@ Item {
             color: textColour
         }
 
-        Image {
+        AppIcon {
             id: outputMonHelpIcon
             anchors.left: outputMonText.right
             anchors.verticalCenter: outputMonText.verticalCenter
             anchors.bottomMargin: -8 * virtualstudio.uiScale
-            source: "help.svg"
-            sourceSize: Qt.size(12 * virtualstudio.uiScale, 12 * virtualstudio.uiScale)
-            fillMode: Image.PreserveAspectFit
-            smooth: true
+            width: 16 * virtualstudio.uiScale
+            height: 16 * virtualstudio.uiScale
+            icon.source: "help.svg"
 
             property bool showToolTip: false
 
@@ -1351,14 +1270,6 @@ Item {
                     color: "transparent"
                 }
             }
-        }
-
-        Colorize {
-            anchors.fill: outputMonHelpIcon
-            source: outputMonHelpIcon
-            hue: 0
-            saturation: 0
-            lightness: imageLightnessValue
         }
     }
 

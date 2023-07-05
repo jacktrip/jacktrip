@@ -37,6 +37,7 @@
 
 #ifndef NO_GUI
 #include <QApplication>
+#include <QQuickStyle>
 
 #ifndef NO_UPDATER
 #include "dblsqd/feed.h"
@@ -281,6 +282,9 @@ int main(int argc, char* argv[])
     QScopedPointer<UdpHubListener> udpHub;
 #ifndef NO_GUI
     QSharedPointer<QJackTrip> window;
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+    QQuickStyle::setStyle("Basic");
+#endif  // QT_VERSION
 
 #ifndef NO_VS
     QString deeplink;
