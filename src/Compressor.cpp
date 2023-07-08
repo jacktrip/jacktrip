@@ -111,7 +111,7 @@ void Compressor::init(int samplingRate, int bufferSize)
 //*******************************************************************************
 void Compressor::compute(int nframes, float** inputs, float** outputs)
 {
-    if (not inited) {
+    if (!inited) {
         std::cerr << "*** Compressor " << this << ": init never called! Doing it now.\n";
         init(0, 0);
     }

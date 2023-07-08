@@ -190,7 +190,7 @@ void RingBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
     QMutexLocker locker(&mMutex);  // lock the mutex
     ++mReadsNew;
     if (mFullSlots < mLevelCur) {
-        mLevelCur = std::max((double)mFullSlots, mLevelCur - mLevelDownRate);
+        mLevelCur = std::max<double>((double)mFullSlots, mLevelCur - mLevelDownRate);
     } else {
         mLevelCur = mFullSlots;
     }

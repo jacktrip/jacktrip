@@ -99,7 +99,7 @@ void Meter::init(int samplingRate, int bufferSize)
 //*******************************************************************************
 void Meter::compute(int nframes, float** inputs, float** outputs)
 {
-    if (not inited) {
+    if (!inited) {
         std::cerr << "*** Meter " << this << ": init never called! Doing it now.\n";
         init(0, 0);
     }
@@ -129,10 +129,10 @@ void Meter::compute(int nframes, float** inputs, float** outputs)
         /* Use the existing value of mValues[i] as
            the threshold - this will be reset to the default floor of -80dB
            on each timeout */
-        float maxSample = *std::max_element(mBuffer, mBuffer + nframes);
+        float maxSample = *(std::max_element)(mBuffer, mBuffer + nframes);
 
         /* Update mValues */
-        mValues[i] = std::max(mValues[i], maxSample);
+        mValues[i] = std::max<float>(mValues[i], maxSample);
     }
 
     /* Set processed audio flag */

@@ -102,7 +102,7 @@ void Analyzer::init(int samplingRate, int bufferSize)
 //*******************************************************************************
 void Analyzer::compute(int nframes, float** inputs, float** outputs)
 {
-    if (not inited) {
+    if (!inited) {
         std::cerr << "*** Analyzer " << this << ": init never called! Doing it now.\n";
         init(0, 0);
     }

@@ -88,7 +88,7 @@ void Volume::init(int samplingRate, int bufferSize)
 //*******************************************************************************
 void Volume::compute(int nframes, float** inputs, float** outputs)
 {
-    if (not inited) {
+    if (!inited) {
         std::cerr << "*** Volume " << this << ": init never called! Doing it now.\n";
         init(0, 0);
     }

@@ -117,7 +117,7 @@ void DefaultHeader::fillHeaderCommonFromAudio()
     if (mJackTrip->getNumInputChannels() == mJackTrip->getNumOutputChannels()) {
         mHeader.NumOutgoingChannelsToNet = 0;
     } else if (0 == mJackTrip->getNumInputChannels()) {
-        mHeader.NumOutgoingChannelsToNet = std::numeric_limits<uint8_t>::max();
+        mHeader.NumOutgoingChannelsToNet = (std::numeric_limits<uint8_t>::max)();
     } else {
         mHeader.NumOutgoingChannelsToNet = mJackTrip->getNumInputChannels();
     }

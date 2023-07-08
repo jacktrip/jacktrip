@@ -83,7 +83,7 @@ void Tone::init(int samplingRate, int bufferSize)
 //*******************************************************************************
 void Tone::compute(int nframes, float** inputs, float** outputs)
 {
-    if (not inited) {
+    if (!inited) {
         std::cerr << "*** Tone " << this << ": init never called! Doing it now.\n";
         init(0, 0);
     }

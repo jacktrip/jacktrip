@@ -149,10 +149,10 @@ class AudioTester
 
     void extendLatencyHistogram(double latencyMS)
     {
-        int latencyCell = static_cast<int>(
-            floor(std::max(latencyHistogramCellMin,
-                           std::min(latencyHistogramCellMax,
-                                    std::floor(latencyMS / latencyHistogramCellWidth)))));
+        int latencyCell = static_cast<int>(floor(std::max<double>(
+            latencyHistogramCellMin,
+            std::min<double>(latencyHistogramCellMax,
+                             std::floor(latencyMS / latencyHistogramCellWidth)))));
         latencyHistogram[latencyCell] += 1;
     }
 
