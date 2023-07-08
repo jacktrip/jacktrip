@@ -128,35 +128,37 @@ if exist %QT_BUILD_PATH%\ (
 mkdir %QT_BUILD_PATH%
 
 :: OpenSSL
-if %QT_DYNAMIC_BUILD% NEQ 1 (
-    if NOT exist %OPENSSL_BUILD_PATH%\ (
-        :: Build static openssl
-        :: see https://doc.qt.io/qt-6/ssl.html#enabling-and-disabling-ssl-support-when-building-qt-from-source
-        if NOT exist openssl-%OPENSSL_FULL_VERSION%\ (
-            echo Downloading openssl-%OPENSSL_FULL_VERSION%
-            Set OPENSSL_SRC_URL=https://github.com/openssl/openssl/releases/download/openssl-%OPENSSL_FULL_VERSION%/openssl-%OPENSSL_FULL_VERSION%.tar.gz
-            curl -L !OPENSSL_SRC_URL! -o openssl.tar.gz
-            tar -xf openssl.tar.gz
-        )
-        echo Building openssl-%OPENSSL_FULL_VERSION%
-        mkdir %OPENSSL_BUILD_PATH%
-        mkdir openssl-build
-        cd openssl-build
-        perl ..\openssl-%OPENSSL_FULL_VERSION%\Configure --prefix=%OPENSSL_BUILD_PATH% --openssldir=%OPENSSL_BUILD_PATH%\ssl VC-WIN64A threads no-shared no-pic no-tests -static
-        if %HAVE_JOM% EQU 1 (
-            jom /j 4
-        ) else (
-            nmake
-        )
-        nmake install
-        cd ..
+if NOT exist %OPENSSL_BUILD_PATH%\ (
+    :: Build static openssl
+    :: see https://doc.qt.io/qt-6/ssl.html#enabling-and-disabling-ssl-support-when-building-qt-from-source
+    if NOT exist openssl-%OPENSSL_FULL_VERSION%\ (
+        echo Downloading openssl-%OPENSSL_FULL_VERSION%
+        Set OPENSSL_SRC_URL=https://github.com/openssl/openssl/releases/download/openssl-%OPENSSL_FULL_VERSION%/openssl-%OPENSSL_FULL_VERSION%.tar.gz
+        curl -L !OPENSSL_SRC_URL! -o openssl.tar.gz
+        tar -xf openssl.tar.gz
     )
-    :: copy static openssl into qt build
-    mkdir "%QT_BUILD_PATH%/lib"
-    mkdir "%QT_BUILD_PATH%/include"
-    xcopy "%OPENSSL_BUILD_PATH%/lib" %QT_BUILD_PATH%/lib
-    xcopy "%OPENSSL_BUILD_PATH%/include/openssl" "%QT_BUILD_PATH%/include"
+    echo Building openssl-%OPENSSL_FULL_VERSION%
+    mkdir %OPENSSL_BUILD_PATH%
+    mkdir openssl-build
+    cd openssl-build
+    perl ..\openssl-%OPENSSL_FULL_VERSION%\Configure --prefix=%OPENSSL_BUILD_PATH% --openssldir=%OPENSSL_BUILD_PATH%\ssl VC-WIN64A threads no-shared no-pic no-tests -static
+    if %ERRORLEVEL% NEQ 0 EXIT /B 0
+    if %HAVE_JOM% EQU 1 (
+        jom /j 4
+    ) else (
+        nmake
+    )
+    if %ERRORLEVEL% NEQ 0 EXIT /B 0
+    nmake install
+    if %ERRORLEVEL% NEQ 0 EXIT /B 0
+    cd ..
 )
+
+:: copy static openssl into qt build
+mkdir "%QT_BUILD_PATH%/lib"
+mkdir "%QT_BUILD_PATH%/include"
+xcopy "%OPENSSL_BUILD_PATH%/lib" %QT_BUILD_PATH%/lib
+xcopy "%OPENSSL_BUILD_PATH%/include/openssl" "%QT_BUILD_PATH%/include"
 
 :: build for Windows
 if %QT_MAJOR_VERSION% EQU 5 (
