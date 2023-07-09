@@ -2,18 +2,23 @@ project('jacktrip', ['cpp','c'],
 		default_options: ['cpp_std=c++17','warning_level=2','optimization=2'])
 
 if get_option('profile') == 'development'
-  application_id = 'org.jacktrip.JackTrip.Devel'
-  name_suffix = ' (Development Snapshot)'
+	application_id = 'org.jacktrip.JackTrip.Devel'
+	name_suffix = ' (Development Snapshot)'
 else
-  application_id = 'org.jacktrip.JackTrip'
-  name_suffix = ''
+	application_id = 'org.jacktrip.JackTrip'
+	name_suffix = ''
 endif
 
-if get_option('qtversion') == '5'
-  qt = import('qt5')
-else
-  qt = import('qt6')
+qt_version = get_option('qtversion')
+if qt_version == ''
+	qt_dep = dependency('qt6', modules: ['Core'], required: false)
+	if qt_dep.found()
+		qt_version = '6'
+	else
+		qt_version = '5'
+	endif
 endif
+qt = import('qt' + qt_version)
 
 cmake = import('cmake')
 
@@ -77,6 +82,7 @@ moc_h = ['src/DataProtocol.h',
 ui_h = []
 qres = []
 deps = [dependency('threads')]
+link_args = []
 
 subdir('win')
 subdir('linux')
@@ -103,10 +109,10 @@ endif
 
 if get_option('nogui') == true
 	defines += '-DNO_GUI'
-	if get_option('qtversion') == '5'
-		qt_dep = dependency('qt5', modules: ['Core', 'Network'], include_type: 'system')
+	if qt_version == '5'
+		deps += dependency('qt5', modules: ['Core', 'Network'], include_type: 'system')
 	else
-		qt_dep = dependency('qt6', modules: ['Core', 'Network'], include_type: 'system')
+		deps += dependency('qt6', modules: ['Core', 'Network'], include_type: 'system')
 	endif
 else
 	src += [
@@ -131,10 +137,10 @@ else
 
 	if get_option('novs') == true
 		defines += '-DNO_VS'
-		if get_option('qtversion') == '5'
-			qt_dep = dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets'], include_type: 'system')
+		if qt_version == '5'
+			deps += dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets'], include_type: 'system')
 		else
-			qt_dep = dependency('qt6', modules: ['Core', 'Gui', 'Network', 'Widgets'], include_type: 'system')
+			deps += dependency('qt6', modules: ['Core', 'Gui', 'Network', 'Widgets'], include_type: 'system')
 		endif
 		qres = ['src/gui/qjacktrip_novs.qrc']
 	else
@@ -177,10 +183,10 @@ else
 			moc_h += ['src/gui/vsMacPermissions.h']
 		endif
 
-		if get_option('qtversion') == '5'
-			qt_dep = dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'QuickControls2', 'Qml', 'Svg', 'NetworkAuth', 'WebSockets'], include_type: 'system')
+		if qt_version == '5'
+			deps += dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'QuickControls2', 'Qml', 'Svg', 'NetworkAuth', 'WebSockets'], include_type: 'system')
 		else
-			qt_dep = dependency('qt6', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'QuickControls2', 'Qml', 'Svg', 'NetworkAuth', 'WebSockets'], include_type: 'system')
+			deps += dependency('qt6', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'QuickControls2', 'Qml', 'Svg', 'NetworkAuth', 'WebSockets'], include_type: 'system')
 		endif
 		qres = ['src/gui/qjacktrip.qrc']
 	endif
@@ -207,7 +213,10 @@ else
 		ui_h += ['src/dblsqd/update_dialog.ui']
 	endif
 endif
-deps += qt_dep
+
+if qt_version == '6' and get_option('default_library') == 'static'
+	deps += dependency('qt6', modules: ['BundledLibpng', 'BundledPcre2', 'BundledHarfbuzz'], include_type: 'system')
+endif
 
 # TODO: QT_OPENSOURCE should only be defined for open source Qt distribution
 # in QMake this can be checked with QT_EDITION == 'OpenSource'
@@ -254,7 +263,7 @@ if ui_h.length() > 0
 	ui_files = qt.compile_ui(sources: ui_h)
 endif
 
-jacktrip = executable('jacktrip', src, qres_files, ui_files, moc_files, include_directories: incdirs, dependencies: deps, c_args: c_defines, cpp_args: defines, install: true )
+jacktrip = executable('jacktrip', src, qres_files, ui_files, moc_files, include_directories: incdirs, dependencies: deps, link_args: link_args, c_args: c_defines, cpp_args: defines, install: true )
 
 help2man = find_program('help2man', required: false)
 if (host_machine.system() == 'linux')
