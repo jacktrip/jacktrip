@@ -965,6 +965,7 @@ Item {
             value: virtualstudio.inputVolume
             onMoved: { virtualstudio.inputVolume = value }
             to: 1.0
+            stepSize: 0.01
             enabled: !virtualstudio.inputMuted
             padding: 0
             y: inputDeviceMeters.y + 36 * virtualstudio.uiScale
@@ -1151,6 +1152,7 @@ Item {
             value: virtualstudio.outputVolume
             onMoved: { virtualstudio.outputVolume = value }
             to: 1.0
+            stepSize: 0.01
             padding: 0
             y: outputDeviceMeters.y + 36 * virtualstudio.uiScale
             anchors.left: outputDeviceMeters.left
@@ -1192,6 +1194,7 @@ Item {
             value: virtualstudio.monitorVolume
             onMoved: { virtualstudio.monitorVolume = value }
             to: 1.0
+            stepSize: 0.01
             padding: 0
             y: outputSlider.y + 36 * virtualstudio.uiScale
             anchors.left: outputDeviceMeters.left
