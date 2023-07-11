@@ -54,6 +54,7 @@ Item {
             enabled: sliderEnabled
             from: 0.0
             to: 1.0
+            stepSize: 0.01
             padding: 0
             opacity: sliderEnabled ? 1 : 0.3
             anchors.left: tooltip.right
