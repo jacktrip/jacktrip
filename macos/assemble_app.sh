@@ -105,7 +105,6 @@ shift $((OPTIND - 1))
 DYNAMIC_QT=$(otool -L $BINARY | grep QtCore)
 DYNAMIC_VS=$(otool -L $BINARY | grep QtQml)
 
-echo $DYNAMIC_QT
 if [[ -n "$DYNAMIC_QT" && -n "$QT_PATH" ]]; then
   export DYLD_FRAMEWORK_PATH=$QT_PATH/lib
 fi
@@ -152,15 +151,14 @@ if [ ! -z "$DYNAMIC_QT" ]; then
             exit 1
         fi
     fi
-    QMLDIR=""
+    DEPLOY_OPTS="-executable=JackTrip.app/Contents/MacOS/jacktrip"
     if [ ! -z "$DYNAMIC_VS" ]; then
-        QMLDIR=" -qmldir=../src/gui"
+        DEPLOY_OPTS="$DEPLOY_OPTS -qmldir=../src/gui"
     fi
     if [ ! -z "$CERTIFICATE" ]; then
-        $DEPLOY_CMD "$APPNAME.app"$QMLDIR -codesign="$CERTIFICATE"
-    else
-        $DEPLOY_CMD "$APPNAME.app"$QMLDIR
+        DEPLOY_OPTS="$DEPLOY_OPTS -codesign=\"$CERTIFICATE\""
     fi
+    $DEPLOY_CMD "$APPNAME.app" $DEPLOY_OPTS
 fi
 
 [ $BUILD_INSTALLER = true ] || exit 0

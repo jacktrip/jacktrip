@@ -509,10 +509,14 @@ jobs:
             CONFIG_STRING="-Dweakjack=true $CONFIG_STRING"
           fi
           if [[ "${{ runner.os }}" == 'Linux' ]]; then
-              CONFIG_STRING="-Dwerror=true $CONFIG_STRING"
+            CONFIG_STRING="-Dwerror=true $CONFIG_STRING"
+          fi
+          if [[ -n "${{ matrix.macosx-architectures }}" ]]; then
+            # TODO: for now, just assume that we want universal if it is not empty
+            CONFIG_STRING="--native-file macos/meson_native_universal.ini $CONFIG_STRING"
           fi
           if [[ "${{ runner.os }}" == 'Windows' && "${{ matrix.qt-cache-type }}" == "static" ]]; then
-              CONFIG_STRING="-Db_vscrt=mt $CONFIG_STRING"
+            CONFIG_STRING="-Db_vscrt=mt $CONFIG_STRING"
           fi
           meson setup --buildtype release $CONFIG_STRING $BUILD_PATH
           meson compile -C $BUILD_PATH -v
