@@ -1,6 +1,6 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
-import QtGraphicalEffects 1.12
+//import QtGraphicalEffects 1.12
 import VS 1.0
 
 Rectangle {
@@ -119,10 +119,10 @@ Rectangle {
         x: 30 * virtualstudio.uiScale; y: 9 * virtualstudio.uiScale
         width: 40 * virtualstudio.uiScale; height: width / 4 * 3
         fillMode: Image.PreserveAspectCrop
-        layer.enabled: true
-        layer.effect: OpacityMask {
-            maskSource: mask
-        }
+        //layer.enabled: true
+        //layer.effect: OpacityMask {
+        //    maskSource: mask
+        //}
     }
 
     Rectangle {

@@ -1364,7 +1364,7 @@ int JackTrip::clientPingToServerStart()
         mElapsedTime = 0;
         mEndTime     = 30000;  // Timeout after 30 seconds.
         mRetryTimer.setInterval(
-            QRandomGenerator::global()->bounded(0, 2000 * pow(2, mRetries)));
+            QRandomGenerator::global()->bounded(0, int(2000 * pow(2, mRetries))));
         mRetryTimer.setSingleShot(true);
         mRetryTimer.disconnect();
         connect(&mRetryTimer, &QTimer::timeout, this, &JackTrip::tcpTimerTick);
