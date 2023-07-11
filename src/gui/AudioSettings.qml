@@ -240,6 +240,7 @@ Rectangle {
                 value: audioInterface.outputVolume
                 onMoved: { audioInterface.outputVolume = value }
                 to: 1.0
+                stepSize: 0.01
                 padding: 0
                 anchors.left: outputQuieterIcon.right
                 anchors.leftMargin: 8 * virtualstudio.uiScale
@@ -549,6 +550,7 @@ Rectangle {
                 value: audioInterface.inputVolume
                 onMoved: { audioInterface.inputVolume = value }
                 to: 1.0
+                stepSize: 0.01
                 padding: 0
                 anchors.left: inputQuieterIcon.right
                 anchors.leftMargin: 8 * virtualstudio.uiScale
@@ -899,6 +901,7 @@ Rectangle {
                 value: audioInterface.outputVolume
                 onMoved: { audioInterface.outputVolume = value }
                 to: 1.0
+                stepSize: 0.01
                 padding: 0
                 anchors.left: jackOutputQuieterButton.right
                 anchors.leftMargin: 8 * virtualstudio.uiScale
@@ -1021,6 +1024,7 @@ Rectangle {
                 value: audioInterface.inputVolume
                 onMoved: { audioInterface.inputVolume = value }
                 to: 1.0
+                stepSize: 0.01
                 padding: 0
                 anchors.left: jackInputQuieterButton.right
                 anchors.leftMargin: 8 * virtualstudio.uiScale
