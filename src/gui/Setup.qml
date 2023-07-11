@@ -1,6 +1,5 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
-import QtGraphicalEffects 1.12
 
 Item {
     width: parent.width; height: parent.height
@@ -49,21 +48,13 @@ Item {
         width: parent.width; height: parent.height
         visible: warningScreen == "ethernet"
 
-        Image {
+        AppIcon {
             id: ethernetWarningLogo
-            source: "ethernet.png"
-            width: 179
-            height: 128
             y: 60
             anchors.horizontalCenter: parent.horizontalCenter
-        }
-
-        Colorize {
-            anchors.fill: ethernetWarningLogo
-            source: ethernetWarningLogo
-            hue: 0
-            saturation: 0
-            lightness: imageLightnessValue
+            width: 179
+            height: 128
+            icon.source: "ethernet.svg"
         }
 
         Text {
@@ -171,28 +162,13 @@ Item {
         width: parent.width; height: parent.height
         visible: warningScreen == "headphones"
 
-        Image {
+        AppIcon {
             id: headphoneWarningLogo
-            source: "headphones.svg"
-            sourceSize: Qt.size( img.sourceSize.width*5, img.sourceSize.height*5 )
-            Image {
-                id: img
-                source: parent.source
-                width: 0
-                height: 0
-            }
-            width: 118
-            height: 128
             y: 60
             anchors.horizontalCenter: parent.horizontalCenter
-        }
-
-        Colorize {
-            anchors.fill: headphoneWarningLogo
-            source: headphoneWarningLogo
-            hue: 0
-            saturation: 0
-            lightness: imageLightnessValue
+            width: 118
+            height: 128
+            icon.source: "headphones.svg"
         }
 
         Text {
@@ -319,16 +295,13 @@ Item {
         width: parent.width; height: parent.height
         visible: warningScreen == "microphone" && permissions.micPermission == "unknown"
 
-        Image {
+        AppIcon {
             id: microphonePrompt
-            source: "Prompt.svg"
-            width: 260
-            height: 250
             y: 60
             anchors.horizontalCenter: parent.horizontalCenter
-            sourceSize: Qt.size(microphonePrompt.width,microphonePrompt.height)
-            fillMode: Image.PreserveAspectFit
-            smooth: true
+            width: 260
+            height: 250
+            icon.source: "Prompt.svg"
         }
 
         Image {
@@ -341,14 +314,6 @@ Item {
             sourceSize: Qt.size(micLogo.width,micLogo.height)
             fillMode: Image.PreserveAspectFit
             smooth: true
-        }
-
-        Colorize {
-            anchors.fill: microphonePrompt
-            source: microphonePrompt
-            hue: 0
-            saturation: 0
-            lightness: imageLightnessValue
         }
 
         Button {
@@ -421,24 +386,13 @@ Item {
         width: parent.width; height: parent.height
         visible: (warningScreen == "acknowledged" || warningScreen == "microphone") && permissions.micPermission == "denied"
 
-        Image {
+        AppIcon {
             id: noMic
-            source: "micoff.svg"
-            width: 109.27
-            height: 170
             y: 60
             anchors.horizontalCenter: parent.horizontalCenter
-            sourceSize: Qt.size(noMic.width,noMic.height)
-            fillMode: Image.PreserveAspectFit
-            smooth: true
-        }
-
-        Colorize {
-            anchors.fill: noMic
-            source: noMic
-            hue: 0
-            saturation: 0
-            lightness: imageLightnessValue
+            width: 109.27
+            height: 170
+            icon.source: "micoff.svg"
         }
 
         Button {
