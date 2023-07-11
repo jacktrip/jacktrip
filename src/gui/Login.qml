@@ -1,6 +1,5 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
-import QtGraphicalEffects 1.12
 import VS 1.0
 
 Item {
@@ -121,23 +120,14 @@ Item {
             }
         }
 
-        Image {
+        AppIcon {
             id: successIcon
-            source: "check.svg"
             y: 224 * virtualstudio.uiScale
             anchors.horizontalCenter: parent.horizontalCenter
-            visible: loginScreen.state === "success"
-            sourceSize: Qt.size(96 * virtualstudio.uiScale, 96 * virtualstudio.uiScale)
-            fillMode: Image.PreserveAspectFit
-            smooth: true
-        }
-
-        Colorize {
-            anchors.fill: successIcon
-            source: successIcon
-            hue: .44
-            saturation: .55
-            lightness: .49
+            width: 96 * virtualstudio.uiScale
+            height: 96 * virtualstudio.uiScale
+            icon.source: "check.svg"
+            color: "green"
             visible: loginScreen.state === "success"
         }
 

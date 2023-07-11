@@ -1,7 +1,6 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
 import QtQuick.Layouts 1.15
-import QtGraphicalEffects 1.12
 
 Item {
     width: parent.width
@@ -33,7 +32,7 @@ Item {
         InfoTooltip {
             id: tooltip
             content: tooltipText
-            size: 10
+            size: 14
             anchors.left: label.right
             anchors.leftMargin: 2 * virtualstudio.uiScale
             anchors.verticalCenter: label.verticalCenter

@@ -1,7 +1,6 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
 import QtQuick.Layouts 1.15
-import QtGraphicalEffects 1.12
 
 Item {
     width: parent.width
@@ -30,23 +29,14 @@ Item {
 
             onClicked: isInput ? virtualstudio.inputMuted = !virtualstudio.inputMuted : console.log()
 
-            Image {
+            AppIcon {
                 id: iconImage
-                width: 18 * virtualstudio.uiScale; height: 18 * virtualstudio.uiScale
                 anchors.centerIn: parent
-
-                source: isInput ? (virtualstudio.inputMuted ? "micoff.svg" : "mic.svg") : "headphones.svg"
-                sourceSize: Qt.size(iconImage.width, iconImage.height)
-                fillMode: Image.PreserveAspectFit
-                smooth: true
-            }
-
-            Colorize {
-                anchors.fill: iconImage
-                source: iconImage
-                hue: 0
-                saturation: isInput ? (virtualstudio.inputMuted ? muteButtonMutedSaturationValue : 0) : 0
-                lightness: isInput ? (virtualstudio.inputMuted ? (iconButton.hovered ? muteButtonMutedLightnessValue + .1 : muteButtonMutedLightnessValue) : (iconButton.hovered ? muteButtonLightnessValue - .1 : muteButtonLightnessValue)) : imageLightnessValue
+                width: 18 * virtualstudio.uiScale
+                height: 18 * virtualstudio.uiScale
+                icon.source: isInput ? (virtualstudio.inputMuted ? "micoff.svg" : "mic.svg") : "headphones.svg"
+                color: isInput ? (virtualstudio.inputMuted ? "red" : ( virtualstudio.darkMode ? "#CCCCCC" : "#333333" )) : (virtualstudio.darkMode ? "#CCCCCC" : "#333333")
+                onClicked: isInput ? virtualstudio.inputMuted = !virtualstudio.inputMuted : console.log()
             }
 
             ToolTip {
@@ -64,12 +54,13 @@ Item {
                     color: toolTipBackgroundColour
                     radius: 4
                     layer.enabled: true
+                    /*
                     layer.effect: Glow {
                         samples: 17
                         color: "#66000000"
                         transparentBorder: true
                     }
-
+                    */
                 }
             }
         }
@@ -146,7 +137,7 @@ Item {
 
                     InfoTooltip {
                         content: isInput ? qsTr("Audio sent to the studio (microphone, instrument, mixer, etc.)") : qsTr("How you'll hear the studio audio")
-                        size: 12
+                        size: 16
                         anchors.left: label.right
                         anchors.leftMargin: 2 * virtualstudio.uiScale
                         anchors.verticalCenter: label.verticalCenter

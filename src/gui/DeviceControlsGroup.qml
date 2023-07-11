@@ -1,7 +1,6 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
 import QtQuick.Layouts 1.15
-import QtGraphicalEffects 1.12
 
 Item {
     required property bool showMinified
@@ -89,22 +88,13 @@ Item {
                     }
                     onClicked: showMinified = !showMinified
 
-                    Image {
+                    AppIcon {
                         id: expandIcon
-                        width: 20 * virtualstudio.uiScale; height: 20 * virtualstudio.uiScale
                         anchors { verticalCenter: parent.verticalCenter; horizontalCenter: parent.horizontalCenter }
-                        source: showMinified ? "expand_less.svg" : "expand_more.svg"
-                        sourceSize: Qt.size(expandIcon.width, expandIcon.height)
-                        fillMode: Image.PreserveAspectFit
-                        smooth: true
-                    }
-
-                    Colorize {
-                        anchors.fill: expandIcon
-                        source: expandIcon
-                        hue: 0
-                        saturation: 0
-                        lightness: imageLightnessValue
+                        width: 20 * virtualstudio.uiScale
+                        height: 20 * virtualstudio.uiScale
+                        icon.source: showMinified ? "expand_less.svg" : "expand_more.svg"
+                        onClicked: showMinified = !showMinified
                     }
                 }
 

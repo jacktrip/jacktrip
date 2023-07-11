@@ -1,6 +1,5 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
-import QtGraphicalEffects 1.12
 
 Item {
     width: parent.width; height: parent.height
@@ -96,15 +95,14 @@ Item {
                 color: textColour
             }
 
-            Image {
+            AppIcon {
                 id: outputHelpIcon
                 anchors.left: outputLabel.right
                 anchors.bottom: outputLabel.top
                 anchors.bottomMargin: -8 * virtualstudio.uiScale
-                source: "help.svg"
-                sourceSize: Qt.size(12 * virtualstudio.uiScale, 12 * virtualstudio.uiScale)
-                fillMode: Image.PreserveAspectFit
-                smooth: true
+                width: 16 * virtualstudio.uiScale
+                height: 16 * virtualstudio.uiScale
+                icon.source: "help.svg"
 
                 property bool showToolTip: false
 
@@ -141,31 +139,14 @@ Item {
                 }
             }
 
-            Colorize {
-                anchors.fill: outputHelpIcon
-                source: outputHelpIcon
-                hue: 0
-                saturation: 0
-                lightness: imageLightnessValue
-            }
-
-            Image {
+            AppIcon {
                 id: headphonesIcon
                 anchors.left: outputLabel.left
                 anchors.top: outputLabel.bottom
                 anchors.topMargin: bottomToolTipMargin * virtualstudio.uiScale
-                source: "headphones.svg"
-                sourceSize: Qt.size(28 * virtualstudio.uiScale, 28 * virtualstudio.uiScale)
-                fillMode: Image.PreserveAspectFit
-                smooth: true
-            }
-
-            Colorize {
-                anchors.fill: headphonesIcon
-                source: headphonesIcon
-                hue: 0
-                saturation: 0
-                lightness: imageLightnessValue
+                width: 28 * virtualstudio.uiScale
+                height: 28 * virtualstudio.uiScale
+                icon.source: "headphones.svg"
             }
 
             ComboBox {
@@ -287,15 +268,14 @@ Item {
                 color: textColour
             }
 
-            Image {
+            AppIcon {
                 id: inputHelpIcon
                 anchors.left: inputLabel.right
                 anchors.bottom: inputLabel.top
                 anchors.bottomMargin: -8 * virtualstudio.uiScale
-                source: "help.svg"
-                sourceSize: Qt.size(12 * virtualstudio.uiScale, 12 * virtualstudio.uiScale)
-                fillMode: Image.PreserveAspectFit
-                smooth: true
+                width: 16 * virtualstudio.uiScale
+                height: 16 * virtualstudio.uiScale
+                icon.source: "help.svg"
 
                 property bool showToolTip: false
 
@@ -332,31 +312,14 @@ Item {
                 }
             }
 
-            Colorize {
-                anchors.fill: inputHelpIcon
-                source: inputHelpIcon
-                hue: 0
-                saturation: 0
-                lightness: imageLightnessValue
-            }
-
-            Image {
+            AppIcon {
                 id: microphoneIcon
                 anchors.left: inputLabel.left
                 anchors.top: inputLabel.bottom
                 anchors.topMargin: bottomToolTipMargin * virtualstudio.uiScale
-                source: "mic.svg"
-                sourceSize: Qt.size(32 * virtualstudio.uiScale, 32 * virtualstudio.uiScale)
-                fillMode: Image.PreserveAspectFit
-                smooth: true
-            }
-
-            Colorize {
-                anchors.fill: microphoneIcon
-                source: microphoneIcon
-                hue: 0
-                saturation: 0
-                lightness: imageLightnessValue
+                width: 32 * virtualstudio.uiScale
+                height: 32 * virtualstudio.uiScale
+                icon.source: "mic.svg"
             }
 
             ComboBox {

@@ -1,7 +1,6 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
 import QtQuick.Layouts 1.15
-import QtGraphicalEffects 1.12
 
 Item {
     required property string content
@@ -17,20 +16,12 @@ Item {
     Item {
         anchors.fill: parent
 
-        Image {
+        AppIcon {
             id: tooltipIcon
-            source: iconSource
-            sourceSize: Qt.size(parent.width, parent.height)
-            fillMode: Image.PreserveAspectFit
-            smooth: true
-        }
-
-        Colorize {
-            anchors.fill: tooltipIcon
-            source: tooltipIcon
-            hue: 0
-            saturation: 0
-            lightness: 0.6
+            anchors.centerIn: parent
+            width: parent.width
+            height: parent.height
+            icon.source: iconSource
         }
 
         MouseArea {
@@ -56,11 +47,13 @@ Item {
                 color: backgroundColour
                 radius: 4
                 layer.enabled: true
+                /*
                 layer.effect: Glow {
                     samples: 17
                     color: "#55000000"
                     transparentBorder: true
                 }
+                */
             }
         }
     }
