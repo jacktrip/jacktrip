@@ -46,6 +46,10 @@
 #include <algorithm>
 #include <iostream>
 
+// TODO: remove me; including this to work-around this bug
+// https://bugreports.qt.io/browse/QTBUG-55199
+#include <QSvgGenerator>
+
 #include "../Settings.h"
 #include "../jacktrip_globals.h"
 #include "about.h"
@@ -90,6 +94,10 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_showWarnings    = settings.value(QStringLiteral("ShowWarnings"), true).toBool();
     settings.endGroup();
     m_previousUiScale = m_uiScale;
+
+    // TODO: remove me; this is a hack for this bug
+    // https://bugreports.qt.io/browse/QTBUG-55199
+    QSvgGenerator svgImageHack;
 
     // use a singleton QNetworkAccessManager
     m_networkAccessManager.reset(new QNetworkAccessManager);

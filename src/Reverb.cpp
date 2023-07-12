@@ -132,7 +132,7 @@ void Reverb::init(int samplingRate, int bufferSize)
 //*******************************************************************************
 void Reverb::compute(int nframes, float** inputs, float** outputs)
 {
-    if (not inited) {
+    if (!inited) {
         std::cerr << "*** Reverb " << this << ": init never called! Doing it now.\n";
         init(0, 0);
     }

@@ -80,7 +80,10 @@ class JitterBuffer : public RingBuffer
     uint32_t mLastCorrCounter;
     int mLastCorrDirection;
     double mMinLevelThreshold;
-    double lastCorrFactor() const { return 500.0 / std::max(500U, mLastCorrCounter); }
+    double lastCorrFactor() const
+    {
+        return 500.0 / std::max<uint32_t>(500U, mLastCorrCounter);
+    }
 
     int mAutoQueue;
     double mAutoQueueCorr;

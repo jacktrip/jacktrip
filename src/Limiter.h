@@ -75,7 +75,7 @@ class Limiter : public ProcessPlugin
 
     void setWarningAmplitude(double wa)
     {  // setting to 0 turns off warnings
-        warningAmp = std::max(0.0, std::min(1.0, wa));
+        warningAmp = std::max<double>(0.0, std::min<double>(1.0, wa));
     }
 
    private:
@@ -92,7 +92,7 @@ class Limiter : public ProcessPlugin
                                               // ../faust-src/limiterdsp.dsp
             if (limiterAmp >= warningAmp) {
                 warnCount++;
-                peakMagnitude = std::max(peakMagnitude, limiterAmp);
+                peakMagnitude = std::max<double>(peakMagnitude, limiterAmp);
                 if (warnCount == nextWarning) {
                     double peakMagnitudeDB = 20.0 * std::log10(peakMagnitude);
                     double warningAmpDB    = 20.0 * std::log10(warningAmp);

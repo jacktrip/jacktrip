@@ -77,7 +77,7 @@ AudioInterface::AudioInterface(QVarLengthArray<int> InputChans,
 #ifndef WAIR
     // cc
     // Initialize and assign memory for ProcessPlugins Buffers
-    int monitorChans = std::min(mInputChans.size(), mOutputChans.size());
+    int monitorChans = std::min<size_t>(mInputChans.size(), mOutputChans.size());
     mInProcessBuffer.resize(mInputChans.size());
     mOutProcessBuffer.resize(mOutputChans.size());
     mMonProcessBuffer.resize(monitorChans);
@@ -97,7 +97,7 @@ AudioInterface::AudioInterface(QVarLengthArray<int> InputChans,
     int oCnt =
         (mOutputChans.size() > mNumNetRevChans) ? mOutputChans.size() : mNumNetRevChans;
     int aCnt = (mNumNetRevChans) ? mInputChans.size() : 0;
-    int mCnt = std::min(iCnt, oCnt);
+    int mCnt = std::min<int>(iCnt, oCnt);
     for (int i = 0; i < iCnt; i++) {
         mInProcessBuffer[i] = NULL;
     }
@@ -172,8 +172,8 @@ void AudioInterface::setup(bool /*verbose*/)
 {
     int nChansIn  = mInputChans.size();
     int nChansOut = mOutputChans.size();
-    int nChansMon =
-        std::min(nChansIn, nChansOut);  // Note: Should be 2 when mixing stereo-to-mono
+    int nChansMon = std::min<int>(
+        nChansIn, nChansOut);  // Note: Should be 2 when mixing stereo-to-mono
     inputMixModeT inputMixMode = mInputMixMode;
     if (inputMixMode == MIXTOMONO) {
         nChansIn = 1;
@@ -272,8 +272,8 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
 {
     int nChansIn  = mInputChans.size();
     int nChansOut = mOutputChans.size();
-    int nChansMon =
-        std::min(nChansIn, nChansOut);  // Note: Should be 2 when mixing stereo-to-mono
+    int nChansMon = std::min<int>(
+        nChansIn, nChansOut);  // Note: Should be 2 when mixing stereo-to-mono
     inputMixModeT inputMixMode = mInputMixMode;
     if (inputMixMode == MIXTOMONO) {
         nChansIn = 1;
@@ -656,16 +656,17 @@ void AudioInterface::fromSampleToBitConversion(
     switch (targetBitResolution) {
     case BIT8:
         // 8bit integer between -128 to 127
-        tmp_sample =
-            std::max(-127.0, std::min(127.0, std::round((*input) * 127.0)));  // 2^7 = 128
+        tmp_sample = std::max<double>(
+            -127.0, std::min<double>(127.0, std::round((*input) * 127.0)));  // 2^7 = 128
         tmp_8 = static_cast<int8_t>(tmp_sample);
         std::memcpy(output, &tmp_8, 1);  // 8bits = 1 bytes
         break;
     case BIT16:
         // 16bit integer between -32768 to 32767
         // original scaling: tmp_sample = floor( (*input) * 32768.0 ); // 2^15 = 32768.0
-        tmp_sample = std::max(
-            -32767.0, std::min(32767.0, std::round((*input) * 32767.0)));  // 2^15 = 32768
+        tmp_sample = std::max<double>(
+            -32767.0,
+            std::min<double>(32767.0, std::round((*input) * 32767.0)));  // 2^15 = 32768
         tmp_16 = static_cast<int16_t>(tmp_sample);
         std::memcpy(
             output, &tmp_16,
@@ -692,7 +693,7 @@ void AudioInterface::fromSampleToBitConversion(
     case BIT32:
         tmp_sample = *input;
         // not necessary yet:
-        // tmp_sample = std::max(-1.0, std::min(1.0, tmp_sample));
+        // tmp_sample = std::max<double>(-1.0, std::min<double>(1.0, tmp_sample));
         std::memcpy(output, &tmp_sample, 4);  // 32bit = 4 bytes
         break;
     }
@@ -740,7 +741,7 @@ void AudioInterface::fromBitToSampleConversion(
 //*******************************************************************************
 void AudioInterface::appendProcessPluginToNetwork(ProcessPlugin* plugin)
 {
-    if (not plugin) {
+    if (!plugin) {
         return;
     }
 
@@ -766,7 +767,7 @@ void AudioInterface::appendProcessPluginToNetwork(ProcessPlugin* plugin)
 
 void AudioInterface::appendProcessPluginFromNetwork(ProcessPlugin* plugin)
 {
-    if (not plugin) {
+    if (!plugin) {
         return;
     }
 
@@ -788,13 +789,13 @@ void AudioInterface::appendProcessPluginFromNetwork(ProcessPlugin* plugin)
 
 void AudioInterface::appendProcessPluginToMonitor(ProcessPlugin* plugin)
 {
-    if (not plugin) {
+    if (!plugin) {
         return;
     }
     int nChansIn  = mInputChans.size();
     int nChansOut = mOutputChans.size();
-    int nChansMon =
-        std::min(nChansIn, nChansOut);  // Note: Should be 2 when mixing stereo-to-mono
+    int nChansMon = std::min<int>(
+        nChansIn, nChansOut);  // Note: Should be 2 when mixing stereo-to-mono
     inputMixModeT inputMixMode = mInputMixMode;
     if (inputMixMode == MIXTOMONO) {
         nChansIn = 1;
@@ -829,8 +830,8 @@ void AudioInterface::initPlugins(bool verbose)
 {
     int nChansIn  = mInputChans.size();
     int nChansOut = mOutputChans.size();
-    int nChansMon =
-        std::min(nChansIn, nChansOut);  // Note: Should be 2 when mixing stereo-to-mono
+    int nChansMon = std::min<int>(
+        nChansIn, nChansOut);  // Note: Should be 2 when mixing stereo-to-mono
     inputMixModeT inputMixMode = mInputMixMode;
     if (inputMixMode == MIXTOMONO) {
         nChansIn = 1;
