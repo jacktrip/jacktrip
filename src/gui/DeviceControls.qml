@@ -56,7 +56,6 @@ Item {
                     radius: 4
                     layer.enabled: true
                     layer.effect: Glow {
-                        samples: 17
                         color: "#66000000"
                         transparentBorder: true
                     }
