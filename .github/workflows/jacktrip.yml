@@ -236,6 +236,7 @@ jobs:
             qt-cache-version: '6.2.4'
             qt-cache-type: 'dynamic'
             jacktrip-path: jacktrip.exe
+            installer-path: installer
             binary-path: binary
             build-system: meson
             meson-library-type: shared
@@ -557,26 +558,6 @@ jobs:
           security import $CERTIFICATE_PATH -P "$CERT_PASSPHRASE" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
           security import $INSTALLER_CERT_PATH -P "$CERT_PASSPHRASE" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
           security list-keychain -d user -s $KEYCHAIN_PATH
-      - name: compress the binary
-        shell: bash
-        if: matrix.binary-path
-        run: |
-          BINFILE=$BUILD_PATH/${{ matrix.jacktrip-path }}
-          ZIPFILE=$BUILD_PATH/${{ matrix.binary-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-binary.zip
-          mkdir -p $BUILD_PATH/${{ matrix.binary-path }}
-          if [[ "${{ runner.os }}" == "Windows" ]]; then
-            7z a $ZIPFILE -tzip $BINFILE $GITHUB_WORKSPACE/LICENSE.md $GITHUB_WORKSPACE/LICENSES/
-          else
-            strip $BINFILE
-            zip -j $ZIPFILE $BINFILE
-            if [[ "${{ matrix.name }}" == "Linux-x64-qmake-gcc-static" ]]; then
-              cp $GITHUB_WORKSPACE/linux/icons/jacktrip.svg $BUILD_PATH/org.jacktrip.JackTrip.svg
-              cp $GITHUB_WORKSPACE/linux/icons/jacktrip_48x48.png $BUILD_PATH/org.jacktrip.JackTrip.png
-              zip -j $ZIPFILE $BUILD_PATH/org.jacktrip.JackTrip.desktop $BUILD_PATH/org.jacktrip.JackTrip.svg $BUILD_PATH/org.jacktrip.JackTrip.png $GITHUB_WORKSPACE/linux/README.md
-            fi
-            cd $GITHUB_WORKSPACE # we need to be in the root project directory for adding licenses
-            zip -r $ZIPFILE LICENSE.md LICENSES
-          fi
       - name: create app bundle and installer on macOS
         if: runner.os == 'macOS' && (matrix.bundle-path || matrix.installer-path)
         shell: bash
@@ -619,6 +600,30 @@ jobs:
           call "build_installer.bat"
           bash -c "mkdir -p $BUILD_PATH/${{ matrix.installer-path }}"
           bash -c "cp deploy/*.msi $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi"
+          rm -f deploy/*.msi deploy/*.wxs deploy/*.wixobj deploy/*.wixpdb
+      - name: compress the binary
+        shell: bash
+        if: matrix.binary-path
+        run: |
+          BINFILE=$BUILD_PATH/${{ matrix.jacktrip-path }}
+          NAME=JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}
+          ZIPFILE=$BUILD_PATH/${{ matrix.binary-path }}/$NAME-binary.zip
+          mkdir -p $BUILD_PATH/${{ matrix.binary-path }}
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            cd win
+            mv deploy $NAME
+            7z a $ZIPFILE -tzip $NAME
+          else
+            strip $BINFILE
+            zip -j $ZIPFILE $BINFILE
+            if [[ "${{ matrix.name }}" == "Linux-x64-qmake-gcc-static" ]]; then
+              cp $GITHUB_WORKSPACE/linux/icons/jacktrip.svg $BUILD_PATH/org.jacktrip.JackTrip.svg
+              cp $GITHUB_WORKSPACE/linux/icons/jacktrip_48x48.png $BUILD_PATH/org.jacktrip.JackTrip.png
+              zip -j $ZIPFILE $BUILD_PATH/org.jacktrip.JackTrip.desktop $BUILD_PATH/org.jacktrip.JackTrip.svg $BUILD_PATH/org.jacktrip.JackTrip.png $GITHUB_WORKSPACE/linux/README.md
+            fi
+            cd $GITHUB_WORKSPACE # we need to be in the root project directory for adding licenses
+            zip -r $ZIPFILE LICENSE.md LICENSES
+          fi
       - name: upload jacktrip binary
         uses: actions/upload-artifact@v3
         if: matrix.binary-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name))
