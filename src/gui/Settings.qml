@@ -1,6 +1,5 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
-import QtGraphicalEffects 1.12
 
 Item {
     width: parent.width; height: parent.height
@@ -146,10 +145,7 @@ Item {
                 }
                 visible: parent.isUsingRtAudio && settingsGroupView == "Audio"
             }
-
         }
-
-
     }
 
     Drawer {

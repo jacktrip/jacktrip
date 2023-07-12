@@ -20,6 +20,7 @@
     <file>Setup.qml</file>
     <file>SectionHeading.qml</file>
     <file>Footer.qml</file>
+    <file>AppIcon.qml</file>
     <file>logo.svg</file>
     <file>wedge.svg</file>
     <file>wedge_inactive.svg</file>
@@ -38,9 +39,9 @@
     <file>quiet.svg</file>
     <file>loud.svg</file>
     <file>refresh.svg</file>
-    <file>ethernet.png</file>
+    <file>ethernet.svg</file>
     <file>check.svg</file>
-    <file>ohno.png</file>
+    <file>sentiment_very_dissatisfied.svg</file>
     <file>headphones.svg</file>
     <file>Prompt.svg</file>
     <file>network.svg</file>
