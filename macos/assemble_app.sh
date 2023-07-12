@@ -102,6 +102,13 @@ shift $((OPTIND - 1))
 [ "$#" -gt 0 ] && APPNAME="$1"
 [ "$#" -gt 1 ] && BUNDLE_ID="$2"
 
+DYNAMIC_QT=$(otool -L $BINARY | grep QtCore)
+DYNAMIC_VS=$(otool -L $BINARY | grep QtQml)
+
+if [[ -n "$DYNAMIC_QT" && -n "$QT_PATH" ]]; then
+  export DYLD_FRAMEWORK_PATH=$QT_PATH/lib
+fi
+
 VERSION="$($BINARY -v | awk '/VERSION/{print $NF}')"
 [ -z "$VERSION" ] && { echo "Unable to determine binary version. Quitting."; exit 1; }
 
@@ -120,9 +127,6 @@ cp -f ../LICENSE.md "$APPNAME.app/Contents/Resources/"
 cp -Rf ../LICENSES "$APPNAME.app/Contents/Resources/"
 
 [ $PSI = true ] && cp jacktrip_alt.icns "$APPNAME.app/Contents/Resources/jacktrip.icns"
-
-DYNAMIC_QT=$(otool -L $BINARY | grep QtCore)
-DYNAMIC_VS=$(otool -L $BINARY | grep QtQml)
 
 if [ ! -z "$DYNAMIC_QT" ] && [ -z "$DYNAMIC_VS" ]; then
     cp "Info_novs.plist" "$APPNAME.app/Contents/Info.plist" 
@@ -147,15 +151,14 @@ if [ ! -z "$DYNAMIC_QT" ]; then
             exit 1
         fi
     fi
-    QMLDIR=""
+    DEPLOY_OPTS="-executable=JackTrip.app/Contents/MacOS/jacktrip"
     if [ ! -z "$DYNAMIC_VS" ]; then
-        QMLDIR=" -qmldir=../src/gui"
+        DEPLOY_OPTS="$DEPLOY_OPTS -qmldir=../src/gui"
     fi
     if [ ! -z "$CERTIFICATE" ]; then
-        $DEPLOY_CMD "$APPNAME.app"$QMLDIR -codesign="$CERTIFICATE"
-    else
-        $DEPLOY_CMD "$APPNAME.app"$QMLDIR
+        DEPLOY_OPTS="$DEPLOY_OPTS -codesign=\"$CERTIFICATE\""
     fi
+    $DEPLOY_CMD "$APPNAME.app" $DEPLOY_OPTS
 fi
 
 [ $BUILD_INSTALLER = true ] || exit 0

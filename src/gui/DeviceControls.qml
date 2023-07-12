@@ -1,6 +1,7 @@
-import QtQuick 2.12
-import QtQuick.Controls 2.12
-import QtQuick.Layouts 1.15
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import Qt5Compat.GraphicalEffects
 
 Item {
     width: parent.width
@@ -32,8 +33,8 @@ Item {
             AppIcon {
                 id: iconImage
                 anchors.centerIn: parent
-                width: 18 * virtualstudio.uiScale
-                height: 18 * virtualstudio.uiScale
+                width: 24 * virtualstudio.uiScale
+                height: 24 * virtualstudio.uiScale
                 icon.source: isInput ? (virtualstudio.inputMuted ? "micoff.svg" : "mic.svg") : "headphones.svg"
                 color: isInput ? (virtualstudio.inputMuted ? "red" : ( virtualstudio.darkMode ? "#CCCCCC" : "#333333" )) : (virtualstudio.darkMode ? "#CCCCCC" : "#333333")
                 onClicked: isInput ? virtualstudio.inputMuted = !virtualstudio.inputMuted : console.log()
@@ -54,13 +55,11 @@ Item {
                     color: toolTipBackgroundColour
                     radius: 4
                     layer.enabled: true
-                    /*
                     layer.effect: Glow {
                         samples: 17
                         color: "#66000000"
                         transparentBorder: true
                     }
-                    */
                 }
             }
         }

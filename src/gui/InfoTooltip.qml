@@ -1,6 +1,7 @@
-import QtQuick 2.12
-import QtQuick.Controls 2.12
-import QtQuick.Layouts 1.15
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import Qt5Compat.GraphicalEffects
 
 Item {
     required property string content
@@ -47,13 +48,11 @@ Item {
                 color: backgroundColour
                 radius: 4
                 layer.enabled: true
-                /*
                 layer.effect: Glow {
                     samples: 17
                     color: "#55000000"
                     transparentBorder: true
                 }
-                */
             }
         }
     }

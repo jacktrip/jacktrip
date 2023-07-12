@@ -1,14 +1,14 @@
 app-id: org.jacktrip.JackTrip.Devel
 runtime: org.kde.Platform
-runtime-version: '5.15-22.08'
+runtime-version: '6.2'
 sdk: org.kde.Sdk
 command: jacktrip
 finish-args:
   # X11 + XShm access
   - --share=ipc
-  - --socket=x11
+  - --socket=fallback-x11
   # Wayland access
-  # - --socket=wayland
+  - --socket=wayland
   # OpenGL
   - --device=dri
   # Needs network access

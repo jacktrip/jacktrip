@@ -1,23 +1,10 @@
-import QtQuick 2.12
-import QtQuick.Controls 2.12
-import QtWebView 1.15
+import QtQuick
+import QtQuick.Controls
 
-Item {
-    width: parent.width; height: parent.height
-    clip: true
+Loader {
+    anchors.fill: parent
+    source: "WebEngine.qml"
 
-    Item {
-        id: web
-        anchors.fill: parent
-
-        property string accessToken: auth.isAuthenticated && Boolean(auth.accessToken) ? auth.accessToken : ""
-        property string studioId: virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].id : ""
-
-        WebView {
-            id: webEngineView
-            anchors.fill: parent
-            httpUserAgent: `JackTrip/${virtualstudio.versionString}`
-            url: `https://${virtualstudio.apiHost}/studios/${studioId}/live?accessToken=${accessToken}`
-        }
-    }
+    // TODO: Add support for QtWebView
+    // source: useWebEngine ? "WebEngine.qml" : "WebView.qml"
 }

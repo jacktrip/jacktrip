@@ -37,7 +37,9 @@
 
 #ifndef NO_GUI
 #include <QApplication>
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
 #include <QQuickStyle>
+#endif
 
 #ifndef NO_UPDATER
 #include "dblsqd/feed.h"
@@ -51,7 +53,9 @@
 #include <QQuickView>
 #include <QSettings>
 #include <QTextStream>
-#include <QtWebView>
+// TODO: Add support for QtWebView
+//#include <QtWebView>
+#include <QtWebEngineQuick/qtwebenginequickglobal.h>
 
 #include "JTApplication.h"
 #include "gui/virtualstudio.h"
@@ -80,10 +84,10 @@
 #endif
 
 #ifndef NO_GUI
-#ifndef NO_VS
+#if !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 static QTextStream* ts;
 static QFile outFile;
-#endif  // NO_VS
+#endif  // NO_VS && QT_VERSION
 #endif  // NO_GUI
 
 QCoreApplication* createApplication(int& argc, char* argv[])
@@ -177,14 +181,10 @@ void qtMessageHandler([[maybe_unused]] QtMsgType type,
 {
     std::cerr << msg.toStdString() << std::endl;
 #ifndef NO_GUI
-#ifndef NO_VS
+#if !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     // Writes to file in order to debug bundles and executables
-#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
     *ts << msg << Qt::endl;
-#else
-    *ts << msg << endl;
-#endif  // QT_VERSION > 5.14.0
-#endif  // NO_VS
+#endif  // NO_VS && QT_VERSION
 #endif  // NO_GUI
 }
 
@@ -280,8 +280,10 @@ int main(int argc, char* argv[])
 {
 #ifndef NO_GUI
 #if !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    qputenv("QT_WEBVIEW_PLUGIN", "native");
-    QtWebView::initialize();
+    QtWebEngineQuick::initialize();
+    // TODO: Add support for QtWebView
+    // qputenv("QT_WEBVIEW_PLUGIN", "native");
+    // QtWebView::initialize();
 #endif  // NO_VS && QT_VERSION
 #endif  // NO_GUI
 

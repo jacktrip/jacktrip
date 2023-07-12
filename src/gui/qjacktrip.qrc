@@ -26,6 +26,8 @@
     <file>DeviceControlsGroup.qml</file>
     <file>InfoTooltip.qml</file>
     <file>Web.qml</file>
+    <file>WebView.qml</file>
+    <file>WebEngine.qml</file>
     <file>WebNull.qml</file>
     <file>AppIcon.qml</file>
     <file>logo.svg</file>
