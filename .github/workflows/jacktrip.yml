@@ -59,15 +59,14 @@ jobs:
       matrix:
         include:
           - name: Linux-x64-qmake-gcc-static
-            release-name: Linux-x64 # specify a separate name for all builds that should be included in releases
             runs-on: ubuntu-20.04
             system-rtaudio: false
             bundled-rtaudio: true # set either system-rtaudio or bundled-rtaudio as true, not both
             nogui: false
-            novs: false
+            novs: true
             weakjack: false
-            jacktrip-path: jacktrip # needed for binary upload
-            binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
+            # jacktrip-path: jacktrip # needed for binary upload
+            # binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
             # bundle-path: bundle # directory relative to build path; triggers application bundle creation and upload (macOS)
             # installer-path: installer # directory relative to build path; triggers installer creation and upload (macOS, Windows)
             build-system: qmake # qmake, meson, cmake (todo)
@@ -83,7 +82,7 @@ jobs:
             system-rtaudio: false
             bundled-rtaudio: false
             nogui: false
-            novs: false
+            novs: true
             weakjack: false
             # jacktrip-path: jacktrip
             # binary-path: binary
@@ -94,7 +93,7 @@ jobs:
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
-            novs: false
+            novs: true
             weakjack: false
             # jacktrip-path: jacktrip
             # binary-path: binary
@@ -117,14 +116,14 @@ jobs:
             wait-for-qt-cache: true
 
           - name: Linux-x64-meson-gcc-shared-bundled_rtaudio
+            release-name: Linux-x64 # specify a separate name for all builds that should be included in releases
             runs-on: ubuntu-22.04
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
-            novs: false
             weakjack: false
-            # jacktrip-path: jacktrip
-            # binary-path: binary
+            jacktrip-path: jacktrip # needed for binary upload
+            binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
             build-system: meson
             meson-library-type: shared
             static-analysis: true
@@ -145,7 +144,7 @@ jobs:
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
-            novs: false
+            novs: true
             weakjack: true
             macosx-deployment-target: 10.13
             macosx-architectures: 'x86_64 arm64'
@@ -165,7 +164,7 @@ jobs:
             system-rtaudio: true
             bundled-rtaudio: false
             nogui: false
-            novs: false
+            novs: true
             weakjack: true
             # jacktrip-path: jacktrip
             # binary-path: binary
@@ -216,7 +215,7 @@ jobs:
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
-            novs: false
+            novs: true
             weakjack: true
             qt-cache-version: '5.15.10'
             qt-cache-type: 'dynamic'
