@@ -1,5 +1,5 @@
-import QtQuick 2.12
-import QtQuick.Controls 2.12
+import QtQuick
+import QtQuick.Controls
 
 Item {
     width: parent.width; height: parent.height
@@ -206,7 +206,7 @@ Item {
         MouseArea {
             z: -1
             anchors.fill: parent
-            onWheel: {
+            onWheel: function (wheel) {
                 // trackpad
                 studioListView.contentY -= wheel.pixelDelta.y;
                 // mouse wheel
@@ -219,7 +219,7 @@ Item {
             // Customize scroll properties on different platforms
             if (Qt.platform.os == "linux" || Qt.platform.os == "osx" ||
                 Qt.platform.os == "unix" || Qt.platform.os == "windows") {
-                var scrollBar = Qt.createQmlObject('import QtQuick.Controls 2.12; ScrollBar{}',
+                var scrollBar = Qt.createQmlObject('import QtQuick.Controls; ScrollBar{}',
                                                    studioListView,
                                                    "dynamicSnippet1");
                 scrollBar.policy = ScrollBar.AlwaysOn;
