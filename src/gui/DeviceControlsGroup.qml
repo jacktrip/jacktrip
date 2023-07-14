@@ -11,6 +11,7 @@ Item {
     id: deviceControlsGroup
     width: parent.width
     height: showMinified ? minifiedHeight : fullHeight
+    property bool showDeviceControls: studioStatus === "Ready"
 
     Rectangle {
         anchors.fill: parent
@@ -25,7 +26,7 @@ Item {
         Item {
             Layout.fillHeight: true
             Layout.fillWidth: true
-            visible: studioStatus !== "Ready"
+            visible: !showDeviceControls
 
             Button {
                 id: backButton
@@ -50,7 +51,7 @@ Item {
         Item {
             Layout.fillHeight: true
             Layout.fillWidth: true
-            visible: studioStatus === "Ready"
+            visible: showDeviceControls
 
             DeviceControls {
                 isInput: true
@@ -60,7 +61,7 @@ Item {
         Item {
             Layout.fillHeight: true
             Layout.fillWidth: true
-            visible: studioStatus === "Ready"
+            visible: showDeviceControls
 
             DeviceControls {
                 isInput: false
@@ -70,7 +71,7 @@ Item {
         Item {
             Layout.fillHeight: true
             Layout.preferredWidth: 48
-            visible: studioStatus === "Ready"
+            visible: showDeviceControls
 
             ColumnLayout {
                 anchors.fill: parent

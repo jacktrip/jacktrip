@@ -17,15 +17,10 @@ Item {
     property string saveButtonText: "#DB0A0A"
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
     property string meterColor: virtualstudio.darkMode ? "gray" : "#E0E0E0"
-    property real imageLightnessValue: virtualstudio.darkMode ? 0.8 : 0.2
     property real muteButtonLightnessValue: virtualstudio.darkMode ? 1.0 : 0.0
     property real muteButtonMutedLightnessValue: 0.24
     property real muteButtonMutedSaturationValue: 0.73
     property string buttonStroke: virtualstudio.darkMode ? "#80827D7D" : "#34979797"
-    property string sliderColour: virtualstudio.darkMode ? "#BABCBC" :  "#EAECEC"
-    property string sliderPressedColour: virtualstudio.darkMode ? "#ACAFAF" : "#DEE0E0"
-    property string sliderTrackColour: virtualstudio.darkMode ? "#5B5858" : "light gray"
-    property string sliderActiveTrackColour: virtualstudio.darkMode ? "light gray" : "black"
     property string shadowColour: virtualstudio.darkMode ? "#40000000" : "#80A1A1A1"
     property string toolTipBackgroundColour: virtualstudio.darkMode ? "#323232" : "#F3F3F3"
     property string toolTipTextColour: textColour

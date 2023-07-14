@@ -19,7 +19,6 @@ Rectangle {
     property int buttonHeight: 25
 
     property string backgroundColour: virtualstudio.darkMode ? "#272525" : "#FAFBFB"
-    property real imageLightnessValue: virtualstudio.darkMode ? 0.8 : 0.2
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
     property string buttonColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
     property string buttonHoverColour: virtualstudio.darkMode ? "#5B5858" : "#D3D4D4"
@@ -27,10 +26,6 @@ Rectangle {
     property string buttonStroke: virtualstudio.darkMode ? "#80827D7D" : "#40979797"
     property string buttonHoverStroke: virtualstudio.darkMode ? "#7B7777" : "#BABCBC"
     property string buttonPressedStroke: virtualstudio.darkMode ? "#827D7D" : "#BABCBC"
-    property string sliderColour: virtualstudio.darkMode ? "#BABCBC" :  "#EAECEC"
-    property string sliderPressedColour: virtualstudio.darkMode ? "#ACAFAF" : "#DEE0E0"
-    property string sliderTrackColour: virtualstudio.darkMode ? "#5B5858" : "light gray"
-    property string sliderActiveTrackColour: virtualstudio.darkMode ? "light gray" : "black"
     property string warningTextColour: "#DB0A0A"
     property string linkText: virtualstudio.darkMode ? "#8B8D8D" : "#272525"
     property string toolTipBackgroundColour: virtualstudio.darkMode ? "#323232" : "#F3F3F3"
@@ -180,67 +175,18 @@ Rectangle {
                 enabled: virtualstudio.audioReady && !Boolean(virtualstudio.devicesError)
             }
 
-            Slider {
+            VolumeSlider {
                 id: outputSlider
-                from: 0.0
-                value: audioInterface.outputVolume
-                onMoved: { audioInterface.outputVolume = value }
-                to: 1.0
-                stepSize: 0.01
-                padding: 0
-                anchors.left: outputQuieterIcon.right
-                anchors.leftMargin: 8 * virtualstudio.uiScale
-                anchors.right: outputLouderIcon.left
-                anchors.rightMargin: 8 * virtualstudio.uiScale
-                anchors.top: outputDeviceMeters.bottom
-                anchors.topMargin: 16 * virtualstudio.uiScale
-
-                background: Rectangle {
-                    x: outputSlider.leftPadding
-                    y: outputSlider.topPadding + outputSlider.availableHeight / 2 - height / 2
-                    implicitWidth: parent.width
-                    implicitHeight: 6
-                    width: outputSlider.availableWidth
-                    height: implicitHeight
-                    radius: 4
-                    color: sliderTrackColour
-
-                    Rectangle {
-                        width: outputSlider.visualPosition * parent.width
-                        height: parent.height
-                        color: sliderActiveTrackColour
-                        radius: 4
-                    }
-                }
-
-                handle: Rectangle {
-                    x: outputSlider.leftPadding + outputSlider.visualPosition * (outputSlider.availableWidth - width)
-                    y: outputSlider.topPadding + outputSlider.availableHeight / 2 - height / 2
-                    implicitWidth: 26 * virtualstudio.uiScale
-                    implicitHeight: 26 * virtualstudio.uiScale
-                    radius: 13 * virtualstudio.uiScale
-                    color: outputSlider.pressed ? sliderPressedColour : sliderColour
-                    border.color: buttonStroke
-                }
-            }
-
-            AppIcon {
-                id: outputQuieterIcon
                 anchors.left: outputCombo.left
-                anchors.verticalCenter: outputSlider.verticalCenter
-                width: 18 * virtualstudio.uiScale
-                height: 18 * virtualstudio.uiScale
-                icon.source: "quiet.svg"
-            }
-
-            AppIcon {
-                id: outputLouderIcon
                 anchors.right: parent.right
                 anchors.rightMargin: rightMargin * virtualstudio.uiScale
-                anchors.verticalCenter: outputSlider.verticalCenter
-                width: 20 * virtualstudio.uiScale
-                height: 20 * virtualstudio.uiScale
-                icon.source: "loud.svg"
+                anchors.top: outputDeviceMeters.bottom
+                anchors.topMargin: 16 * virtualstudio.uiScale
+                height: 30 * virtualstudio.uiScale
+                labelText: "Studio"
+                tooltipText: "How loudly you hear other participants"
+                showLabel: false
+                sliderEnabled: true
             }
 
             Text {
@@ -419,67 +365,18 @@ Rectangle {
                 enabled: virtualstudio.audioReady && !Boolean(virtualstudio.devicesError)
             }
 
-            Slider {
+            VolumeSlider {
                 id: inputSlider
-                from: 0.0
-                value: audioInterface.inputVolume
-                onMoved: { audioInterface.inputVolume = value }
-                to: 1.0
-                stepSize: 0.01
-                padding: 0
-                anchors.left: inputQuieterIcon.right
-                anchors.leftMargin: 8 * virtualstudio.uiScale
-                anchors.right: inputLouderIcon.left
-                anchors.rightMargin: 8 * virtualstudio.uiScale
-                anchors.top: inputDeviceMeters.bottom
-                anchors.topMargin: 16 * virtualstudio.uiScale
-
-                background: Rectangle {
-                    x: inputSlider.leftPadding
-                    y: inputSlider.topPadding + inputSlider.availableHeight / 2 - height / 2
-                    implicitWidth: parent.width
-                    implicitHeight: 6
-                    width: inputSlider.availableWidth
-                    height: implicitHeight
-                    radius: 4
-                    color: sliderTrackColour
-
-                    Rectangle {
-                        width: inputSlider.visualPosition * parent.width
-                        height: parent.height
-                        color: sliderActiveTrackColour
-                        radius: 4
-                    }
-                }
-
-                handle: Rectangle {
-                    x: inputSlider.leftPadding + inputSlider.visualPosition * (inputSlider.availableWidth - width)
-                    y: inputSlider.topPadding + inputSlider.availableHeight / 2 - height / 2
-                    implicitWidth: 26 * virtualstudio.uiScale
-                    implicitHeight: 26 * virtualstudio.uiScale
-                    radius: 13 * virtualstudio.uiScale
-                    color: inputSlider.pressed ? sliderPressedColour : sliderColour
-                    border.color: buttonStroke
-                }
-            }
-
-            AppIcon {
-                id: inputQuieterIcon
                 anchors.left: inputDeviceMeters.left
-                anchors.verticalCenter: inputSlider.verticalCenter
-                width: 18 * virtualstudio.uiScale
-                height: 18 * virtualstudio.uiScale
-                icon.source: "quiet.svg"
-            }
-
-            AppIcon {
-                id: inputLouderIcon
                 anchors.right: parent.right
                 anchors.rightMargin: rightMargin * virtualstudio.uiScale
-                anchors.verticalCenter: inputSlider.verticalCenter
-                width: 20 * virtualstudio.uiScale
-                height: 20 * virtualstudio.uiScale
-                icon.source: "loud.svg"
+                anchors.top: inputDeviceMeters.bottom
+                anchors.topMargin: 16 * virtualstudio.uiScale
+                height: 30 * virtualstudio.uiScale
+                labelText: "Send"
+                tooltipText: "How loudly other participants hear you"
+                showLabel: false
+                sliderEnabled: true
             }
 
             Button {
@@ -743,67 +640,18 @@ Rectangle {
                 }
             }
 
-            Slider {
+            VolumeSlider {
                 id: jackOutputVolumeSlider
-                from: 0.0
-                value: audioInterface.outputVolume
-                onMoved: { audioInterface.outputVolume = value }
-                to: 1.0
-                stepSize: 0.01
-                padding: 0
-                anchors.left: jackOutputQuieterButton.right
-                anchors.leftMargin: 8 * virtualstudio.uiScale
-                anchors.right: jackOutputLouderIcon.left
-                anchors.rightMargin: 8 * virtualstudio.uiScale
-                anchors.top: jackOutputMeters.bottom
-                anchors.topMargin: 16 * virtualstudio.uiScale
-
-                background: Rectangle {
-                    x: jackOutputVolumeSlider.leftPadding
-                    y: jackOutputVolumeSlider.topPadding + jackOutputVolumeSlider.availableHeight / 2 - height / 2
-                    implicitWidth: parent.width
-                    implicitHeight: 6
-                    width: jackOutputVolumeSlider.availableWidth
-                    height: implicitHeight
-                    radius: 4
-                    color: sliderTrackColour
-
-                    Rectangle {
-                        width: jackOutputVolumeSlider.visualPosition * parent.width
-                        height: parent.height
-                        color: sliderActiveTrackColour
-                        radius: 4
-                    }
-                }
-
-                handle: Rectangle {
-                    x: jackOutputVolumeSlider.leftPadding + jackOutputVolumeSlider.visualPosition * (jackOutputVolumeSlider.availableWidth - width)
-                    y: jackOutputVolumeSlider.topPadding + jackOutputVolumeSlider.availableHeight / 2 - height / 2
-                    implicitWidth: 26 * virtualstudio.uiScale
-                    implicitHeight: 26 * virtualstudio.uiScale
-                    radius: 13 * virtualstudio.uiScale
-                    color: jackOutputVolumeSlider.pressed ? sliderPressedColour : sliderColour
-                    border.color: buttonStroke
-                }
-            }
-
-            AppIcon {
-                id: jackOutputQuieterButton
                 anchors.left: jackOutputMeters.left
-                anchors.verticalCenter: jackOutputVolumeSlider.verticalCenter
-                width: 18 * virtualstudio.uiScale
-                height: 18 * virtualstudio.uiScale
-                icon.source: "quiet.svg"
-            }
-
-            AppIcon {
-                id: jackOutputLouderIcon
                 anchors.right: jackTestOutputAudioButton.left
                 anchors.rightMargin: rightMargin * virtualstudio.uiScale
-                anchors.verticalCenter: jackOutputVolumeSlider.verticalCenter
-                width: 20 * virtualstudio.uiScale
-                height: 20 * virtualstudio.uiScale
-                icon.source: "loud.svg"
+                anchors.top: jackOutputMeters.bottom
+                anchors.topMargin: 16 * virtualstudio.uiScale
+                height: 30 * virtualstudio.uiScale
+                labelText: "Studio"
+                tooltipText: "How loudly you hear other participants"
+                showLabel: false
+                sliderEnabled: true
             }
 
             Text {
@@ -839,67 +687,18 @@ Rectangle {
                 enabled: virtualstudio.audioReady && !Boolean(virtualstudio.devicesError)
             }
 
-            Slider {
+            VolumeSlider {
                 id: jackInputVolumeSlider
-                from: 0.0
-                value: audioInterface.inputVolume
-                onMoved: { audioInterface.inputVolume = value }
-                to: 1.0
-                stepSize: 0.01
-                padding: 0
-                anchors.left: jackInputQuieterButton.right
-                anchors.leftMargin: 8 * virtualstudio.uiScale
-                anchors.right: jackInputLouderIcon.left
-                anchors.rightMargin: 8 * virtualstudio.uiScale
-                anchors.top: jackInputMeters.bottom
-                anchors.topMargin: 16 * virtualstudio.uiScale
-
-                background: Rectangle {
-                    x: jackInputVolumeSlider.leftPadding
-                    y: jackInputVolumeSlider.topPadding + jackInputVolumeSlider.availableHeight / 2 - height / 2
-                    implicitWidth: parent.width
-                    implicitHeight: 6
-                    width: jackInputVolumeSlider.availableWidth
-                    height: implicitHeight
-                    radius: 4
-                    color: sliderTrackColour
-
-                    Rectangle {
-                        width: jackInputVolumeSlider.visualPosition * parent.width
-                        height: parent.height
-                        color: sliderActiveTrackColour
-                        radius: 4
-                    }
-                }
-
-                handle: Rectangle {
-                    x: jackInputVolumeSlider.leftPadding + jackInputVolumeSlider.visualPosition * (jackInputVolumeSlider.availableWidth - width)
-                    y: jackInputVolumeSlider.topPadding + jackInputVolumeSlider.availableHeight / 2 - height / 2
-                    implicitWidth: 26 * virtualstudio.uiScale
-                    implicitHeight: 26 * virtualstudio.uiScale
-                    radius: 13 * virtualstudio.uiScale
-                    color: jackInputVolumeSlider.pressed ? sliderPressedColour : sliderColour
-                    border.color: buttonStroke
-                }
-            }
-
-            AppIcon {
-                id: jackInputQuieterButton
                 anchors.left: jackInputMeters.left
-                anchors.verticalCenter: jackInputVolumeSlider.verticalCenter
-                width: 18 * virtualstudio.uiScale
-                height: 18 * virtualstudio.uiScale
-                icon.source: "quiet.svg"
-            }
-
-            AppIcon {
-                id: jackInputLouderIcon
                 anchors.right: parent.right
                 anchors.rightMargin: rightMargin * virtualstudio.uiScale
-                anchors.verticalCenter: jackInputVolumeSlider.verticalCenter
-                width: 20 * virtualstudio.uiScale
-                height: 20 * virtualstudio.uiScale
-                icon.source: "loud.svg"
+                anchors.top: jackInputMeters.bottom
+                anchors.topMargin: 16 * virtualstudio.uiScale
+                height: 30 * virtualstudio.uiScale
+                labelText: "Send"
+                tooltipText: "How loudly other participants hear you"
+                showLabel: false
+                sliderEnabled: true
             }
 
             Button {
