@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
     <Fragment>
-        <DirectoryRef Id="TARGETDIR">
+        <DirectoryRef Id="INSTALLDIR">
             <Directory Id="dirB10C059F651528B59E1FD268EB08C6D6" Name="iconengines" />
             <Directory Id="dir20189C824D4DDABC3D9FF9449C089CE0" Name="imageformats" />
             <Directory Id="dir690B8E6D609B0DB17DB71E8B1FB2FEC5" Name="LICENSES" />
@@ -24,117 +24,117 @@
     </Fragment>
     <Fragment>
         <ComponentGroup Id="jacktrip">
-            <Component Id="cmpBD33227FC5AD6BA1A293384B57B5C3E1" Directory="TARGETDIR" Guid="{887636EF-438E-4FE7-867F-50D3594FF8A9}">
+            <Component Id="cmpBD33227FC5AD6BA1A293384B57B5C3E1" Directory="INSTALLDIR" Guid="{887636EF-438E-4FE7-867F-50D3594FF8A9}">
                 <File Id="filF7FA605CFD2E8074C565F825A465F67E" KeyPath="yes" Source="SourceDir\d3dcompiler_47.dll" />
             </Component>
-            <Component Id="cmpAD46F02BC5359E4227248E749EB0E74F" Directory="TARGETDIR" Guid="{B912A765-5293-4F00-822B-0B355CF6C665}">
+            <Component Id="cmpAD46F02BC5359E4227248E749EB0E74F" Directory="INSTALLDIR" Guid="{B912A765-5293-4F00-822B-0B355CF6C665}">
                 <File Id="fil572E83C11D35ADB0E4CB1A0A0AF474C6" KeyPath="yes" Source="SourceDir\dialog.bmp" />
             </Component>
-            <Component Id="cmpE6579DC78E167F46AB23E0BE3EAA58CE" Directory="TARGETDIR" Guid="{27BFCC7D-F4A8-4F71-8A2B-00A8BC74B106}">
+            <Component Id="cmpE6579DC78E167F46AB23E0BE3EAA58CE" Directory="INSTALLDIR" Guid="{27BFCC7D-F4A8-4F71-8A2B-00A8BC74B106}">
                 <File Id="fil5E6E1243EAE085FE802B6D64690357B0" KeyPath="yes" Source="SourceDir\jacktrip.exe" />
                 <Shortcut Id="startmenuJackTrip" Directory="ProgramMenuDir" Name="JackTrip"
                     WorkingDirectory="INSTALLDIR" Icon="jacktrip.exe" IconIndex="0" Advertise="yes" />
             </Component>
-            <Component Id="cmp64BB59E0E19E219D4D4D5C775D71731F" Directory="TARGETDIR" Guid="{AC1AB986-E75A-4F3D-B849-F0CB485F1573}">
+            <Component Id="cmp64BB59E0E19E219D4D4D5C775D71731F" Directory="INSTALLDIR" Guid="{AC1AB986-E75A-4F3D-B849-F0CB485F1573}">
                 <File Id="fil7D228BFB31A8A99EE307AF8BFC2E1841" KeyPath="yes" Source="SourceDir\LICENSE.md" />
             </Component>
-            <Component Id="cmpE2BC49F17425202019B2C48873956253" Directory="TARGETDIR" Guid="{4F42E138-BC56-4253-8AE7-47D1C92EA803}">
+            <Component Id="cmpE2BC49F17425202019B2C48873956253" Directory="INSTALLDIR" Guid="{4F42E138-BC56-4253-8AE7-47D1C92EA803}">
                 <File Id="fil011E2822115DD1D5BD9A9096D1914F51" KeyPath="yes" Source="SourceDir\license.rtf" />
             </Component>
-            <Component Id="cmp7111706DBFB0E180EC7A8BDC93A90139" Directory="TARGETDIR" Guid="{B19ABB59-5607-4637-93D8-C03CA180767F}">
+            <Component Id="cmp7111706DBFB0E180EC7A8BDC93A90139" Directory="INSTALLDIR" Guid="{B19ABB59-5607-4637-93D8-C03CA180767F}">
                 <File Id="fil1A08189509DCFE1E185AEC6B499929BA" KeyPath="yes" Source="SourceDir\Qt6Core.dll" />
             </Component>
-            <Component Id="cmpD22BE3A3E3A804D9EC17161FD6ED218F" Directory="TARGETDIR" Guid="{4119B512-1A33-4A9B-B0AA-69D22F8C9658}">
+            <Component Id="cmpD22BE3A3E3A804D9EC17161FD6ED218F" Directory="INSTALLDIR" Guid="{4119B512-1A33-4A9B-B0AA-69D22F8C9658}">
                 <File Id="fil0427F270C0F2EA2C38D6BB72F32BC982" KeyPath="yes" Source="SourceDir\Qt6Gui.dll" />
             </Component>
-            <Component Id="cmp9FB603605D751CA9FE101013C48671B7" Directory="TARGETDIR" Guid="{D15528CB-9F26-434A-AFBC-55A1BDD4372A}">
+            <Component Id="cmp9FB603605D751CA9FE101013C48671B7" Directory="INSTALLDIR" Guid="{D15528CB-9F26-434A-AFBC-55A1BDD4372A}">
                 <File Id="filFE4FFAF140893FFCBD7F595F88958077" KeyPath="yes" Source="SourceDir\Qt6Network.dll" />
             </Component>
-            <Component Id="cmp62FBAA57D2AA6EAC6A5C151902D999B3" Directory="TARGETDIR" Guid="{638E44A5-87D1-4315-8AF6-F59A52EFA987}">
+            <Component Id="cmp62FBAA57D2AA6EAC6A5C151902D999B3" Directory="INSTALLDIR" Guid="{638E44A5-87D1-4315-8AF6-F59A52EFA987}">
                 <File Id="fil720F59CECD8953F508A84670C46B640F" KeyPath="yes" Source="SourceDir\Qt6OpenGL.dll" />
             </Component>
-            <Component Id="cmp6F8A9D8010540EBE393F23E015D5A792" Directory="TARGETDIR" Guid="{EBE3A0EF-3C2E-4202-B9F7-AABADBF2E45F}">
+            <Component Id="cmp6F8A9D8010540EBE393F23E015D5A792" Directory="INSTALLDIR" Guid="{EBE3A0EF-3C2E-4202-B9F7-AABADBF2E45F}">
                 <File Id="fil1192A9C8E95EF194DCF3EF7BE626B48E" KeyPath="yes" Source="SourceDir\Qt6Positioning.dll" />
             </Component>
-            <Component Id="cmpB6D50DE19D6ADD781A08727F7F6266E8" Directory="TARGETDIR" Guid="{9CE1CD64-108E-45B7-855E-E9A783CB19E3}">
+            <Component Id="cmpB6D50DE19D6ADD781A08727F7F6266E8" Directory="INSTALLDIR" Guid="{9CE1CD64-108E-45B7-855E-E9A783CB19E3}">
                 <File Id="filCF6DBEF1D6A13C80715404D32B934AD5" KeyPath="yes" Source="SourceDir\Qt6Qml.dll" />
             </Component>
-            <Component Id="cmp4E9BFD75DF26062E9937847116425997" Directory="TARGETDIR" Guid="{3BA3D48C-4E32-4447-B837-0A9DF7AE9067}">
+            <Component Id="cmp4E9BFD75DF26062E9937847116425997" Directory="INSTALLDIR" Guid="{3BA3D48C-4E32-4447-B837-0A9DF7AE9067}">
                 <File Id="filAE1BF7A9D9BF060761C9FAAB52C1582A" KeyPath="yes" Source="SourceDir\Qt6QmlLocalStorage.dll" />
             </Component>
-            <Component Id="cmp65C2886373B0C96AD79BAD6B11F4BCEC" Directory="TARGETDIR" Guid="{E0C4FC0C-4A28-460A-B092-FCB45FEAA648}">
+            <Component Id="cmp65C2886373B0C96AD79BAD6B11F4BCEC" Directory="INSTALLDIR" Guid="{E0C4FC0C-4A28-460A-B092-FCB45FEAA648}">
                 <File Id="fil1A464A34B69E38E90B0748094F580925" KeyPath="yes" Source="SourceDir\Qt6QmlModels.dll" />
             </Component>
-            <Component Id="cmp609AE9C23E17BA20AC06AEA3F3551DAE" Directory="TARGETDIR" Guid="{B92EE4BB-8805-4317-BD8D-BF4C53D6306A}">
+            <Component Id="cmp609AE9C23E17BA20AC06AEA3F3551DAE" Directory="INSTALLDIR" Guid="{B92EE4BB-8805-4317-BD8D-BF4C53D6306A}">
                 <File Id="fil70941CA86B91BA9374327AE51424DF95" KeyPath="yes" Source="SourceDir\Qt6QmlWorkerScript.dll" />
             </Component>
-            <Component Id="cmpF560A3BA9C9935A03A5C37CBAFF8321F" Directory="TARGETDIR" Guid="{CE2EC749-6224-409F-8E35-3ED8816465C9}">
+            <Component Id="cmpF560A3BA9C9935A03A5C37CBAFF8321F" Directory="INSTALLDIR" Guid="{CE2EC749-6224-409F-8E35-3ED8816465C9}">
                 <File Id="fil123F08A484F5DF5CC72BFCCDC197DBF9" KeyPath="yes" Source="SourceDir\Qt6QmlXmlListModel.dll" />
             </Component>
-            <Component Id="cmpED65C4A3E125070BC17313D1A32F9C76" Directory="TARGETDIR" Guid="{C8F815E9-AB86-4742-8D35-7354A635233F}">
+            <Component Id="cmpED65C4A3E125070BC17313D1A32F9C76" Directory="INSTALLDIR" Guid="{C8F815E9-AB86-4742-8D35-7354A635233F}">
                 <File Id="filFDA17D38CD6D73072EBAF9E430B8DCD4" KeyPath="yes" Source="SourceDir\Qt6Quick.dll" />
             </Component>
-            <Component Id="cmpA463F9E3D9E20729888D635B58292550" Directory="TARGETDIR" Guid="{2AD5E6DF-195C-432C-A40D-19196C3E57D2}">
+            <Component Id="cmpA463F9E3D9E20729888D635B58292550" Directory="INSTALLDIR" Guid="{2AD5E6DF-195C-432C-A40D-19196C3E57D2}">
                 <File Id="filDF57D75497458D7E64C07BB9AD1456C9" KeyPath="yes" Source="SourceDir\Qt6QuickControls2.dll" />
             </Component>
-            <Component Id="cmp0571EF0C5FB8E314588A9065CF74AE35" Directory="TARGETDIR" Guid="{6C00C0D4-3FF3-4CBC-B5CC-7D5116782A33}">
+            <Component Id="cmp0571EF0C5FB8E314588A9065CF74AE35" Directory="INSTALLDIR" Guid="{6C00C0D4-3FF3-4CBC-B5CC-7D5116782A33}">
                 <File Id="filDC1C47A2ADA5BD76E86CE6CE8EC4F5B4" KeyPath="yes" Source="SourceDir\Qt6QuickControls2Impl.dll" />
             </Component>
-            <Component Id="cmp2BB41ECBA565E0A0B4EDF020A49025F9" Directory="TARGETDIR" Guid="{E2397D5D-10EE-49D5-B2BC-D25A5286321E}">
+            <Component Id="cmp2BB41ECBA565E0A0B4EDF020A49025F9" Directory="INSTALLDIR" Guid="{E2397D5D-10EE-49D5-B2BC-D25A5286321E}">
                 <File Id="fil57860EF8422A74A3CE88A88BAD0CABB7" KeyPath="yes" Source="SourceDir\Qt6QuickDialogs2.dll" />
             </Component>
-            <Component Id="cmp73D256572698B6DB61D05CCD551BEF9A" Directory="TARGETDIR" Guid="{2D33DF32-5940-4433-8273-C071C66C179E}">
+            <Component Id="cmp73D256572698B6DB61D05CCD551BEF9A" Directory="INSTALLDIR" Guid="{2D33DF32-5940-4433-8273-C071C66C179E}">
                 <File Id="filC9FA5D0D485CF88CB948BE06870C3B8A" KeyPath="yes" Source="SourceDir\Qt6QuickDialogs2QuickImpl.dll" />
             </Component>
-            <Component Id="cmpC26015BC765576311A63C5B026DB71FF" Directory="TARGETDIR" Guid="{E0DFA170-69C3-41FB-8E1E-6F17DC027777}">
+            <Component Id="cmpC26015BC765576311A63C5B026DB71FF" Directory="INSTALLDIR" Guid="{E0DFA170-69C3-41FB-8E1E-6F17DC027777}">
                 <File Id="fil2911EE010D604A656A176E72D572CCAC" KeyPath="yes" Source="SourceDir\Qt6QuickDialogs2Utils.dll" />
             </Component>
-            <Component Id="cmpD246CE6E593DB826C58A42EFAB8AC176" Directory="TARGETDIR" Guid="{55D69872-A85E-43F6-912A-BF1E493C8928}">
+            <Component Id="cmpD246CE6E593DB826C58A42EFAB8AC176" Directory="INSTALLDIR" Guid="{55D69872-A85E-43F6-912A-BF1E493C8928}">
                 <File Id="fil89BECDEB84C26F37AC111B6D300D2835" KeyPath="yes" Source="SourceDir\Qt6QuickLayouts.dll" />
             </Component>
-            <Component Id="cmp05C682DFA26731F5F96864E240BB9367" Directory="TARGETDIR" Guid="{9D8C8DAF-F52F-4FC3-A765-94117661FF1F}">
+            <Component Id="cmp05C682DFA26731F5F96864E240BB9367" Directory="INSTALLDIR" Guid="{9D8C8DAF-F52F-4FC3-A765-94117661FF1F}">
                 <File Id="filF00A542F2EB321619F0825C65334A7F5" KeyPath="yes" Source="SourceDir\Qt6QuickParticles.dll" />
             </Component>
-            <Component Id="cmpB2448C4481D00046098304AC1C230B93" Directory="TARGETDIR" Guid="{78810566-5226-4058-AFB5-478189D94251}">
+            <Component Id="cmpB2448C4481D00046098304AC1C230B93" Directory="INSTALLDIR" Guid="{78810566-5226-4058-AFB5-478189D94251}">
                 <File Id="fil359D410486F61CCCDFEFE2410735AC75" KeyPath="yes" Source="SourceDir\Qt6QuickShapes.dll" />
             </Component>
-            <Component Id="cmpD3B7B317B2EAD7974F7386A4F4137733" Directory="TARGETDIR" Guid="{29B8D38E-CA38-4E5F-A2FF-3D39E7DCC3C0}">
+            <Component Id="cmpD3B7B317B2EAD7974F7386A4F4137733" Directory="INSTALLDIR" Guid="{29B8D38E-CA38-4E5F-A2FF-3D39E7DCC3C0}">
                 <File Id="filA1B7D830C14FF020BDC9FAF8F83402A1" KeyPath="yes" Source="SourceDir\Qt6QuickTemplates2.dll" />
             </Component>
-            <Component Id="cmpDAA5AE12CA74181FE29953002CC830A3" Directory="TARGETDIR" Guid="{2C9383C2-EBF6-4FFC-B3F5-A014EACC05C7}">
+            <Component Id="cmpDAA5AE12CA74181FE29953002CC830A3" Directory="INSTALLDIR" Guid="{2C9383C2-EBF6-4FFC-B3F5-A014EACC05C7}">
                 <File Id="filEF75955C67A60E62CD86B26117C750AE" KeyPath="yes" Source="SourceDir\Qt6Sql.dll" />
             </Component>
-            <Component Id="cmp2BFDE38E15CC8879E8B911A7A296477A" Directory="TARGETDIR" Guid="{5B1DDDD7-72B7-4804-B939-BD805721BF9E}">
+            <Component Id="cmp2BFDE38E15CC8879E8B911A7A296477A" Directory="INSTALLDIR" Guid="{5B1DDDD7-72B7-4804-B939-BD805721BF9E}">
                 <File Id="fil08B70D0B09545B2C830255009EF93341" KeyPath="yes" Source="SourceDir\Qt6Svg.dll" />
             </Component>
-            <Component Id="cmp501A53153FAB3908951DADAE039AB865" Directory="TARGETDIR" Guid="{F754EC1C-C49A-4BB5-B1F6-44F39D697964}">
+            <Component Id="cmp501A53153FAB3908951DADAE039AB865" Directory="INSTALLDIR" Guid="{F754EC1C-C49A-4BB5-B1F6-44F39D697964}">
                 <File Id="filDAAFC08AB32ED0F61D6C56EA5B665627" KeyPath="yes" Source="SourceDir\Qt6WebChannel.dll" />
             </Component>
-            <Component Id="cmp5046A1A989E72DACE21F8D481D0D71C5" Directory="TARGETDIR" Guid="{63DC7AE7-1E3D-403D-9172-777C8F2185B9}">
+            <Component Id="cmp5046A1A989E72DACE21F8D481D0D71C5" Directory="INSTALLDIR" Guid="{63DC7AE7-1E3D-403D-9172-777C8F2185B9}">
                 <File Id="fil4DF01BF67F8DD9C408204A2F5BD56FF9" KeyPath="yes" Source="SourceDir\Qt6WebEngineCore.dll" />
             </Component>
-            <Component Id="cmp8015426E62DE3ED33343DB50BE0A9A0D" Directory="TARGETDIR" Guid="{F4778D74-570E-4173-912A-CEECCC885B65}">
+            <Component Id="cmp8015426E62DE3ED33343DB50BE0A9A0D" Directory="INSTALLDIR" Guid="{F4778D74-570E-4173-912A-CEECCC885B65}">
                 <File Id="fil58988C3D49189FE2287F68174F6944A2" KeyPath="yes" Source="SourceDir\Qt6WebEngineQuick.dll" />
             </Component>
-            <Component Id="cmp268C15DC40B82F983C534C9C3DAABD1B" Directory="TARGETDIR" Guid="{1B8AC40A-AC0C-41C5-B5A8-D7C52FF8C206}">
+            <Component Id="cmp268C15DC40B82F983C534C9C3DAABD1B" Directory="INSTALLDIR" Guid="{1B8AC40A-AC0C-41C5-B5A8-D7C52FF8C206}">
                 <File Id="filA069DC2EC3525A8E547CF9EFC89A25E6" KeyPath="yes" Source="SourceDir\Qt6WebEngineQuickDelegatesQml.dll" />
             </Component>
-            <Component Id="cmp7B3BE582AD25B07FE55DD249E6D5C333" Directory="TARGETDIR" Guid="{2D8AA939-E8CB-4EFE-8C38-2D8D6BF0E65C}">
+            <Component Id="cmp7B3BE582AD25B07FE55DD249E6D5C333" Directory="INSTALLDIR" Guid="{2D8AA939-E8CB-4EFE-8C38-2D8D6BF0E65C}">
                 <File Id="filF8FC62A4978258AB67C456CC256AAA8B" KeyPath="yes" Source="SourceDir\Qt6WebSockets.dll" />
             </Component>
-            <Component Id="cmpA72EB9BC77F4E13CA8F69B2B9413199C" Directory="TARGETDIR" Guid="{2229E93A-8BC6-41F5-BE8E-1C23B56695B9}">
+            <Component Id="cmpA72EB9BC77F4E13CA8F69B2B9413199C" Directory="INSTALLDIR" Guid="{2229E93A-8BC6-41F5-BE8E-1C23B56695B9}">
                 <File Id="fil84A612B35A3B234B8729B7998FD0742D" KeyPath="yes" Source="SourceDir\Qt6WebView.dll" />
             </Component>
-            <Component Id="cmp9CC20E8457A681268437C2AC7D562FE2" Directory="TARGETDIR" Guid="{5FA68071-6C16-43EC-9531-47C130EDB186}">
+            <Component Id="cmp9CC20E8457A681268437C2AC7D562FE2" Directory="INSTALLDIR" Guid="{5FA68071-6C16-43EC-9531-47C130EDB186}">
                 <File Id="filA8C33CBAC2EC4965ED511DF205E7961F" KeyPath="yes" Source="SourceDir\Qt6WebViewQuick.dll" />
             </Component>
-            <Component Id="cmpBCCA6FD4EC03D708E3811B7D4723801F" Directory="TARGETDIR" Guid="{7DF3B16D-52F5-46BB-A9AB-8756ED2C7014}">
+            <Component Id="cmpBCCA6FD4EC03D708E3811B7D4723801F" Directory="INSTALLDIR" Guid="{7DF3B16D-52F5-46BB-A9AB-8756ED2C7014}">
                 <File Id="filAC348090A125BCB41DB84097A13158A0" KeyPath="yes" Source="SourceDir\Qt6Widgets.dll" />
             </Component>
-            <Component Id="cmp648D7B3CDDA6427D7237CE400D68C36A" Directory="TARGETDIR" Guid="{D6E813F8-FD27-48E7-BB04-6A065B38DC96}">
+            <Component Id="cmp648D7B3CDDA6427D7237CE400D68C36A" Directory="INSTALLDIR" Guid="{D6E813F8-FD27-48E7-BB04-6A065B38DC96}">
                 <File Id="fil71DF3511D06EBF7BFB8342792898BEE4" KeyPath="yes" Source="SourceDir\QtWebEngineProcess.exe" />
             </Component>
-            <Component Id="cmp0F098360B2868F2CCF00370D38445346" Directory="TARGETDIR" Guid="{A3052B13-71A2-49C4-8D6F-B2CA2E20C290}">
+            <Component Id="cmp0F098360B2868F2CCF00370D38445346" Directory="INSTALLDIR" Guid="{A3052B13-71A2-49C4-8D6F-B2CA2E20C290}">
                 <File Id="fil9170A5A82C71086C5043F9F42FFED3D4" KeyPath="yes" Source="SourceDir\vc_redist.x64.exe" />
             </Component>
             <Component Id="cmpE3D572FB13B4249EA0FB18BD0F44DE18" Directory="dirB10C059F651528B59E1FD268EB08C6D6" Guid="{B7820FB2-5FBA-4761-B35B-113EB413AB63}">
