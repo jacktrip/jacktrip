@@ -5,8 +5,6 @@ Rectangle {
     property string backgroundColour: virtualstudio.darkMode ? "#272525" : "#FAFBFB"
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
 
-    width: 800
-    height: 640
     color: backgroundColour
     state: virtualstudio.windowState
     anchors.fill: parent
@@ -121,6 +119,46 @@ Rectangle {
 
     Failed {
         id: failedScreen
+    }
+
+    onWidthChanged: {
+        if (virtualstudio.windowState === "start") {
+            startScreen.x = 0
+        } else if (virtualstudio.windowState === "login") {
+            loginScreen.x = 0
+        } else if (virtualstudio.windowState === "setup") {
+            setupScreen.x = 0
+        } else if (virtualstudio.windowState === "browse") {
+            browseScreen.x = 0
+        } else if (virtualstudio.windowState === "settings") {
+            settingsScreen.x = 0
+        } else if (virtualstudio.windowState === "connected") {
+            connectedScreen.x = 0
+        } else if (virtualstudio.windowState === "change_devices") {
+            changeDevicesScreen.x = 0
+        } else if (virtualstudio.windowState === "failed") {
+            failedScreen.x = 0
+        }
+    }
+
+    onHeightChanged: {
+        if (virtualstudio.windowState === "start") {
+            startScreen.x = 0
+        } else if (virtualstudio.windowState === "login") {
+            loginScreen.x = 0
+        } else if (virtualstudio.windowState === "setup") {
+            setupScreen.x = 0
+        } else if (virtualstudio.windowState === "browse") {
+            browseScreen.x = 0
+        } else if (virtualstudio.windowState === "settings") {
+            settingsScreen.x = 0
+        } else if (virtualstudio.windowState === "connected") {
+            connectedScreen.x = 0
+        } else if (virtualstudio.windowState === "change_devices") {
+            changeDevicesScreen.x = 0
+        } else if (virtualstudio.windowState === "failed") {
+            failedScreen.x = 0
+        }
     }
 
     Connections {
