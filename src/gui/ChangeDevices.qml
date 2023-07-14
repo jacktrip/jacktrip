@@ -95,48 +95,13 @@ Item {
                 color: textColour
             }
 
-            AppIcon {
+            InfoTooltip {
                 id: outputHelpIcon
                 anchors.left: outputLabel.right
                 anchors.bottom: outputLabel.top
                 anchors.bottomMargin: -8 * virtualstudio.uiScale
-                width: 16 * virtualstudio.uiScale
-                height: 16 * virtualstudio.uiScale
-                icon.source: "help.svg"
-
-                property bool showToolTip: false
-
-                MouseArea {
-                    id: outputMouseArea
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    onEntered: outputHelpIcon.showToolTip = true
-                    onExited: outputHelpIcon.showToolTip = false
-                }
-
-                ToolTip {
-                    visible: outputHelpIcon.showToolTip
-                    contentItem: Rectangle {
-                        color: toolTipBackgroundColour
-                        radius: 3
-                        anchors.fill: parent
-                        anchors.bottomMargin: bottomToolTipMargin * virtualstudio.uiScale
-                        anchors.rightMargin: rightToolTipMargin * virtualstudio.uiScale
-                        layer.enabled: true
-                        border.width: 1
-                        border.color: buttonStroke
-
-                        Text {
-                            anchors.centerIn: parent
-                            font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale}
-                            text: qsTr("How you'll hear the studio audio")
-                            color: toolTipTextColour
-                        }
-                    }
-                    background: Rectangle {
-                        color: "transparent"
-                    }
-                }
+                size: 16 * virtualstudio.uiScale
+                content: qsTr("How you'll hear the studio audio")
             }
 
             AppIcon {
@@ -268,48 +233,13 @@ Item {
                 color: textColour
             }
 
-            AppIcon {
+            InfoTooltip {
                 id: inputHelpIcon
                 anchors.left: inputLabel.right
                 anchors.bottom: inputLabel.top
                 anchors.bottomMargin: -8 * virtualstudio.uiScale
-                width: 16 * virtualstudio.uiScale
-                height: 16 * virtualstudio.uiScale
-                icon.source: "help.svg"
-
-                property bool showToolTip: false
-
-                MouseArea {
-                    id: inputMouseArea
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    onEntered: inputHelpIcon.showToolTip = true
-                    onExited: inputHelpIcon.showToolTip = false
-                }
-
-                ToolTip {
-                    visible: inputHelpIcon.showToolTip
-                    contentItem: Rectangle {
-                        color: toolTipBackgroundColour
-                        radius: 3
-                        anchors.fill: parent
-                        anchors.bottomMargin: bottomToolTipMargin * virtualstudio.uiScale
-                        anchors.rightMargin: rightToolTipMargin * virtualstudio.uiScale
-                        layer.enabled: true
-                        border.width: 1
-                        border.color: buttonStroke
-
-                        Text {
-                            anchors.centerIn: parent
-                            font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale}
-                            text: qsTr("Audio sent to the studio (microphone, instrument, mixer, etc.)")
-                            color: toolTipTextColour
-                        }
-                    }
-                    background: Rectangle {
-                        color: "transparent"
-                    }
-                }
+                size: 16 * virtualstudio.uiScale
+                content: qsTr("Audio sent to the studio (microphone, instrument, mixer, etc.)")
             }
 
             AppIcon {

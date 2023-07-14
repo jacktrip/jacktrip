@@ -213,48 +213,13 @@ Item {
                         color: textColour
                     }
 
-                    AppIcon {
+                    InfoTooltip {
                         id: outputHelpIcon
                         anchors.left: outputLabel.right
                         anchors.bottom: outputLabel.top
                         anchors.bottomMargin: -8 * virtualstudio.uiScale
-                        width: 16 * virtualstudio.uiScale
-                        height: 16 * virtualstudio.uiScale
-                        icon.source: "help.svg"
-
-                        property bool showToolTip: false
-
-                        MouseArea {
-                            id: outputMouseArea
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            onEntered: outputHelpIcon.showToolTip = true
-                            onExited: outputHelpIcon.showToolTip = false
-                        }
-
-                        ToolTip {
-                            visible: outputHelpIcon.showToolTip
-                            contentItem: Rectangle {
-                                color: toolTipBackgroundColour
-                                radius: 3
-                                anchors.fill: parent
-                                anchors.bottomMargin: bottomToolTipMargin * virtualstudio.uiScale
-                                anchors.rightMargin: rightToolTipMargin * virtualstudio.uiScale
-                                layer.enabled: true
-                                border.width: 1
-                                border.color: buttonStroke
-
-                                Text {
-                                    anchors.centerIn: parent
-                                    font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale}
-                                    text: qsTr("How you'll hear the studio audio")
-                                    color: toolTipTextColour
-                                }
-                            }
-                            background: Rectangle {
-                                color: "transparent"
-                            }
-                        }
+                        size: 16 * virtualstudio.uiScale
+                        content: qsTr("How you'll hear the studio audio")
                     }
 
                     AppIcon {
@@ -386,48 +351,13 @@ Item {
                         color: textColour
                     }
 
-                    AppIcon {
+                    InfoTooltip {
                         id: inputHelpIcon
                         anchors.left: inputLabel.right
                         anchors.bottom: inputLabel.top
                         anchors.bottomMargin: -8 * virtualstudio.uiScale
-                        width: 16 * virtualstudio.uiScale
-                        height: 16 * virtualstudio.uiScale
-                        icon.source: "help.svg"
-
-                        property bool showToolTip: false
-
-                        MouseArea {
-                            id: inputMouseArea
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            onEntered: inputHelpIcon.showToolTip = true
-                            onExited: inputHelpIcon.showToolTip = false
-                        }
-
-                        ToolTip {
-                            visible: inputHelpIcon.showToolTip
-                            contentItem: Rectangle {
-                                color: toolTipBackgroundColour
-                                radius: 3
-                                anchors.fill: parent
-                                anchors.bottomMargin: bottomToolTipMargin * virtualstudio.uiScale
-                                anchors.rightMargin: rightToolTipMargin * virtualstudio.uiScale
-                                layer.enabled: true
-                                border.width: 1
-                                border.color: buttonStroke
-
-                                Text {
-                                    anchors.centerIn: parent
-                                    font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale}
-                                    text: qsTr("Audio sent to the studio (microphone, instrument, mixer, etc.)")
-                                    color: toolTipTextColour
-                                }
-                            }
-                            background: Rectangle {
-                                color: "transparent"
-                            }
-                        }
+                        size: 16 * virtualstudio.uiScale
+                        content: qsTr("Audio sent to the studio (microphone, instrument, mixer, etc.)")
                     }
 
                     AppIcon {
@@ -1016,48 +946,13 @@ Item {
             color: textColour
         }
 
-        AppIcon {
+        InfoTooltip {
             id: inputStudioHelpIcon
             anchors.left: inputStudioText.right
             anchors.verticalCenter: inputStudioText.verticalCenter
             anchors.bottomMargin: -8 * virtualstudio.uiScale
-            width: 16 * virtualstudio.uiScale
-            height: 16 * virtualstudio.uiScale
-            icon.source: "help.svg"
-
-            property bool showToolTip: false
-
-            MouseArea {
-                id: inputStudioMouseArea
-                anchors.fill: parent
-                hoverEnabled: true
-                onEntered: inputStudioHelpIcon.showToolTip = true
-                onExited: inputStudioHelpIcon.showToolTip = false
-            }
-
-            ToolTip {
-                visible: inputStudioHelpIcon.showToolTip
-                contentItem: Rectangle {
-                    color: toolTipBackgroundColour
-                    radius: 3
-                    anchors.fill: parent
-                    anchors.bottomMargin: bottomToolTipMargin * virtualstudio.uiScale
-                    anchors.rightMargin: rightToolTipMargin * virtualstudio.uiScale
-                    layer.enabled: true
-                    border.width: 1
-                    border.color: buttonStroke
-
-                    Text {
-                        anchors.centerIn: parent
-                        font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale}
-                        text: qsTr("How loudly other participants hear you")
-                        color: toolTipTextColour
-                    }
-                }
-                background: Rectangle {
-                    color: "transparent"
-                }
-            }
+            size: 16 * virtualstudio.uiScale
+            content: qsTr("How loudly other participants hear you")
         }
     }
 
@@ -1175,48 +1070,13 @@ Item {
             color: textColour
         }
 
-        AppIcon {
+        InfoTooltip {
             id: outputStudioHelpIcon
             anchors.left: outputStudioText.right
             anchors.verticalCenter: outputStudioText.verticalCenter
             anchors.bottomMargin: -8 * virtualstudio.uiScale
-            width: 16 * virtualstudio.uiScale
-            height: 16 * virtualstudio.uiScale
-            icon.source: "help.svg"
-
-            property bool showToolTip: false
-
-            MouseArea {
-                id: outputStudioMouseArea
-                anchors.fill: parent
-                hoverEnabled: true
-                onEntered: outputStudioHelpIcon.showToolTip = true
-                onExited: outputStudioHelpIcon.showToolTip = false
-            }
-
-            ToolTip {
-                visible: outputStudioHelpIcon.showToolTip
-                contentItem: Rectangle {
-                    color: toolTipBackgroundColour
-                    radius: 3
-                    anchors.fill: parent
-                    anchors.bottomMargin: bottomToolTipMargin * virtualstudio.uiScale
-                    anchors.rightMargin: rightToolTipMargin * virtualstudio.uiScale
-                    layer.enabled: true
-                    border.width: 1
-                    border.color: buttonStroke
-
-                    Text {
-                        anchors.centerIn: parent
-                        font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale}
-                        text: qsTr("How loudly you hear other participants")
-                        color: toolTipTextColour
-                    }
-                }
-                background: Rectangle {
-                    color: "transparent"
-                }
-            }
+            size: 16 * virtualstudio.uiScale
+            content: qsTr("How loudly you hear other participants")
         }
 
         Text {
@@ -1233,48 +1093,13 @@ Item {
             color: textColour
         }
 
-        AppIcon {
+        InfoTooltip {
             id: outputMonHelpIcon
             anchors.left: outputMonText.right
             anchors.verticalCenter: outputMonText.verticalCenter
             anchors.bottomMargin: -8 * virtualstudio.uiScale
-            width: 16 * virtualstudio.uiScale
-            height: 16 * virtualstudio.uiScale
-            icon.source: "help.svg"
-
-            property bool showToolTip: false
-
-            MouseArea {
-                id: outputMonMouseArea
-                anchors.fill: parent
-                hoverEnabled: true
-                onEntered: outputMonHelpIcon.showToolTip = true
-                onExited: outputMonHelpIcon.showToolTip = false
-            }
-
-            ToolTip {
-                visible: outputMonHelpIcon.showToolTip
-                contentItem: Rectangle {
-                    color: toolTipBackgroundColour
-                    radius: 3
-                    anchors.fill: parent
-                    anchors.bottomMargin: bottomToolTipMargin * virtualstudio.uiScale
-                    anchors.rightMargin: rightToolTipMargin * virtualstudio.uiScale
-                    layer.enabled: true
-                    border.width: 1
-                    border.color: buttonStroke
-
-                    Text {
-                        anchors.centerIn: parent
-                        font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale}
-                        text: qsTr("How loudly you hear yourself")
-                        color: toolTipTextColour
-                    }
-                }
-                background: Rectangle {
-                    color: "transparent"
-                }
-            }
+            size: 16 * virtualstudio.uiScale
+            content: qsTr("How loudly you hear yourself")
         }
     }
 

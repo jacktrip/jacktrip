@@ -1822,6 +1822,7 @@ void VirtualStudio::disconnect()
     m_outputMeter        = nullptr;
     m_inputVolumePlugin  = nullptr;
     m_outputVolumePlugin = nullptr;
+    m_currentStudio      = -1;
 }
 
 void VirtualStudio::manageStudio(int studioIndex, bool start)

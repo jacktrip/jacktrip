@@ -6,12 +6,12 @@ import Qt5Compat.GraphicalEffects
 Item {
     required property string content
     required property int size
-    property string iconSource: "help.svg"
 
     width: size * virtualstudio.uiScale
     height: size * virtualstudio.uiScale
 
-    property string toolTipBackgroundColour: virtualstudio.darkMode ? "#323232" : "#F3F3F3"
+    property string iconSource: "help.svg"
+    property string backgroundColour: virtualstudio.darkMode ? "#323232" : "#F3F3F3"
     property bool showToolTip: false
 
     Item {
@@ -49,7 +49,8 @@ Item {
                 radius: 4
                 layer.enabled: true
                 layer.effect: Glow {
-                    color: "#55000000"
+                    radius: 8
+                    color: "#66000000"
                     transparentBorder: true
                 }
             }
