@@ -1,4 +1,6 @@
 on:
+  release:
+    types: [released]
   push:
     branches: [dev]
     paths-ignore:
@@ -14,7 +16,7 @@ on:
       - 'documentation/**'
       - 'scripts/**'
       - 'README**'
-name: Flatpak Devel
+name: Flatpak
 jobs:
   flatpak:
     name: "Flatpak"
@@ -30,6 +32,6 @@ jobs:
       run: echo "SHORT_SHA=`echo ${GITHUB_SHA::7}`" >> $GITHUB_ENV
     - uses: flatpak/flatpak-github-actions/flatpak-builder@v6.1
       with:
-        bundle: JackTrip-Devel-${{ env.SHORT_SHA }}.flatpak
+        bundle: JackTrip-${{ env.SHORT_SHA }}.flatpak
         manifest-path: build-aux/flatpak/org.jacktrip.JackTrip.json
         cache-key: flatpak-builder-${{ github.sha }}
