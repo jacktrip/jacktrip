@@ -5,8 +5,6 @@ Rectangle {
     property string backgroundColour: virtualstudio.darkMode ? "#272525" : "#FAFBFB"
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
 
-    width: 696
-    height: 577
     color: backgroundColour
     state: virtualstudio.windowState
     anchors.fill: parent
@@ -20,6 +18,7 @@ Rectangle {
             PropertyChanges { target: browseScreen; x: window.width }
             PropertyChanges { target: settingsScreen; x: window.width }
             PropertyChanges { target: connectedScreen; x: window.width }
+            PropertyChanges { target: changeDevicesScreen; x: 2*window.width }
             PropertyChanges { target: failedScreen; x: window.width }
         },
 
@@ -30,6 +29,7 @@ Rectangle {
             PropertyChanges { target: browseScreen; x: window.width }
             PropertyChanges { target: settingsScreen; x: window.width }
             PropertyChanges { target: connectedScreen; x: window.width }
+            PropertyChanges { target: changeDevicesScreen; x: 2*window.width }
             PropertyChanges { target: failedScreen; x: window.width }
         },
 
@@ -40,6 +40,7 @@ Rectangle {
             PropertyChanges { target: browseScreen; x: 0 }
             PropertyChanges { target: settingsScreen; x: window.width }
             PropertyChanges { target: connectedScreen; x: window.width }
+            PropertyChanges { target: changeDevicesScreen; x: 2*window.width }
             PropertyChanges { target: failedScreen; x: window.width }
         },
 
@@ -50,6 +51,7 @@ Rectangle {
             PropertyChanges { target: browseScreen; x: -browseScreen.width }
             PropertyChanges { target: settingsScreen; x: 0 }
             PropertyChanges { target: connectedScreen; x: window.width }
+            PropertyChanges { target: changeDevicesScreen; x: 2*window.width }
             PropertyChanges { target: failedScreen; x: window.width }
         },
 
@@ -60,6 +62,18 @@ Rectangle {
             PropertyChanges { target: browseScreen; x: -browseScreen.width }
             PropertyChanges { target: settingsScreen; x: window.width }
             PropertyChanges { target: connectedScreen; x: 0 }
+            PropertyChanges { target: changeDevicesScreen; x: window.width }
+            PropertyChanges { target: failedScreen; x: window.width }
+        },
+
+        State {
+            name: "change_devices"
+            PropertyChanges { target: loginScreen; x: -loginScreen.width }
+            PropertyChanges { target: setupScreen; x: -setupScreen.width }
+            PropertyChanges { target: browseScreen; x: -browseScreen.width }
+            PropertyChanges { target: settingsScreen; x: window.width }
+            PropertyChanges { target: connectedScreen; x: -connectedScreen.width }
+            PropertyChanges { target: changeDevicesScreen; x: 0 }
             PropertyChanges { target: failedScreen; x: window.width }
         },
 
@@ -70,6 +84,7 @@ Rectangle {
             PropertyChanges { target: browseScreen; x: -browseScreen.width }
             PropertyChanges { target: settingsScreen; x: window.width }
             PropertyChanges { target: connectedScreen; x: window.width }
+            PropertyChanges { target: changeDevicesScreen; x: 2*window.width }
             PropertyChanges { target: failedScreen; x: 0 }
         }
     ]
@@ -98,8 +113,52 @@ Rectangle {
         id: connectedScreen
     }
 
+    ChangeDevices {
+        id: changeDevicesScreen
+    }
+
     Failed {
         id: failedScreen
+    }
+
+    onWidthChanged: {
+        if (virtualstudio.windowState === "start") {
+            startScreen.x = 0
+        } else if (virtualstudio.windowState === "login") {
+            loginScreen.x = 0
+        } else if (virtualstudio.windowState === "setup") {
+            setupScreen.x = 0
+        } else if (virtualstudio.windowState === "browse") {
+            browseScreen.x = 0
+        } else if (virtualstudio.windowState === "settings") {
+            settingsScreen.x = 0
+        } else if (virtualstudio.windowState === "connected") {
+            connectedScreen.x = 0
+        } else if (virtualstudio.windowState === "change_devices") {
+            changeDevicesScreen.x = 0
+        } else if (virtualstudio.windowState === "failed") {
+            failedScreen.x = 0
+        }
+    }
+
+    onHeightChanged: {
+        if (virtualstudio.windowState === "start") {
+            startScreen.x = 0
+        } else if (virtualstudio.windowState === "login") {
+            loginScreen.x = 0
+        } else if (virtualstudio.windowState === "setup") {
+            setupScreen.x = 0
+        } else if (virtualstudio.windowState === "browse") {
+            browseScreen.x = 0
+        } else if (virtualstudio.windowState === "settings") {
+            settingsScreen.x = 0
+        } else if (virtualstudio.windowState === "connected") {
+            connectedScreen.x = 0
+        } else if (virtualstudio.windowState === "change_devices") {
+            changeDevicesScreen.x = 0
+        } else if (virtualstudio.windowState === "failed") {
+            failedScreen.x = 0
+        }
     }
 
     Connections {
@@ -116,6 +175,9 @@ Rectangle {
             }
         }
         function onConnected() {
+            if (virtualstudio.windowState == "change_devices") {
+                return;
+            }
             virtualstudio.windowState = "connected";
         }
         function onFailed() {

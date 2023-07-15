@@ -449,6 +449,9 @@ jobs:
           if [[ "${{ matrix.nogui }}" == true ]]; then 
             CONFIG_STRING="-Dnogui=true $CONFIG_STRING"
           fi
+          if [[ "${{ matrix.novs }}" == true ]]; then 
+            CONFIG_STRING="-Dnovs=true $CONFIG_STRING"
+          fi
           if [[ "${{ matrix.weakjack }}" == true ]]; then 
             CONFIG_STRING="-Dweakjack=true $CONFIG_STRING"
           fi
@@ -543,7 +546,7 @@ jobs:
           call "build_installer.bat"
           bash -c "mkdir -p $BUILD_PATH/${{ matrix.installer-path }}"
           bash -c "cp deploy/*.msi $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi"
-          rm -f deploy/*.msi deploy/*.wxs deploy/*.wixobj deploy/*.wixpdb
+          rm -f deploy/*.msi deploy/*.wxs deploy/*.wixobj deploy/*.wixpdb deploy/vc_redist.x64.exe
       - name: compress the binary
         shell: bash
         if: matrix.binary-path

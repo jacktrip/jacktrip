@@ -1143,12 +1143,11 @@ void JackTrip::tcpTimerTick()
     }
 
     // Use randomized exponential backoff to reconnect the TCP client
-    QRandomGenerator randomizer;
     mRetries++;
     // exponential backoff sleep with 6s maximum + jitter
     int newInterval = 2000 * pow(2, mRetries);
     newInterval     = std::min(newInterval, 6000);
-    newInterval += randomizer.bounded(0, 500);
+    newInterval += QRandomGenerator::global()->bounded(0, 500);
     QString now = QDateTime::currentDateTime().toString(Qt::ISODate);
     qDebug() << "Sleep time " << newInterval << " ms at " << now;
     mRetryTimer.setInterval(newInterval);
@@ -1361,12 +1360,11 @@ int JackTrip::clientPingToServerStart()
 #endif
     {
         QMutexLocker lock(&mTimerMutex);
-        QRandomGenerator randomizer;
         mAwaitingTcp = true;
         mElapsedTime = 0;
         mEndTime     = 30000;  // Timeout after 30 seconds.
-        mRetryTimer.setInterval(randomizer.bounded(
-            static_cast<int>(0), static_cast<int>(2000 * pow(2, mRetries))));
+        mRetryTimer.setInterval(
+            QRandomGenerator::global()->bounded(0, int(2000 * pow(2, mRetries))));
         mRetryTimer.setSingleShot(true);
         mRetryTimer.disconnect();
         connect(&mRetryTimer, &QTimer::timeout, this, &JackTrip::tcpTimerTick);

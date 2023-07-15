@@ -18,6 +18,9 @@ if qt_version == ''
 		qt_version = '5'
 	endif
 endif
+if qt_version == '5' and get_option('nogui') == false and get_option('novs') == false
+	error('JackTrip Virtual Studio requires Qt 6.2 or later.')
+endif
 qt = import('qt' + qt_version)
 
 cmake = import('cmake')
@@ -186,7 +189,7 @@ else
 		if qt_version == '5'
 			deps += dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'QuickControls2', 'Qml', 'Svg', 'WebSockets'], include_type: 'system')
 		else
-			deps += dependency('qt6', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'QuickControls2', 'Qml', 'Svg', 'WebSockets'], include_type: 'system')
+			deps += dependency('qt6', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'QuickControls2', 'Qml', 'Svg', 'WebSockets', 'WebEngineQuick'], include_type: 'system')
 		endif
 		qres = ['src/gui/qjacktrip.qrc']
 	endif
@@ -249,7 +252,7 @@ endif
 
 if host_machine.system() == 'darwin' and get_option('novs') == false
 	src += ['src/gui/vsMacPermissions.mm']
-	apple_av_dep = dependency('appleframeworks', modules : ['avfoundation'])
+	apple_av_dep = dependency('appleframeworks', modules : ['avfoundation', 'webkit'])
 	deps += apple_av_dep
 endif
 
@@ -287,4 +290,3 @@ summary({'Application ID': application_id,
 	'GUI': not get_option('nogui'),
 	'WAIR': get_option('wair'),
 	'Manpage': help2man.found()}, bool_yn: true, section: 'Configuration')
-
