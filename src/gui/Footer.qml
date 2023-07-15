@@ -16,7 +16,7 @@ Item {
         if (virtualstudio.connectionState.includes("Disconnected") || virtualstudio.connectionState.includes("Error")) {
             return meterRed
         }
-        if (virtualstudio.connectionState == "Connecting..." || virtualstudio.connectionState == "Reconnecting...") {
+        if (studioStatus === "Starting" || virtualstudio.connectionState == "Connecting..." || virtualstudio.connectionState == "Reconnecting...") {
             return meterYellow
         }
         return "grey"

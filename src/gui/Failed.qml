@@ -19,8 +19,6 @@ Item {
     property string buttonTextHover: virtualstudio.darkMode ? "#242222" : "#D00A0A"
     property string buttonTextPressed: virtualstudio.darkMode ? "#323030" : "#D00A0A"
 
-    property real imageLightnessValue: virtualstudio.darkMode ? 1.0 : 0.0
-
     AppIcon {
         id: ohnoImage
         y: 60

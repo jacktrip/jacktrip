@@ -9,6 +9,7 @@
     <file>vsftux.qml</file>
     <file>FirstLaunch.qml</file>
     <file>Login.qml</file>
+    <file>ChangeDevices.qml</file>
     <file>Studio.qml</file>
     <file>Browse.qml</file>
     <file>AudioSettings.qml</file>
@@ -20,6 +21,14 @@
     <file>Setup.qml</file>
     <file>SectionHeading.qml</file>
     <file>Footer.qml</file>
+    <file>VolumeSlider.qml</file>
+    <file>DeviceControls.qml</file>
+    <file>DeviceControlsGroup.qml</file>
+    <file>InfoTooltip.qml</file>
+    <file>Web.qml</file>
+    <file>WebView.qml</file>
+    <file>WebEngine.qml</file>
+    <file>WebNull.qml</file>
     <file>AppIcon.qml</file>
     <file>logo.svg</file>
     <file>wedge.svg</file>
@@ -41,6 +50,8 @@
     <file>refresh.svg</file>
     <file>ethernet.svg</file>
     <file>check.svg</file>
+    <file>expand_less.svg</file>
+    <file>expand_more.svg</file>
     <file>sentiment_very_dissatisfied.svg</file>
     <file>headphones.svg</file>
     <file>Prompt.svg</file>

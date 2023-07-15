@@ -46,20 +46,23 @@
 #include "dblsqd/update_dialog.h"
 #endif
 
-#ifndef NO_VS
+#if !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #include <QDebug>
 #include <QFile>
 #include <QQmlEngine>
 #include <QQuickView>
 #include <QSettings>
 #include <QTextStream>
+// TODO: Add support for QtWebView
+//#include <QtWebView>
+#include <QtWebEngineQuick/qtwebenginequickglobal.h>
 
 #include "JTApplication.h"
 #include "gui/virtualstudio.h"
 #include "gui/vsInit.h"
 #include "gui/vsQmlClipboard.h"
 #include "gui/vsUrlHandler.h"
-#endif
+#endif  // NO_VS && QT_VERSION
 
 #include "gui/qjacktrip.h"
 #else
@@ -81,10 +84,10 @@
 #endif
 
 #ifndef NO_GUI
-#ifndef NO_VS
+#if !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 static QTextStream* ts;
 static QFile outFile;
-#endif  // NO_VS
+#endif  // NO_VS && QT_VERSION
 #endif  // NO_GUI
 
 QCoreApplication* createApplication(int& argc, char* argv[])
@@ -138,7 +141,7 @@ QCoreApplication* createApplication(int& argc, char* argv[])
             std::exit(1);
         }
 #endif
-#if defined(Q_OS_MACOS) && !defined(NO_VS)
+#if defined(Q_OS_MACOS) && !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         // Turn on high DPI support.
 #if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
         JTApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
@@ -178,14 +181,10 @@ void qtMessageHandler([[maybe_unused]] QtMsgType type,
 {
     std::cerr << msg.toStdString() << std::endl;
 #ifndef NO_GUI
-#ifndef NO_VS
+#if !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     // Writes to file in order to debug bundles and executables
-#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
     *ts << msg << Qt::endl;
-#else
-    *ts << msg << endl;
-#endif  // QT_VERSION > 5.14.0
-#endif  // NO_VS
+#endif  // NO_VS && QT_VERSION
 #endif  // NO_GUI
 }
 
@@ -279,6 +278,15 @@ bool isRunFromCmd()
 
 int main(int argc, char* argv[])
 {
+#ifndef NO_GUI
+#if !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    QtWebEngineQuick::initialize();
+    // TODO: Add support for QtWebView
+    // qputenv("QT_WEBVIEW_PLUGIN", "native");
+    // QtWebView::initialize();
+#endif  // NO_VS && QT_VERSION
+#endif  // NO_GUI
+
     QScopedPointer<QCoreApplication> app(createApplication(argc, argv));
     QScopedPointer<JackTrip> jackTrip;
     QScopedPointer<UdpHubListener> udpHub;
@@ -288,15 +296,15 @@ int main(int argc, char* argv[])
     QQuickStyle::setStyle("Basic");
 #endif  // QT_VERSION
 
-#ifndef NO_VS
+#if !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     QString deeplink;
     QSharedPointer<VirtualStudio> vs;
 #ifdef _WIN32
     QScopedPointer<VsInit> vsInit;
-#endif
-#endif
+#endif  // _WIN32
+#endif  // NO_VS && QT_VERSION
 
-#if defined(Q_OS_MACOS) && !defined(NO_VS)
+#if defined(Q_OS_MACOS) && !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     if (qobject_cast<JTApplication*>(app.data())) {
 #else
     if (qobject_cast<QApplication*>(app.data())) {
@@ -326,7 +334,7 @@ int main(int argc, char* argv[])
         cliSettings.reset(new Settings(true));
         cliSettings->parseInput(argc, argv);
 
-#ifndef NO_VS
+#if !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         // Register clipboard Qml type
         qmlRegisterType<VsQmlClipboard>("VS", 1, 0, "Clipboard");
 
@@ -348,7 +356,7 @@ int main(int argc, char* argv[])
 #endif  // NO_VS
         QObject::connect(window.data(), &QJackTrip::signalExit, app.data(),
                          &QCoreApplication::quit, Qt::QueuedConnection);
-#ifndef NO_VS
+#if !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         vs.reset(new VirtualStudio(uiMode == QJackTrip::UNSET));
         QObject::connect(vs.data(), &VirtualStudio::signalExit, app.data(),
                          &QCoreApplication::quit, Qt::QueuedConnection);
@@ -400,7 +408,8 @@ int main(int argc, char* argv[])
 
 #if !defined(NO_UPDATER) && !defined(__unix__)
 #ifndef PSI
-#if defined(NO_VS)
+#if defined(NO_VS) || QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+
         // This wasn't set up earlier in NO_VS builds. Create it here.
         QSettings settings;
 #endif
