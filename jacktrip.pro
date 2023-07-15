@@ -31,7 +31,6 @@ nogui {
   novs {
     DEFINES += NO_VS
   } else {
-    QT += networkauth
     QT += qml
     QT += quick
     QT += quickcontrols2

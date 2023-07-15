@@ -37,7 +37,7 @@
 
 #ifndef NO_GUI
 #include <QApplication>
-#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+#if !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #include <QQuickStyle>
 #endif
 
@@ -292,7 +292,7 @@ int main(int argc, char* argv[])
     QScopedPointer<UdpHubListener> udpHub;
 #ifndef NO_GUI
     QSharedPointer<QJackTrip> window;
-#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+#if !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     QQuickStyle::setStyle("Basic");
 #endif  // QT_VERSION
 
