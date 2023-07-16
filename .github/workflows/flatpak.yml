@@ -1,4 +1,6 @@
 on:
+  release:
+    types: [released]
   push:
     branches: [dev]
     paths-ignore:
@@ -14,31 +16,22 @@ on:
       - 'documentation/**'
       - 'scripts/**'
       - 'README**'
-name: Flatpak Devel
+name: Flatpak
 jobs:
   flatpak:
     name: "Flatpak"
     runs-on: ubuntu-latest
     container:
-      image: bilelmoussaoui/flatpak-github-actions:kde-5.15-22.08
+      image: bilelmoussaoui/flatpak-github-actions:kde-6.4
       options: --privileged
     steps:
     - uses: actions/checkout@v3
       with:
         submodules: true
-    - name: Generate flatpak manifest
-      uses: cuchi/jinja2-action@v1.2.0
-      with:
-        template: linux/flatpak/org.jacktrip.JackTrip.Devel.yml.j2
-        output_file: linux/flatpak/org.jacktrip.JackTrip.Devel.yml
-        strict: true
-      env:
-        REPO: https://github.com/${{ github.repository }}
-        REF: ${{ github.ref }}
     - name: Add SHORT_SHA environment variable
       run: echo "SHORT_SHA=`echo ${GITHUB_SHA::7}`" >> $GITHUB_ENV
-    - uses: flatpak/flatpak-github-actions/flatpak-builder@v4
+    - uses: flatpak/flatpak-github-actions/flatpak-builder@v6.1
       with:
-        bundle: JackTrip-Devel-${{ env.SHORT_SHA }}.flatpak
-        manifest-path: linux/flatpak/org.jacktrip.JackTrip.Devel.yml
+        bundle: JackTrip-${{ env.SHORT_SHA }}.flatpak
+        manifest-path: build-aux/flatpak/org.jacktrip.JackTrip.json
         cache-key: flatpak-builder-${{ github.sha }}
