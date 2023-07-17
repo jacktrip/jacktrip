@@ -9,6 +9,8 @@ Item {
     clip: true
 
     required property bool isInput
+    property string muteButtonMutedColor: "#FCB6B6"
+    property string buttonColour: virtualstudio.darkMode ? "#494646" : "#D5D9D9"
 
     Component {
         id: controlIndicator
