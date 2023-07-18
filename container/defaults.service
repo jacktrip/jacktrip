@@ -1,0 +1,17 @@
+[Unit]
+Description=configure defaults for jack and jacktrip services
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+ExecStart=/usr/sbin/defaults.sh
+RemainAfterExit=true
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=inherit
+SyslogIdentifier=defaults
+
+[Install]
+WantedBy=multi-user.target jack.service jacktrip.service
