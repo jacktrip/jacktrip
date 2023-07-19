@@ -57,7 +57,7 @@ namespace Ui
 class QJackTrip;
 }  // namespace Ui
 
-#ifndef NO_VS
+#if !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 class VirtualStudio;
 #endif
 
@@ -75,7 +75,7 @@ class QJackTrip : public QMainWindow
     void resizeEvent(QResizeEvent* event) override;
     void showEvent(QShowEvent* event) override;
 
-#ifndef NO_VS
+#if !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     enum uiModeT { UNSET, VIRTUAL_STUDIO, STANDARD };
     void setVs(QSharedPointer<VirtualStudio> vs);
 #endif
@@ -101,7 +101,7 @@ class QJackTrip : public QMainWindow
     void exit();
     void updatedInputMeasurements(const float* valuesInDb, int numChannels);
     void updatedOutputMeasurements(const float* valuesInDb, int numChannels);
-#ifndef NO_VS
+#if !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     void virtualStudioMode();
 #endif
 
@@ -165,7 +165,7 @@ class QJackTrip : public QMainWindow
     bool m_hideWarning;
     bool m_firstShow = true;
 
-#ifndef NO_VS
+#if !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     QSharedPointer<VirtualStudio> m_vs;
 #endif
 #ifdef __APPLE__

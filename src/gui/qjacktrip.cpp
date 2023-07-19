@@ -35,7 +35,7 @@
 #include <ctime>
 
 #include "about.h"
-#ifndef NO_VS
+#if !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #include "virtualstudio.h"
 #endif
 #include "ui_qjacktrip.h"
@@ -103,7 +103,7 @@ QJackTrip::QJackTrip(QSharedPointer<Settings> settings, bool suppressCommandline
         About about(this);
         about.exec();
     });
-#ifdef NO_VS
+#if defined(NO_VS) || QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     m_ui->authNotVSLabel->setText(
         QStringLiteral("(This is for JackTrip's inbuilt authentication system. To easily "
                        "connect to a Virtual Studio server, download a Virtual Studio "
@@ -483,7 +483,7 @@ void QJackTrip::showEvent(QShowEvent* event)
     }
 }
 
-#ifndef NO_VS
+#if !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 void QJackTrip::setVs(QSharedPointer<VirtualStudio> vs)
 {
     m_vs = vs;
@@ -1118,7 +1118,7 @@ void QJackTrip::updatedOutputMeasurements(const float* valuesInDb, int numChanne
     }
 }
 
-#ifndef NO_VS
+#if !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 void QJackTrip::virtualStudioMode()
 {
     this->hide();
