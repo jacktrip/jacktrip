@@ -1382,6 +1382,12 @@ void QJackTrip::loadSettings(Settings* cliSettings)
         m_ui->autoQueueSpinBox->setValue(
             settings.value(QStringLiteral("TuningParameter"), 500).toInt());
         settings.endGroup();
+
+#if !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        m_ui->vsModeButton->setVisible(true);
+#else
+        m_ui->vsModeButton->setVisible(false);
+#endif
     }
 
     // These settings may need to be loaded even if we were using our command line.
