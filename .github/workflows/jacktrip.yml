@@ -562,7 +562,7 @@ jobs:
           else
             strip $BINFILE
             zip -j $ZIPFILE $BINFILE
-            if [[ "${{ matrix.name }}" == "Linux-x64-qmake-gcc-static" ]]; then
+            if [[ "${{ matrix.name }}" == "Linux-x64-meson-gcc-shared-bundled_rtaudio" ]]; then
               cp $GITHUB_WORKSPACE/linux/icons/jacktrip.svg $BUILD_PATH/org.jacktrip.JackTrip.svg
               cp $GITHUB_WORKSPACE/linux/icons/jacktrip_48x48.png $BUILD_PATH/org.jacktrip.JackTrip.png
               zip -j $ZIPFILE $BUILD_PATH/org.jacktrip.JackTrip.desktop $BUILD_PATH/org.jacktrip.JackTrip.svg $BUILD_PATH/org.jacktrip.JackTrip.png $GITHUB_WORKSPACE/linux/README.md
@@ -629,7 +629,7 @@ jobs:
         include:
           - name: Sign Windows artifacts
             release-name: Windows-x64
-            build-job-name: Windows-x64-qmake-gcc-static-bundled_rtaudio
+            build-job-name: Windows-x64-meson-msvc-qt6
             runs-on: ubuntu-latest
             binary-path: binary
             installer-path: installer
@@ -726,19 +726,19 @@ jobs:
             if: needs.check-secrets.outputs.should_run == 'true'
             platform-name: win
             release-name: Windows-x64
-            build-job-name: Windows-x64-qmake-gcc-static-bundled_rtaudio
+            build-job-name: Windows-x64-meson-msvc-qt6
             runs-on: ubuntu-latest
           - name: Update Mac manifests
             if: needs.check-secrets.outputs.should_run == 'true'
             platform-name: mac
             release-name: macOS-x64
-            build-job-name: macOS-x64-qmake-clang-static-bundled_rtaudio
+            build-job-name: macOS-x64-meson-clang-shared-bundled_rtaudio
             runs-on: ubuntu-latest
           - name: Update Linux manifests
             if: needs.check-secrets.outputs.should_run == 'true'
             platform-name: linux
             release-name: Linux-x64
-            build-job-name: Linux-x64-qmake-gcc-static
+            build-job-name: Linux-x64-meson-gcc-shared-bundled_rtaudio
             runs-on: ubuntu-latest
     permissions:
       contents: "read"
