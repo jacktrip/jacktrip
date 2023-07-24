@@ -32,6 +32,11 @@ Item {
             //     console.log("onLoadingChanged", loadRequest.errorCode, loadRequest.errorDomain, loadRequest.errorString, loadRequest.status, loadRequest.url);
             // }
 
+            onContextMenuRequested: function(request) {
+                // this disables the default context menu: https://doc.qt.io/qt-6.2/qml-qtwebengine-contextmenurequest.html#accepted-prop
+                request.accepted = true;
+            }
+
             onNewWindowRequested: function(request) {
                 Qt.openUrlExternally(request.requestedUrl);
             }
