@@ -68,11 +68,55 @@ Item {
 
     Component {
         id: inputControls
+        
+        ColumnLayout {
+            anchors.fill: parent
+            spacing: 2
 
-        VolumeSlider {
-            labelText: "Send"
-            tooltipText: "How loudly other participants hear you"
-            sliderEnabled: !virtualstudio.inputMuted
+            VolumeSlider {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                labelText: "Send"
+                tooltipText: "How loudly other participants hear you"
+                sliderEnabled: !virtualstudio.inputMuted
+            }
+
+            Item {
+                id: warning
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+
+                InfoTooltip {
+                    id: warningIcon
+                    anchors.top: parent.top
+                    anchors.left: parent.left
+                    anchors.leftMargin: 10 * virtualstudio.uiScale
+                    size: 16 * virtualstudio.uiScale
+                    content: qsTr(virtualstudio.devicesError || virtualstudio.devicesWarning)
+                    iconSource: "warning.svg"
+                    iconColor: "red"
+                }
+
+                Text {
+                    id: warningMessageText
+                    color: "red"
+                    font {
+                        family: "Poppins"
+                        pixelSize: 10 * virtualstudio.uiScale
+                    }
+
+                    elide: Text.ElideRight
+                    text: (virtualstudio.devicesError || virtualstudio.devicesWarning)
+
+                    anchors.verticalCenter: warningIcon.verticalCenter
+                    anchors.left: warningIcon.right
+                    anchors.leftMargin: 12 * virtualstudio.uiScale
+                    anchors.right: warning.right
+                    anchors.rightMargin: 12 * virtualstudio.uiScale
+                }
+
+                visible: Boolean(virtualstudio.devicesError) || Boolean(virtualstudio.devicesWarning);
+            }
         }
     }
 

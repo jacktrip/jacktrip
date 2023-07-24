@@ -11,6 +11,7 @@ Item {
     height: size * virtualstudio.uiScale
 
     property string iconSource: "help.svg"
+    property string iconColor: ""
     property string backgroundColour: virtualstudio.darkMode ? "#323232" : "#F3F3F3"
     property bool showToolTip: false
 
@@ -23,6 +24,7 @@ Item {
             width: parent.width
             height: parent.height
             icon.source: iconSource
+            color: iconColor
         }
 
         MouseArea {
@@ -42,6 +44,8 @@ Item {
                 text: content
                 font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
                 color: textColour
+                elide: Text.ElideRight
+                wrapMode: Text.WordWrap
             }
 
             background: Rectangle {
