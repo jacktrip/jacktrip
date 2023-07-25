@@ -449,6 +449,30 @@ Item {
                 font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
                 color: textColour
             }
+
+            Text {
+                id: warningOrErrorMessage
+                anchors.left: inputLabel.left
+                anchors.right: parent.right
+                anchors.rightMargin: 16 * virtualstudio.uiScale
+                anchors.top: inputMixModeHelpMessage.bottom
+                anchors.topMargin: 8 * virtualstudio.uiScale
+                anchors.bottomMargin: 8 * virtualstudio.uiScale
+                textFormat: Text.RichText
+                text: (virtualstudio.devicesError || virtualstudio.devicesWarning)
+                    + ((virtualstudio.devicesErrorHelpUrl || virtualstudio.devicesWarningHelpUrl)
+                        ? `&nbsp;<a style="color: ${linkText};" href=${virtualstudio.devicesErrorHelpUrl || virtualstudio.devicesWarningHelpUrl}>Learn More.</a>`
+                        : ""
+                    )
+                onLinkActivated: link => {
+                    virtualstudio.openLink(link)
+                }
+                horizontalAlignment: Text.AlignHLeft
+                wrapMode: Text.WordWrap
+                color: warningTextColour
+                font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
+                visible: Boolean(virtualstudio.devicesError) || Boolean(virtualstudio.devicesWarning);
+            }
         }
     }
 
