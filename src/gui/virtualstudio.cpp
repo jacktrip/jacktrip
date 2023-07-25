@@ -2104,6 +2104,9 @@ void VirtualStudio::handleWebsocketMessage(const QString& msg)
     if (!message.isEmpty()) {
         return;
     }
+    if (m_currentStudio < 0) {
+        return;
+    }
     VsServerInfo* studioInfo = static_cast<VsServerInfo*>(m_servers.at(m_currentStudio));
     studioInfo->setStatus(serverStatus);
     studioInfo->setEnabled(serverEnabled);
