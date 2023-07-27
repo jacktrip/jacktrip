@@ -81,7 +81,7 @@ Rectangle {
             PropertyChanges { target: loginScreen; x: -loginScreen.width }
             PropertyChanges { target: recommendationsScreen; x: -recommendationsScreen.width }
             PropertyChanges { target: permissionsScreen; x: -permissionsScreen.width }
-            PropertyChanges { target: setupScreen; x: -setupScreen.width }
+            PropertyChanges { target: setupScreen; x: window.width }
             PropertyChanges { target: browseScreen; x: -browseScreen.width }
             PropertyChanges { target: settingsScreen; x: 0 }
             PropertyChanges { target: connectedScreen; x: window.width }
