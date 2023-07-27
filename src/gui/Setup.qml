@@ -14,8 +14,13 @@ Item {
     property int rightMargin: 16
 
     property string buttonColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
+    property string buttonHoverColour: virtualstudio.darkMode ? "#5B5858" : "#D3D4D4"	
+    property string buttonPressedColour: virtualstudio.darkMode ? "#524F4F" : "#DEE0E0"
     property string buttonStroke: virtualstudio.darkMode ? "#80827D7D" : "#34979797"
+    property string buttonHoverStroke: virtualstudio.darkMode ? "#7B7777" : "#BABCBC"	
+    property string buttonPressedStroke: virtualstudio.darkMode ? "#827D7D" : "#BABCBC"
     property string saveButtonBackgroundColour: "#F2F3F3"
+    property string saveButtonPressedColour: "#E7E8E8"	
     property string saveButtonStroke: "#EAEBEB"
     property string saveButtonPressedStroke: "#B0B5B5"
     property string saveButtonText: "#DB0A0A"
