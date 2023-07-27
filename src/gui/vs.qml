@@ -191,7 +191,7 @@ Rectangle {
                 // can happen on settings screen when switching between prod and test
                 return;
             }
-            if (virtualstudio.showDeviceSetup) {
+            if (virtualstudio.showDeviceSetup || virtualstudio.showWarnings) {
                 virtualstudio.windowState = "setup";
             } else {
                 virtualstudio.windowState = "browse";

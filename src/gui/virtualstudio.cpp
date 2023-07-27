@@ -1548,6 +1548,7 @@ void VirtualStudio::applySettings()
     settings.beginGroup(QStringLiteral("VirtualStudio"));
     settings.setValue(QStringLiteral("UiScale"), m_uiScale);
     settings.setValue(QStringLiteral("ShowDeviceSetup"), m_showDeviceSetup);
+    settings.setValue(QStringLiteral("ShowWarnings"), m_showWarnings);
     settings.endGroup();
 #ifdef RT_AUDIO
     settings.beginGroup(QStringLiteral("Audio"));

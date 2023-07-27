@@ -227,6 +227,8 @@ Item {
             onClicked: {
                 if (permissions.micPermission == "unknown") {
                     virtualstudio.showWarnings = currShowWarnings; warningScreen = "microphone"
+                } else if (!virtualstudio.showDeviceSetup && permissions.micPermission === "granted") {
+                    virtualstudio.windowState = "browse";
                 } else {
                     virtualstudio.showWarnings = currShowWarnings; warningScreen = "acknowledged"
                 }
