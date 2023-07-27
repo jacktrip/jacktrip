@@ -115,7 +115,7 @@ Rectangle {
             PropertyChanges { target: startScreen; x: -startScreen.width }
             PropertyChanges { target: recommendationsScreen; x: -recommendationsScreen.width }
             PropertyChanges { target: permissionsScreen; x: -permissionsScreen.width }
-            PropertyChanges { target: setupScreen; x: -setupScreen.width }
+            PropertyChanges { target: setupScreen; x: 0 }
             PropertyChanges { target: browseScreen; x: -browseScreen.width }
             PropertyChanges { target: settingsScreen; x: window.width }
             PropertyChanges { target: connectedScreen; x: 0 }
@@ -129,10 +129,10 @@ Rectangle {
             PropertyChanges { target: startScreen; x: -startScreen.width }
             PropertyChanges { target: recommendationsScreen; x: -recommendationsScreen.width }
             PropertyChanges { target: permissionsScreen; x: -permissionsScreen.width }
-            PropertyChanges { target: setupScreen; x: -setupScreen.width }
+            PropertyChanges { target: setupScreen; x: 0 }
             PropertyChanges { target: browseScreen; x: -browseScreen.width }
             PropertyChanges { target: settingsScreen; x: window.width }
-            PropertyChanges { target: connectedScreen; x: -connectedScreen.width }
+            PropertyChanges { target: connectedScreen; x: 0 }
             PropertyChanges { target: changeDevicesScreen; x: 0 }
             PropertyChanges { target: failedScreen; x: window.width }
         },
@@ -202,7 +202,7 @@ Rectangle {
         } else if (virtualstudio.windowState === "login") {
             loginScreen.x = 0
         } else if (virtualstudio.windowState === "recommendations") {
-            recommendationsScreen.x = 0;    
+            recommendationsScreen.x = 0;
         } else if (virtualstudio.windowState === "permissions") {
             permissionsScreen.x = 0;
         } else if (virtualstudio.windowState === "setup") {
@@ -226,7 +226,7 @@ Rectangle {
         } else if (virtualstudio.windowState === "login") {
             loginScreen.x = 0
         } else if (virtualstudio.windowState === "recommendations") {
-            recommendationsScreen.x = 0;    
+            recommendationsScreen.x = 0;
         } else if (virtualstudio.windowState === "permissions") {
             permissionsScreen.x = 0;
         } else if (virtualstudio.windowState === "setup") {

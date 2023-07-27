@@ -2,11 +2,12 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-Item {
+Rectangle {
     id: footer
     width: parent.width
     height: 24
     anchors.bottom: parent.bottom
+    color: backgroundColour
     clip: true
 
     function getConnectionStateColor() {
