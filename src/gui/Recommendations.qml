@@ -37,14 +37,16 @@ Item {
 
     property bool currShowRecommendations: virtualstudio.showWarnings
     property string recommendationScreen: virtualstudio.showWarnings ? "ethernet" : ( permissions.micPermission == "unknown" ? "microphone" : "acknowledged")
+    property bool onWindows: Qt.platform.os === "windows"
+
 
     Item {
-        id: ethernetRecommendationItem
+        id: connectivityRecommendationItem
         width: parent.width; height: parent.height
         visible: recommendationScreen == "ethernet"
 
         AppIcon {
-            id: ethernetRecommendationLogo
+            id: connectivityRecommendationLogo
             y: 60
             anchors.horizontalCenter: parent.horizontalCenter
             width: 179
@@ -53,40 +55,52 @@ Item {
         }
 
         Text {
-            id: ethernetRecommendationHeader
+            id: connectivityRecommendationHeader1
             text: "Connect via Wired Ethernet"
             font { family: "Poppins"; weight: Font.Bold; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
             anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: ethernetRecommendationLogo.bottom
+            anchors.top: connectivityRecommendationLogo.bottom
             anchors.topMargin: 32 * virtualstudio.uiScale
         }
 
         Text {
-            id: ethernetRecommendationSubheader1
-            text: "JackTrip works best when you connect directly to your router via wired ethernet."
+            id: connectivityRecommendationSubheader1
+            text: "JackTrip works best when you connect directly to your home router via a wired ethernet cable. WiFi works OK for some people, but you will experience higher latency and audio glitches."
             font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
-            width: 400
+            width: 560
             wrapMode: Text.Wrap
             horizontalAlignment: Text.AlignHCenter
             anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: ethernetRecommendationHeader.bottom
+            anchors.top: connectivityRecommendationHeader1.bottom
+            anchors.topMargin: 32 * virtualstudio.uiScale
+        }
+
+
+        Text {
+            id: connectivityRecommendationHeader2
+            text: "Fiber Internet Recommended"
+            font { family: "Poppins"; weight: Font.Bold; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: connectivityRecommendationSubheader1.bottom
             anchors.topMargin: 32 * virtualstudio.uiScale
         }
 
         Text {
-            id: ethernetRecommendationSubheader2
-            text: "WiFi works OK for some people, but you will experience higher latency and audio glitches."
+            id: connectivityRecommendationSubheader2
+            text: "Additionally, a Fiber Internet connection from your Internet Service Provider (ISP) will give you the best experience while using JackTrip. You can still use JackTrip with Cable and DSL, but these types of Internet connections introduce significantly higher latency."
             font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
-            width: 400
+            width: 560
             wrapMode: Text.Wrap
             horizontalAlignment: Text.AlignHCenter
             anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: ethernetRecommendationSubheader1.bottom
-            anchors.topMargin: 24 * virtualstudio.uiScale
+            anchors.top: connectivityRecommendationHeader2.bottom
+            anchors.topMargin: 32 * virtualstudio.uiScale
         }
+
 
         Button {
             id: okButtonEthernet
@@ -115,20 +129,20 @@ Item {
         }
 
         CheckBox {
-            id: showEthernetRecommendationCheckbox
+            id: showConnectivityRecommendationCheckbox
             checked: currShowRecommendations
             text: qsTr("Show recommendations again next time")
             anchors.right: okButtonEthernet.left
             anchors.rightMargin: 16 * virtualstudio.uiScale
             anchors.verticalCenter: okButtonEthernet.verticalCenter
-            onClicked: { currShowRecommendations = showEthernetRecommendationCheckbox.checkState == Qt.Checked }
+            onClicked: { currShowRecommendations = showConnectivityRecommendationCheckbox.checkState == Qt.Checked }
             indicator: Rectangle {
                 implicitWidth: 16 * virtualstudio.uiScale
                 implicitHeight: 16 * virtualstudio.uiScale
-                x: showEthernetRecommendationCheckbox.leftPadding
+                x: showConnectivityRecommendationCheckbox.leftPadding
                 y: parent.height / 2 - height / 2
                 radius: 3 * virtualstudio.uiScale
-                border.color: showEthernetRecommendationCheckbox.down || showEthernetRecommendationCheckbox.hovered  ? checkboxPressedStroke : checkboxStroke
+                border.color: showConnectivityRecommendationCheckbox.down || showConnectivityRecommendationCheckbox.hovered  ? checkboxPressedStroke : checkboxStroke
 
                 Rectangle {
                     width: 10 * virtualstudio.uiScale
@@ -136,17 +150,17 @@ Item {
                     x: 3 * virtualstudio.uiScale
                     y: 3 * virtualstudio.uiScale
                     radius: 2 * virtualstudio.uiScale
-                    color: showEthernetRecommendationCheckbox.down ||  showEthernetRecommendationCheckbox.hovered ? checkboxPressedStroke : checkboxStroke
-                    visible: showEthernetRecommendationCheckbox.checked
+                    color: showConnectivityRecommendationCheckbox.down ||  showConnectivityRecommendationCheckbox.hovered ? checkboxPressedStroke : checkboxStroke
+                    visible: showConnectivityRecommendationCheckbox.checked
                 }
             }
             contentItem: Text {
-                text: showEthernetRecommendationCheckbox.text
+                text: showConnectivityRecommendationCheckbox.text
                 font.family: "Poppins"
                 font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
-                leftPadding: showEthernetRecommendationCheckbox.indicator.width + showEthernetRecommendationCheckbox.spacing
+                leftPadding: showConnectivityRecommendationCheckbox.indicator.width + showConnectivityRecommendationCheckbox.spacing
                 color: textColour
             }
         }
@@ -157,62 +171,85 @@ Item {
         width: parent.width; height: parent.height
         visible: recommendationScreen == "headphones"
 
-        AppIcon {
-            id: headphoneRecommendationLogo
-            y: 60
-            anchors.horizontalCenter: parent.horizontalCenter
-            width: 118
-            height: 128
-            icon.source: "headphones.svg"
-        }
-
         Text {
-            id: headphoneRecommendationHeader
+            id: headphoneRecommendationHeader1
             text: "Use Wired Headphones"
             font { family: "Poppins"; weight: Font.Bold; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
             anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: headphoneRecommendationLogo.bottom
-            anchors.topMargin: 32 * virtualstudio.uiScale
+            anchors.top: parent.top
+            anchors.topMargin: 96 * virtualstudio.uiScale
         }
 
         Text {
             id: headphoneRecommendationSubheader1
-            text: "JackTrip requires the use of wired headphones."
+            text: "JackTrip requires the use of wired headphones. Using speakers can cause loud feedback loops, and wireless / bluetooth headphones add way too much latency."
             font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
-            width: 400
+            width: 560
             wrapMode: Text.Wrap
             horizontalAlignment: Text.AlignHCenter
             anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: headphoneRecommendationHeader.bottom
+            anchors.top: headphoneRecommendationHeader1.bottom
+            anchors.topMargin: 32 * virtualstudio.uiScale
+        }
+
+
+        Text {
+            id: headphoneRecommendationHeader2NonWindows
+            visible: !onWindows
+            text: "Use an External Audio Device"
+            font { family: "Poppins"; weight: Font.Bold; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: headphoneRecommendationSubheader1.bottom
             anchors.topMargin: 32 * virtualstudio.uiScale
         }
 
         Text {
-            id: headphoneRecommendationSubheader2
-            text: "Using speakers can cause loud feedback loops."
+            id: headphoneRecommendationSubheader2NonWindows
+            visible: !onWindows
+            text: "Your audio device controls the quality of sound, and can also have a big impact on latency."
+                + " We recommend using an external USB or Thunderbolt audio interface."
+                + "<br/><br/>"
+                + "You can still use the audio device that is built into your computer, but you will get the best results when using an external audio device."
             font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
-            width: 400
+            width: 560
             wrapMode: Text.Wrap
             horizontalAlignment: Text.AlignHCenter
             anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: headphoneRecommendationSubheader1.bottom
-            anchors.topMargin: 24 * virtualstudio.uiScale
+            anchors.top: headphoneRecommendationHeader2NonWindows.bottom
+            anchors.topMargin: 32 * virtualstudio.uiScale
         }
 
         Text {
-            id: headphoneRecommendationSubheader3
-            text: "Wireless headphones add way too much latency."
+            id: headphoneRecommendationHeader2Windows
+            visible: onWindows
+            text: "Use an External Audio Device"
+            font { family: "Poppins"; weight: Font.Bold; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: headphoneRecommendationSubheader1.bottom
+            anchors.topMargin: 32 * virtualstudio.uiScale
+        }
+
+        Text {
+            id: headphoneRecommendationSubheader2Windows
+            visible: onWindows
+            text: "Your audio device controls the quality of sound, and can also have a big impact on latency. We recommend using an external USB or Thunderbolt audio interface."
+                + "<br/><br/>"
+                + "Additionally, low latency on Windows requires the use of ASIO drivers. Beware that the use of ASIO drivers that are not made specifically for your device can cause crashes."
+                + "<br/><br/>"
+                + "You can still use JackTrip with other audio devices, but you will get the best results when using an external audio device with ASIO drivers."
             font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
-            width: 400
+            width: 560
             wrapMode: Text.Wrap
             horizontalAlignment: Text.AlignHCenter
             anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: headphoneRecommendationSubheader2.bottom
-            anchors.topMargin: 24 * virtualstudio.uiScale
+            anchors.top: headphoneRecommendationHeader2NonWindows.bottom
+            anchors.topMargin: 32 * virtualstudio.uiScale
         }
 
         Button {
