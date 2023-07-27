@@ -28,23 +28,23 @@ Item {
     property string saveButtonPressedColour: "#E7E8E8"
     property string saveButtonStroke: "#EAEBEB"
     property string saveButtonPressedStroke: "#B0B5B5"
-    property string warningText: "#DB0A0A"
+    property string recommendationText: "#DB0A0A"
     property string saveButtonText: "#DB0A0A"
     property string checkboxStroke: "#0062cc"
     property string checkboxPressedStroke: "#007AFF"
     property string disabledButtonText: "#D3D4D4"
     property string linkText: virtualstudio.darkMode ? "#8B8D8D" : "#272525"
 
-    property bool currShowWarnings: virtualstudio.showWarnings
-    property string warningScreen: virtualstudio.showWarnings ? "ethernet" : ( permissions.micPermission == "unknown" ? "microphone" : "acknowledged")
+    property bool currShowRecommendations: virtualstudio.showWarnings
+    property string recommendationScreen: virtualstudio.showWarnings ? "ethernet" : ( permissions.micPermission == "unknown" ? "microphone" : "acknowledged")
 
     Item {
-        id: ethernetWarningItem
+        id: ethernetRecommendationItem
         width: parent.width; height: parent.height
-        visible: warningScreen == "ethernet"
+        visible: recommendationScreen == "ethernet"
 
         AppIcon {
-            id: ethernetWarningLogo
+            id: ethernetRecommendationLogo
             y: 60
             anchors.horizontalCenter: parent.horizontalCenter
             width: 179
@@ -53,17 +53,17 @@ Item {
         }
 
         Text {
-            id: ethernetWarningHeader
+            id: ethernetRecommendationHeader
             text: "Connect via Wired Ethernet"
             font { family: "Poppins"; weight: Font.Bold; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
             anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: ethernetWarningLogo.bottom
+            anchors.top: ethernetRecommendationLogo.bottom
             anchors.topMargin: 32 * virtualstudio.uiScale
         }
 
         Text {
-            id: ethernetWarningSubheader1
+            id: ethernetRecommendationSubheader1
             text: "JackTrip works best when you connect directly to your router via wired ethernet."
             font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
@@ -71,12 +71,12 @@ Item {
             wrapMode: Text.Wrap
             horizontalAlignment: Text.AlignHCenter
             anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: ethernetWarningHeader.bottom
+            anchors.top: ethernetRecommendationHeader.bottom
             anchors.topMargin: 32 * virtualstudio.uiScale
         }
 
         Text {
-            id: ethernetWarningSubheader2
+            id: ethernetRecommendationSubheader2
             text: "WiFi works OK for some people, but you will experience higher latency and audio glitches."
             font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
@@ -84,7 +84,7 @@ Item {
             wrapMode: Text.Wrap
             horizontalAlignment: Text.AlignHCenter
             anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: ethernetWarningSubheader1.bottom
+            anchors.top: ethernetRecommendationSubheader1.bottom
             anchors.topMargin: 24 * virtualstudio.uiScale
         }
 
@@ -97,14 +97,14 @@ Item {
                 border.color: okButtonEthernet.down || okButtonEthernet.hovered ? saveButtonPressedStroke : saveButtonStroke
                 layer.enabled: okButtonEthernet.hovered && !okButtonEthernet.down
             }
-            onClicked: { warningScreen = "headphones" }
+            onClicked: { recommendationScreen = "headphones" }
             anchors.right: parent.right
             anchors.rightMargin: 16 * virtualstudio.uiScale
             anchors.bottomMargin: 16 * virtualstudio.uiScale
             anchors.bottom: parent.bottom
             width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
             Text {
-                text: "OK"
+                text: "Continue"
                 font.family: "Poppins"
                 font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
                 font.weight: Font.Bold
@@ -115,20 +115,20 @@ Item {
         }
 
         CheckBox {
-            id: showEthernetWarningCheckbox
-            checked: currShowWarnings
-            text: qsTr("Show warnings again next time")
+            id: showEthernetRecommendationCheckbox
+            checked: currShowRecommendations
+            text: qsTr("Show recommendations again next time")
             anchors.right: okButtonEthernet.left
             anchors.rightMargin: 16 * virtualstudio.uiScale
             anchors.verticalCenter: okButtonEthernet.verticalCenter
-            onClicked: { currShowWarnings = showEthernetWarningCheckbox.checkState == Qt.Checked }
+            onClicked: { currShowRecommendations = showEthernetRecommendationCheckbox.checkState == Qt.Checked }
             indicator: Rectangle {
                 implicitWidth: 16 * virtualstudio.uiScale
                 implicitHeight: 16 * virtualstudio.uiScale
-                x: showEthernetWarningCheckbox.leftPadding
+                x: showEthernetRecommendationCheckbox.leftPadding
                 y: parent.height / 2 - height / 2
                 radius: 3 * virtualstudio.uiScale
-                border.color: showEthernetWarningCheckbox.down || showEthernetWarningCheckbox.hovered  ? checkboxPressedStroke : checkboxStroke
+                border.color: showEthernetRecommendationCheckbox.down || showEthernetRecommendationCheckbox.hovered  ? checkboxPressedStroke : checkboxStroke
 
                 Rectangle {
                     width: 10 * virtualstudio.uiScale
@@ -136,29 +136,29 @@ Item {
                     x: 3 * virtualstudio.uiScale
                     y: 3 * virtualstudio.uiScale
                     radius: 2 * virtualstudio.uiScale
-                    color: showEthernetWarningCheckbox.down ||  showEthernetWarningCheckbox.hovered ? checkboxPressedStroke : checkboxStroke
-                    visible: showEthernetWarningCheckbox.checked
+                    color: showEthernetRecommendationCheckbox.down ||  showEthernetRecommendationCheckbox.hovered ? checkboxPressedStroke : checkboxStroke
+                    visible: showEthernetRecommendationCheckbox.checked
                 }
             }
             contentItem: Text {
-                text: showEthernetWarningCheckbox.text
+                text: showEthernetRecommendationCheckbox.text
                 font.family: "Poppins"
                 font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
-                leftPadding: showEthernetWarningCheckbox.indicator.width + showEthernetWarningCheckbox.spacing
+                leftPadding: showEthernetRecommendationCheckbox.indicator.width + showEthernetRecommendationCheckbox.spacing
                 color: textColour
             }
         }
     }
 
     Item {
-        id: headphoneWarningItem
+        id: headphoneRecommendationItem
         width: parent.width; height: parent.height
-        visible: warningScreen == "headphones"
+        visible: recommendationScreen == "headphones"
 
         AppIcon {
-            id: headphoneWarningLogo
+            id: headphoneRecommendationLogo
             y: 60
             anchors.horizontalCenter: parent.horizontalCenter
             width: 118
@@ -167,17 +167,17 @@ Item {
         }
 
         Text {
-            id: headphoneWarningHeader
+            id: headphoneRecommendationHeader
             text: "Use Wired Headphones"
             font { family: "Poppins"; weight: Font.Bold; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
             anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: headphoneWarningLogo.bottom
+            anchors.top: headphoneRecommendationLogo.bottom
             anchors.topMargin: 32 * virtualstudio.uiScale
         }
 
         Text {
-            id: headphoneWarningSubheader1
+            id: headphoneRecommendationSubheader1
             text: "JackTrip requires the use of wired headphones."
             font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
@@ -185,12 +185,12 @@ Item {
             wrapMode: Text.Wrap
             horizontalAlignment: Text.AlignHCenter
             anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: headphoneWarningHeader.bottom
+            anchors.top: headphoneRecommendationHeader.bottom
             anchors.topMargin: 32 * virtualstudio.uiScale
         }
 
         Text {
-            id: headphoneWarningSubheader2
+            id: headphoneRecommendationSubheader2
             text: "Using speakers can cause loud feedback loops."
             font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
@@ -198,12 +198,12 @@ Item {
             wrapMode: Text.Wrap
             horizontalAlignment: Text.AlignHCenter
             anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: headphoneWarningSubheader1.bottom
+            anchors.top: headphoneRecommendationSubheader1.bottom
             anchors.topMargin: 24 * virtualstudio.uiScale
         }
 
         Text {
-            id: headphoneWarningSubheader3
+            id: headphoneRecommendationSubheader3
             text: "Wireless headphones add way too much latency."
             font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
@@ -211,7 +211,7 @@ Item {
             wrapMode: Text.Wrap
             horizontalAlignment: Text.AlignHCenter
             anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: headphoneWarningSubheader2.bottom
+            anchors.top: headphoneRecommendationSubheader2.bottom
             anchors.topMargin: 24 * virtualstudio.uiScale
         }
 
@@ -237,7 +237,7 @@ Item {
             anchors.bottom: parent.bottom
             width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
             Text {
-                text: "OK"
+                text: "Continue"
                 font.family: "Poppins"
                 font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
                 font.weight: Font.Bold
@@ -248,20 +248,20 @@ Item {
         }
 
         CheckBox {
-            id: showHeadphonesWarningCheckbox
-            checked: currShowWarnings
-            text: qsTr("Show warnings again next time")
+            id: showHeadphonesRecommendationCheckbox
+            checked: currShowRecommendations
+            text: qsTr("Show recommendations again next time")
             anchors.right: okButtonHeadphones.left
             anchors.rightMargin: 16 * virtualstudio.uiScale
             anchors.verticalCenter: okButtonHeadphones.verticalCenter
-            onClicked: { currShowWarnings = showHeadphonesWarningCheckbox.checkState == Qt.Checked }
+            onClicked: { currShowRecommendations = showHeadphonesRecommendationCheckbox.checkState == Qt.Checked }
             indicator: Rectangle {
                 implicitWidth: 16 * virtualstudio.uiScale
                 implicitHeight: 16 * virtualstudio.uiScale
-                x: showHeadphonesWarningCheckbox.leftPadding
+                x: showHeadphonesRecommendationCheckbox.leftPadding
                 y: parent.height / 2 - height / 2
                 radius: 3 * virtualstudio.uiScale
-                border.color: showHeadphonesWarningCheckbox.down || showHeadphonesWarningCheckbox.hovered ? checkboxPressedStroke : checkboxStroke
+                border.color: showHeadphonesRecommendationCheckbox.down || showHeadphonesRecommendationCheckbox.hovered ? checkboxPressedStroke : checkboxStroke
 
                 Rectangle {
                     width: 10 * virtualstudio.uiScale
@@ -269,17 +269,17 @@ Item {
                     x: 3 * virtualstudio.uiScale
                     y: 3 * virtualstudio.uiScale
                     radius: 2 * virtualstudio.uiScale
-                    color: showHeadphonesWarningCheckbox.down || showHeadphonesWarningCheckbox.hovered ? checkboxPressedStroke : checkboxStroke
-                    visible: showHeadphonesWarningCheckbox.checked
+                    color: showHeadphonesRecommendationCheckbox.down || showHeadphonesRecommendationCheckbox.hovered ? checkboxPressedStroke : checkboxStroke
+                    visible: showHeadphonesRecommendationCheckbox.checked
                 }
             }
             contentItem: Text {
-                text: showHeadphonesWarningCheckbox.text
+                text: showHeadphonesRecommendationCheckbox.text
                 font.family: "Poppins"
                 font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
-                leftPadding: showHeadphonesWarningCheckbox.indicator.width + showHeadphonesWarningCheckbox.spacing
+                leftPadding: showHeadphonesRecommendationCheckbox.indicator.width + showHeadphonesRecommendationCheckbox.spacing
                 color: textColour
             }
         }

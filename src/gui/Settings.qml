@@ -535,7 +535,7 @@ Item {
         CheckBox {
             id: showStartupSetup
             checked: currShowDeviceSetup
-            text: qsTr("Show device setup screen on startup")
+            text: qsTr("Show device setup screen before connecting to a studio")
             x: updateChannelCombo.x; y: feedbackDetectionCombo.y + (48 * virtualstudio.uiScale)
             onClicked: { currShowDeviceSetup = showStartupSetup.checkState == Qt.Checked; virtualstudio.showDeviceSetup = currShowDeviceSetup }
             indicator: Rectangle {
@@ -570,7 +570,7 @@ Item {
         Text {
             anchors.verticalCenter: showStartupSetup.verticalCenter
             x: 48 * virtualstudio.uiScale
-            text: "Startup Device Setup"
+            text: "Device Setup"
             font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
         }
@@ -578,7 +578,7 @@ Item {
         CheckBox {
             id: showStartupWarnings
             checked: currShowWarnings
-            text: qsTr("Show startup warnings again next time")
+            text: qsTr("Show recommendations on startup again next time")
             x: updateChannelCombo.x; y: showStartupSetup.y + (48 * virtualstudio.uiScale)
             onClicked: { currShowWarnings = showStartupWarnings.checkState == Qt.Checked; virtualstudio.showWarnings = currShowWarnings; }
             indicator: Rectangle {
@@ -613,7 +613,7 @@ Item {
         Text {
             anchors.verticalCenter: showStartupWarnings.verticalCenter
             x: 48 * virtualstudio.uiScale
-            text: "Startup Warnings"
+            text: "Recommendations"
             font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
         }

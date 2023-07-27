@@ -10,30 +10,17 @@ Item {
     property int fontSmall: 11
     property int fontExtraSmall: 8
 
-    property int buttonWidth: 103
-    property int buttonHeight: 25
-
     property int leftMargin: 48
     property int rightMargin: 16
 
-    property string backgroundColour: virtualstudio.darkMode ? "#272525" : "#FAFBFB"
-    property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
     property string buttonColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
-    property string buttonHoverColour: virtualstudio.darkMode ? "#5B5858" : "#D3D4D4"
-    property string buttonPressedColour: virtualstudio.darkMode ? "#524F4F" : "#DEE0E0"
     property string buttonStroke: virtualstudio.darkMode ? "#80827D7D" : "#34979797"
-    property string buttonHoverStroke: virtualstudio.darkMode ? "#7B7777" : "#BABCBC"
-    property string buttonPressedStroke: virtualstudio.darkMode ? "#827D7D" : "#BABCBC"
     property string saveButtonBackgroundColour: "#F2F3F3"
-    property string saveButtonPressedColour: "#E7E8E8"
     property string saveButtonStroke: "#EAEBEB"
     property string saveButtonPressedStroke: "#B0B5B5"
-    property string warningText: "#DB0A0A"
     property string saveButtonText: "#DB0A0A"
     property string checkboxStroke: "#0062cc"
     property string checkboxPressedStroke: "#007AFF"
-    property string disabledButtonText: "#D3D4D4"
-    property string linkText: virtualstudio.darkMode ? "#8B8D8D" : "#272525"
 
     property bool currShowWarnings: virtualstudio.showWarnings
     property string warningScreen: virtualstudio.showWarnings ? "ethernet" : ( permissions.micPermission == "unknown" ? "microphone" : "acknowledged")
