@@ -13,6 +13,7 @@ Item {
     property int leftMargin: 48
     property int rightMargin: 16
 
+    property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
     property string buttonColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
     property string buttonHoverColour: virtualstudio.darkMode ? "#5B5858" : "#D3D4D4"	
     property string buttonPressedColour: virtualstudio.darkMode ? "#524F4F" : "#DEE0E0"
@@ -78,6 +79,31 @@ Item {
             width: parent.width
             anchors.top: pageTitle.bottom
             anchors.topMargin: 24 * virtualstudio.uiScale
+        }
+
+        Button {
+            id: backButton
+            background: Rectangle {
+                radius: 6 * virtualstudio.uiScale
+                color: backButton.down ? buttonPressedColour : buttonColour
+                border.width: 1
+                border.color: backButton.down || backButton.hovered ? buttonPressedStroke : buttonStroke
+            }
+            enabled: !Boolean(virtualstudio.devicesError) && virtualstudio.backendAvailable
+            onClicked: { virtualstudio.windowState = "browse"; virtualstudio.studioToJoin = ""; }
+            anchors.left: parent.left
+            anchors.leftMargin: 16 * virtualstudio.uiScale
+            anchors.bottomMargin: rightMargin * virtualstudio.uiScale
+            anchors.bottom: parent.bottom
+            width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+            Text {
+                text: "Back"
+                font.family: "Poppins"
+                font.pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale
+                color: textColour
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.verticalCenter
+            }
         }
 
         Button {
