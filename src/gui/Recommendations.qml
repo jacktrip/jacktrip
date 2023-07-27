@@ -127,43 +127,6 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
             }
         }
-
-        CheckBox {
-            id: showConnectivityRecommendationCheckbox
-            checked: currShowRecommendations
-            text: qsTr("Show recommendations again next time")
-            anchors.right: okButtonEthernet.left
-            anchors.rightMargin: 16 * virtualstudio.uiScale
-            anchors.verticalCenter: okButtonEthernet.verticalCenter
-            onClicked: { currShowRecommendations = showConnectivityRecommendationCheckbox.checkState == Qt.Checked }
-            indicator: Rectangle {
-                implicitWidth: 16 * virtualstudio.uiScale
-                implicitHeight: 16 * virtualstudio.uiScale
-                x: showConnectivityRecommendationCheckbox.leftPadding
-                y: parent.height / 2 - height / 2
-                radius: 3 * virtualstudio.uiScale
-                border.color: showConnectivityRecommendationCheckbox.down || showConnectivityRecommendationCheckbox.hovered  ? checkboxPressedStroke : checkboxStroke
-
-                Rectangle {
-                    width: 10 * virtualstudio.uiScale
-                    height: 10 * virtualstudio.uiScale
-                    x: 3 * virtualstudio.uiScale
-                    y: 3 * virtualstudio.uiScale
-                    radius: 2 * virtualstudio.uiScale
-                    color: showConnectivityRecommendationCheckbox.down ||  showConnectivityRecommendationCheckbox.hovered ? checkboxPressedStroke : checkboxStroke
-                    visible: showConnectivityRecommendationCheckbox.checked
-                }
-            }
-            contentItem: Text {
-                text: showConnectivityRecommendationCheckbox.text
-                font.family: "Poppins"
-                font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.verticalCenter: parent.verticalCenter
-                leftPadding: showConnectivityRecommendationCheckbox.indicator.width + showConnectivityRecommendationCheckbox.spacing
-                color: textColour
-            }
-        }
     }
 
     Item {
@@ -262,11 +225,7 @@ Item {
                 layer.enabled: okButtonHeadphones.hovered && !okButtonHeadphones.down
             }
             onClicked: {
-                if (permissions.micPermission === "granted") {
-                    virtualstudio.windowState = "browse";
-                } else {
-                    virtualstudio.windowState = "permissions";
-                }
+                recommendationScreen = "acknowledged";
             }
             anchors.right: parent.right
             anchors.rightMargin: 16 * virtualstudio.uiScale
@@ -283,42 +242,124 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
             }
         }
+    }
 
-        CheckBox {
-            id: showHeadphonesRecommendationCheckbox
-            checked: currShowRecommendations
-            text: qsTr("Show recommendations again next time")
-            anchors.right: okButtonHeadphones.left
-            anchors.rightMargin: 16 * virtualstudio.uiScale
-            anchors.verticalCenter: okButtonHeadphones.verticalCenter
-            onClicked: { currShowRecommendations = showHeadphonesRecommendationCheckbox.checkState == Qt.Checked }
-            indicator: Rectangle {
-                implicitWidth: 16 * virtualstudio.uiScale
-                implicitHeight: 16 * virtualstudio.uiScale
-                x: showHeadphonesRecommendationCheckbox.leftPadding
-                y: parent.height / 2 - height / 2
-                radius: 3 * virtualstudio.uiScale
-                border.color: showHeadphonesRecommendationCheckbox.down || showHeadphonesRecommendationCheckbox.hovered ? checkboxPressedStroke : checkboxStroke
+    Item {
+        id: acknowledgedRecommendationItem
+        width: parent.width; height: parent.height
+        visible: recommendationScreen == "acknowledged"
 
-                Rectangle {
-                    width: 10 * virtualstudio.uiScale
-                    height: 10 * virtualstudio.uiScale
-                    x: 3 * virtualstudio.uiScale
-                    y: 3 * virtualstudio.uiScale
-                    radius: 2 * virtualstudio.uiScale
-                    color: showHeadphonesRecommendationCheckbox.down || showHeadphonesRecommendationCheckbox.hovered ? checkboxPressedStroke : checkboxStroke
-                    visible: showHeadphonesRecommendationCheckbox.checked
+        Text {
+            id: acknowledgedHeader
+            text: "Repeat these recommendations?"
+            font { family: "Poppins"; weight: Font.Bold; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: parent.top
+            anchors.topMargin: 96 * virtualstudio.uiScale
+        }
+
+        Text {
+            id: acknowledgedSubheader
+            text: "Would you like to repeat these recommendations the next time JackTrip starts up?"
+            font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+            width: 560
+            wrapMode: Text.Wrap
+            horizontalAlignment: Text.AlignHCenter
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: acknowledgedHeader.bottom
+            anchors.topMargin: 64 * virtualstudio.uiScale
+        }
+
+        Item {
+            id: acknowledgedButtonsContainer
+            width: 320
+
+            anchors.top: acknowledgedSubheader.bottom
+            anchors.topMargin: 96 * virtualstudio.uiScale
+            anchors.horizontalCenter: parent.horizontalCenter
+
+            Button {
+                id: acknowledgedYesButton
+                anchors.left: parent.left
+                anchors.verticalCenter: parent.verticalCenter
+                background: Rectangle {
+                    radius: 6 * virtualstudio.uiScale
+                    color: acknowledgedYesButton.down ? saveButtonPressedColour : saveButtonBackgroundColour
+                    border.width: 1
+                    border.color: acknowledgedYesButton.down || acknowledgedYesButton.hovered ? saveButtonPressedStroke : saveButtonStroke
+                    layer.enabled: acknowledgedYesButton.hovered && !acknowledgedYesButton.down
+                }
+                onClicked: {
+                    virtualstudio.showWarnings = true;
+                    if (permissions.micPermission === "granted") {
+                        virtualstudio.windowState = "browse";
+                        virtualstudio.applySettings();
+                    } else {
+                        virtualstudio.windowState = "permissions";
+                        virtualstudio.applySettings();
+                    }
+                }
+                width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+                Text {
+                    text: "Yes"
+                    font.family: "Poppins"
+                    font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
+                    font.weight: Font.Bold
+                    color: saveButtonText
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.verticalCenter: parent.verticalCenter
                 }
             }
-            contentItem: Text {
-                text: showHeadphonesRecommendationCheckbox.text
-                font.family: "Poppins"
-                font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
-                anchors.horizontalCenter: parent.horizontalCenter
+
+
+            Button {
+                id: acknowledgedNoButton
+                anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
-                leftPadding: showHeadphonesRecommendationCheckbox.indicator.width + showHeadphonesRecommendationCheckbox.spacing
-                color: textColour
+                background: Rectangle {
+                    radius: 6 * virtualstudio.uiScale
+                    color: acknowledgedNoButton.down ? saveButtonPressedColour : saveButtonBackgroundColour
+                    border.width: 1
+                    border.color: acknowledgedNoButton.down || acknowledgedNoButton.hovered ? saveButtonPressedStroke : saveButtonStroke
+                    layer.enabled: acknowledgedNoButton.hovered && !acknowledgedNoButton.down
+                }
+                onClicked: {
+                    virtualstudio.showWarnings = false;
+                    if (permissions.micPermission === "granted") {
+                        virtualstudio.windowState = "browse";
+                        virtualstudio.applySettings();
+                    } else {
+                        virtualstudio.windowState = "permissions";
+                        virtualstudio.applySettings();
+                    }
+                }
+                width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+                Text {
+                    text: "No"
+                    font.family: "Poppins"
+                    font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
+                    font.weight: Font.Bold
+                    color: saveButtonText
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.verticalCenter: parent.verticalCenter
+                }
             }
+        }
+
+
+        Text {
+            id: acknowledgedSettingsInfo
+            text: "You can change this setting at any time under <b>Settings > Advanced</b>"
+            font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+            width: 560
+            wrapMode: Text.Wrap
+            horizontalAlignment: Text.AlignHCenter
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: acknowledgedButtonsContainer.bottom
+            anchors.topMargin: 96 * virtualstudio.uiScale
         }
     }
 }
