@@ -14,6 +14,34 @@ Rectangle {
         State {
             name: "login"
             PropertyChanges { target: loginScreen; x: 0 }
+            PropertyChanges { target: recommendationsScreen; x: window.width }
+            PropertyChanges { target: permissionsScreen; x: window.width }
+            PropertyChanges { target: setupScreen; x: window.width }
+            PropertyChanges { target: browseScreen; x: window.width }
+            PropertyChanges { target: settingsScreen; x: window.width }
+            PropertyChanges { target: connectedScreen; x: window.width }
+            PropertyChanges { target: changeDevicesScreen; x: 2*window.width }
+            PropertyChanges { target: failedScreen; x: window.width }
+        },
+
+        State {
+            name: "recommendations"
+            PropertyChanges { target: loginScreen; x: -loginScreen.width }
+            PropertyChanges { target: recommendationsScreen; x: 0 }
+            PropertyChanges { target: permissionsScreen; x: window.width }
+            PropertyChanges { target: setupScreen; x: window.width }
+            PropertyChanges { target: browseScreen; x: window.width }
+            PropertyChanges { target: settingsScreen; x: window.width }
+            PropertyChanges { target: connectedScreen; x: window.width }
+            PropertyChanges { target: changeDevicesScreen; x: 2*window.width }
+            PropertyChanges { target: failedScreen; x: window.width }
+        },
+
+        State {
+            name: "permissions"
+            PropertyChanges { target: loginScreen; x: -loginScreen.width }
+            PropertyChanges { target: recommendationsScreen; x: -recommendationsScreen.width }
+            PropertyChanges { target: permissionsScreen; x: 0 }
             PropertyChanges { target: setupScreen; x: window.width }
             PropertyChanges { target: browseScreen; x: window.width }
             PropertyChanges { target: settingsScreen; x: window.width }
@@ -25,8 +53,10 @@ Rectangle {
         State {
             name: "setup"
             PropertyChanges { target: loginScreen; x: -loginScreen.width }
+            PropertyChanges { target: recommendationsScreen; x: -recommendationsScreen.width }
+            PropertyChanges { target: permissionsScreen; x: -permissionsScreen.width }
             PropertyChanges { target: setupScreen; x: 0 }
-            PropertyChanges { target: browseScreen; x: window.width }
+            PropertyChanges { target: browseScreen; x: -browseScreen.width }
             PropertyChanges { target: settingsScreen; x: window.width }
             PropertyChanges { target: connectedScreen; x: window.width }
             PropertyChanges { target: changeDevicesScreen; x: 2*window.width }
@@ -36,7 +66,9 @@ Rectangle {
         State {
             name: "browse"
             PropertyChanges { target: loginScreen; x: -loginScreen.width }
-            PropertyChanges { target: setupScreen; x: -setupScreen.width }
+            PropertyChanges { target: recommendationsScreen; x: -recommendationsScreen.width }
+            PropertyChanges { target: permissionsScreen; x: -permissionsScreen.width }
+            PropertyChanges { target: setupScreen; x: window.width }
             PropertyChanges { target: browseScreen; x: 0 }
             PropertyChanges { target: settingsScreen; x: window.width }
             PropertyChanges { target: connectedScreen; x: window.width }
@@ -47,6 +79,8 @@ Rectangle {
         State {
             name: "settings"
             PropertyChanges { target: loginScreen; x: -loginScreen.width }
+            PropertyChanges { target: recommendationsScreen; x: -recommendationsScreen.width }
+            PropertyChanges { target: permissionsScreen; x: -permissionsScreen.width }
             PropertyChanges { target: setupScreen; x: -setupScreen.width }
             PropertyChanges { target: browseScreen; x: -browseScreen.width }
             PropertyChanges { target: settingsScreen; x: 0 }
@@ -58,6 +92,8 @@ Rectangle {
         State {
             name: "connected"
             PropertyChanges { target: loginScreen; x: -loginScreen.width }
+            PropertyChanges { target: recommendationsScreen; x: -recommendationsScreen.width }
+            PropertyChanges { target: permissionsScreen; x: -permissionsScreen.width }
             PropertyChanges { target: setupScreen; x: -setupScreen.width }
             PropertyChanges { target: browseScreen; x: -browseScreen.width }
             PropertyChanges { target: settingsScreen; x: window.width }
@@ -69,6 +105,8 @@ Rectangle {
         State {
             name: "change_devices"
             PropertyChanges { target: loginScreen; x: -loginScreen.width }
+            PropertyChanges { target: recommendationsScreen; x: -recommendationsScreen.width }
+            PropertyChanges { target: permissionsScreen; x: -permissionsScreen.width }
             PropertyChanges { target: setupScreen; x: -setupScreen.width }
             PropertyChanges { target: browseScreen; x: -browseScreen.width }
             PropertyChanges { target: settingsScreen; x: window.width }
@@ -80,6 +118,8 @@ Rectangle {
         State {
             name: "failed"
             PropertyChanges { target: loginScreen; x: -loginScreen.width }
+            PropertyChanges { target: recommendationsScreen; x: -recommendationsScreen.width }
+            PropertyChanges { target: permissionsScreen; x: -permissionsScreen.width }
             PropertyChanges { target: setupScreen; x: -setupScreen.width }
             PropertyChanges { target: browseScreen; x: -browseScreen.width }
             PropertyChanges { target: settingsScreen; x: window.width }
@@ -93,16 +133,24 @@ Rectangle {
         NumberAnimation { properties: "x"; duration: 800; easing.type: Easing.InOutQuad }
     }
 
-    Setup {
-        id: setupScreen
+    Login {
+        id: loginScreen
+    }
+
+    Recommendations {
+        id: recommendationsScreen
+    }
+
+    Permissions {
+        id: permissionsScreen
     }
 
     Browse {
         id: browseScreen
     }
 
-    Login {
-        id: loginScreen
+    Setup {
+        id: setupScreen
     }
 
     Settings {
@@ -126,6 +174,10 @@ Rectangle {
             startScreen.x = 0
         } else if (virtualstudio.windowState === "login") {
             loginScreen.x = 0
+        } else if (virtualstudio.windowState === "recommendations") {
+            recommendationsScreen.x = 0;    
+        } else if (virtualstudio.windowState === "permissions") {
+            permissionsScreen.x = 0;
         } else if (virtualstudio.windowState === "setup") {
             setupScreen.x = 0
         } else if (virtualstudio.windowState === "browse") {
@@ -146,6 +198,10 @@ Rectangle {
             startScreen.x = 0
         } else if (virtualstudio.windowState === "login") {
             loginScreen.x = 0
+        } else if (virtualstudio.windowState === "recommendations") {
+            recommendationsScreen.x = 0;    
+        } else if (virtualstudio.windowState === "permissions") {
+            permissionsScreen.x = 0;
         } else if (virtualstudio.windowState === "setup") {
             setupScreen.x = 0
         } else if (virtualstudio.windowState === "browse") {
@@ -168,8 +224,8 @@ Rectangle {
                 // can happen on settings screen when switching between prod and test
                 return;
             }
-            if (virtualstudio.showDeviceSetup || virtualstudio.showWarnings) {
-                virtualstudio.windowState = "setup";
+            if (virtualstudio.showWarnings) {
+                virtualstudio.windowState = "recommendations";
             } else {
                 virtualstudio.windowState = "browse";
             }

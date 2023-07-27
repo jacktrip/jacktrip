@@ -338,14 +338,6 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
 
     connect(this, &VirtualStudio::audioActivatedChanged, this,
             &VirtualStudio::toggleAudio, Qt::QueuedConnection);
-    connect(
-        this, &VirtualStudio::studioToJoinChanged, this,
-        [&]() {
-            if (!m_studioToJoin.isEmpty()) {
-                joinStudio();
-            }
-        },
-        Qt::QueuedConnection);
 }
 
 void VirtualStudio::setStandardWindow(QSharedPointer<QJackTrip> window)
@@ -2733,7 +2725,7 @@ bool VirtualStudio::readyToJoin()
 {
     // FTUX shows warnings and device setup views
     // if any of these enabled, do not immediately join
-    return m_windowState == "browse"
+    return m_windowState == "connected"
            && (m_connectionState == QStringLiteral("Waiting...")
                || m_connectionState == QStringLiteral("Disconnected"));
 }
