@@ -320,20 +320,6 @@ Item {
         visible: showLoading
 
         Text {
-            id: loadingAudioInterfaces
-            text: "Configuring Audio...";
-            font.family: "Poppins"
-            font.pixelSize: 16 * virtualstudio.fontScale * virtualstudio.uiScale
-            anchors.horizontalCenter: parent.horizontalCenter
-            y: 214 * virtualstudio.uiScale
-            width: 360 * virtualstudio.uiScale;
-            color: textColour
-            wrapMode: Text.WordWrap
-            horizontalAlignment: Text.AlignHCenter
-            visible: loginScreen.state === "success"
-        }
-
-        Text {
             id: loadingViaRefreshToken
             text: "Logging In...";
             font.family: "Poppins"
@@ -344,7 +330,6 @@ Item {
             color: textColour
             wrapMode: Text.WordWrap
             horizontalAlignment: Text.AlignHCenter
-            visible: !loadingAudioInterfaces.visible
         }
     }
 

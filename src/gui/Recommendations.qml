@@ -424,7 +424,7 @@ Item {
 
         Text {
             id: acknowledgedHeader
-            text: "Repeat these recommendations?"
+            text: "Remind Me Again Next Time?"
             font { family: "Poppins"; weight: Font.Bold; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
             anchors.horizontalCenter: parent.horizontalCenter
@@ -434,7 +434,7 @@ Item {
 
         Text {
             id: acknowledgedSubheader
-            text: "Would you like to repeat the prior recommendations the next time JackTrip starts up?"
+            text: "Would you like to review the getting started recommendations again the next time you start JackTrip?"
             font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
             width: 560
