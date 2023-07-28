@@ -164,7 +164,9 @@ Item {
 
         ButtonGroup {
             buttons: viewControls.children
-            onClicked: { settingsGroupView = button.text }
+            onClicked: function(button) {
+                settingsGroupView = button.text
+            }
         }
 
         Column {
