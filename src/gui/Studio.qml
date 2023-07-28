@@ -189,6 +189,7 @@ Rectangle {
         onClicked: {
             if (virtualstudio.showDeviceSetup) {
                 virtualstudio.studioToJoin = `jacktrip://join/${studioId}`
+                virtualstudio.audioActivated = true;
                 virtualstudio.windowState = "setup";
             } else {
                 virtualstudio.windowState = "connected";

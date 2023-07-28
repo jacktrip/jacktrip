@@ -1972,17 +1972,6 @@ void VirtualStudio::slotAuthSucceeded()
 
     m_device->registerApp();
 
-    // always activate audio at startup for now.
-    // otherwise, IF someone has the device setup disabled/unchecked,
-    // AND IF they don't manually navigate to audio settings before connecting,
-    // the "Change Device Settings" dialog will have all empty dropdown lists
-    // TODO: rework so it can be deferred properly
-    // if (m_showDeviceSetup) {
-    if constexpr (isBackendAvailable<AudioInterfaceMode::JACK>()
-                  || isBackendAvailable<AudioInterfaceMode::RTAUDIO>()) {
-        setAudioActivated(true);
-    }
-
     getUserId();
     getSubscriptions();
     getServerList(true, false);

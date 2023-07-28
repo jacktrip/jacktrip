@@ -44,7 +44,6 @@ Item {
         interval: 2000; running: false; repeat: false
         onTriggered: () => {
             recommendationScreen = virtualstudio.showWarnings ? "ethernet" : ( permissions.micPermission == "unknown" ? "microphone" : "acknowledged");
-            console.log("TIMEOUT");
         }
     }
 
