@@ -41,13 +41,13 @@ Item {
 
 
     Item {
-        id: connectivityRecommendationItem
+        id: ethernetRecommendationItem
         width: parent.width; height: parent.height
         visible: recommendationScreen == "ethernet"
 
         AppIcon {
-            id: connectivityRecommendationLogo
-            y: 60
+            id: ethernetRecommendationLogo
+            y: 120
             anchors.horizontalCenter: parent.horizontalCenter
             width: 179
             height: 128
@@ -55,17 +55,17 @@ Item {
         }
 
         Text {
-            id: connectivityRecommendationHeader1
+            id: ethernetRecommendationHeader1
             text: "Connect via Wired Ethernet"
             font { family: "Poppins"; weight: Font.Bold; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
             anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: connectivityRecommendationLogo.bottom
+            anchors.top: ethernetRecommendationLogo.bottom
             anchors.topMargin: 32 * virtualstudio.uiScale
         }
 
         Text {
-            id: connectivityRecommendationSubheader1
+            id: ethernetRecommendationSubheader1
             text: "JackTrip works best when you connect directly to your home router via a wired ethernet cable. WiFi works OK for some people, but you will experience higher latency and audio glitches."
             font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
@@ -73,34 +73,9 @@ Item {
             wrapMode: Text.Wrap
             horizontalAlignment: Text.AlignHCenter
             anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: connectivityRecommendationHeader1.bottom
+            anchors.top: ethernetRecommendationHeader1.bottom
             anchors.topMargin: 32 * virtualstudio.uiScale
         }
-
-
-        Text {
-            id: connectivityRecommendationHeader2
-            text: "Fiber Internet Recommended"
-            font { family: "Poppins"; weight: Font.Bold; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-            color: textColour
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: connectivityRecommendationSubheader1.bottom
-            anchors.topMargin: 32 * virtualstudio.uiScale
-        }
-
-        Text {
-            id: connectivityRecommendationSubheader2
-            text: "Additionally, a Fiber Internet connection from your Internet Service Provider (ISP) will give you the best experience while using JackTrip. You can still use JackTrip with Cable and DSL, but these types of Internet connections introduce significantly higher latency."
-            font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-            color: textColour
-            width: 560
-            wrapMode: Text.Wrap
-            horizontalAlignment: Text.AlignHCenter
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: connectivityRecommendationHeader2.bottom
-            anchors.topMargin: 32 * virtualstudio.uiScale
-        }
-
 
         Button {
             id: okButtonEthernet
@@ -110,6 +85,71 @@ Item {
                 border.width: 1
                 border.color: okButtonEthernet.down || okButtonEthernet.hovered ? saveButtonPressedStroke : saveButtonStroke
                 layer.enabled: okButtonEthernet.hovered && !okButtonEthernet.down
+            }
+            onClicked: { recommendationScreen = "fiber" }
+            anchors.right: parent.right
+            anchors.rightMargin: 16 * virtualstudio.uiScale
+            anchors.bottomMargin: 16 * virtualstudio.uiScale
+            anchors.bottom: parent.bottom
+            width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+            Text {
+                text: "Continue"
+                font.family: "Poppins"
+                font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
+                font.weight: Font.Bold
+                color: saveButtonText
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.verticalCenter
+            }
+        }
+    }
+
+    Item {
+        id: fiberRecommendationItem
+        width: parent.width; height: parent.height
+        visible: recommendationScreen == "fiber"
+
+        AppIcon {
+            id: fiberRecommendationLogo
+            y: 120
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: 179
+            height: 128
+            icon.source: "ethernet.svg"
+        }
+
+        Text {
+            id: fiberRecommendationHeader
+            text: "Fiber Internet Recommended"
+            font { family: "Poppins"; weight: Font.Bold; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: fiberRecommendationLogo.bottom
+            anchors.topMargin: 32 * virtualstudio.uiScale
+        }
+
+        Text {
+            id: fiberRecommendationSubheader
+            text: "Additionally, a Fiber Internet connection from your Internet Service Provider (ISP) will give you the best experience while using JackTrip. You can still use JackTrip with Cable and DSL, but these types of Internet connections introduce significantly higher latency."
+            font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+            width: 560
+            wrapMode: Text.Wrap
+            horizontalAlignment: Text.AlignHCenter
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: fiberRecommendationHeader.bottom
+            anchors.topMargin: 32 * virtualstudio.uiScale
+        }
+
+
+        Button {
+            id: okButtonFiber
+            background: Rectangle {
+                radius: 6 * virtualstudio.uiScale
+                color: okButtonFiber.down ? saveButtonPressedColour : saveButtonBackgroundColour
+                border.width: 1
+                border.color: okButtonFiber.down || okButtonFiber.hovered ? saveButtonPressedStroke : saveButtonStroke
+                layer.enabled: okButtonFiber.hovered && !okButtonFiber.down
             }
             onClicked: { recommendationScreen = "headphones" }
             anchors.right: parent.right
@@ -134,14 +174,23 @@ Item {
         width: parent.width; height: parent.height
         visible: recommendationScreen == "headphones"
 
+        AppIcon {
+            id: headphoneWarningLogo
+            y: 120
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: 118
+            height: 128
+            icon.source: "headphones.svg"
+        }
+
         Text {
             id: headphoneRecommendationHeader1
             text: "Use Wired Headphones"
             font { family: "Poppins"; weight: Font.Bold; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
             anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: parent.top
-            anchors.topMargin: 96 * virtualstudio.uiScale
+            anchors.top: headphoneWarningLogo.bottom
+            anchors.topMargin: 32 * virtualstudio.uiScale
         }
 
         Text {
@@ -157,20 +206,62 @@ Item {
             anchors.topMargin: 32 * virtualstudio.uiScale
         }
 
+        Button {
+            id: okButtonHeadphones
+            background: Rectangle {
+                radius: 6 * virtualstudio.uiScale
+                color: okButtonHeadphones.down ? saveButtonPressedColour : saveButtonBackgroundColour
+                border.width: 1
+                border.color: okButtonHeadphones.down || okButtonHeadphones.hovered ? saveButtonPressedStroke : saveButtonStroke
+                layer.enabled: okButtonHeadphones.hovered && !okButtonHeadphones.down
+            }
+            onClicked: {
+                recommendationScreen = "audiointerface";
+            }
+            anchors.right: parent.right
+            anchors.rightMargin: 16 * virtualstudio.uiScale
+            anchors.bottomMargin: 16 * virtualstudio.uiScale
+            anchors.bottom: parent.bottom
+            width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+            Text {
+                text: "Continue"
+                font.family: "Poppins"
+                font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
+                font.weight: Font.Bold
+                color: saveButtonText
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.verticalCenter
+            }
+        }
+    }
+
+    Item {
+        id: audioInterfaceRecommendationItem
+        width: parent.width; height: parent.height
+        visible: recommendationScreen == "audiointerface"
+
+        AppIcon {
+            id: audioInterfaceRecommendationLogo
+            y: 120
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: 118
+            height: 128
+            icon.source: "headphones.svg"
+        }
 
         Text {
-            id: headphoneRecommendationHeader2NonWindows
+            id: audioInterfaceRecommendationHeaderNonWindows
             visible: !onWindows
             text: "Use an External Audio Device"
             font { family: "Poppins"; weight: Font.Bold; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
             anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: headphoneRecommendationSubheader1.bottom
+            anchors.top: audioInterfaceRecommendationLogo.bottom
             anchors.topMargin: 32 * virtualstudio.uiScale
         }
 
         Text {
-            id: headphoneRecommendationSubheader2NonWindows
+            id: audioInterfaceRecommendationSubheaderNonWindows
             visible: !onWindows
             text: "Your audio device controls the quality of sound, and can also have a big impact on latency."
                 + " We recommend using an external USB or Thunderbolt audio interface."
@@ -182,23 +273,23 @@ Item {
             wrapMode: Text.Wrap
             horizontalAlignment: Text.AlignHCenter
             anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: headphoneRecommendationHeader2NonWindows.bottom
+            anchors.top: audioInterfaceRecommendationHeaderNonWindows.bottom
             anchors.topMargin: 32 * virtualstudio.uiScale
         }
 
         Text {
-            id: headphoneRecommendationHeader2Windows
+            id: audioInterfaceRecommendationHeaderWindows
             visible: onWindows
             text: "Use an External Audio Device"
             font { family: "Poppins"; weight: Font.Bold; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
             anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: headphoneRecommendationSubheader1.bottom
+            anchors.top: audioInterfaceRecommendationLogo.bottom
             anchors.topMargin: 32 * virtualstudio.uiScale
         }
 
         Text {
-            id: headphoneRecommendationSubheader2Windows
+            id: audioInterfaceRecommendationSubheaderWindows
             visible: onWindows
             text: "Your audio device controls the quality of sound, and can also have a big impact on latency. We recommend using an external USB or Thunderbolt audio interface."
                 + "<br/><br/>"
@@ -211,18 +302,18 @@ Item {
             wrapMode: Text.Wrap
             horizontalAlignment: Text.AlignHCenter
             anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: headphoneRecommendationHeader2NonWindows.bottom
+            anchors.top: audioInterfaceRecommendationHeaderWindows.bottom
             anchors.topMargin: 32 * virtualstudio.uiScale
         }
 
         Button {
-            id: okButtonHeadphones
+            id: okButtonAudioInterface
             background: Rectangle {
                 radius: 6 * virtualstudio.uiScale
-                color: okButtonHeadphones.down ? saveButtonPressedColour : saveButtonBackgroundColour
+                color: okButtonAudioInterface.down ? saveButtonPressedColour : saveButtonBackgroundColour
                 border.width: 1
-                border.color: okButtonHeadphones.down || okButtonHeadphones.hovered ? saveButtonPressedStroke : saveButtonStroke
-                layer.enabled: okButtonHeadphones.hovered && !okButtonHeadphones.down
+                border.color: okButtonAudioInterface.down || okButtonAudioInterface.hovered ? saveButtonPressedStroke : saveButtonStroke
+                layer.enabled: okButtonAudioInterface.hovered && !okButtonAudioInterface.down
             }
             onClicked: {
                 recommendationScreen = "acknowledged";
