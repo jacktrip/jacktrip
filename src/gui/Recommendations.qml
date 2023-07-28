@@ -115,7 +115,7 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
             width: 179
             height: 128
-            icon.source: "ethernet.svg"
+            icon.source: "networkCheck.svg"
         }
 
         Text {
@@ -246,7 +246,7 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
             width: 118
             height: 128
-            icon.source: "headphones.svg"
+            icon.source: "externalMic.svg"
         }
 
         Text {
