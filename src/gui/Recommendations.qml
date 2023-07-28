@@ -39,6 +39,15 @@ Item {
     property string recommendationScreen: virtualstudio.showWarnings ? "ethernet" : ( permissions.micPermission == "unknown" ? "microphone" : "acknowledged")
     property bool onWindows: Qt.platform.os === "windows"
 
+    Timer {
+        id: resetRecommendationScreenTimer
+        interval: 2000; running: false; repeat: false
+        onTriggered: () => {
+            recommendationScreen = virtualstudio.showWarnings ? "ethernet" : ( permissions.micPermission == "unknown" ? "microphone" : "acknowledged");
+            console.log("TIMEOUT");
+        }
+    }
+
     Rectangle {
         id: recommendationsHeader
         x: -1
@@ -113,7 +122,6 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
         }
     }
-
 
     Item {
         id: ethernetRecommendationItem
@@ -427,7 +435,7 @@ Item {
 
         Text {
             id: acknowledgedSubheader
-            text: "Would you like to repeat these recommendations the next time JackTrip starts up?"
+            text: "Would you like to repeat the prior recommendations the next time JackTrip starts up?"
             font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
             width: 560
@@ -466,6 +474,8 @@ Item {
                         virtualstudio.windowState = "permissions";
                         virtualstudio.applySettings();
                     }
+
+                    resetRecommendationScreenTimer.start();
                 }
                 width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
                 Text {
@@ -500,6 +510,8 @@ Item {
                         virtualstudio.windowState = "permissions";
                         virtualstudio.applySettings();
                     }
+
+                    resetRecommendationScreenTimer.start();
                 }
                 width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
                 Text {
