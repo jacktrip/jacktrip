@@ -39,6 +39,81 @@ Item {
     property string recommendationScreen: virtualstudio.showWarnings ? "ethernet" : ( permissions.micPermission == "unknown" ? "microphone" : "acknowledged")
     property bool onWindows: Qt.platform.os === "windows"
 
+    Rectangle {
+        id: recommendationsHeader
+        x: -1
+        y: 0
+
+        width: parent.width + 2
+        height: 64
+
+        color: backgroundColour
+        border.color: "#33979797"
+
+        Image {
+            source: virtualstudio.darkMode ? "jacktrip white.png" : "jacktrip.png"
+            anchors.left: parent.left
+            anchors.leftMargin: 32 * virtualstudio.uiScale
+            anchors.verticalCenter: parent.verticalCenter
+            width: 119 * virtualstudio.uiScale; height: 28 * virtualstudio.uiScale
+        }
+
+        Text {
+            id: gettingStartedText1
+            visible: recommendationScreen === "ethernet"
+            text: "Getting Started with JackTrip (1/5)"
+            font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+            anchors.right: parent.right
+            anchors.rightMargin: 32 * virtualstudio.uiScale
+            anchors.verticalCenter: parent.verticalCenter
+        }
+        
+        Text {
+            id: gettingStartedText2
+            visible: recommendationScreen === "fiber"
+            text: "Getting Started with JackTrip (2/5)"
+            font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+            anchors.right: parent.right
+            anchors.rightMargin: 32 * virtualstudio.uiScale
+            anchors.verticalCenter: parent.verticalCenter
+        }
+
+        Text {
+            id: gettingStartedText3
+            visible: recommendationScreen === "headphones"
+            text: "Getting Started with JackTrip (3/5)"
+            font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+            anchors.right: parent.right
+            anchors.rightMargin: 32 * virtualstudio.uiScale
+            anchors.verticalCenter: parent.verticalCenter
+        }
+
+        Text {
+            id: gettingStartedText4
+            visible: recommendationScreen === "audiointerface"
+            text: "Getting Started with JackTrip (4/5)"
+            font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+            anchors.right: parent.right
+            anchors.rightMargin: 32 * virtualstudio.uiScale
+            anchors.verticalCenter: parent.verticalCenter
+        }
+
+        Text {
+            id: gettingStartedText5
+            visible: recommendationScreen === "acknowledged"
+            text: "Getting Started with JackTrip (5/5)"
+            font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+            anchors.right: parent.right
+            anchors.rightMargin: 32 * virtualstudio.uiScale
+            anchors.verticalCenter: parent.verticalCenter
+        }
+    }
+
 
     Item {
         id: ethernetRecommendationItem
@@ -347,7 +422,7 @@ Item {
             color: textColour
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: parent.top
-            anchors.topMargin: 96 * virtualstudio.uiScale
+            anchors.topMargin: 176 * virtualstudio.uiScale
         }
 
         Text {
@@ -360,7 +435,7 @@ Item {
             horizontalAlignment: Text.AlignHCenter
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: acknowledgedHeader.bottom
-            anchors.topMargin: 64 * virtualstudio.uiScale
+            anchors.topMargin: 32 * virtualstudio.uiScale
         }
 
         Item {
@@ -368,7 +443,7 @@ Item {
             width: 320
 
             anchors.top: acknowledgedSubheader.bottom
-            anchors.topMargin: 96 * virtualstudio.uiScale
+            anchors.topMargin: 64 * virtualstudio.uiScale
             anchors.horizontalCenter: parent.horizontalCenter
 
             Button {
@@ -450,7 +525,7 @@ Item {
             horizontalAlignment: Text.AlignHCenter
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: acknowledgedButtonsContainer.bottom
-            anchors.topMargin: 96 * virtualstudio.uiScale
+            anchors.topMargin: 64 * virtualstudio.uiScale
         }
     }
 }
