@@ -9,6 +9,8 @@
     <file>vsftux.qml</file>
     <file>FirstLaunch.qml</file>
     <file>Login.qml</file>
+    <file>Recommendations.qml</file>
+    <file>Permissions.qml</file>
     <file>ChangeDevices.qml</file>
     <file>Studio.qml</file>
     <file>Browse.qml</file>
@@ -49,6 +51,8 @@
     <file>loud.svg</file>
     <file>refresh.svg</file>
     <file>ethernet.svg</file>
+    <file>networkCheck.svg</file>
+    <file>externalMic.svg</file>
     <file>check.svg</file>
     <file>warning.svg</file>
     <file>expand_less.svg</file>

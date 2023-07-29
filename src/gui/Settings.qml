@@ -33,12 +33,16 @@ Item {
     property string sliderTrackColour: virtualstudio.darkMode ? "#5B5858" : "light gray"
     property string sliderActiveTrackColour: virtualstudio.darkMode ? "light gray" : "black"
     property string warningTextColour: "#DB0A0A"
+    property string checkboxStroke: "#0062cc"
+    property string checkboxPressedStroke: "#007AFF"
     property string linkText: virtualstudio.darkMode ? "#8B8D8D" : "#272525"
 
     property string errorFlagColour: "#DB0A0A"
     property string disabledButtonTextColour: virtualstudio.darkMode ? "#827D7D" : "#BABCBC"
 
     property string settingsGroupView: "Audio"
+    property bool currShowWarnings: virtualstudio.showWarnings
+    property bool currShowDeviceSetup: virtualstudio.showDeviceSetup
 
     property int inputCurrIndex: getCurrentInputDeviceIndex()
     property int outputCurrIndex: getCurrentOutputDeviceIndex()
@@ -530,6 +534,91 @@ Item {
             color: textColour
         }
 
+        CheckBox {
+            id: showStartupSetup
+            checked: currShowDeviceSetup
+            text: qsTr("Show device setup screen before connecting to a studio")
+            x: updateChannelCombo.x; y: feedbackDetectionCombo.y + (48 * virtualstudio.uiScale)
+            onClicked: { currShowDeviceSetup = showStartupSetup.checkState == Qt.Checked; virtualstudio.showDeviceSetup = currShowDeviceSetup }
+            indicator: Rectangle {
+                implicitWidth: 16 * virtualstudio.uiScale
+                implicitHeight: 16 * virtualstudio.uiScale
+                x: showStartupSetup.leftPadding
+                y: parent.height / 2 - height / 2
+                radius: 3 * virtualstudio.uiScale
+                border.color: showStartupSetup.down || showStartupSetup.hovered ? checkboxPressedStroke : checkboxStroke
+
+                Rectangle {
+                    width: 10 * virtualstudio.uiScale
+                    height: 10 * virtualstudio.uiScale
+                    x: 3 * virtualstudio.uiScale
+                    y: 3 * virtualstudio.uiScale
+                    radius: 2 * virtualstudio.uiScale
+                    color: showStartupSetup.down || showStartupSetup.hovered ? checkboxPressedStroke : checkboxStroke
+                    visible: showStartupSetup.checked
+                }
+            }
+            contentItem: Text {
+                text: showStartupSetup.text
+                font.family: "Poppins"
+                font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.verticalCenter
+                leftPadding: showStartupSetup.indicator.width + showStartupSetup.spacing
+                color: textColour
+            }
+        }
+
+        Text {
+            anchors.verticalCenter: showStartupSetup.verticalCenter
+            x: 48 * virtualstudio.uiScale
+            text: "Device Setup"
+            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+        }
+
+        CheckBox {
+            id: showStartupWarnings
+            checked: currShowWarnings
+            text: qsTr("Show recommendations on startup again next time")
+            x: updateChannelCombo.x; y: showStartupSetup.y + (48 * virtualstudio.uiScale)
+            onClicked: { currShowWarnings = showStartupWarnings.checkState == Qt.Checked; virtualstudio.showWarnings = currShowWarnings; }
+            indicator: Rectangle {
+                implicitWidth: 16 * virtualstudio.uiScale
+                implicitHeight: 16 * virtualstudio.uiScale
+                x: showStartupWarnings.leftPadding
+                y: parent.height / 2 - height / 2
+                radius: 3 * virtualstudio.uiScale
+                border.color: showStartupWarnings.down || showStartupWarnings.hovered ? checkboxPressedStroke : checkboxStroke
+
+                Rectangle {
+                    width: 10 * virtualstudio.uiScale
+                    height: 10 * virtualstudio.uiScale
+                    x: 3 * virtualstudio.uiScale
+                    y: 3 * virtualstudio.uiScale
+                    radius: 2 * virtualstudio.uiScale
+                    color: showStartupWarnings.down || showStartupWarnings.hovered ? checkboxPressedStroke : checkboxStroke
+                    visible: showStartupWarnings.checked
+                }
+            }
+            contentItem: Text {
+                text: showStartupWarnings.text
+                font.family: "Poppins"
+                font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.verticalCenter
+                leftPadding: showStartupWarnings.indicator.width + showStartupWarnings.spacing
+                color: textColour
+            }
+        }
+
+        Text {
+            anchors.verticalCenter: showStartupWarnings.verticalCenter
+            x: 48 * virtualstudio.uiScale
+            text: "Recommendations"
+            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+        }
     }
 
     Rectangle {

@@ -1,8 +1,9 @@
 import QtQuick
 import QtQuick.Controls
 
-Item {
+Rectangle {
     width: parent.width; height: parent.height
+    color: backgroundColour
     clip: true
 
     property int fontBig: 28

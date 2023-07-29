@@ -338,14 +338,6 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
 
     connect(this, &VirtualStudio::audioActivatedChanged, this,
             &VirtualStudio::toggleAudio, Qt::QueuedConnection);
-    connect(
-        this, &VirtualStudio::studioToJoinChanged, this,
-        [&]() {
-            if (!m_studioToJoin.isEmpty()) {
-                joinStudio();
-            }
-        },
-        Qt::QueuedConnection);
 }
 
 void VirtualStudio::setStandardWindow(QSharedPointer<QJackTrip> window)
@@ -1548,6 +1540,7 @@ void VirtualStudio::applySettings()
     settings.beginGroup(QStringLiteral("VirtualStudio"));
     settings.setValue(QStringLiteral("UiScale"), m_uiScale);
     settings.setValue(QStringLiteral("ShowDeviceSetup"), m_showDeviceSetup);
+    settings.setValue(QStringLiteral("ShowWarnings"), m_showWarnings);
     settings.endGroup();
 #ifdef RT_AUDIO
     settings.beginGroup(QStringLiteral("Audio"));
@@ -1978,17 +1971,6 @@ void VirtualStudio::slotAuthSucceeded()
             &VsDevice::updateMonitorVolume);
 
     m_device->registerApp();
-
-    // always activate audio at startup for now.
-    // otherwise, IF someone has the device setup disabled/unchecked,
-    // AND IF they don't manually navigate to audio settings before connecting,
-    // the "Change Device Settings" dialog will have all empty dropdown lists
-    // TODO: rework so it can be deferred properly
-    // if (m_showDeviceSetup) {
-    if constexpr (isBackendAvailable<AudioInterfaceMode::JACK>()
-                  || isBackendAvailable<AudioInterfaceMode::RTAUDIO>()) {
-        setAudioActivated(true);
-    }
 
     getUserId();
     getSubscriptions();
@@ -2732,7 +2714,7 @@ bool VirtualStudio::readyToJoin()
 {
     // FTUX shows warnings and device setup views
     // if any of these enabled, do not immediately join
-    return m_windowState == "browse"
+    return m_windowState == "connected"
            && (m_connectionState == QStringLiteral("Waiting...")
                || m_connectionState == QStringLiteral("Disconnected"));
 }
