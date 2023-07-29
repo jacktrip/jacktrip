@@ -40,6 +40,10 @@
 
 #include <RtAudio.h>
 
+#if RTAUDIO_VERSION_MAJOR < 6
+#define RtAudioErrorType RtAudioError::Type
+#endif
+
 #include <QQueue>
 #include <QString>
 #include <QVector>
@@ -53,7 +57,7 @@ class JackTrip;  // Forward declaration
 struct RtAudioDevice {
     RtAudio::Api api;
     QString name;
-    int apiIndex;
+    unsigned int ID;
     int inputChannels;
     int outputChannels;
     void print() const;
@@ -91,6 +95,12 @@ class RtAudioInterface : public AudioInterface
     // returns number of available output audio devices
     unsigned int getNumOutputDevices() const;
 
+    // populates the ids vector with ids for all known devices
+    // for RtAudio v5 these are just incrementing numbers starting at 0,
+    // while RtAudio v6 uses unique ids for each device that may not correspond with
+    // the index location within the vector
+    static void getDeviceIds(RtAudio& rtaudio, std::vector<unsigned int>& ids);
+
     // populates devices with all available audio interfaces
     static void scanDevices(QVector<RtAudioDevice>& devices);
 
@@ -107,19 +117,17 @@ class RtAudioInterface : public AudioInterface
 
     //--------------GETTERS---------------------------------------------
     //------------------------------------------------------------------
-
    private:
     int RtAudioCallback(void* outputBuffer, void* inputBuffer, unsigned int nFrames,
                         double streamTime, RtAudioStreamStatus status);
     static int wrapperRtAudioCallback(void* outputBuffer, void* inputBuffer,
                                       unsigned int nFrames, double streamTime,
                                       RtAudioStreamStatus status, void* userData);
-    static void RtAudioErrorCallback(RtAudioError::Type type,
-                                     const std::string& errorText);
+    static void RtAudioErrorCallback(RtAudioErrorType type, const std::string& errorText);
     void printDeviceInfo(std::string api, unsigned int deviceId);
 
     // retrieves info about an audio device by search for its name
-    void getDeviceInfoFromName(std::string deviceName, int* index, std::string* api,
+    void getDeviceInfoFromName(std::string deviceName, long& deviceId, std::string& api,
                                bool isInput) const;
 
     QVarLengthArray<float*>
@@ -130,7 +138,8 @@ class RtAudioInterface : public AudioInterface
         mDevices;       ///< Vector of audio interfaces available via RTAudio
     RtAudio* mRtAudio;  ///< RtAudio class if the input and output device are the same
 
-    unsigned int getDefaultDeviceForLinuxPulseAudio(bool isInput);
+    static long getDefaultDevice(RtAudio& rtaudio, bool isInput);
+    static long getDefaultDeviceForLinuxPulseAudio(RtAudio& rtaudio, bool isInput);
 
     StereoToMono* mStereoToMonoMixer = NULL;
 };
