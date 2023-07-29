@@ -90,7 +90,7 @@ Item {
 
         Text {
             id: gettingStartedText3
-            visible: recommendationScreen === "headphones"
+            visible: recommendationScreen === "audiointerface"
             text: "Getting Started with JackTrip (3/5)"
             font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
@@ -101,7 +101,7 @@ Item {
 
         Text {
             id: gettingStartedText4
-            visible: recommendationScreen === "audiointerface"
+            visible: recommendationScreen === "headphones"
             text: "Getting Started with JackTrip (4/5)"
             font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
@@ -138,7 +138,7 @@ Item {
 
         Text {
             id: ethernetRecommendationHeader1
-            text: "Connect via Wired Ethernet"
+            text: "Wired Ethernet Recommended"
             font { family: "Poppins"; weight: Font.Bold; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
             anchors.horizontalCenter: parent.horizontalCenter
@@ -148,7 +148,9 @@ Item {
 
         Text {
             id: ethernetRecommendationSubheader1
-            text: "JackTrip works best when you connect directly to your home router via a wired ethernet cable. WiFi works OK for some people, but you will experience higher latency and audio glitches."
+            text: "JackTrip works best when you connect your computer directly to your Internet router via a wired ethernet cable."
+                + "<br/><br/>"
+                + "WiFi works OK for some people, but generates significantly more latency and audio glitches."
             font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
             width: 560
@@ -212,7 +214,9 @@ Item {
 
         Text {
             id: fiberRecommendationSubheader
-            text: "Additionally, a Fiber Internet connection from your Internet Service Provider (ISP) will give you the best experience while using JackTrip. You can still use JackTrip with Cable and DSL, but these types of Internet connections introduce significantly higher latency."
+            text: "A Fiber Internet connection from your Internet Service Provider (ISP) will give you the best experience while using JackTrip."
+                + "<br/><br/>"
+                + "It's OK to use JackTrip with Cable and DSL, but these types of Internet connections introduce significantly more latency."
             font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
             width: 560
@@ -233,7 +237,7 @@ Item {
                 border.color: okButtonFiber.down || okButtonFiber.hovered ? saveButtonPressedStroke : saveButtonStroke
                 layer.enabled: okButtonFiber.hovered && !okButtonFiber.down
             }
-            onClicked: { recommendationScreen = "headphones" }
+            onClicked: { recommendationScreen = "audiointerface" }
             anchors.right: parent.right
             anchors.rightMargin: 16 * virtualstudio.uiScale
             anchors.bottomMargin: 16 * virtualstudio.uiScale
@@ -267,7 +271,7 @@ Item {
 
         Text {
             id: headphoneRecommendationHeader1
-            text: "Use Wired Headphones"
+            text: "Wired Headphones Required"
             font { family: "Poppins"; weight: Font.Bold; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
             anchors.horizontalCenter: parent.horizontalCenter
@@ -277,7 +281,11 @@ Item {
 
         Text {
             id: headphoneRecommendationSubheader1
-            text: "JackTrip requires the use of wired headphones. Using speakers can cause loud feedback loops, and wireless / bluetooth headphones add way too much latency."
+            text: "JackTrip requires the use of wired headphones."
+                + "<br/><br/>"
+                + "Using speakers will generate echos and loud feedback loops."
+                + "<br/><br/>"
+                + "Wireless and bluetooth headphones introduce higher latency."
             font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
             width: 560
@@ -298,7 +306,7 @@ Item {
                 layer.enabled: okButtonHeadphones.hovered && !okButtonHeadphones.down
             }
             onClicked: {
-                recommendationScreen = "audiointerface";
+                recommendationScreen = "acknowledged";
             }
             anchors.right: parent.right
             anchors.rightMargin: 16 * virtualstudio.uiScale
@@ -334,7 +342,7 @@ Item {
         Text {
             id: audioInterfaceRecommendationHeaderNonWindows
             visible: !onWindows
-            text: "Use an External Audio Device"
+            text: "External Audio Device Recommended"
             font { family: "Poppins"; weight: Font.Bold; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
             anchors.horizontalCenter: parent.horizontalCenter
@@ -346,9 +354,9 @@ Item {
             id: audioInterfaceRecommendationSubheaderNonWindows
             visible: !onWindows
             text: "Your audio device controls the quality of sound, and can also have a big impact on latency."
-                + " We recommend using an external USB or Thunderbolt audio interface."
                 + "<br/><br/>"
-                + "You can still use the audio device that is built into your computer, but you will get the best results when using an external audio device."
+                + "It's OK to use the audio device that is built into your computer, but external USB and "
+                + "Thunderbolt audio interfaces will usually produce better quality and lower latency."
             font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
             width: 560
@@ -362,7 +370,7 @@ Item {
         Text {
             id: audioInterfaceRecommendationHeaderWindows
             visible: onWindows
-            text: "Use an External Audio Device"
+            text: "External Audio Device Recommended"
             font { family: "Poppins"; weight: Font.Bold; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
             anchors.horizontalCenter: parent.horizontalCenter
@@ -373,11 +381,13 @@ Item {
         Text {
             id: audioInterfaceRecommendationSubheaderWindows
             visible: onWindows
-            text: "Your audio device controls the quality of sound, and can also have a big impact on latency. We recommend using an external USB or Thunderbolt audio interface."
+            text: "Your audio device controls the quality of sound, and can also have a big impact on latency."
                 + "<br/><br/>"
-                + "Additionally, low latency on Windows requires the use of ASIO drivers. Beware that the use of ASIO drivers that are not made specifically for your device can cause crashes."
+                + "Additionally, low latency on Windows requires the use of ASIO drivers. "
+                + "Beware that using ASIO drivers which are not made specifically for your device can cause crashes."
                 + "<br/><br/>"
-                + "You can still use JackTrip with other audio devices, but you will get the best results when using an external audio device with ASIO drivers."
+                + "It's OK to use the audio device that is built into your computer, but external USB and "
+                + "Thunderbolt audio interfaces that provide ASIO drivers will produce better quality and much lower latency."
             font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
             width: 560
@@ -398,7 +408,7 @@ Item {
                 layer.enabled: okButtonAudioInterface.hovered && !okButtonAudioInterface.down
             }
             onClicked: {
-                recommendationScreen = "acknowledged";
+                recommendationScreen = "headphones";
             }
             anchors.right: parent.right
             anchors.rightMargin: 16 * virtualstudio.uiScale
