@@ -84,6 +84,30 @@ Item {
         AudioSettings {
             id: audioSettings
         }
+
+        InfoTooltip {
+            id: devicesWarningTooltip
+            anchors.left: parent.left
+            anchors.leftMargin: 168 * virtualstudio.uiScale
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: 48 * virtualstudio.uiScale
+            size: 28 * virtualstudio.uiScale
+            content: qsTr(virtualstudio.devicesError || virtualstudio.devicesWarning)
+            iconSource: "warning.svg"
+            iconColor: "#F21B1B"
+            visible: Boolean(virtualstudio.devicesError) || Boolean(virtualstudio.devicesWarning)
+        }
+
+        Text {
+            id: warningOrErrorText
+            text: Boolean(virtualstudio.devicesError) ? "Error: Hover for details" : "Warning: Hover for details"
+            anchors.left: devicesWarningTooltip.right
+            anchors.leftMargin: 8 * virtualstudio.uiScale
+            anchors.verticalCenter: devicesWarningTooltip.verticalCenter
+            visible: Boolean(virtualstudio.devicesError) || Boolean(virtualstudio.devicesWarning)
+            font: { family: "Popppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: "#F21B1B"
+        }
     }
 
     ToolBar {
