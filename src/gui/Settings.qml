@@ -85,28 +85,40 @@ Item {
             id: audioSettings
         }
 
-        InfoTooltip {
-            id: devicesWarningTooltip
+        AppIcon {
+            id: devicesWarningIcon
             anchors.left: parent.left
             anchors.leftMargin: 168 * virtualstudio.uiScale
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 48 * virtualstudio.uiScale
-            size: 28 * virtualstudio.uiScale
-            content: qsTr(virtualstudio.devicesError || virtualstudio.devicesWarning)
-            iconSource: "warning.svg"
-            iconColor: "#F21B1B"
+            width: 28 * virtualstudio.uiScale
+            height: 28 * virtualstudio.uiScale
+            icon.source: "warning.svg"
+            color: "#F21B1B"
             visible: Boolean(virtualstudio.devicesError) || Boolean(virtualstudio.devicesWarning)
         }
 
         Text {
             id: warningOrErrorText
-            text: Boolean(virtualstudio.devicesError) ? "Error: Hover for details" : "Warning: Hover for details"
-            anchors.left: devicesWarningTooltip.right
-            anchors.leftMargin: 8 * virtualstudio.uiScale
-            anchors.verticalCenter: devicesWarningTooltip.verticalCenter
+            text: Boolean(virtualstudio.devicesError) ? "Audio Configuration Error" : "Audio Configuration Warning"
+            anchors.left: devicesWarningIcon.right
+            anchors.leftMargin: 4 * virtualstudio.uiScale
+            anchors.verticalCenter: devicesWarningIcon.verticalCenter
             visible: Boolean(virtualstudio.devicesError) || Boolean(virtualstudio.devicesWarning)
             font { family: "Poppins"; pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale }
             color: "#F21B1B"
+        }
+
+        InfoTooltip {
+            id: devicesWarningTooltip
+            anchors.left: warningOrErrorText.right
+            anchors.leftMargin: 2 * virtualstudio.uiScale
+            anchors.bottom: warningOrErrorText.bottom
+            anchors.bottomMargin: 6 * virtualstudio.uiScale
+            content: qsTr(virtualstudio.devicesError || virtualstudio.devicesWarning)
+            iconColor: "#F21B1B"
+            size: 16 * virtualstudio.uiScale
+            visible: Boolean(virtualstudio.devicesError) || Boolean(virtualstudio.devicesWarning)
         }
     }
 
