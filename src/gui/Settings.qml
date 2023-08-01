@@ -105,7 +105,7 @@ Item {
             anchors.leftMargin: 8 * virtualstudio.uiScale
             anchors.verticalCenter: devicesWarningTooltip.verticalCenter
             visible: Boolean(virtualstudio.devicesError) || Boolean(virtualstudio.devicesWarning)
-            font: { family: "Popppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+            font { family: "Poppins"; pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale }
             color: "#F21B1B"
         }
     }
