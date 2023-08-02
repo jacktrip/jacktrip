@@ -34,6 +34,8 @@ Rectangle {
     property string browserButtonHoverStroke: virtualstudio.darkMode ? "#7B7777" : "#BABCBC"
     property string browserButtonPressedStroke: virtualstudio.darkMode ? "#827D7D" : "#BABCBC"
 
+    property string linkText: virtualstudio.darkMode ? "#8B8D8D" : "#272525"
+
     function getCurrentInputDeviceIndex () {
         if (virtualstudio.inputDevice === "") {
             return virtualstudio.inputComboModel.findIndex(elem => elem.type === "element");

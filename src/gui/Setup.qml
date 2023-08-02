@@ -27,6 +27,7 @@ Item {
     property string saveButtonText: "#DB0A0A"
     property string checkboxStroke: "#0062cc"
     property string checkboxPressedStroke: "#007AFF"
+    property string disabledButtonText: virtualstudio.darkMode ? "#827D7D" : "#BABCBC"
 
     property bool currShowWarnings: virtualstudio.showWarnings
     property string warningScreen: virtualstudio.showWarnings ? "ethernet" : ( permissions.micPermission == "unknown" ? "microphone" : "acknowledged")
@@ -89,7 +90,6 @@ Item {
                 border.width: 1
                 border.color: backButton.down || backButton.hovered ? buttonPressedStroke : buttonStroke
             }
-            enabled: !Boolean(virtualstudio.devicesError) && virtualstudio.backendAvailable
             onClicked: { virtualstudio.windowState = "browse"; virtualstudio.studioToJoin = ""; }
             anchors.left: parent.left
             anchors.leftMargin: 16 * virtualstudio.uiScale
@@ -104,6 +104,41 @@ Item {
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
             }
+        }
+
+        AppIcon {
+            id: devicesWarningIcon
+            anchors.left: backButton.right
+            anchors.leftMargin: 16 * virtualstudio.uiScale
+            anchors.verticalCenter: backButton.verticalCenter
+            width: 28 * virtualstudio.uiScale
+            height: 28 * virtualstudio.uiScale
+            icon.source: "warning.svg"
+            color: "#F21B1B"
+            visible: Boolean(virtualstudio.devicesError) || Boolean(virtualstudio.devicesWarning)
+        }
+
+        Text {
+            id: warningOrErrorText
+            text: Boolean(virtualstudio.devicesError) ? "Audio Configuration Error" : "Audio Configuration Warning"
+            anchors.left: devicesWarningIcon.right
+            anchors.leftMargin: 4 * virtualstudio.uiScale
+            anchors.verticalCenter: devicesWarningIcon.verticalCenter
+            visible: Boolean(virtualstudio.devicesError) || Boolean(virtualstudio.devicesWarning)
+            font { family: "Poppins"; pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: "#F21B1B"
+        }
+
+        InfoTooltip {
+            id: devicesWarningTooltip
+            anchors.left: warningOrErrorText.right
+            anchors.leftMargin: 2 * virtualstudio.uiScale
+            anchors.bottom: warningOrErrorText.bottom
+            anchors.bottomMargin: 6 * virtualstudio.uiScale
+            content: qsTr(virtualstudio.devicesError || virtualstudio.devicesWarning)
+            iconColor: "#F21B1B"
+            size: 16 * virtualstudio.uiScale
+            visible: Boolean(virtualstudio.devicesError) || Boolean(virtualstudio.devicesWarning)
         }
 
         Button {
