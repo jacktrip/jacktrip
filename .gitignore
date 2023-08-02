@@ -28,3 +28,9 @@ macos/sign-stuff-withcreds.sh
 
 # windows deploy files
 win/deploy
+
+# meson subproject files
+subprojects/packagecache/
+subprojects/rtaudio-5.*/
+subprojects/rtaudio-6.*/
+subprojects/wingetopt/

@@ -50,8 +50,7 @@ using std::endl;
 //*******************************************************************************
 void RtAudioDevice::print() const
 {
-    std::cout << "[" << RtAudio::getApiDisplayName(this->api) << " - " << this->apiIndex
-              << "]"
+    std::cout << "[" << RtAudio::getApiDisplayName(this->api) << " - " << this->ID << "]"
               << ": \"";
     std::cout << this->name.toStdString() << "\" ";
     std::cout << "(" << this->inputChannels << " ins, " << this->outputChannels
@@ -86,35 +85,35 @@ RtAudioInterface::~RtAudioInterface()
 void RtAudioInterface::setup(bool verbose)
 {
     // Initialize Buffer array to read and write audio and members
-    QVarLengthArray<int> iChans = getInputChannels();
-    QVarLengthArray<int> oChans = getOutputChannels();
+    QVarLengthArray<int> in_chans  = getInputChannels();
+    QVarLengthArray<int> out_chans = getOutputChannels();
 
-    uint32_t chansIn     = iChans.size();
-    uint32_t chansOut    = oChans.size();
-    uint32_t baseChanIn  = 0;
-    uint32_t baseChanOut = 0;
+    uint32_t in_chans_num   = in_chans.size();
+    uint32_t out_chans_num  = out_chans.size();
+    uint32_t in_chans_base  = 0;
+    uint32_t out_chans_base = 0;
 
-    if (iChans.size() >= 1) {
-        int min = iChans.at(0);
-        for (int i = 0; i < iChans.size(); i++) {
-            if (iChans.at(i) < min) {
-                min = iChans.at(i);
+    if (in_chans.size() >= 1) {
+        int min = in_chans.at(0);
+        for (int i = 0; i < in_chans.size(); i++) {
+            if (in_chans.at(i) < min) {
+                min = in_chans.at(i);
             }
         }
         if (min >= 0) {
-            baseChanIn = min;
+            in_chans_base = min;
         }
     }
 
-    if (oChans.size() >= 1) {
-        int min = oChans.at(0);
-        for (int i = 0; i < oChans.size(); i++) {
-            if (oChans.at(i) < min) {
-                min = iChans.at(i);
+    if (out_chans.size() >= 1) {
+        int min = out_chans.at(0);
+        for (int i = 0; i < out_chans.size(); i++) {
+            if (out_chans.at(i) < min) {
+                min = in_chans.at(i);
             }
         }
         if (min >= 0) {
-            baseChanOut = min;
+            out_chans_base = min;
         }
     }
 
@@ -124,130 +123,114 @@ void RtAudioInterface::setup(bool verbose)
     AudioInterface::setDevicesWarningMsg(AudioInterface::DEVICE_WARN_NONE);
     AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_NONE);
 
-    int index_in  = -1;
-    int index_out = -1;
-    std::string api_in;
-    std::string api_out;
+    long in_device_id  = -1;
+    long out_device_id = -1;
+    std::string in_api;
+    std::string out_api;
 
     if (mDevices.empty())
         scanDevices(mDevices);
 
-    unsigned int n_devices_input  = getNumInputDevices();
-    unsigned int n_devices_output = getNumOutputDevices();
-    unsigned int n_devices_total  = n_devices_input + n_devices_output;
+    unsigned int in_devices_num  = getNumInputDevices();
+    unsigned int out_devices_num = getNumOutputDevices();
 
-    RtAudio* rtAudioIn  = NULL;
-    RtAudio* rtAudioOut = NULL;
+    RtAudio* in_rtaudio  = NULL;
+    RtAudio* out_rtaudio = NULL;
 
     // unsigned int n_devices = mRtAudio->getDeviceCount();
-    if (n_devices_total < 1) {
+    if (in_devices_num == 0 && out_devices_num == 0) {
         AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_NO_DEVICES);
         cout << "No audio devices found!" << endl;
         std::exit(0);
     } else {
         // Locate the selected input audio device
-        auto inName = getInputDevice();
-        getDeviceInfoFromName(inName, &index_in, &api_in, true);
-        if (!inName.empty() && (index_in < 0)) {
-            throw std::runtime_error("Requested input device \"" + inName
+        auto in_name = getInputDevice();
+        getDeviceInfoFromName(in_name, in_device_id, in_api, true);
+        if (!in_name.empty() && (in_device_id < 0)) {
+            throw std::runtime_error("Requested input device \"" + in_name
                                      + "\" not found.");
         }
-        rtAudioIn = new RtAudio(RtAudio::getCompiledApiByName(api_in));
+        in_rtaudio = new RtAudio(RtAudio::getCompiledApiByName(in_api));
 
         // The selected input audio device is not available, so select the default device
-        if (index_in < 0) {
-            // reset rtAudioIn using the system default
-            delete rtAudioIn;
-            rtAudioIn = new RtAudio;
-            api_in    = RtAudio::getApiName(rtAudioIn->getCurrentApi());
-
-            // Edge case for Linux Pulse Audio
-            if (rtAudioIn->getCurrentApi() == RtAudio::LINUX_PULSE) {
-                index_in = getDefaultDeviceForLinuxPulseAudio(true);
-            } else {
-                index_in = rtAudioIn->getDefaultInputDevice();
-            }
-
+        if (in_device_id < 0) {
+            // reset in_rtaudio using the system default
+            delete in_rtaudio;
+            in_rtaudio   = new RtAudio;
+            in_api       = RtAudio::getApiName(in_rtaudio->getCurrentApi());
+            in_device_id = getDefaultDevice(*in_rtaudio, true);
             cout << "Selected default INPUT device" << endl;
         } else {
-            cout << "Selected INPUT device " << inName << endl;
+            cout << "Selected INPUT device " << in_name << endl;
         }
 
         // Locate the selected output audio device
-        auto outName = getOutputDevice();
-        getDeviceInfoFromName(outName, &index_out, &api_out, false);
-        if (!outName.empty() && (index_out < 0)) {
-            throw std::runtime_error("Requested output device \"" + outName
+        auto out_name = getOutputDevice();
+        getDeviceInfoFromName(out_name, out_device_id, out_api, false);
+        if (!out_name.empty() && (out_device_id < 0)) {
+            throw std::runtime_error("Requested output device \"" + out_name
                                      + "\" not found.");
         }
-        rtAudioOut = new RtAudio(RtAudio::getCompiledApiByName(api_out));
+        out_rtaudio = new RtAudio(RtAudio::getCompiledApiByName(out_api));
 
         // The selected output audio device is not available, so select the default device
-        if (index_out < 0) {
-            // reset rtAudioIn using the system default
-            delete rtAudioOut;
-            rtAudioOut = new RtAudio;
-            api_out    = RtAudio::getApiName(rtAudioOut->getCurrentApi());
-
-            // Edge case for Linux Pulse Audio
-            if (rtAudioOut->getCurrentApi() == RtAudio::LINUX_PULSE) {
-                index_out = getDefaultDeviceForLinuxPulseAudio(false);
-            } else {
-                index_out = rtAudioOut->getDefaultOutputDevice();
-            }
-
+        if (out_device_id < 0) {
+            // reset in_rtaudio using the system default
+            delete out_rtaudio;
+            out_rtaudio   = new RtAudio;
+            out_api       = RtAudio::getApiName(out_rtaudio->getCurrentApi());
+            out_device_id = getDefaultDevice(*out_rtaudio, false);
             cout << "Selected default OUTPUT device" << endl;
-
         } else {
-            cout << "Selected OUTPUT device " << outName << endl;
+            cout << "Selected OUTPUT device " << out_name << endl;
         }
     }
 
-    auto dev_info_input  = rtAudioIn->getDeviceInfo(index_in);
-    auto dev_info_output = rtAudioOut->getDeviceInfo(index_out);
+    auto dev_info_input  = in_rtaudio->getDeviceInfo(in_device_id);
+    auto dev_info_output = out_rtaudio->getDeviceInfo(out_device_id);
 
-    if (baseChanIn + chansIn > dev_info_input.inputChannels) {
-        baseChanIn = 0;
-        chansIn    = 2;
+    if (in_chans_base + in_chans_num > dev_info_input.inputChannels) {
+        in_chans_base = 0;
+        in_chans_num  = 2;
         if (dev_info_input.inputChannels < 2) {
-            chansIn = 1;
+            in_chans_num = 1;
         }
     }
 
-    if (baseChanOut + chansOut > dev_info_output.outputChannels) {
-        baseChanOut = 0;
-        chansOut    = 2;
+    if (out_chans_base + out_chans_num > dev_info_output.outputChannels) {
+        out_chans_base = 0;
+        out_chans_num  = 2;
         if (dev_info_output.outputChannels < 2) {
-            chansOut = 1;
+            out_chans_num = 1;
         }
     }
 
     if (verbose) {
         cout << "INPUT DEVICE:" << endl;
-        printDeviceInfo(api_in, index_in);
+        printDeviceInfo(in_api, in_device_id);
 
         cout << gPrintSeparator << endl;
         cout << "OUTPUT DEVICE:" << endl;
 
-        printDeviceInfo(api_out, index_out);
+        printDeviceInfo(out_api, out_device_id);
         cout << gPrintSeparator << endl;
     }
 
-    if (n_devices_input == 0) {
+    if (in_devices_num == 0) {
         AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_NO_INPUTS);
-    } else if (n_devices_output == 0) {
+    } else if (out_devices_num == 0) {
         AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_NO_OUTPUTS);
     }
 
-    delete rtAudioIn;
-    delete rtAudioOut;
-    if (api_in == api_out) {
-        mRtAudio = new RtAudio(RtAudio::getCompiledApiByName(api_in));
+    delete in_rtaudio;
+    delete out_rtaudio;
+    if (in_api == out_api) {
+        mRtAudio = new RtAudio(RtAudio::getCompiledApiByName(in_api));
 #ifdef _WIN32
-        if (api_in != "asio") {
+        if (in_api != "asio") {
             AudioInterface::setDevicesWarningMsg(AudioInterface::DEVICE_WARN_LATENCY);
             AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_NONE);
-        } else if (api_in == "asio" && index_in != index_out) {
+        } else if (in_api == "asio" && in_device_id != out_device_id) {
             AudioInterface::setDevicesWarningMsg(AudioInterface::DEVICE_WARN_NONE);
             AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_SAME_ASIO);
         }
@@ -259,12 +242,12 @@ void RtAudioInterface::setup(bool verbose)
     }
 
     RtAudio::StreamParameters in_params, out_params;
-    in_params.deviceId      = index_in;
-    out_params.deviceId     = index_out;
-    in_params.nChannels     = chansIn;
-    out_params.nChannels    = chansOut;
-    in_params.firstChannel  = baseChanIn;
-    out_params.firstChannel = baseChanOut;
+    in_params.deviceId      = in_device_id;
+    out_params.deviceId     = out_device_id;
+    in_params.nChannels     = in_chans_num;
+    out_params.nChannels    = out_chans_num;
+    in_params.firstChannel  = in_chans_base;
+    out_params.firstChannel = out_chans_base;
 
     RtAudio::StreamOptions options;
     // The second flag affects linux and mac only
@@ -279,20 +262,20 @@ void RtAudioInterface::setup(bool verbose)
     // Update parent class
     QVarLengthArray<int> updatedInputChannels;
     QVarLengthArray<int> updatedOutputChannels;
-    updatedInputChannels.resize(chansIn);
-    updatedOutputChannels.resize(chansOut);
-    for (uint32_t i = 0; i < chansIn; i++) {
-        updatedInputChannels[i] = baseChanIn + i;
+    updatedInputChannels.resize(in_chans_num);
+    updatedOutputChannels.resize(out_chans_num);
+    for (uint32_t i = 0; i < in_chans_num; i++) {
+        updatedInputChannels[i] = in_chans_base + i;
     }
-    for (uint32_t i = 0; i < chansOut; i++) {
-        updatedOutputChannels[i] = baseChanOut + i;
+    for (uint32_t i = 0; i < out_chans_num; i++) {
+        updatedOutputChannels[i] = out_chans_base + i;
     }
     setInputChannels(updatedInputChannels);
     setOutputChannels(updatedOutputChannels);
 
     // Setup buffers
-    mInBuffer.resize(chansIn);
-    mOutBuffer.resize(chansOut);
+    mInBuffer.resize(in_chans_num);
+    mOutBuffer.resize(out_chans_num);
 
     unsigned int sampleRate   = getSampleRate();           // mSamplingRate;
     unsigned int bufferFrames = getBufferSizeInSamples();  // mBufferSize;
@@ -301,22 +284,38 @@ void RtAudioInterface::setup(bool verbose)
 
     // Setup parent class
     AudioInterface::setup(verbose);
+    if (mRtAudio == NULL)
+        return;
 
+    std::string errorText;
+
+    // IMPORTANT NOTE: It's VERY important to remember to pass "this"
+    // to the user data for the process callback, otherwise member won't
+    // be accessible
+
+#if RTAUDIO_VERSION_MAJOR < 6
     try {
-        // IMPORTANT NOTE: It's VERY important to remember to pass "this"
-        // to the user data in the process callback, otherwise member won't
-        // be accessible
-        if (mRtAudio != NULL) {
-            mRtAudio->openStream(&out_params, &in_params, RTAUDIO_FLOAT32, sampleRate,
-                                 &bufferFrames, &RtAudioInterface::wrapperRtAudioCallback,
-                                 this, &options, &RtAudioInterface::RtAudioErrorCallback);
-        }
-
-        setBufferSize(bufferFrames);
+        mRtAudio->openStream(&out_params, &in_params, RTAUDIO_FLOAT32, sampleRate,
+                             &bufferFrames, &RtAudioInterface::wrapperRtAudioCallback,
+                             this, &options, &RtAudioInterface::RtAudioErrorCallback);
     } catch (RtAudioError& e) {
-        std::cout << e.getMessage() << '\n' << std::endl;
-        throw std::runtime_error(e.getMessage());
+        errorText = e.getMessage();
     }
+#else
+    if (RTAUDIO_NO_ERROR
+        != mRtAudio->openStream(&out_params, &in_params, RTAUDIO_FLOAT32, sampleRate,
+                                &bufferFrames, &RtAudioInterface::wrapperRtAudioCallback,
+                                this, &options)) {
+        errorText = mRtAudio->getErrorText();
+    }
+#endif
+
+    if (!errorText.empty()) {
+        std::cerr << errorText << '\n' << std::endl;
+        throw std::runtime_error(errorText);
+    }
+
+    setBufferSize(bufferFrames);
 }
 
 //*******************************************************************************
@@ -351,39 +350,80 @@ unsigned int RtAudioInterface::getNumOutputDevices() const
 }
 
 //*******************************************************************************
+void RtAudioInterface::getDeviceIds(RtAudio& rtaudio, std::vector<unsigned int>& ids)
+{
+#if RTAUDIO_VERSION_MAJOR < 6
+    for (unsigned int i = 0; i < rtaudio.getDeviceCount(); i++) {
+        ids.push_back(i);
+    }
+#else
+    ids = rtaudio.getDeviceIds();
+#endif
+}
+
+//*******************************************************************************
+long RtAudioInterface::getDefaultDevice(RtAudio& rtaudio, bool isInput)
+{
+#if RTAUDIO_VERSION_MAJOR < 6
+    if (rtaudio.getCurrentApi() == RtAudio::LINUX_PULSE) {
+        return getDefaultDeviceForLinuxPulseAudio(rtaudio, isInput);
+    }
+#endif
+
+    long defaultId =
+        isInput ? rtaudio.getDefaultInputDevice() : rtaudio.getDefaultOutputDevice();
+
+#if RTAUDIO_VERSION_MAJOR >= 6
+    // In RtAudio v6, 0 is an invalid device id and used to indicate that no devices are
+    // available
+    if (defaultId == 0)
+        defaultId = -1;
+#endif
+
+    return defaultId;
+}
+
+//*******************************************************************************
 // Use this for getting the default device with PulseAudio
 // At the time of writing this, the latest RtAudio release did not properly
 // select default devices with PulseAudio
 // Once this functinoality is provided upstream and in the distributions'
 // package managers, the following function can be removed and the default device
 // can be obtained by calls to getDefaultInputDevice() / getDefaultOutputDevice()
-unsigned int RtAudioInterface::getDefaultDeviceForLinuxPulseAudio(bool isInput)
+long RtAudioInterface::getDefaultDeviceForLinuxPulseAudio(RtAudio& rtaudio, bool isInput)
 {
-    RtAudio rtaudio;
-    for (unsigned int i = 0; i < rtaudio.getDeviceCount(); i++) {
-        auto info = rtaudio.getDeviceInfo(i);
-        if (info.probed == true) {
-            if (info.isDefaultInput && isInput) {
-                return i;
-            } else if (info.isDefaultOutput && !isInput) {
-                return i;
-            }
+    std::vector<unsigned int> ids;
+    getDeviceIds(rtaudio, ids);
+
+    // Iterate devices to find defaults
+    for (unsigned int deviceId : ids) {
+        auto info = rtaudio.getDeviceInfo(deviceId);
+#if RTAUDIO_VERSION_MAJOR < 6
+        // probed was removed from DeviceInfo in 6.0
+        if (info.probed == false)
+            continue;
+#endif
+        if (info.isDefaultInput && isInput) {
+            return deviceId;
+        } else if (info.isDefaultOutput && !isInput) {
+            return deviceId;
         }
     }
+
     // return the first device if default was not found
     // this is consistent with RtAudio API
     return 0;
 }
 
 //*******************************************************************************
-void RtAudioInterface::printDeviceInfo(std::string api, unsigned int deviceIndex)
+void RtAudioInterface::printDeviceInfo(std::string api, unsigned int deviceId)
 {
     RtAudio rtaudio(RtAudio::getCompiledApiByName(api));
-    RtAudio::DeviceInfo info              = rtaudio.getDeviceInfo(deviceIndex);
+    RtAudio::DeviceInfo info              = rtaudio.getDeviceInfo(deviceId);
     std::vector<unsigned int> sampleRates = info.sampleRates;
 
     cout << "Audio Device  [" << RtAudio::getApiDisplayName(rtaudio.getCurrentApi())
-         << " - " << deviceIndex << "] : " << info.name << endl;
+         << " - " << deviceId << "] : " << info.name << endl;
     cout << "  Output Channels : " << info.outputChannels << endl;
     cout << "  Input Channels  : " << info.inputChannels << endl;
     cout << "  Supported Sampling Rates: ";
@@ -397,9 +437,11 @@ void RtAudioInterface::printDeviceInfo(std::string api, unsigned int deviceIndex
     if (info.isDefaultInput) {
         cout << "  --Default Input Device--" << endl;
     }
+#if RTAUDIO_VERSION_MAJOR < 6
     if (info.probed) {
         cout << "  --Probed Successful--" << endl;
     }
+#endif
 }
 
 //*******************************************************************************
@@ -415,7 +457,7 @@ int RtAudioInterface::RtAudioCallback(void* outputBuffer, void* inputBuffer,
     inputBuffer_sample  = (sample_t*)inputBuffer;
     outputBuffer_sample = (sample_t*)outputBuffer;
 
-    int chansIn = getNumInputChannels();
+    int in_chans_num = getNumInputChannels();
     if (inputBuffer_sample != NULL && outputBuffer_sample != NULL) {
         // Get input and output buffers
         //-------------------------------------------------------------------
@@ -428,7 +470,7 @@ int RtAudioInterface::RtAudioCallback(void* outputBuffer, void* inputBuffer,
             // Output Ports are WRITABLE
             mOutBuffer[i] = outputBuffer_sample + (nFrames * i);
         }
-        if (chansIn == 2 && mInBuffer.size() == chansIn
+        if (in_chans_num == 2 && mInBuffer.size() == in_chans_num
             && mInputMixMode == AudioInterface::MIXTOMONO) {
             mStereoToMonoMixer->compute(nFrames, mInBuffer.data(), mInBuffer.data());
         }
@@ -449,67 +491,92 @@ int RtAudioInterface::wrapperRtAudioCallback(void* outputBuffer, void* inputBuff
 }
 
 //*******************************************************************************
-void RtAudioInterface::RtAudioErrorCallback(RtAudioError::Type type,
+void RtAudioInterface::RtAudioErrorCallback(RtAudioErrorType,
                                             const std::string& errorText)
 {
-    if ((type != RtAudioError::WARNING) && (type != RtAudioError::DEBUG_WARNING)) {
-        std::cout << errorText << '\n' << std::endl;
-        throw std::runtime_error(errorText);
-    } else if (type == RtAudioError::WARNING) {
-        std::cout << errorText << '\n' << std::endl;
-    } else if (type == RtAudioError::DEBUG_WARNING) {
-        std::cout << errorText << '\n' << std::endl;
-    }
+    std::cerr << errorText << '\n' << std::endl;
 }
 
 //*******************************************************************************
 int RtAudioInterface::startProcess()
 {
+    if (mRtAudio == NULL)
+        return 0;
+
+    std::string errorText;
+
+#if RTAUDIO_VERSION_MAJOR < 6
     try {
-        if (mRtAudio != NULL) {
-            mRtAudio->startStream();
-        }
+        mRtAudio->startStream();
     } catch (RtAudioError& e) {
-        std::cout << e.getMessage() << '\n' << std::endl;
+        errorText = e.getMessage();
+    }
+#else
+    if (RTAUDIO_NO_ERROR != mRtAudio->startStream()) {
+        errorText = mRtAudio->getErrorText();
+    }
+#endif
+
+    if (!errorText.empty()) {
+        std::cerr << errorText << '\n' << std::endl;
         return (-1);
     }
+
     return (0);
 }
 
 //*******************************************************************************
 int RtAudioInterface::stopProcess()
 {
+    if (mRtAudio == NULL)
+        return 0;
+
+    std::string errorText;
+
+#if RTAUDIO_VERSION_MAJOR < 6
     try {
-        if (mRtAudio != NULL) {
-            mRtAudio->closeStream();
-            AudioInterface::setDevicesWarningMsg(AudioInterface::DEVICE_WARN_NONE);
-            AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_NONE);
-        }
+        mRtAudio->abortStream();
+        mRtAudio->closeStream();
     } catch (RtAudioError& e) {
-        std::cout << e.getMessage() << '\n' << std::endl;
+        errorText = e.getMessage();
+    }
+#else
+    if (RTAUDIO_NO_ERROR != mRtAudio->abortStream()) {
+        errorText = mRtAudio->getErrorText();
+    } else {
+        mRtAudio->closeStream();
+    }
+#endif
+
+    if (!errorText.empty()) {
+        std::cerr << errorText << '\n' << std::endl;
         return (-1);
     }
+
+    AudioInterface::setDevicesWarningMsg(AudioInterface::DEVICE_WARN_NONE);
+    AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_NONE);
+
     return 0;
 }
 
 //*******************************************************************************
-void RtAudioInterface::getDeviceInfoFromName(std::string deviceName, int* index,
-                                             std::string* api, bool isInput) const
+void RtAudioInterface::getDeviceInfoFromName(std::string deviceName, long& deviceId,
+                                             std::string& api, bool isInput) const
 {
     const QVector<RtAudioDevice>& devices(getDevices());
     for (int n = 0; n < devices.size(); ++n) {
         if (deviceName == devices[n].name.toStdString()) {
             if ((isInput && devices[n].inputChannels > 0)
                 || (!isInput && devices[n].outputChannels > 0)) {
-                *index = devices[n].apiIndex;
-                *api   = RtAudio::getApiName(devices[n].api);
+                deviceId = devices[n].ID;
+                api      = RtAudio::getApiName(devices[n].api);
                 return;
             }
         }
     }
 
-    *index = -1;
-    *api   = "";
+    deviceId = -1;
+    api      = "";
     return;
 }
 
@@ -529,14 +596,20 @@ void RtAudioInterface::scanDevices(QVector<RtAudioDevice>& devices)
         }
 #endif
         RtAudio rtaudio(apis.at(i));
-        unsigned int numDevices = rtaudio.getDeviceCount();
-        for (unsigned int j = 0; j < numDevices; j++) {
-            RtAudio::DeviceInfo info = rtaudio.getDeviceInfo(j);
-            if (!info.probed || (info.inputChannels == 0 && info.outputChannels == 0))
+        std::vector<unsigned int> ids;
+        getDeviceIds(rtaudio, ids);
+        for (unsigned int deviceId : ids) {
+            RtAudio::DeviceInfo info = rtaudio.getDeviceInfo(deviceId);
+#if RTAUDIO_VERSION_MAJOR < 6
+            // probed was removed from DeviceInfo in 6.0
+            if (info.probed == false)
+                continue;
+#endif
+            if (info.inputChannels == 0 && info.outputChannels == 0)
                 continue;
             RtAudioDevice device;
+            device.ID             = deviceId;
             device.api            = rtaudio.getCurrentApi();
-            device.apiIndex       = j;
             device.name           = QString::fromStdString(info.name);
             device.inputChannels  = info.inputChannels;
             device.outputChannels = info.outputChannels;

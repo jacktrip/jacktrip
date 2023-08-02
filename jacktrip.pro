@@ -37,6 +37,7 @@ nogui {
     QT += svg
     QT += websockets
     QT += webview
+    QT += webenginequick
     vsftux {
       DEFINES += VS_FTUX
     }
