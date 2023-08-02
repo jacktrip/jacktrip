@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-Item {
+Rectangle {
     required property bool showMinified
 
     property int minifiedHeight: 36
@@ -11,11 +11,13 @@ Item {
     id: deviceControlsGroup
     width: parent.width
     height: showMinified ? minifiedHeight : fullHeight
+    color: backgroundColour
+
     property bool showDeviceControls: studioStatus === "Ready"
 
-    Rectangle {
+    MouseArea {
         anchors.fill: parent
-        color: backgroundColour
+        propagateComposedEvents: false
     }
 
     RowLayout {
