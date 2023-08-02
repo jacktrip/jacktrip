@@ -22,6 +22,7 @@ Item {
         id: layout
         anchors.fill: parent
         spacing: 2
+        visible: !feedbackDetectedModal.visible
 
         Item {
             Layout.fillHeight: true
@@ -124,5 +125,129 @@ Item {
         height: 1
         anchors.top: layout.top
         color: strokeColor
+    }
+
+    Popup {
+        id: feedbackDetectedModal
+        padding: 1
+        width: parent.width
+        height: parent.height
+        anchors.centerIn: parent
+        dim: false
+        modal: false
+        focus: true
+        closePolicy: Popup.NoAutoClose
+
+        background: Rectangle {
+            anchors.fill: parent
+            color: "transparent"
+            border.width: 1
+            border.color: buttonStroke
+            clip: true
+        }
+
+        contentItem: Rectangle {
+            width: parent.width
+            height: 232 * virtualstudio.uiScale
+            color: backgroundColour
+
+            Item {
+                id: feedbackDetectedContent
+                anchors.top: parent.top
+                anchors.topMargin: 6 * virtualstudio.uiScale
+                anchors.bottom: parent.bottom
+                anchors.left: parent.left
+                anchors.leftMargin: 16 * virtualstudio.uiScale
+                anchors.right: parent.right
+
+                AppIcon {
+                    id: feedbackWarningIcon
+                    anchors.left: parent.left
+                    anchors.top: parent.top
+                    anchors.topMargin: 4 * virtualstudio.uiScale
+                    width: 32 * virtualstudio.uiScale
+                    height: 32 * virtualstudio.uiScale
+                    icon.source: "warning.svg"
+                    color: "#F21B1B"
+                }
+
+                Text {
+                    id: feedbackDetectedHeader
+                    anchors.top: parent.top
+                    anchors.topMargin: 4 * virtualstudio.uiScale
+                    anchors.left: feedbackWarningIcon.right
+                    anchors.leftMargin: 16 * virtualstudio.uiScale
+                    width: parent.width
+                    text: "Audio feedback detected!"
+                    font {family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale; bold: true }
+                    color: textColour
+                    elide: Text.ElideRight
+                    wrapMode: Text.WordWrap
+                }
+
+                Text {
+                    id: feedbackDetectedText
+                    anchors.top: feedbackDetectedHeader.bottom
+                    anchors.topMargin: 4 * virtualstudio.uiScale
+                    anchors.left: feedbackWarningIcon.right
+                    anchors.leftMargin: 16 * virtualstudio.uiScale
+                    width: parent.width
+                    text: "JackTrip detected a feedback loop. Your monitor and input volume have automatically been disabled."
+                    font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
+                    color: textColour
+                    elide: Text.ElideRight
+                    wrapMode: Text.WordWrap
+                }
+
+                Text {
+                    id: feedbackDetectedText2
+                    anchors.top: feedbackDetectedText.bottom
+                    anchors.topMargin: 2 * virtualstudio.uiScale
+                    anchors.left: feedbackWarningIcon.right
+                    anchors.leftMargin: 16 * virtualstudio.uiScale
+                    width: parent.width
+                    text: "You can disable this behavior under <b>Settings</b> > <b>Advanced</b>"
+                    textFormat: Text.RichText
+                    font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
+                    color: textColour
+                    elide: Text.ElideRight
+                    wrapMode: Text.WordWrap
+                }
+
+                Button {
+                    id: closeFeedbackDetectedModalButton
+                    anchors.right: parent.right
+                    anchors.rightMargin: rightMargin * virtualstudio.uiScale
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: 128 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+                    onClicked: feedbackDetectedModal.close()
+
+                    background: Rectangle {
+                        radius: 6 * virtualstudio.uiScale
+                        color: closeFeedbackDetectedModalButton.down ? browserButtonPressedColour : (closeFeedbackDetectedModalButton.hovered ? browserButtonHoverColour : browserButtonColour)
+                        border.width: 1
+                        border.color: closeFeedbackDetectedModalButton.down ? browserButtonPressedStroke : (closeFeedbackDetectedModalButton.hovered ? browserButtonHoverStroke : browserButtonStroke)
+                    }
+
+                    Text {
+                        text: "Ok"
+                        font.family: "Poppins"
+                        font.pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale
+                        font.weight: Font.Bold
+                        color: !Boolean(virtualstudio.devicesError) && virtualstudio.backendAvailable ? saveButtonText : disabledButtonText
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                }
+            }
+        }
+    }
+
+    Connections {
+        target: virtualstudio
+
+        function onFeedbackDetected() {
+            feedbackDetectedModal.visible = true;
+        }
     }
 }
