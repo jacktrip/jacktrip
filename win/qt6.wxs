@@ -25,7 +25,7 @@
     <Fragment>
         <ComponentGroup Id="jacktrip">
             <Component Id="cmpBD33227FC5AD6BA1A293384B57B5C3E1" Directory="INSTALLDIR" Guid="{887636EF-438E-4FE7-867F-50D3594FF8A9}">
-                <File Id="filF7FA605CFD2E8074C565F825A465F67E" KeyPath="yes" Source="SourceDir\d3dcompiler_47.dll" />
+                <File Id="filF7FA605CFD2E8074C565F825A465F67E" KeyPath="yes" Source="SourceDir\D3Dcompiler_47.dll" />
             </Component>
             <Component Id="cmpAD46F02BC5359E4227248E749EB0E74F" Directory="INSTALLDIR" Guid="{B912A765-5293-4F00-822B-0B355CF6C665}">
                 <File Id="fil572E83C11D35ADB0E4CB1A0A0AF474C6" KeyPath="yes" Source="SourceDir\dialog.bmp" />
@@ -133,9 +133,6 @@
             </Component>
             <Component Id="cmp648D7B3CDDA6427D7237CE400D68C36A" Directory="INSTALLDIR" Guid="{D6E813F8-FD27-48E7-BB04-6A065B38DC96}">
                 <File Id="fil71DF3511D06EBF7BFB8342792898BEE4" KeyPath="yes" Source="SourceDir\QtWebEngineProcess.exe" />
-            </Component>
-            <Component Id="cmp0F098360B2868F2CCF00370D38445346" Directory="INSTALLDIR" Guid="{A3052B13-71A2-49C4-8D6F-B2CA2E20C290}">
-                <File Id="fil9170A5A82C71086C5043F9F42FFED3D4" KeyPath="yes" Source="SourceDir\vc_redist.x64.exe" />
             </Component>
             <Component Id="cmpE3D572FB13B4249EA0FB18BD0F44DE18" Directory="dirB10C059F651528B59E1FD268EB08C6D6" Guid="{B7820FB2-5FBA-4761-B35B-113EB413AB63}">
                 <File Id="fil7320C9B04E87091E801ED591E25C7F1E" KeyPath="yes" Source="SourceDir\iconengines\qsvgicon.dll" />
@@ -1613,20 +1610,11 @@
             <Component Id="cmpC2267073DB55586843E13B823F6E0E8B" Directory="dir08941CEA6046320FCCF158F759AF80F2" Guid="{B7CB4FC1-BF14-47CF-AD7C-04B581B028F8}">
                 <File Id="filFDCD09910FB501B1A747E0A04B8D3E31" KeyPath="yes" Source="SourceDir\resources\qtwebengine_resources_200p.pak" />
             </Component>
-            <Component Id="cmp48ADD1B8E5492EE4CAF352021174B247" Directory="dirD0D2BD28387A827DDF373DED43543ABA" Guid="{5534C9D4-BABF-492A-8176-7662EC4A7DF0}">
-                <File Id="filDE0A213E8CE9DC57CA82C7CBF94A73CA" KeyPath="yes" Source="SourceDir\sqldrivers\qsqlite.dll" />
-            </Component>
-            <Component Id="cmpFA34FD86FCB201001C1C95C2210B09BB" Directory="dirD0D2BD28387A827DDF373DED43543ABA" Guid="{B26578CE-77A1-4969-93D5-FFE656328E7B}">
-                <File Id="filABD7D7F4392312E7C2C8CDC617BC2016" KeyPath="yes" Source="SourceDir\sqldrivers\qsqlodbc.dll" />
-            </Component>
             <Component Id="cmp5DAC8E92F0D1CE1028B76D02F12152DE" Directory="dir3BC41331752E78D0C2719C277915294F" Guid="{3773817D-66C1-48E3-A370-333237394858}">
                 <File Id="fil4F3C3348649DA965E980E99B9E82B7FF" KeyPath="yes" Source="SourceDir\styles\qwindowsvistastyle.dll" />
             </Component>
             <Component Id="cmpD57693E12A6CF9AFDC034864F2950D6F" Directory="dir509C75F94B9AF6C35CA00410005C14EE" Guid="{F49F8C94-0B60-4F26-B9B0-345928B1C3BA}">
                 <File Id="filA3197B081536A45213DBC7CD12A615C4" KeyPath="yes" Source="SourceDir\tls\qcertonlybackend.dll" />
-            </Component>
-            <Component Id="cmp9C209D73CCE7C991B5E61224B0409492" Directory="dir509C75F94B9AF6C35CA00410005C14EE" Guid="{72BE928E-4B8B-40FC-B600-1DF101236E29}">
-                <File Id="fil233A054C285E9A68C9C4861D7C35B080" KeyPath="yes" Source="SourceDir\tls\qopensslbackend.dll" />
             </Component>
             <Component Id="cmpC8A93EB5F0E2881753F8DCDA1B02129B" Directory="dir509C75F94B9AF6C35CA00410005C14EE" Guid="{89FB7332-0A1E-4DB8-937E-E293E2F90075}">
                 <File Id="fil63F4FB8EB696B5BA01AD976846F45663" KeyPath="yes" Source="SourceDir\tls\qschannelbackend.dll" />
