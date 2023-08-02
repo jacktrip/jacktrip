@@ -39,7 +39,6 @@ endif
 src = [	'src/DataProtocol.cpp',
 	'src/JackTrip.cpp',
 	'src/ProcessPlugin.cpp',
-	'src/Analyzer.cpp',
 	'src/AudioTester.cpp',
 	'src/jacktrip_globals.cpp',
 	'src/JackTripWorker.cpp',
@@ -67,7 +66,6 @@ src = [	'src/DataProtocol.cpp',
 moc_h = ['src/DataProtocol.h',
 	'src/JackTrip.h',
 	'src/ProcessPlugin.h',
-	'src/Analyzer.h',
 	'src/Meter.h',
 	'src/Monitor.h',
 	'src/StereoToMono.h',
@@ -214,6 +212,13 @@ else
 			'src/dblsqd/update_dialog.h'
 		]
 		ui_h += ['src/dblsqd/update_dialog.ui']
+	endif
+
+	if get_option('nofeedback') == true
+		defines += '-DNO_FEEDBACK'
+	else
+		src += [ 'src/Analyzer.cpp' ]
+		moc_h += [ 'src/Analyzer.h' ]
 	endif
 endif
 

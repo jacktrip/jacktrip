@@ -1705,6 +1705,7 @@ void VirtualStudio::completeConnection()
         connect(this, &VirtualStudio::updatedMonitorVolume, m_monitor,
                 &Monitor::volumeUpdated);
 
+#ifndef NO_FEEDBACK
         // Setup output analyzer
         if (m_feedbackDetectionEnabled) {
             m_outputAnalyzerPlugin = new Analyzer(jackTrip->getNumOutputChannels());
@@ -1713,6 +1714,7 @@ void VirtualStudio::completeConnection()
             connect(m_outputAnalyzerPlugin, &Analyzer::signalFeedbackDetected, this,
                     &VirtualStudio::detectedFeedbackLoop);
         }
+#endif
 
         // Setup output meter
         // Note: Add this to monitor process to include self-volume
