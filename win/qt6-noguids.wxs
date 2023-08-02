@@ -24,8 +24,8 @@
     </Fragment>
     <Fragment>
         <ComponentGroup Id="jacktrip">
-            <Component Id="cmpBD33227FC5AD6BA1A293384B57B5C3E1" Directory="TARGETDIR" Guid="PUT-GUID-HERE">
-                <File Id="filF7FA605CFD2E8074C565F825A465F67E" KeyPath="yes" Source="SourceDir\d3dcompiler_47.dll" />
+            <Component Id="cmp5D831CD15043495A344038AE6FBC4FAF" Directory="TARGETDIR" Guid="PUT-GUID-HERE">
+                <File Id="fil7FD1FE597BD52B987AB17EB8CF74B0D5" KeyPath="yes" Source="SourceDir\D3Dcompiler_47.dll" />
             </Component>
             <Component Id="cmpAD46F02BC5359E4227248E749EB0E74F" Directory="TARGETDIR" Guid="PUT-GUID-HERE">
                 <File Id="fil572E83C11D35ADB0E4CB1A0A0AF474C6" KeyPath="yes" Source="SourceDir\dialog.bmp" />
@@ -33,14 +33,8 @@
             <Component Id="cmp61BABE677B13AE7A25F57865DD2CB150" Directory="TARGETDIR" Guid="PUT-GUID-HERE">
                 <File Id="filD0B8E5384B7EB5609D1B2A67A98FF334" KeyPath="yes" Source="SourceDir\jacktrip.exe" />
             </Component>
-            <Component Id="cmp5C97B37BB3181F77EDC11261A4463285" Directory="TARGETDIR" Guid="PUT-GUID-HERE">
-                <File Id="fil46101D0C43E1BEF1BE4C5475DA0B2837" KeyPath="yes" Source="SourceDir\JackTrip.msi" />
-            </Component>
             <Component Id="cmpCD23A5CC7196B582D23DF7AC7DFE061F" Directory="TARGETDIR" Guid="PUT-GUID-HERE">
                 <File Id="fil00C2A327ECCB1D33F7BBF313ADEEFD43" KeyPath="yes" Source="SourceDir\jacktrip.wixobj" />
-            </Component>
-            <Component Id="cmpEF56078548B21E7891727FDE729B864B" Directory="TARGETDIR" Guid="PUT-GUID-HERE">
-                <File Id="fil01A07DE9CBC162E11AA3C8EFB4A4D4B9" KeyPath="yes" Source="SourceDir\JackTrip.wixpdb" />
             </Component>
             <Component Id="cmp63BFF65F319CB52D38DBB3FE6B8DE6F6" Directory="TARGETDIR" Guid="PUT-GUID-HERE">
                 <File Id="fil886DC1D217D62357ED536BCFF93E7C0F" KeyPath="yes" Source="SourceDir\jacktrip.wxs" />
@@ -149,9 +143,6 @@
             </Component>
             <Component Id="cmp648D7B3CDDA6427D7237CE400D68C36A" Directory="TARGETDIR" Guid="PUT-GUID-HERE">
                 <File Id="fil71DF3511D06EBF7BFB8342792898BEE4" KeyPath="yes" Source="SourceDir\QtWebEngineProcess.exe" />
-            </Component>
-            <Component Id="cmp0F098360B2868F2CCF00370D38445346" Directory="TARGETDIR" Guid="PUT-GUID-HERE">
-                <File Id="fil9170A5A82C71086C5043F9F42FFED3D4" KeyPath="yes" Source="SourceDir\vc_redist.x64.exe" />
             </Component>
             <Component Id="cmpE3D572FB13B4249EA0FB18BD0F44DE18" Directory="dirB10C059F651528B59E1FD268EB08C6D6" Guid="PUT-GUID-HERE">
                 <File Id="fil7320C9B04E87091E801ED591E25C7F1E" KeyPath="yes" Source="SourceDir\iconengines\qsvgicon.dll" />
@@ -1632,6 +1623,9 @@
             <Component Id="cmp48ADD1B8E5492EE4CAF352021174B247" Directory="dirD0D2BD28387A827DDF373DED43543ABA" Guid="PUT-GUID-HERE">
                 <File Id="filDE0A213E8CE9DC57CA82C7CBF94A73CA" KeyPath="yes" Source="SourceDir\sqldrivers\qsqlite.dll" />
             </Component>
+            <Component Id="cmpF7561543EA617CDB8DB9446A484C743E" Directory="dirD0D2BD28387A827DDF373DED43543ABA" Guid="PUT-GUID-HERE">
+                <File Id="filA1594F9BAF7751AC04C6C8465D7FF4EA" KeyPath="yes" Source="SourceDir\sqldrivers\qsqlmysql.dll" />
+            </Component>
             <Component Id="cmpFA34FD86FCB201001C1C95C2210B09BB" Directory="dirD0D2BD28387A827DDF373DED43543ABA" Guid="PUT-GUID-HERE">
                 <File Id="filABD7D7F4392312E7C2C8CDC617BC2016" KeyPath="yes" Source="SourceDir\sqldrivers\qsqlodbc.dll" />
             </Component>
@@ -1640,9 +1634,6 @@
             </Component>
             <Component Id="cmpD57693E12A6CF9AFDC034864F2950D6F" Directory="dir509C75F94B9AF6C35CA00410005C14EE" Guid="PUT-GUID-HERE">
                 <File Id="filA3197B081536A45213DBC7CD12A615C4" KeyPath="yes" Source="SourceDir\tls\qcertonlybackend.dll" />
-            </Component>
-            <Component Id="cmp9C209D73CCE7C991B5E61224B0409492" Directory="dir509C75F94B9AF6C35CA00410005C14EE" Guid="PUT-GUID-HERE">
-                <File Id="fil233A054C285E9A68C9C4861D7C35B080" KeyPath="yes" Source="SourceDir\tls\qopensslbackend.dll" />
             </Component>
             <Component Id="cmpC8A93EB5F0E2881753F8DCDA1B02129B" Directory="dir509C75F94B9AF6C35CA00410005C14EE" Guid="PUT-GUID-HERE">
                 <File Id="fil63F4FB8EB696B5BA01AD976846F45663" KeyPath="yes" Source="SourceDir\tls\qschannelbackend.dll" />
