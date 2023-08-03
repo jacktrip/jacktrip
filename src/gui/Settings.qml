@@ -355,7 +355,7 @@ Item {
             id: scaleSlider
             x: 234 * virtualstudio.uiScale; y: 100 * virtualstudio.uiScale
             width: backendCombo.width
-            from: 1; to: 2; value: virtualstudio.uiScale
+            from: 1; to: 1.25; value: virtualstudio.uiScale
             onMoved: { virtualstudio.uiScale = value }
 
             background: Rectangle {
