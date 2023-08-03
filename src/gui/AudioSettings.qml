@@ -148,7 +148,6 @@ Rectangle {
                                     }
                                 }
                                 virtualstudio.restartAudio()
-                                virtualstudio.validateDevicesState()
                             }
                         }
                     }
@@ -338,7 +337,6 @@ Rectangle {
                                     }
                                 }
                                 virtualstudio.restartAudio()
-                                virtualstudio.validateDevicesState()
                             }
                         }
                     }
