@@ -99,20 +99,41 @@ Item {
                     }
                 }
 
-                Button {
-                    Layout.preferredHeight: 32
-                    Layout.preferredWidth: 32
+                Item {
+                    Layout.preferredHeight: 48
+                    Layout.preferredWidth: 40
                     Layout.alignment: Qt.AlignHCenter
-                    id: settingsButton
                     visible: !showMinified
-                    background: Rectangle {
-                        radius: 8 * virtualstudio.uiScale
-                        color: settingsButton.down ? browserButtonPressedColour : (settingsButton.hovered ? browserButtonHoverColour : browserButtonColour)
+
+                    Button {
+                        id: changeDevicesButton
+                        width: 36
+                        height: 36
+                        anchors.top: parent.top
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        background: Rectangle {
+                            radius: 8 * virtualstudio.uiScale
+                            color: changeDevicesButton.down ? browserButtonPressedColour : (changeDevicesButton.hovered ? browserButtonHoverColour : browserButtonColour)
+                        }
+                        onClicked: virtualstudio.windowState = "change_devices"
+
+                        AppIcon {
+                            id: changeDevicesIcon
+                            anchors { verticalCenter: parent.verticalCenter; horizontalCenter: parent.horizontalCenter }
+                            width: 20 * virtualstudio.uiScale
+                            height: 20 * virtualstudio.uiScale
+                            icon.source: "cog.svg"
+                            onClicked: virtualstudio.windowState = "change_devices"
+                        }
                     }
-                    icon.name: "edit-cut"
-                    icon.source: "cog.svg"
-                    icon.color: textColour
-                    onClicked: virtualstudio.windowState = "change_devices"
+
+                    Text {
+                        anchors.top: changeDevicesButton.bottom
+                        text: "Devices"
+                        font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale}
+                        anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
+                        color: textColour
+                    }
                 }
             }
         }
