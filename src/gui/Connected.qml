@@ -108,12 +108,4 @@ Item {
         id: footer
         anchors.bottom: parent.bottom
     }
-
-    Connections {
-        target: virtualstudio
-
-        function onFeedbackDetected() {
-            feedbackDetectedModal.visible = true;
-        }
-    }
 }
