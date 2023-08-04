@@ -26,6 +26,7 @@
     <file>VolumeSlider.qml</file>
     <file>DeviceControls.qml</file>
     <file>DeviceControlsGroup.qml</file>
+    <file>DeviceWarning.qml</file>
     <file>InfoTooltip.qml</file>
     <file>Web.qml</file>
     <file>WebView.qml</file>

@@ -29,9 +29,6 @@ Item {
     property string checkboxPressedStroke: "#007AFF"
     property string disabledButtonText: virtualstudio.darkMode ? "#827D7D" : "#BABCBC"
 
-    property bool currShowWarnings: virtualstudio.showWarnings
-    property string warningScreen: virtualstudio.showWarnings ? "ethernet" : ( permissions.micPermission == "unknown" ? "microphone" : "acknowledged")
-
     Item {
         id: setupItem
         width: parent.width; height: parent.height
@@ -106,38 +103,11 @@ Item {
             }
         }
 
-        AppIcon {
-            id: devicesWarningIcon
+        DeviceWarning {
+            id: deviceWarning
             anchors.left: backButton.right
             anchors.leftMargin: 16 * virtualstudio.uiScale
             anchors.verticalCenter: backButton.verticalCenter
-            width: 28 * virtualstudio.uiScale
-            height: 28 * virtualstudio.uiScale
-            icon.source: "warning.svg"
-            color: "#F21B1B"
-            visible: Boolean(virtualstudio.devicesError) || Boolean(virtualstudio.devicesWarning)
-        }
-
-        Text {
-            id: warningOrErrorText
-            text: Boolean(virtualstudio.devicesError) ? "Audio Configuration Error" : "Audio Configuration Warning"
-            anchors.left: devicesWarningIcon.right
-            anchors.leftMargin: 4 * virtualstudio.uiScale
-            anchors.verticalCenter: devicesWarningIcon.verticalCenter
-            visible: Boolean(virtualstudio.devicesError) || Boolean(virtualstudio.devicesWarning)
-            font { family: "Poppins"; pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale }
-            color: "#F21B1B"
-        }
-
-        InfoTooltip {
-            id: devicesWarningTooltip
-            anchors.left: warningOrErrorText.right
-            anchors.leftMargin: 2 * virtualstudio.uiScale
-            anchors.bottom: warningOrErrorText.bottom
-            anchors.bottomMargin: 6 * virtualstudio.uiScale
-            content: qsTr(virtualstudio.devicesError || virtualstudio.devicesWarning)
-            iconColor: "#F21B1B"
-            size: 16 * virtualstudio.uiScale
             visible: Boolean(virtualstudio.devicesError) || Boolean(virtualstudio.devicesWarning)
         }
 

@@ -26,7 +26,6 @@ Rectangle {
     property string buttonStroke: virtualstudio.darkMode ? "#80827D7D" : "#40979797"
     property string buttonHoverStroke: virtualstudio.darkMode ? "#7B7777" : "#BABCBC"
     property string buttonPressedStroke: virtualstudio.darkMode ? "#827D7D" : "#BABCBC"
-    property string warningTextColour: "#DB0A0A"
     property string linkText: virtualstudio.darkMode ? "#8B8D8D" : "#272525"
     property string toolTipBackgroundColour: virtualstudio.darkMode ? "#323232" : "#F3F3F3"
     property string toolTipTextColour: textColour
@@ -36,7 +35,7 @@ Rectangle {
 
     property bool isUsingJack: virtualstudio.audioBackend == "JACK"
     property bool isUsingRtAudio: virtualstudio.audioBackend == "RtAudio"
-    property bool hasNoBackend: !isUsingJack && !isUsingRtAudio && !virtualstudio.backendAvailable;
+    property bool hasNoBackend: !isUsingJack && !isUsingRtAudio && !virtualstudio.backendAvailable
 
     function getCurrentInputDeviceIndex () {
         if (virtualstudio.inputDevice === "") {
@@ -64,7 +63,7 @@ Rectangle {
 
     Loader {
         anchors.fill: parent
-        sourceComponent: Boolean(audioInterface) ? (isUsingRtAudio ? usingRtAudio : (isUsingJack ? usingJACK : noBackend)) : noBackend
+        sourceComponent: hasNoBackend ? nobackend : (Boolean(audioInterface) && Boolean(virtualstudio) && virtualstudio.audioReady) ? (isUsingRtAudio ? usingRtAudio : (isUsingJack ? usingJACK : scanningAudio)) : scanningAudio
     }
 
     Component {
@@ -702,6 +701,29 @@ Rectangle {
                 x: 0; y: 0
                 width: parent.width - (16 * virtualstudio.uiScale)
                 text: "JackTrip has been compiled without an audio backend. Please rebuild with the rtaudio flag or without the nojack flag."
+                font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+                wrapMode: Text.WordWrap
+                color: textColour
+            }
+        }
+    }
+
+    Component {
+        id: scanningAudio
+
+        Item {
+            anchors.top: parent.top
+            anchors.topMargin: 24 * virtualstudio.uiScale
+            anchors.bottom: parent.bottom
+            anchors.left: parent.left
+            anchors.leftMargin: leftMargin * virtualstudio.uiScale
+            anchors.right: parent.right
+
+            Text {
+                id: scanningAudioLabel
+                x: 0; y: 0
+                width: parent.width - (16 * virtualstudio.uiScale)
+                text: "Scanning audio devices..."
                 font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
                 wrapMode: Text.WordWrap
                 color: textColour
