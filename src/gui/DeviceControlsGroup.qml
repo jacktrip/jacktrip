@@ -305,7 +305,9 @@ Item {
         target: virtualstudio
 
         function onFeedbackDetected() {
-            feedbackDetectedModal.visible = true;
+            if (virtualstudio.windowState === "connected") {
+                feedbackDetectedModal.visible = true;
+            }
         }
     }
 }
