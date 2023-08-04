@@ -47,7 +47,10 @@
 #include <QTimer>
 #include <QVector>
 
+#ifndef NO_FEEDBACK
 #include "../Analyzer.h"
+#endif
+
 #include "../JackTrip.h"
 #include "../Meter.h"
 #include "../Monitor.h"
@@ -491,8 +494,11 @@ class VirtualStudio : public QObject
     bool m_outputClipped  = false;
     bool m_networkOutage  = false;
 
+#ifndef NO_FEEDBACK
     Analyzer* m_inputAnalyzerPlugin;
     Analyzer* m_outputAnalyzerPlugin;
+#endif
+
     QVector<float> m_inputMeterLevels;
     QVector<float> m_outputMeterLevels;
     QJsonArray m_inputComboModel;
