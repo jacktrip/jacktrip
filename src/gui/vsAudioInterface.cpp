@@ -424,6 +424,8 @@ void VsAudioInterface::setNumOutputChannels(int numChannels, bool shouldRestart)
 
 void VsAudioInterface::refreshRtAudioDevices()
 {
+    // note: audio must not be active when scanning devices
+    closeAudio();
     RtAudioInterface::scanDevices(m_devices);
 }
 
