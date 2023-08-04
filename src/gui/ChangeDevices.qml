@@ -25,7 +25,6 @@ Rectangle {
     property string shadowColour: virtualstudio.darkMode ? "#40000000" : "#80A1A1A1"
     property string toolTipBackgroundColour: virtualstudio.darkMode ? "#323232" : "#F3F3F3"
     property string toolTipTextColour: textColour
-    property string warningTextColour: "#DB0A0A"
 
     property string browserButtonColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
     property string browserButtonHoverColour: virtualstudio.darkMode ? "#5B5858" : "#D3D4D4"
@@ -453,28 +452,12 @@ Rectangle {
                 color: textColour
             }
 
-            Text {
-                id: warningOrErrorMessage
-                anchors.left: inputLabel.left
-                anchors.right: parent.right
-                anchors.rightMargin: 16 * virtualstudio.uiScale
+            DeviceWarning {
+                id: deviceWarning
+                anchors.left: inputCombo.left
                 anchors.top: inputMixModeHelpMessage.bottom
-                anchors.topMargin: 8 * virtualstudio.uiScale
-                anchors.bottomMargin: 8 * virtualstudio.uiScale
-                textFormat: Text.RichText
-                text: (virtualstudio.devicesError || virtualstudio.devicesWarning)
-                    + ((virtualstudio.devicesErrorHelpUrl || virtualstudio.devicesWarningHelpUrl)
-                        ? `&nbsp;<a style="color: ${linkText};" href=${virtualstudio.devicesErrorHelpUrl || virtualstudio.devicesWarningHelpUrl}>Learn More.</a>`
-                        : ""
-                    )
-                onLinkActivated: link => {
-                    virtualstudio.openLink(link)
-                }
-                horizontalAlignment: Text.AlignHLeft
-                wrapMode: Text.WordWrap
-                color: warningTextColour
-                font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
-                visible: Boolean(virtualstudio.devicesError) || Boolean(virtualstudio.devicesWarning);
+                anchors.topMargin: 48 * virtualstudio.uiScale
+                visible: Boolean(virtualstudio.devicesError) || Boolean(virtualstudio.devicesWarning)
             }
         }
     }
