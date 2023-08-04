@@ -154,7 +154,6 @@ Item {
             Item {
                 id: feedbackDetectedContent
                 anchors.top: parent.top
-                anchors.topMargin: 6 * virtualstudio.uiScale
                 anchors.bottom: parent.bottom
                 anchors.left: parent.left
                 anchors.leftMargin: 16 * virtualstudio.uiScale
@@ -164,17 +163,29 @@ Item {
                     id: feedbackWarningIcon
                     anchors.left: parent.left
                     anchors.top: parent.top
-                    anchors.topMargin: 4 * virtualstudio.uiScale
+                    anchors.topMargin: 10 * virtualstudio.uiScale
                     width: 32 * virtualstudio.uiScale
                     height: 32 * virtualstudio.uiScale
                     icon.source: "warning.svg"
                     color: "#F21B1B"
+                    visible: !showMinified
+                }
+
+                AppIcon {
+                    id: feedbackWarningIconMinified
+                    anchors.left: parent.left
+                    anchors.verticalCenter: parent.verticalCenter
+                    height: 24 * virtualstudio.uiScale
+                    width: 24 * virtualstudio.uiScale
+                    icon.source: "warning.svg"
+                    color: "#F21B1B"
+                    visible: showMinified
                 }
 
                 Text {
                     id: feedbackDetectedHeader
                     anchors.top: parent.top
-                    anchors.topMargin: 4 * virtualstudio.uiScale
+                    anchors.topMargin: 10 * virtualstudio.uiScale
                     anchors.left: feedbackWarningIcon.right
                     anchors.leftMargin: 16 * virtualstudio.uiScale
                     width: parent.width
@@ -183,6 +194,7 @@ Item {
                     color: textColour
                     elide: Text.ElideRight
                     wrapMode: Text.WordWrap
+                    visible: !showMinified
                 }
 
                 Text {
@@ -197,6 +209,21 @@ Item {
                     color: textColour
                     elide: Text.ElideRight
                     wrapMode: Text.WordWrap
+                    visible: !showMinified
+                }
+
+                Text {
+                    id: feedbackDetectedTextMinified
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.left: feedbackWarningIcon.right
+                    anchors.leftMargin: 16 * virtualstudio.uiScale
+                    width: parent.width
+                    text: "JackTrip detected a feedback loop. Your monitor and input volume have automatically been disabled."
+                    font {family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
+                    color: textColour
+                    elide: Text.ElideRight
+                    wrapMode: Text.WordWrap
+                    visible: showMinified
                 }
 
                 Text {
@@ -212,6 +239,7 @@ Item {
                     color: textColour
                     elide: Text.ElideRight
                     wrapMode: Text.WordWrap
+                    visible: !showMinified
                 }
 
                 Button {
@@ -219,7 +247,8 @@ Item {
                     anchors.right: parent.right
                     anchors.rightMargin: rightMargin * virtualstudio.uiScale
                     anchors.verticalCenter: parent.verticalCenter
-                    width: 128 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+                    width: 128 * virtualstudio.uiScale;
+                    height: 30 * virtualstudio.uiScale
                     onClicked: feedbackDetectedModal.close()
 
                     background: Rectangle {
@@ -232,12 +261,41 @@ Item {
                     Text {
                         text: "Ok"
                         font.family: "Poppins"
-                        font.pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale
+                        font.pixelSize: showMinified ? fontTiny * virtualstudio.fontScale * virtualstudio.uiScale : fontSmall * virtualstudio.fontScale * virtualstudio.uiScale
                         font.weight: Font.Bold
                         color: !Boolean(virtualstudio.devicesError) && virtualstudio.backendAvailable ? saveButtonText : disabledButtonText
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.verticalCenter: parent.verticalCenter
                     }
+                    visible: !showMinified
+                }
+
+                Button {
+                    id: closeFeedbackDetectedModalButtonMinified
+                    anchors.right: parent.right
+                    anchors.rightMargin: rightMargin * virtualstudio.uiScale
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: 80 * virtualstudio.uiScale
+                    height: 24 * virtualstudio.uiScale
+                    onClicked: feedbackDetectedModal.close()
+
+                    background: Rectangle {
+                        radius: 6 * virtualstudio.uiScale
+                        color: closeFeedbackDetectedModalButton.down ? browserButtonPressedColour : (closeFeedbackDetectedModalButton.hovered ? browserButtonHoverColour : browserButtonColour)
+                        border.width: 1
+                        border.color: closeFeedbackDetectedModalButton.down ? browserButtonPressedStroke : (closeFeedbackDetectedModalButton.hovered ? browserButtonHoverStroke : browserButtonStroke)
+                    }
+
+                    Text {
+                        text: "Ok"
+                        font.family: "Poppins"
+                        font.pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale
+                        font.weight: Font.Bold
+                        color: !Boolean(virtualstudio.devicesError) && virtualstudio.backendAvailable ? saveButtonText : disabledButtonText
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                    visible: showMinified
                 }
             }
         }
