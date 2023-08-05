@@ -195,7 +195,7 @@ bool VsDeviceCodeFlow::processDeviceCodeNetworkReply(QNetworkReply* reply)
     m_verificationUriComplete =
         object.value(QLatin1String("verification_uri_complete")).toString();
     m_pollingInterval =
-        object.value(QLatin1String("interval")).toInt(5);  // default to 5s
+        object.value(QLatin1String("interval")).toInt(2);  // default to 2s
     m_deviceCodeValidityDuration =
         object.value(QLatin1String("expires_in")).toInt(900);  // default to 900s
 

@@ -305,11 +305,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
         QStringLiteral("backendComboModel"),
         QVariant::fromValue(QStringList()
                             << QStringLiteral("JACK") << QStringLiteral("RtAudio")));
-#ifdef VS_FTUX
-    m_view.setSource(QUrl(QStringLiteral("qrc:/vs/vsftux.qml")));
-#else
     m_view.setSource(QUrl(QStringLiteral("qrc:/vs/vs.qml")));
-#endif  // VS_FTUX
     m_view.setMinimumSize(QSize(800, 640));
     // m_view.setMaximumSize(QSize(696, 577));
     m_view.setResizeMode(QQuickView::SizeRootObjectToView);
@@ -364,10 +360,16 @@ void VirtualStudio::show()
         }
         m_checkSsl = false;
     }
-    if (m_windowState == "login") {
+    m_view.show();
+    if (m_windowState == "loading") {
+        if (vsFtux() || hasRefreshToken()) {
+            setWindowState(QStringLiteral("login"));
+        } else {
+            setWindowState(QStringLiteral("start"));
+        }
+    } else if (m_windowState == "login") {
         login();
     }
-    m_view.show();
 }
 
 void VirtualStudio::raiseToTop()

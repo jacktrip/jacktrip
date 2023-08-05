@@ -520,7 +520,7 @@ class VirtualStudio : public QObject
     QString m_devicesErrorMsg       = QStringLiteral("");
     QString m_devicesWarningHelpUrl = QStringLiteral("");
     QString m_devicesErrorHelpUrl   = QStringLiteral("");
-    QString m_windowState           = QStringLiteral("login");
+    QString m_windowState           = QStringLiteral("loading");
     QString m_connectedErrorMsg     = QStringLiteral("");
 
     float m_meterMax = 0.0;

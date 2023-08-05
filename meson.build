@@ -184,16 +184,16 @@ else
 			moc_h += ['src/gui/vsMacPermissions.h']
 		endif
 
+		if get_option('vsftux') == true
+			defines += '-DVS_FTUX'
+		endif
+
 		if qt_version == '5'
 			deps += dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'QuickControls2', 'Qml', 'Svg', 'WebSockets'], include_type: 'system')
 		else
 			deps += dependency('qt6', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'QuickControls2', 'Qml', 'Svg', 'WebSockets', 'WebEngineCore', 'WebEngineQuick'], include_type: 'system')
 		endif
 		qres = ['src/gui/qjacktrip.qrc']
-	endif
-
-	if get_option('vsftux') == true
-		defines += '-DVS_FTUX'
 	endif
 
 	if get_option('noupdater') == true or host_machine.system() == 'linux'
