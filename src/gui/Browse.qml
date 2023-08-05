@@ -287,12 +287,7 @@ Item {
                 border.width: 1
                 border.color: settingsButton.down ? buttonPressedStroke : (settingsButton.hovered ? buttonHoverStroke : buttonStroke)
             }
-            Timer {
-                id: restartAudioTimer
-                interval: 805; running: false; repeat: false
-                onTriggered: virtualstudio.audioActivated = true;
-            }
-            onClicked: { virtualstudio.windowState = "settings"; restartAudioTimer.restart(); }
+            onClicked: { virtualstudio.windowState = "settings"; vsworker.startAudio(); }
             display: AbstractButton.TextBesideIcon
             font {
                 family: "Poppins";

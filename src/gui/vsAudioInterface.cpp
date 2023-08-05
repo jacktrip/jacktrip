@@ -147,7 +147,6 @@ void VsAudioInterface::setupAudio()
         std::cout << "The Number of Channels is: "
                   << m_audioInterface->getNumInputChannels() << std::endl;
         std::cout << gPrintSeparator << std::endl;
-        QThread::usleep(100);
     } catch (const std::exception& e) {
         emit errorToProcess(QString::fromUtf8(e.what()));
     }
@@ -245,7 +244,7 @@ void VsAudioInterface::setupRtAudio()
         m_audioInterface->setInputDevice(m_inputDeviceName);
         m_audioInterface->setOutputDevice(m_outputDeviceName);
         m_audioInterface->setBufferSizeInSamples(m_audioBufferSize);
-        static_cast<RtAudioInterface*>(m_audioInterface.get())->setDevices(m_devices);
+        static_cast<RtAudioInterface*>(m_audioInterface.get())->setRtAudioDevices(m_devices);
 
         // Note: setup might change the number of channels and/or buffer size
         m_audioInterface->setup(true);
@@ -429,149 +428,6 @@ void VsAudioInterface::refreshRtAudioDevices()
     RtAudioInterface::scanDevices(m_devices);
 }
 
-void VsAudioInterface::getDeviceList(QStringList* list, QStringList* categories,
-                                     QList<int>* channels, bool isInput)
-{
-    RtAudio baseRtAudio;
-    RtAudio::Api baseRtAudioApi = baseRtAudio.getCurrentApi();
-    if (categories != NULL) {
-        categories->clear();
-    }
-    if (channels != NULL) {
-        channels->clear();
-    }
-    list->clear();
-
-    // do not include blacklisted audio interfaces
-    // these are known to be unstable and cause JackTrip to crash
-    QVector<QString> blacklisted_devices = {
-#ifdef _WIN32
-        // Realtek ASIO: seems to crash any computer that tries to use it
-        QString::fromUtf8("Realtek ASIO"),
-        // Generic Low Latency ASIO Driver: driver from steinberg that also crashes
-        // everything with a weird popup
-        QString::fromUtf8("Generic Low Latency ASIO Driver"),
-#endif
-        // JackRouter: crashes if not running; use Jack backend instead
-        QString::fromUtf8("JackRouter"),
-    };
-
-    // Explicitly add default device
-    QString defaultDeviceName = "";
-    uint32_t defaultDeviceIdx;
-    RtAudio::DeviceInfo defaultDeviceInfo;
-    if (isInput) {
-        defaultDeviceIdx = baseRtAudio.getDefaultInputDevice();
-    } else {
-        defaultDeviceIdx = baseRtAudio.getDefaultOutputDevice();
-    }
-
-    if (defaultDeviceIdx != 0) {
-        defaultDeviceInfo = baseRtAudio.getDeviceInfo(defaultDeviceIdx);
-        defaultDeviceName = QString::fromStdString(defaultDeviceInfo.name);
-    }
-
-    if (blacklisted_devices.contains(defaultDeviceName)) {
-        std::cout << "RTAudio: blacklisted default " << (isInput ? "input" : "output")
-                  << " device: " << defaultDeviceName.toStdString() << std::endl;
-    } else if (defaultDeviceName != "") {
-        list->append(defaultDeviceName);
-        if (categories != NULL) {
-#ifdef _WIN32
-            switch (baseRtAudioApi) {
-            case RtAudio::WINDOWS_ASIO:
-                categories->append(QStringLiteral("Low-Latency (ASIO)"));
-                break;
-            case RtAudio::WINDOWS_WASAPI:
-                categories->append(QStringLiteral("High-Latency (Non-ASIO)"));
-                break;
-            case RtAudio::WINDOWS_DS:
-                categories->append(QStringLiteral("High-Latency (Non-ASIO)"));
-                break;
-            default:
-                categories->append(QStringLiteral(""));
-                break;
-            }
-#else
-            categories->append(QStringLiteral(""));
-#endif
-        }
-        if (channels != NULL) {
-            if (isInput) {
-                channels->append(defaultDeviceInfo.inputChannels);
-            } else {
-                channels->append(defaultDeviceInfo.outputChannels);
-            }
-        }
-    }
-
-    for (int n = 0; n < m_devices.size(); ++n) {
-#ifdef _WIN32
-        if (m_devices[n].api == RtAudio::UNIX_JACK) {
-            continue;
-        }
-#endif
-        // Don't include duplicate entries
-        if (list->contains(m_devices[n].name)) {
-            continue;
-        }
-
-        // Skip the default device, since we already added it
-        if (m_devices[n].name == defaultDeviceName
-            && m_devices[n].api == baseRtAudioApi) {
-            continue;
-        }
-
-        // Skip if no channels available
-        if ((isInput && m_devices[n].inputChannels == 0)
-            || (!isInput && m_devices[n].outputChannels == 0)) {
-            continue;
-        }
-
-        // Skip blacklisted devices
-        if (blacklisted_devices.contains(m_devices[n].name)) {
-            std::cout << "RTAudio: blacklisted " << (isInput ? "input" : "output")
-                      << " device: " << m_devices[n].name.toStdString() << std::endl;
-            continue;
-        }
-
-        // Good to go!
-        if (isInput) {
-            list->append(m_devices[n].name);
-            if (channels != NULL) {
-                channels->append(m_devices[n].inputChannels);
-            }
-        } else {
-            list->append(m_devices[n].name);
-            if (channels != NULL) {
-                channels->append(m_devices[n].outputChannels);
-            }
-        }
-
-        if (categories == NULL) {
-            continue;
-        }
-
-#ifdef _WIN32
-        switch (m_devices[n].api) {
-        case RtAudio::WINDOWS_ASIO:
-            categories->append("Low-Latency (ASIO)");
-            break;
-        case RtAudio::WINDOWS_WASAPI:
-            categories->append("High-Latency (Non-ASIO)");
-            break;
-        case RtAudio::WINDOWS_DS:
-            categories->append("High-Latency (Non-ASIO)");
-            break;
-        default:
-            categories->append("");
-            break;
-        }
-#else
-        categories->append("");
-#endif
-    }
-}
 #endif
 
 void VsAudioInterface::setAudioInterfaceMode(bool useRtAudio, bool shouldRestart)

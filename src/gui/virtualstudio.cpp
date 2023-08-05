@@ -54,6 +54,7 @@
 #include "../jacktrip_globals.h"
 #include "about.h"
 #include "qjacktrip.h"
+#include "vsWorker.h"
 
 #ifdef USE_WEAK_JACK
 #include "weak_libjack.h"
@@ -78,6 +79,8 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     , m_outputChannelsComboModel(
           QJsonArray::fromStringList(QStringList(QLatin1String(""))))
     , m_inputMixModeComboModel(QJsonArray::fromStringList(QStringList(QLatin1String(""))))
+    , m_worker(new VsWorker(this))
+    , m_workerThread(new QThread)
 {
     QSettings settings;
     m_updateChannel =
@@ -128,7 +131,8 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     QFontDatabase::addApplicationFont(QStringLiteral(":/vs/Poppins-Regular.ttf"));
     QFontDatabase::addApplicationFont(QStringLiteral(":/vs/Poppins-Bold.ttf"));
 
-    connect(&m_view, &VsQuickView::windowClose, this, &VirtualStudio::exit);
+    connect(&m_view, &VsQuickView::windowClose, m_worker.get(), &VsWorker::_exit,
+            Qt::QueuedConnection);
 
     // Set our font scaling to convert points to pixels
     m_fontScale = 4.0 / 3.0;
@@ -278,6 +282,8 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
         QVariant::fromValue(m_feedbackDetectionOptions));
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("virtualstudio"),
                                                        this);
+    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("vsworker"),
+                                                       m_worker.get());
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("serverModel"),
                                                        QVariant::fromValue(m_servers));
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("audioInterface"),
@@ -291,8 +297,9 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
         && m_permissions->micPermission() == "unknown") {
         m_permissions->getMicPermission();
     }
-    connect(m_permissions.data(), &VsMacPermissions::micPermissionUpdated, this,
-            &VirtualStudio::startAudio);
+    connect(m_permissions.data(), &VsMacPermissions::micPermissionUpdated, m_worker.get(),
+            &VsWorker::startAudio, Qt::QueuedConnection);
+
 #else
     m_permissions.reset(new VsPermissions());
     m_view.engine()->rootContext()->setContextProperty(
@@ -323,17 +330,17 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
         }
     });
 
-    connect(&m_heartbeatTimer, &QTimer::timeout, this, [&]() {
-        sendHeartbeat();
-    });
+    connect(&m_heartbeatTimer, &QTimer::timeout, m_worker.get(), &VsWorker::sendHeartbeat,
+            Qt::QueuedConnection);
+
+    m_workerThread->setObjectName("VsWorkerThread");
+    m_workerThread->start();
+    m_worker->moveToThread(m_workerThread.get());
 
     // QueuedConnection since refreshFinished is sometimes signaled from a network reply
     // thread
     connect(this, &VirtualStudio::refreshFinished, this, &VirtualStudio::joinStudio,
             Qt::QueuedConnection);
-
-    connect(this, &VirtualStudio::audioActivatedChanged, this,
-            &VirtualStudio::toggleAudio, Qt::QueuedConnection);
 }
 
 void VirtualStudio::setStandardWindow(QSharedPointer<QJackTrip> window)
@@ -660,11 +667,6 @@ bool VirtualStudio::monitorMuted()
     return m_monMuted;
 }
 
-bool VirtualStudio::audioActivated()
-{
-    return m_audioActivated;
-}
-
 bool VirtualStudio::audioReady()
 {
     return m_audioReady;
@@ -693,6 +695,11 @@ bool VirtualStudio::backendAvailable()
     } else {
         return false;
     }
+}
+
+bool VirtualStudio::deviceModelsInitialized()
+{
+    return m_models_initialized;
 }
 
 void VirtualStudio::setInputVolume(float multiplier)
@@ -810,15 +817,12 @@ void VirtualStudio::setFeedbackDetectionEnabled(bool enabled)
     emit feedbackDetectionEnabledChanged();
 }
 
-void VirtualStudio::setAudioActivated(bool activated)
-{
-    m_audioActivated = activated;
-    emit audioActivatedChanged();
-}
-
 void VirtualStudio::setAudioReady(bool ready)
 {
+    if (ready == m_audioReady)
+        return;
     m_audioReady = ready;
+    qDebug() << "audioReady => " << m_audioReady;
     emit audioReadyChanged();
 }
 
@@ -1118,12 +1122,6 @@ void VirtualStudio::joinStudio()
         return;
     }
 
-    // FTUX shows warnings and device setup views
-    // if any of these enabled, do not immediately join
-    if (!readyToJoin()) {
-        return;
-    }
-
     QString scheme = m_studioToJoin.scheme();
     QString path   = m_studioToJoin.path();
     QString url    = m_studioToJoin.toString();
@@ -1141,7 +1139,7 @@ void VirtualStudio::joinStudio()
     int i = 0;
     for (i = 0; i < m_servers.count(); i++) {
         if (static_cast<VsServerInfo*>(m_servers.at(i))->id() == targetId) {
-            connectToStudio(i);
+            m_worker->connectToStudio(i);
             return;
         }
     }
@@ -1234,51 +1232,40 @@ void VirtualStudio::refreshStudios(int index, bool signalRefresh)
     getServerList(false, signalRefresh, index);
 }
 
-void VirtualStudio::refreshDevices()
+void VirtualStudio::_refreshDevices()
 {
 #ifdef RT_AUDIO
-    if (m_vsAudioInterface.isNull())
+    if (!m_useRtAudio)
         return;
-    m_vsAudioInterface->closeAudio();
-    setAudioReady(false);
-    restartAudio();
-#endif
-}
-
-void VirtualStudio::refreshRtAudioDevices()
-{
-    if (!m_useRtAudio || m_vsAudioInterface.isNull())
-        return;
-#ifdef RT_AUDIO
-    m_vsAudioInterface->refreshRtAudioDevices();
-    m_vsAudioInterface->getDeviceList(&m_inputDeviceList, &m_inputDeviceCategories,
-                                      &m_inputDeviceChannels, true);
-    m_vsAudioInterface->getDeviceList(&m_outputDeviceList, &m_outputDeviceCategories,
-                                      &m_outputDeviceChannels, false);
-    m_inputComboModel  = formatDeviceList(m_inputDeviceList, m_inputDeviceCategories,
-                                          m_inputDeviceChannels);
-    m_outputComboModel = formatDeviceList(m_outputDeviceList, m_outputDeviceCategories,
-                                          m_outputDeviceChannels);
-    emit inputComboModelChanged();
-    emit outputComboModelChanged();
+    _stopAudio();
+    updateDeviceModels(true);
+    validateDevicesState();
+    if (!m_vsAudioInterface.isNull()) {
+        m_vsAudioInterface->setInputDevice(m_inputDevice, false);
+        m_vsAudioInterface->setOutputDevice(m_outputDevice, false);
+        _startAudio();
+    }
 #endif
 }
 
 void VirtualStudio::validateDevicesState()
 {
+#ifdef RT_AUDIO
     validateInputDevicesState();
     validateOutputDevicesState();
+#endif
     if (m_useRtAudio && m_connectionState == "Connected") {
         triggerReconnect();
     }
 }
+
+#ifdef RT_AUDIO
 
 void VirtualStudio::validateInputDevicesState()
 {
     if (!m_useRtAudio) {
         return;
     }
-#ifdef RT_AUDIO
     if (m_inputDeviceList.size() == 0 || m_outputDeviceList.size() == 0) {
         return;
     }
@@ -1415,7 +1402,6 @@ void VirtualStudio::validateInputDevicesState()
             }
         }
     }
-#endif  // RT_AUDIO
 }
 
 void VirtualStudio::validateOutputDevicesState()
@@ -1423,7 +1409,6 @@ void VirtualStudio::validateOutputDevicesState()
     if (!m_useRtAudio) {
         return;
     }
-#ifdef RT_AUDIO
     if (m_outputDeviceList.size() == 0 || m_outputDeviceList.size() == 0) {
         return;
     }
@@ -1498,8 +1483,8 @@ void VirtualStudio::validateOutputDevicesState()
             emit numOutputChannelsChanged(m_numOutputChannels, false);
         }
     }
-#endif  // RT_AUDIO
 }
+#endif  // RT_AUDIO
 
 void VirtualStudio::playOutputAudio()
 {
@@ -1511,7 +1496,6 @@ void VirtualStudio::revertSettings()
     m_uiScale = m_previousUiScale;
     emit uiScaleChanged();
 
-    setAudioActivated(false);
 #ifdef RT_AUDIO
     // Restore our previous settings
     m_inputDevice  = m_previousInput;
@@ -1535,8 +1519,6 @@ void VirtualStudio::applySettings()
 {
     m_previousUiScale = m_uiScale;
     emit newScale();
-
-    setAudioActivated(false);
 
     QSettings settings;
     settings.beginGroup(QStringLiteral("VirtualStudio"));
@@ -1574,15 +1556,12 @@ void VirtualStudio::applySettings()
 #endif
 
     // attempt to join studio if requested
-    // this function is called after the device setup view
-    // which can display upon opening the app from join link
     if (!m_studioToJoin.isEmpty()) {
-        // We're done waiting to be on the browse page
         joinStudio();
     }
 }
 
-void VirtualStudio::connectToStudio(int studioIndex)
+void VirtualStudio::_connectToStudio(int studioIndex)
 {
     {
         QMutexLocker locker(&m_refreshMutex);
@@ -1613,7 +1592,7 @@ void VirtualStudio::connectToStudio(int studioIndex)
         m_connectionState = QStringLiteral("Waiting...");
         emit connectionStateChanged();
     } else {
-        completeConnection();
+        _completeConnection();
     }
 
     if (m_device != nullptr) {
@@ -1621,7 +1600,7 @@ void VirtualStudio::connectToStudio(int studioIndex)
     }
 }
 
-void VirtualStudio::completeConnection()
+void VirtualStudio::_completeConnection()
 {
     if (m_currentStudio < 0) {
         return;
@@ -1661,21 +1640,19 @@ void VirtualStudio::completeConnection()
             baseOutputChannel, numOutputChannels, inputMixMode, buffer_size,
             m_bufferStrategy, studioInfo);
         if (jackTrip == 0) {
-            processError("Could not bind port");
+            _processError("Could not bind port");
             return;
         }
 
-        QObject::connect(jackTrip, &JackTrip::signalProcessesStopped, this,
-                         &VirtualStudio::processFinished, Qt::QueuedConnection);
-        QObject::connect(jackTrip, &JackTrip::signalError, this,
-                         &VirtualStudio::processError, Qt::QueuedConnection);
+        QObject::connect(jackTrip, &JackTrip::signalProcessesStopped, m_worker.get(),
+                         &VsWorker::connectionFinished, Qt::QueuedConnection);
+        QObject::connect(jackTrip, &JackTrip::signalError, m_worker.get(),
+                         &VsWorker::processError, Qt::QueuedConnection);
         QObject::connect(jackTrip, &JackTrip::signalReceivedConnectionFromPeer, this,
                          &VirtualStudio::receivedConnectionFromPeer,
                          Qt::QueuedConnection);
         QObject::connect(jackTrip, &JackTrip::signalUdpWaitingTooLong, this,
                          &VirtualStudio::udpWaitingTooLong, Qt::QueuedConnection);
-
-        setAudioActivated(false);
 
         // Setup output volume
         m_outputVolumePlugin = new Volume(jackTrip->getNumOutputChannels());
@@ -1744,23 +1721,16 @@ void VirtualStudio::completeConnection()
 
         m_connectionState = QStringLiteral("Connecting...");
         emit connectionStateChanged();
-#ifdef RT_AUDIO
-        if (m_useRtAudio) {
-            // This is a hack. RtAudio::openStream blocks the UI thread.
-            // But I am not comfortable changing how all of JackTrip consumes
-            // RtAudio to fix a VS mode bug.
-            delay(805);
-        }
-#endif
-        m_device->startJackTrip();
+
         resetMeters();
+        m_device->startJackTrip();
         m_device->startPinger(studioInfo);
     } catch (const std::exception& e) {
         // Let the user know what our exception was.
         m_connectionState = QStringLiteral("JackTrip Error");
         emit connectionStateChanged();
 
-        processError(QString::fromUtf8(e.what()));
+        _processError(QString::fromUtf8(e.what()));
         return;
     }
 
@@ -1782,7 +1752,7 @@ void VirtualStudio::triggerReconnect()
     }
 }
 
-void VirtualStudio::disconnect()
+void VirtualStudio::_disconnect()
 {
     m_connectionState = QStringLiteral("Disconnecting...");
     emit connectionStateChanged();
@@ -1909,7 +1879,7 @@ void VirtualStudio::openLink(const QString& link)
     QDesktopServices::openUrl(url);
 }
 
-void VirtualStudio::exit()
+void VirtualStudio::_exit()
 {
     m_startTimer.stop();
     m_retryPeriodTimer.stop();
@@ -1926,7 +1896,7 @@ void VirtualStudio::exit()
             m_device->stopJackTrip();
         }
 
-        disconnect();
+        _disconnect();
     } else {
         emit signalExit();
     }
@@ -1993,21 +1963,17 @@ void VirtualStudio::slotAuthFailed()
     emit authFailed();
 }
 
-void VirtualStudio::processFinished()
+void VirtualStudio::_connectionFinished()
 {
     if (m_device != nullptr && m_device->reconnect()) {
         if (m_device != nullptr && m_device->hasTerminated()) {
-            if (m_useRtAudio) {
-                refreshRtAudioDevices();
-                validateInputDevicesState();
-                validateOutputDevicesState();
-            }
-            connectToStudio(m_currentStudio);
+            _connectToStudio(m_currentStudio);
         }
         return;
     }
+
     // use disconnect function to handle reset of all internal flags and timers
-    disconnect();
+    _disconnect();
 
     // reset network statistics
     m_networkStats = QJsonObject();
@@ -2037,32 +2003,29 @@ void VirtualStudio::processFinished()
 #endif
 }
 
-void VirtualStudio::processError(const QString& errorMessage)
+void VirtualStudio::_processError(const QString& errorMessage)
 {
-    bool shouldSwitchToRtAudio = false;
+    const bool shouldSwitchToRtAudio = (errorMessage == QLatin1String("Maybe the JACK server is not running?"));
     if (!m_retryPeriod) {
         QMessageBox msgBox;
-        if (errorMessage == QLatin1String("Peer Stopped")) {
-            // Report the other end quitting as a regular occurance rather than an error.
-            msgBox.setText("The Studio has been stopped.");
-            msgBox.setWindowTitle(QStringLiteral("Disconnected"));
-        } else if (errorMessage
-                   == QLatin1String("Maybe the JACK server is not running?")) {
+        if (shouldSwitchToRtAudio) {
             // Report the other end quitting as a regular occurance rather than an error.
             msgBox.setText("The JACK server is not running. Switching back to RtAudio.");
             msgBox.setWindowTitle(QStringLiteral("No JACK server"));
-            shouldSwitchToRtAudio = true;
+        } else if (errorMessage == QLatin1String("Peer Stopped")) {
+            // Report the other end quitting as a regular occurance rather than an error.
+            msgBox.setText("The Studio has been stopped.");
+            msgBox.setWindowTitle(QStringLiteral("Disconnected"));
         } else {
             msgBox.setText(QStringLiteral("Error: ").append(errorMessage));
             msgBox.setWindowTitle(QStringLiteral("Doh!"));
         }
         msgBox.exec();
     }
-    if (shouldSwitchToRtAudio) {
+    if (shouldSwitchToRtAudio)
         setAudioBackend("RtAudio");
-    } else {
-        processFinished();
-    }
+    if (m_jackTripRunning)
+        _connectionFinished();
 }
 
 void VirtualStudio::receivedConnectionFromPeer()
@@ -2102,15 +2065,7 @@ void VirtualStudio::handleWebsocketMessage(const QString& msg)
             studioInfo->setHost(serverState[QStringLiteral("serverHost")].toString());
             studioInfo->setPort(serverState[QStringLiteral("serverPort")].toInt());
             studioInfo->setSessionId(serverState[QStringLiteral("sessionId")].toString());
-
-            // Call completeConnection after a short timeout
-            m_startTimer.setInterval(1000);
-            m_startTimer.setSingleShot(true);
-            connect(&m_startTimer, &QTimer::timeout, this, [&]() {
-                completeConnection();
-            });
-
-            m_startTimer.start();
+            m_worker->completeConnection();
         }
     }
 
@@ -2260,7 +2215,7 @@ void VirtualStudio::udpWaitingTooLong()
     emit updatedNetworkOutage(m_networkOutage);
 }
 
-void VirtualStudio::sendHeartbeat()
+void VirtualStudio::_sendHeartbeat()
 {
     if (m_device != nullptr && m_connectionState != "Connecting..."
         && m_connectionState != "Preparing audio...") {
@@ -2550,24 +2505,43 @@ void VirtualStudio::getUserMetadata()
     });
 }
 
-void VirtualStudio::startAudio()
+void VirtualStudio::_startAudio()
 {
-    std::cout << "Starting Audio" << std::endl;
 #ifdef __APPLE__
     if (m_permissions->micPermission() != "granted") {
         return;
     }
 #endif
-    if (m_vsAudioInterface.isNull()) {
-        m_vsAudioInterface.reset(new VsAudioInterface());
-        m_view.engine()->rootContext()->setContextProperty(
-            QStringLiteral("audioInterface"), m_vsAudioInterface.data());
+
+    if constexpr (!(isBackendAvailable<AudioInterfaceMode::JACK>()
+                    || isBackendAvailable<AudioInterfaceMode::RTAUDIO>())) {
+        return;
     }
+
+    // Start VsAudioInterface (again?)
+    if (!m_vsAudioInterface.isNull()) {
+        std::cout << "Restarting Audio" << std::endl;
+        resetMeters();
+        m_vsAudioInterface->setupAudio();
+        m_vsAudioInterface->setupPlugins();
+        m_vsAudioInterface->startProcess();
+        setAudioReady(true);
+        return;
+    }
+
+    // Start VsAudioInterface (first time)
+    std::cout << "Starting Audio" << std::endl;
+    m_vsAudioInterface.reset(new VsAudioInterface());
+    m_view.engine()->rootContext()->setContextProperty(
+        QStringLiteral("audioInterface"), m_vsAudioInterface.data());
+
 #ifdef RT_AUDIO
-    refreshRtAudioDevices();
-    validateDevicesState();
-    m_vsAudioInterface->setInputDevice(m_inputDevice, false);
-    m_vsAudioInterface->setOutputDevice(m_outputDevice, false);
+    if (m_useRtAudio) {
+        updateDeviceModels(true);
+        validateDevicesState();
+        m_vsAudioInterface->setInputDevice(m_inputDevice, false);
+        m_vsAudioInterface->setOutputDevice(m_outputDevice, false);
+    }
     m_vsAudioInterface->setAudioInterfaceMode(m_useRtAudio, false);
     m_vsAudioInterface->setBaseInputChannel(m_baseInputChannel, false);
     m_vsAudioInterface->setNumInputChannels(m_numInputChannels, false);
@@ -2614,45 +2588,13 @@ void VirtualStudio::startAudio()
             &VirtualStudio::updatedInputVuMeasurements);
     connect(m_vsAudioInterface.data(), &VsAudioInterface::newOutputMeterMeasurements,
             this, &VirtualStudio::updatedOutputVuMeasurements);
-    connect(m_vsAudioInterface.data(), &VsAudioInterface::errorToProcess, this,
-            &VirtualStudio::processError);
+    connect(m_vsAudioInterface.data(), &VsAudioInterface::errorToProcess, m_worker.get(),
+            &VsWorker::processError, Qt::QueuedConnection);
 
-    m_vsAudioInterface->setupPlugins();
-
-    m_audioReady = true;
-    emit audioReadyChanged();
     resetMeters();
-
+    m_vsAudioInterface->setupPlugins();
     m_vsAudioInterface->startProcess();
-}
-
-void VirtualStudio::restartAudio()
-{
-    std::cout << "Restarting Audio" << std::endl;
-#ifdef __APPLE__
-    if (m_permissions->micPermission() != "granted") {
-        return;
-    }
-#endif
-    // Start VsAudioInterface again
-    if (!m_vsAudioInterface.isNull()) {
-#ifdef RT_AUDIO
-        refreshRtAudioDevices();
-        validateDevicesState();
-        m_vsAudioInterface->setInputDevice(m_inputDevice, false);
-        m_vsAudioInterface->setOutputDevice(m_outputDevice, false);
-#endif
-        m_vsAudioInterface->setupAudio();
-        m_vsAudioInterface->setupPlugins();
-
-        m_audioReady = true;
-        emit audioReadyChanged();
-        resetMeters();
-
-        m_vsAudioInterface->startProcess();
-    } else {
-        startAudio();
-    }
+    setAudioReady(true);
 }
 
 void VirtualStudio::resetMeters()
@@ -2666,32 +2608,12 @@ void VirtualStudio::resetMeters()
     emit updatedOutputClipped(m_outputClipped);
 }
 
-void VirtualStudio::stopAudio()
+void VirtualStudio::_stopAudio()
 {
-    // Stop VsAudioInterface
+    std::cout << "Stopping Audio" << std::endl;
+    setAudioReady(false);
     if (!m_vsAudioInterface.isNull()) {
         m_vsAudioInterface->closeAudio();
-        setAudioReady(false);
-    }
-}
-
-void VirtualStudio::toggleAudio()
-{
-#ifdef __APPLE__
-    if (m_permissions->micPermission() != "granted") {
-        return;
-    }
-#endif
-
-    if constexpr (!(isBackendAvailable<AudioInterfaceMode::JACK>()
-                    || isBackendAvailable<AudioInterfaceMode::RTAUDIO>())) {
-        return;
-    }
-
-    if (!m_audioActivated) {
-        stopAudio();
-    } else {
-        restartAudio();
     }
 }
 
@@ -2724,6 +2646,124 @@ bool VirtualStudio::readyToJoin()
 }
 
 #ifdef RT_AUDIO
+void VirtualStudio::updateDeviceModels(bool refresh)
+{
+    if (!m_useRtAudio)
+        return;
+    QVector<RtAudioDevice> devices;
+    if (m_vsAudioInterface.isNull()) {
+        RtAudioInterface::scanDevices(devices);
+    } else {
+        if (refresh)
+            m_vsAudioInterface->refreshRtAudioDevices();
+        m_vsAudioInterface->getRtAudioDevices(devices);
+    }
+    updateDeviceModels(devices);
+}
+
+void VirtualStudio::updateDeviceModels(const QVector<RtAudioDevice>& devices)
+{
+    qDebug() << "updating device models";
+    getDeviceList(devices, &m_inputDeviceList, &m_inputDeviceCategories,
+                  &m_inputDeviceChannels, true);
+    getDeviceList(devices, &m_outputDeviceList, &m_outputDeviceCategories,
+                  &m_outputDeviceChannels, false);
+    m_inputComboModel  = formatDeviceList(m_inputDeviceList, m_inputDeviceCategories,
+                                          m_inputDeviceChannels);
+    m_outputComboModel = formatDeviceList(m_outputDeviceList, m_outputDeviceCategories,
+                                          m_outputDeviceChannels);
+    emit inputComboModelChanged();
+    emit outputComboModelChanged();
+    m_models_initialized = true;
+}
+
+void VirtualStudio::getDeviceList(const QVector<RtAudioDevice>& devices,
+                                  QStringList* list, QStringList* categories,
+                                  QList<int>* channels, bool isInput)
+{
+    if (categories != NULL) {
+        categories->clear();
+    }
+    if (channels != NULL) {
+        channels->clear();
+    }
+    list->clear();
+
+    // do not include blacklisted audio interfaces
+    // these are known to be unstable and cause JackTrip to crash
+    QVector<QString> blacklisted_devices = {
+#ifdef _WIN32
+        // Realtek ASIO: seems to crash any computer that tries to use it
+        QString::fromUtf8("Realtek ASIO"),
+#endif
+        // JackRouter: crashes if not running; use Jack backend instead
+        QString::fromUtf8("JackRouter"),
+    };
+
+    for (int n = 0; n < devices.size(); ++n) {
+#ifdef _WIN32
+        if (devices[n].api == RtAudio::UNIX_JACK) {
+            continue;
+        }
+#endif
+        const QString deviceName(QString::fromStdString(devices[n].name));
+
+        // Don't include duplicate entries
+        if (list->contains(deviceName)) {
+            continue;
+        }
+
+        // Skip if no channels available
+        if ((isInput && devices[n].inputChannels == 0)
+            || (!isInput && devices[n].outputChannels == 0)) {
+            continue;
+        }
+
+        // Skip blacklisted devices
+        if (blacklisted_devices.contains(deviceName)) {
+            std::cout << "RTAudio: blacklisted " << (isInput ? "input" : "output")
+                      << " device: " << devices[n].name << std::endl;
+            continue;
+        }
+
+        // Good to go!
+        if (isInput) {
+            list->append(deviceName);
+            if (channels != NULL) {
+                channels->append(devices[n].inputChannels);
+            }
+        } else {
+            list->append(deviceName);
+            if (channels != NULL) {
+                channels->append(devices[n].outputChannels);
+            }
+        }
+
+        if (categories == NULL) {
+            continue;
+        }
+
+#ifdef _WIN32
+        switch (devices[n].api) {
+        case RtAudio::WINDOWS_ASIO:
+            categories->append("Low-Latency (ASIO)");
+            break;
+        case RtAudio::WINDOWS_WASAPI:
+            categories->append("High-Latency (Non-ASIO)");
+            break;
+        case RtAudio::WINDOWS_DS:
+            categories->append("High-Latency (Non-ASIO)");
+            break;
+        default:
+            categories->append("");
+            break;
+        }
+#else
+        categories->append("");
+#endif
+    }
+}
+
 QJsonArray VirtualStudio::formatDeviceList(const QStringList& devices,
                                            const QStringList& categories,
                                            const QList<int>& channels)

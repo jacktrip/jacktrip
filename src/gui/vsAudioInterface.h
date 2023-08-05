@@ -104,8 +104,7 @@ class VsAudioInterface : public QObject
     void setBaseOutputChannel(int baseChannel, bool shouldRestart = true);
     void setNumOutputChannels(int numChannels, bool shouldRestart = true);
     void refreshRtAudioDevices();
-    void getDeviceList(QStringList* list, QStringList* categories, QList<int>* channels,
-                       bool isInput);
+    inline void getRtAudioDevices(QVector<RtAudioDevice>& d) const { d = m_devices; }
 #endif
     void setAudioInterfaceMode(bool useRtAudio, bool shouldRestart = true);
     void setInputVolume(float multiplier);

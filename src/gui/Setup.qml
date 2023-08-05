@@ -43,32 +43,11 @@ Item {
             color: textColour
         }
 
-        Button {
+        DeviceRefreshButton {
             id: refreshButton
-            text: "Refresh Devices"
-            palette.buttonText: textColour
-            background: Rectangle {
-                radius: 6 * virtualstudio.uiScale
-                color: refreshButton.down ? buttonPressedColour : (refreshButton.hovered ? buttonHoverColour : buttonColour)
-                border.width: 1
-                border.color: refreshButton.down ? buttonPressedStroke : (refreshButton.hovered ? buttonHoverStroke : buttonStroke)
-            }
-            icon {
-                source: "refresh.svg";
-                color: textColour;
-            }
-            display: AbstractButton.TextBesideIcon
-            onClicked: {
-                virtualstudio.refreshDevices();
-            }
             anchors.right: parent.right
             anchors.rightMargin: rightMargin * virtualstudio.uiScale
             anchors.verticalCenter: pageTitle.verticalCenter
-            width: 144 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
-            font {
-                family: "Poppins"
-                pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale
-            }
             visible: parent.isUsingRtAudio
         }
 
@@ -87,7 +66,7 @@ Item {
                 border.width: 1
                 border.color: backButton.down || backButton.hovered ? buttonPressedStroke : buttonStroke
             }
-            onClicked: { virtualstudio.windowState = "browse"; virtualstudio.studioToJoin = ""; }
+            onClicked: { virtualstudio.windowState = "browse"; virtualstudio.studioToJoin = ""; vsworker.stopAudio(); }
             anchors.left: parent.left
             anchors.leftMargin: 16 * virtualstudio.uiScale
             anchors.bottomMargin: rightMargin * virtualstudio.uiScale
@@ -120,7 +99,7 @@ Item {
                 border.color: saveButton.down || saveButton.hovered ? saveButtonPressedStroke : saveButtonStroke
             }
             enabled: !Boolean(virtualstudio.devicesError) && virtualstudio.backendAvailable
-            onClicked: { virtualstudio.windowState = "connected"; virtualstudio.applySettings() }
+            onClicked: { virtualstudio.windowState = "connected"; vsworker.stopAudio(); virtualstudio.applySettings(); }
             anchors.right: parent.right
             anchors.rightMargin: rightMargin * virtualstudio.uiScale
             anchors.bottomMargin: rightMargin * virtualstudio.uiScale

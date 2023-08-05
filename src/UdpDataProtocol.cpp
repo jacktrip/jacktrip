@@ -749,7 +749,7 @@ void UdpDataProtocol::run()
         full_redundant_packet = new int8_t[full_redundant_packet_size];
         std::memset(full_redundant_packet, 0,
                     full_redundant_packet_size); // Initialize to 0
-        while (!mStopped && !JackTrip::sSigInt && !JackTrip::sJackStopped) {
+        while (!mStopped && !JackTrip::sSigInt && !JackTrip::sAudioStopped) {
             sendPacketRedundancy(full_redundant_packet, full_redundant_packet_size,
                                  full_packet_size);
         }

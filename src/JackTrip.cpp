@@ -78,7 +78,7 @@ void sigint_handler(int sig)
 #endif*/
 
 bool JackTrip::sSigInt      = false;
-bool JackTrip::sJackStopped = false;
+bool JackTrip::sAudioStopped = false;
 
 //*******************************************************************************
 JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
@@ -153,7 +153,7 @@ JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
     , mUseRtUdpPriority(false)
 {
     createHeader(mPacketHeaderType);
-    sJackStopped = false;
+    sAudioStopped = false;
 }
 
 //*******************************************************************************
@@ -1096,7 +1096,7 @@ void JackTrip::udpTimerTick()
         return;
     }
 
-    if (mStopped || sSigInt || sJackStopped) {
+    if (mStopped || sSigInt || sAudioStopped) {
         // Stop everything.
         mAwaitingUdp = false;
         mUdpSockTemp.close();
@@ -1123,7 +1123,7 @@ void JackTrip::tcpTimerTick()
         return;
     }
 
-    if (mStopped || sSigInt || sJackStopped) {
+    if (mStopped || sSigInt || sAudioStopped) {
         // Stop everything.
         mAwaitingTcp = false;
         mTcpClient.close();
@@ -1176,8 +1176,8 @@ void JackTrip::tcpTimerTick()
 //*******************************************************************************
 void JackTrip::stop(const QString& errorMessage)
 {
-    // Take a snapshot of sJackStopped
-    bool serverStopped = sJackStopped;
+    // Take a snapshot of sAudioStopped
+    bool serverStopped = sAudioStopped;
     mStopped           = true;
     // Make sure we're only run once
     if (mHasShutdown) {

@@ -44,9 +44,6 @@ Item {
     property bool currShowWarnings: virtualstudio.showWarnings
     property bool currShowDeviceSetup: virtualstudio.showDeviceSetup
 
-    property int inputCurrIndex: getCurrentInputDeviceIndex()
-    property int outputCurrIndex: getCurrentOutputDeviceIndex()
-
     function getCurrentInputDeviceIndex () {
         if (virtualstudio.inputDevice === "") {
             return virtualstudio.inputComboModel.findIndex(elem => elem.type === "element");
@@ -110,7 +107,6 @@ Item {
             id: headerContent
             width: header.width
             height: header.height
-            x: 16 * virtualstudio.uiScale; y: 32 * virtualstudio.uiScale
 
             property bool isUsingRtAudio: virtualstudio.audioBackend == "RtAudio"
 
@@ -127,35 +123,11 @@ Item {
                 color: textColour
             }
 
-            Button {
+            DeviceRefreshButton {
                 id: refreshButton
-                text: "Refresh Devices"
                 anchors.verticalCenter: pageTitle.verticalCenter;
                 anchors.right: headerContent.right;
                 anchors.rightMargin: 16 * virtualstudio.uiScale;
-
-                palette.buttonText: textColour
-                background: Rectangle {
-                    radius: 6 * virtualstudio.uiScale
-                    color: refreshButton.down ? buttonPressedColour : (refreshButton.hovered ? buttonHoverColour : buttonColour)
-                    border.width: 1
-                    border.color: refreshButton.down ? buttonPressedStroke : (refreshButton.hovered ? buttonHoverStroke : buttonStroke)
-                }
-                icon {
-                    source: "refresh.svg";
-                    color: textColour;
-                }
-                display: AbstractButton.TextBesideIcon
-                onClicked: {
-                    virtualstudio.refreshDevices();
-                    inputCurrIndex = getCurrentInputDeviceIndex();
-                    outputCurrIndex = getCurrentOutputDeviceIndex();
-                }
-                width: 144 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
-                font {
-                    family: "Poppins"
-                    pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale
-                }
                 visible: parent.isUsingRtAudio && settingsGroupView == "Audio"
             }
         }
@@ -415,9 +387,8 @@ Item {
             }
             onClicked: {
                 // essentially the same here as clicking the cancel button
+                vsworker.stopAudio();
                 virtualstudio.windowState = "browse";
-                inputCurrIndex = virtualstudio.previousInput;
-                outputCurrIndex = virtualstudio.previousOutput;
                 virtualstudio.revertSettings();
 
                 // switch mode
@@ -743,10 +714,9 @@ Item {
                 border.color: cancelButton.down ? buttonPressedStroke : (cancelButton.hovered ? buttonHoverStroke : buttonStroke)
             }
             onClicked: {
+                vsworker.stopAudio();
                 virtualstudio.windowState = "browse";
-                inputCurrIndex = virtualstudio.previousInput;
-                outputCurrIndex = virtualstudio.previousOutput;
-                virtualstudio.revertSettings()
+                virtualstudio.revertSettings();
             }
             anchors.verticalCenter: parent.verticalCenter
             x: parent.width - (230 * virtualstudio.uiScale)
@@ -768,7 +738,11 @@ Item {
                 border.width: 1
                 border.color: saveButton.down ? buttonPressedStroke : (saveButton.hovered ? buttonHoverStroke : buttonStroke)
             }
-            onClicked: { virtualstudio.windowState = "browse"; virtualstudio.applySettings() }
+            onClicked: {
+                vsworker.stopAudio();
+                virtualstudio.windowState = "browse";
+                virtualstudio.applySettings();
+            }
             anchors.verticalCenter: parent.verticalCenter
             x: parent.width - (119 * virtualstudio.uiScale)
             width: buttonWidth * virtualstudio.uiScale; height: buttonHeight * virtualstudio.uiScale

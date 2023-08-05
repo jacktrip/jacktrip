@@ -84,9 +84,22 @@ Rectangle {
                 color: "transparent"
             }
 
+            DeviceRefreshButton {
+                id: refreshButton
+                y: 0;
+                x: parent.width - (144 + rightMargin) * virtualstudio.uiScale;
+                onClicked: {
+                    vsworker.refreshDevices();
+                    inputCombo.currentIndex = getCurrentInputDeviceIndex();
+                    outputCombo.currentIndex = getCurrentOutputDeviceIndex();
+                }
+            }
+
             Text {
                 id: outputLabel
-                x: 0; y: 0
+                x: 0;
+                anchors.top: refreshButton.bottom
+                anchors.topMargin: 24 * virtualstudio.uiScale
                 text: "Output Device"
                 font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
                 color: textColour
@@ -480,26 +493,6 @@ Rectangle {
             font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale}
             anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
             color: textColour
-        }
-    }
-
-    Button {
-        id: leaveButton
-        background: Rectangle {
-            radius: 6 * virtualstudio.uiScale
-            color: leaveButton.down ? browserButtonPressedColour : (leaveButton.hovered ? browserButtonHoverColour : browserButtonColour)
-        }
-        onClicked: virtualstudio.disconnect()
-        anchors.left: backButton.right
-        anchors.leftMargin: 16 * virtualstudio.uiScale;
-        anchors.verticalCenter: backButton.verticalCenter
-        width: 150 * virtualstudio.uiScale; height: 36 * virtualstudio.uiScale
-
-        Text {
-            text: "Leave"
-            font { family: "Poppins"; weight: Font.Bold; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale}
-            anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-            color: saveButtonText
         }
     }
 }

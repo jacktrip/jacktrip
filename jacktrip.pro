@@ -268,6 +268,7 @@ HEADERS += src/DataProtocol.h \
                src/gui/vsServerInfo.h \
                src/gui/vsQuickView.h \
                src/gui/vsWebSocket.h \
+               src/gui/vsWorker.h \
                src/gui/vsPermissions.h \
                src/gui/vsPinger.h \
                src/gui/vsPing.h \
@@ -338,6 +339,7 @@ SOURCES += src/DataProtocol.cpp \
                src/gui/vsServerInfo.cpp \
                src/gui/vsQuickView.cpp \
                src/gui/vsWebSocket.cpp \
+               src/gui/vsWorker.cpp \
                src/gui/vsPermissions.cpp \
                src/gui/vsPinger.cpp \
                src/gui/vsPing.cpp \

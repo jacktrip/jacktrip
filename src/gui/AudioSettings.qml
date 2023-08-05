@@ -63,7 +63,7 @@ Rectangle {
 
     Loader {
         anchors.fill: parent
-        sourceComponent: hasNoBackend ? nobackend : (Boolean(audioInterface) && Boolean(virtualstudio) && virtualstudio.audioReady) ? (isUsingRtAudio ? usingRtAudio : (isUsingJack ? usingJACK : scanningAudio)) : scanningAudio
+        sourceComponent: virtualstudio.audioReady ? (isUsingRtAudio ? usingRtAudio : (isUsingJack ? usingJACK : scanningAudio)) : scanningAudio
     }
 
     Component {
@@ -146,7 +146,7 @@ Rectangle {
                                         virtualstudio.inputDevice = modelData.text
                                     }
                                 }
-                                virtualstudio.restartAudio()
+                                vsworker.startAudio()
                             }
                         }
                     }
@@ -335,7 +335,7 @@ Rectangle {
                                         virtualstudio.outputDevice = modelData.text
                                     }
                                 }
-                                virtualstudio.restartAudio()
+                                vsworker.startAudio()
                             }
                         }
                     }

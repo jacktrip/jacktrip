@@ -189,11 +189,11 @@ Rectangle {
         onClicked: {
             if (virtualstudio.showDeviceSetup) {
                 virtualstudio.studioToJoin = `jacktrip://join/${studioId}`
-                virtualstudio.audioActivated = true;
                 virtualstudio.windowState = "setup";
+                vsworker.startAudio();
             } else {
                 virtualstudio.windowState = "connected";
-                virtualstudio.connectToStudio(index);
+                vsworker.connectToStudio(index);
             }
         }
         Image {

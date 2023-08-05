@@ -118,7 +118,12 @@ Rectangle {
                             radius: 8 * virtualstudio.uiScale
                             color: changeDevicesButton.down ? browserButtonPressedColour : (changeDevicesButton.hovered ? browserButtonHoverColour : browserButtonColour)
                         }
-                        onClicked: virtualstudio.windowState = "change_devices"
+                        onClicked: {
+                            virtualstudio.windowState = "change_devices"
+                            if (!virtualstudio.deviceModelsInitialized) {
+                                vsworker.refreshDevices();
+                            }
+                        }
 
                         AppIcon {
                             id: changeDevicesIcon
@@ -126,7 +131,12 @@ Rectangle {
                             width: 20 * virtualstudio.uiScale
                             height: 20 * virtualstudio.uiScale
                             icon.source: "cog.svg"
-                            onClicked: virtualstudio.windowState = "change_devices"
+                            onClicked: {
+                                virtualstudio.windowState = "change_devices"
+                                if (!virtualstudio.deviceModelsInitialized) {
+                                    vsworker.refreshDevices();
+                                }
+                            }
                         }
                     }
 
