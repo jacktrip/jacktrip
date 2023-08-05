@@ -511,13 +511,15 @@ void VsAudioInterface::getDeviceList(QStringList* list, QStringList* categories,
             continue;
         }
 #endif
+        QString deviceName(QString::fromStdString(m_devices[n].name));
+
         // Don't include duplicate entries
-        if (list->contains(m_devices[n].name)) {
+        if (list->contains(deviceName)) {
             continue;
         }
 
         // Skip the default device, since we already added it
-        if (m_devices[n].name == defaultDeviceName
+        if (deviceName == defaultDeviceName
             && m_devices[n].api == baseRtAudioApi) {
             continue;
         }
@@ -529,20 +531,20 @@ void VsAudioInterface::getDeviceList(QStringList* list, QStringList* categories,
         }
 
         // Skip blacklisted devices
-        if (blacklisted_devices.contains(m_devices[n].name)) {
+        if (blacklisted_devices.contains(deviceName)) {
             std::cout << "RTAudio: blacklisted " << (isInput ? "input" : "output")
-                      << " device: " << m_devices[n].name.toStdString() << std::endl;
+                      << " device: " << m_devices[n].name << std::endl;
             continue;
         }
 
         // Good to go!
         if (isInput) {
-            list->append(m_devices[n].name);
+            list->append(deviceName);
             if (channels != NULL) {
                 channels->append(m_devices[n].inputChannels);
             }
         } else {
-            list->append(m_devices[n].name);
+            list->append(deviceName);
             if (channels != NULL) {
                 channels->append(m_devices[n].outputChannels);
             }

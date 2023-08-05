@@ -45,6 +45,7 @@
 #endif
 
 #include <QQueue>
+#include <QSharedPointer>
 #include <QString>
 #include <QVector>
 
@@ -54,13 +55,13 @@
 class JackTrip;  // Forward declaration
 
 /// \brief Simple Class that represents an audio interface available via RtAudio
-struct RtAudioDevice {
+class RtAudioDevice : public RtAudio::DeviceInfo
+{
+public:
     RtAudio::Api api;
-    QString name;
-    unsigned int ID;
-    int inputChannels;
-    int outputChannels;
     void print() const;
+    void printVerbose() const;
+    RtAudioDevice& operator=(const RtAudio::DeviceInfo& info);
 };
 
 /// \brief Base Class that provides an interface with RtAudio
@@ -124,22 +125,28 @@ class RtAudioInterface : public AudioInterface
                                       unsigned int nFrames, double streamTime,
                                       RtAudioStreamStatus status, void* userData);
     static void RtAudioErrorCallback(RtAudioErrorType type, const std::string& errorText);
-    void printDeviceInfo(std::string api, unsigned int deviceId);
 
     // retrieves info about an audio device by search for its name
-    void getDeviceInfoFromName(std::string deviceName, long& deviceId, std::string& api,
+    // updates device and returns true if found
+    bool getDeviceInfoFromName(const std::string& deviceName, RtAudioDevice& device,
                                bool isInput) const;
+
+    // retrieves info about an audio device by search for its id
+    // updates device and returns true if found
+    bool getDeviceInfoFromId(const long deviceId, RtAudioDevice& device,
+                             bool isInput) const;
 
     QVarLengthArray<float*>
         mInBuffer;  ///< Vector of Input buffers/channel read from JACK
     QVarLengthArray<float*>
-        mOutBuffer;  ///< Vector of Output buffer/channel to write to JACK
+        mOutBuffer; ///< Vector of Output buffer/channel to write to JACK
     QVector<RtAudioDevice>
-        mDevices;       ///< Vector of audio interfaces available via RTAudio
-    RtAudio* mRtAudio;  ///< RtAudio class if the input and output device are the same
+        mDevices;   ///< Vector of audio interfaces available via RTAudio
+    QSharedPointer<RtAudio>
+        mRtAudio;   ///< RtAudio class if the input and output device are the same
 
-    static long getDefaultDevice(RtAudio& rtaudio, bool isInput);
-    static long getDefaultDeviceForLinuxPulseAudio(RtAudio& rtaudio, bool isInput);
+    long getDefaultDevice(RtAudio& rtaudio, bool isInput);
+    long getDefaultDeviceForLinuxPulseAudio(RtAudio& rtaudio, bool isInput);
 
     StereoToMono* mStereoToMonoMixer = NULL;
 };
