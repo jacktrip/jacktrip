@@ -37,8 +37,6 @@
 
 #include "vsDevice.h"
 
-#include <QDebug>
-
 // Constructor
 VsDevice::VsDevice(VsAuth* auth, VsApi* api, QObject* parent)
     : QObject(parent), m_auth(auth), m_api(api), m_sendVolumeTimer(this)
