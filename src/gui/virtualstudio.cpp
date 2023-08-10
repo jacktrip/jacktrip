@@ -124,6 +124,15 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
         m_auth->authenticate(QStringLiteral(""));  // retry without using refresh token
     });
 
+    m_webChannelServer.reset(new QWebSocketServer(QStringLiteral("Qt6 Virtual Studio Server"),
+                                        QWebSocketServer::NonSecureMode));
+    m_webChannelClientWrapper.reset(new WebSocketClientWrapper(m_webChannelServer.data()));
+    m_webChannel.reset(new QWebChannel());
+
+    connect(m_webChannelClientWrapper.data(), &WebSocketClientWrapper::clientConnected,
+            m_webChannel.data(), &QWebChannel::connectTo);
+    m_webChannel->registerObject(QStringLiteral("virtualstudio"), this);
+
     // Load our font for our qml interface
     QFontDatabase::addApplicationFont(QStringLiteral(":/vs/Poppins-Regular.ttf"));
     QFontDatabase::addApplicationFont(QStringLiteral(":/vs/Poppins-Bold.ttf"));
@@ -381,6 +390,11 @@ void VirtualStudio::raiseToTop()
 bool VirtualStudio::vsModeActive()
 {
     return m_vsModeActive;
+}
+
+int VirtualStudio::webChannelPort()
+{
+    return m_webChannelPort;
 }
 
 bool VirtualStudio::showFirstRun()
@@ -1157,6 +1171,9 @@ void VirtualStudio::toStandard()
         m_standardWindow->show();
         m_vsModeActive = false;
     }
+    
+    m_webChannelServer->close();
+
     QSettings settings;
     settings.setValue(QStringLiteral("UiMode"), QJackTrip::STANDARD);
     m_refreshTimer.stop();
@@ -1189,6 +1206,8 @@ void VirtualStudio::logout()
     if (m_device != nullptr) {
         m_device->removeApp();
     }
+
+    m_webChannelServer->close();
 
     QUrl logoutURL = QUrl("https://auth.jacktrip.org/v2/logout");
     QUrlQuery query;
@@ -1975,6 +1994,15 @@ void VirtualStudio::slotAuthSucceeded()
             &VsDevice::updateMonitorVolume);
 
     m_device->registerApp();
+
+    if (!m_webChannelServer->listen(QHostAddress::LocalHost)) {
+        // shouldn't happen
+        std::cout << "ERROR: Failed to start server!" << std::endl;
+    }
+    m_webChannelPort = m_webChannelServer->serverPort();
+    emit webChannelPortChanged(m_webChannelPort);
+
+    std::cout << "WebChannel Port Listening on # " << m_webChannelPort << std::endl;
 
     getUserId();
     getSubscriptions();
