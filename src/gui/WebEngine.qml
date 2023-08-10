@@ -26,6 +26,7 @@ Item {
                         window.virtualstudio = channel.objects.virtualstudio;
                         window.auth = channel.objects.auth;
                         window.clipboard = channel.objects.clipboard;
+                        window.appctl = channel.objects.appctl;
 
                         const event = new CustomEvent("qwebchannelinitialized");
                         document.head.dispatchEvent(event);

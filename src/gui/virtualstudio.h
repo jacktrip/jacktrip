@@ -58,6 +58,7 @@
 #include "../Monitor.h"
 #include "../Volume.h"
 #include "vsApi.h"
+#include "vsAppController.h"
 #include "vsAudioInterface.h"
 #include "vsAuth.h"
 #include "vsConstants.h"
@@ -451,6 +452,7 @@ class VirtualStudio : public QObject
     QString m_userId;
     VsQuickView m_view;
     QSharedPointer<QJackTrip> m_standardWindow;
+    QScopedPointer<VsAppController> m_appController;
     QScopedPointer<VsAuth> m_auth;
     QScopedPointer<VsApi> m_api;
     QScopedPointer<QNetworkAccessManager> m_networkAccessManager;

@@ -108,4 +108,12 @@ Item {
         id: footer
         anchors.bottom: parent.bottom
     }
+
+    Connections {
+        target: appctl
+
+        function onDeviceControlsCollapsedChanged(deviceControlsCollapsed) {
+            deviceControlsGroup.showMinified = deviceControlsCollapsed;
+        }
+    }
 }

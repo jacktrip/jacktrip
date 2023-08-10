@@ -102,6 +102,9 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     // use a singleton QNetworkAccessManager
     m_networkAccessManager.reset(new QNetworkAccessManager);
 
+    // instantiate App Controller
+    m_appController.reset(new VsAppController(&m_view));
+
     // instantiate API
     m_api.reset(new VsApi(m_networkAccessManager.data()));
     m_api->setApiHost(PROD_API_HOST);
@@ -124,14 +127,16 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
         m_auth->authenticate(QStringLiteral(""));  // retry without using refresh token
     });
 
-    m_webChannelServer.reset(new QWebSocketServer(QStringLiteral("Qt6 Virtual Studio Server"),
-                                        QWebSocketServer::NonSecureMode));
-    m_webChannelClientWrapper.reset(new WebSocketClientWrapper(m_webChannelServer.data()));
+    m_webChannelServer.reset(new QWebSocketServer(
+        QStringLiteral("Qt6 Virtual Studio Server"), QWebSocketServer::NonSecureMode));
+    m_webChannelClientWrapper.reset(
+        new WebSocketClientWrapper(m_webChannelServer.data()));
     m_webChannel.reset(new QWebChannel());
 
     connect(m_webChannelClientWrapper.data(), &WebSocketClientWrapper::clientConnected,
             m_webChannel.data(), &QWebChannel::connectTo);
     m_webChannel->registerObject(QStringLiteral("virtualstudio"), this);
+    m_webChannel->registerObject(QStringLiteral("appctl"), m_appController.data());
 
     // Load our font for our qml interface
     QFontDatabase::addApplicationFont(QStringLiteral(":/vs/Poppins-Regular.ttf"));
@@ -1171,7 +1176,7 @@ void VirtualStudio::toStandard()
         m_standardWindow->show();
         m_vsModeActive = false;
     }
-    
+
     m_webChannelServer->close();
 
     QSettings settings;
