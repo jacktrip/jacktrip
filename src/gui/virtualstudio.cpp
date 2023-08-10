@@ -2006,8 +2006,7 @@ void VirtualStudio::slotAuthSucceeded()
     }
     m_webChannelPort = m_webChannelServer->serverPort();
     emit webChannelPortChanged(m_webChannelPort);
-
-    std::cout << "WebChannel Port Listening on # " << m_webChannelPort << std::endl;
+    std::cout << "QWebChannel listening on port: " << m_webChannelPort << std::endl;
 
     getUserId();
     getSubscriptions();
