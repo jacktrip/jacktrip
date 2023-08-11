@@ -41,7 +41,7 @@ Item {
         id: userFeedbackModal
         padding: 1
         width: parent.width
-        height: 288 * virtualstudio.uiScale
+        height: 300 * virtualstudio.uiScale
         anchors.centerIn: parent
         modal: true
         focus: true
@@ -287,7 +287,7 @@ Item {
                   width: 324 * virtualstudio.uiScale
                   anchors.horizontalCenter: messageBoxScrollArea.horizontalCenter
                   anchors.top: messageBoxScrollArea.bottom
-                  anchors.topMargin: 12 * virtualstudio.uiScale
+                  anchors.topMargin: 24 * virtualstudio.uiScale
 
                   Button {
                       id: noUserFeedbackButton
