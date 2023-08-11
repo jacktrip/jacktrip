@@ -29,7 +29,7 @@ Item {
     property string textAreaTextColour: virtualstudio.darkMode ? "#A6A6A6" : "#757575"
     property string textAreaColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
 
-    required property string serverId
+    property string serverId: ""
 
     property int rating: 0
     property int hover: star1MouseArea.containsMouse ? 1 : star2MouseArea.containsMouse ? 2 : star3MouseArea.containsMouse ? 3 : star4MouseArea.containsMouse ? 4 : star5MouseArea.containsMouse ? 5 : 0
@@ -294,7 +294,12 @@ Item {
                       anchors.left: buttonsArea.left
                       anchors.verticalCenter: parent.buttonsArea
                       width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
-                      onClicked: userFeedbackModal.close()
+                      onClicked: () => {
+                        userFeedbackModal.close();
+                        rating = 0;
+                        serverId = "";
+                        messageBox.clear();
+                      }
 
                       background: Rectangle {
                           radius: 6 * virtualstudio.uiScale
@@ -317,7 +322,13 @@ Item {
                       anchors.right: buttonsArea.right
                       anchors.verticalCenter: parent.buttonsArea
                       width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
-                      onClicked: userFeedbackModal.close()
+                      onClicked: () => {
+                        virtualstudio.collectSessionFeedback(serverId, rating, messageBox.text);
+                        userFeedbackModal.close();
+                        rating = 0;
+                        serverId = "";
+                        messageBox.clear();
+                      }
 
                       background: Rectangle {
                           radius: 6 * virtualstudio.uiScale
@@ -344,7 +355,8 @@ Item {
     Connections {
       target: virtualstudio
 
-      function onOpenFeedbackModal() {
+      function onOpenFeedbackModal(serverId) {
+        userFeedbackSurvey.serverId = serverId;
         userFeedbackModal.open();
       }
     }

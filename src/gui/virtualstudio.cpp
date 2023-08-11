@@ -971,14 +971,17 @@ bool VirtualStudio::vsFtux()
     return m_vsFtux;
 }
 
-void VirtualStudio::openUserFeedbackModal()
+void VirtualStudio::openUserFeedbackModal(QString serverId)
 {
-    emit openFeedbackModal();
+    emit openFeedbackModal(serverId);
     return;
 }
 
 void VirtualStudio::collectSessionFeedback(QString serverId, int rating, QString message)
 {
+    std::cout << "SERVER ID: " << serverId.toStdString() << std::endl;
+    std::cout << "RATING: " << rating << std::endl;
+    std::cout << "MESSAGE: " << message.toStdString() << std::endl;
     return;
 }
 
@@ -1795,6 +1798,12 @@ void VirtualStudio::triggerReconnect()
 
 void VirtualStudio::disconnect()
 {
+    int currentStudioIdx = m_currentStudio;
+    QString currentStudioID = QStringLiteral("");
+    if (currentStudioIdx >= 0) {
+        currentStudioID = static_cast<VsServerInfo*>(m_servers.at(currentStudioIdx))->id();
+    }
+
     m_connectionState = QStringLiteral("Disconnecting...");
     emit connectionStateChanged();
     setConnectedErrorMsg("");
@@ -1831,6 +1840,10 @@ void VirtualStudio::disconnect()
     m_inputVolumePlugin  = nullptr;
     m_outputVolumePlugin = nullptr;
     m_currentStudio      = -1;
+
+    if (currentStudioID != QStringLiteral("")) {
+        openFeedbackModal(currentStudioID);
+    }
 }
 
 void VirtualStudio::manageStudio(int studioIndex, bool start)

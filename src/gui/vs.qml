@@ -301,7 +301,6 @@ Rectangle {
         }
         function onDisconnected() {
             virtualstudio.windowState = "browse";
-            virtualstudio.openFeedbackModal();
         }
         function onWindowStateUpdated() {
             if (virtualstudio.windowState === "login") {
