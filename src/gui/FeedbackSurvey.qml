@@ -354,7 +354,7 @@ Item {
 
                     Timer {
                         id: submittedFeedbackTimer
-                        interval: 3000; running: false; repeat: false
+                        interval: 5000; running: false; repeat: false
                         onTriggered: () => {
                             submitted = false;
                             userFeedbackModal.height = 300 * virtualstudio.uiScale
@@ -378,7 +378,7 @@ Item {
                     anchors.topMargin: 24 * virtualstudio.uiScale
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: parent.width
-                    text: "Thank you"
+                    text: "Thank you!"
                     font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale; bold: true }
                     horizontalAlignment: Text.AlignHCenter
                     color: textColour
@@ -392,7 +392,7 @@ Item {
                     anchors.topMargin: 16 * virtualstudio.uiScale
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: parent.width
-                    text: "Your feedback is greatly appreciated!"
+                    text: "Your feedback has been recorded."
                     font {family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
                     horizontalAlignment: Text.AlignHCenter
                     color: textColour
