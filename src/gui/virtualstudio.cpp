@@ -1801,10 +1801,11 @@ void VirtualStudio::triggerReconnect()
 
 void VirtualStudio::disconnect()
 {
-    int currentStudioIdx = m_currentStudio;
+    int currentStudioIdx    = m_currentStudio;
     QString currentStudioID = QStringLiteral("");
     if (currentStudioIdx >= 0) {
-        currentStudioID = static_cast<VsServerInfo*>(m_servers.at(currentStudioIdx))->id();
+        currentStudioID =
+            static_cast<VsServerInfo*>(m_servers.at(currentStudioIdx))->id();
     }
 
     m_connectionState = QStringLiteral("Disconnecting...");

@@ -288,7 +288,8 @@ class VirtualStudio : public QObject
     bool vsFtux();
 
     Q_INVOKABLE void openUserFeedbackModal(QString serverId);
-    Q_INVOKABLE void collectSessionFeedback(QString serverId, int rating, QString message);
+    Q_INVOKABLE void collectSessionFeedback(QString serverId, int rating,
+                                            QString message);
 
    public slots:
     void toStandard();
