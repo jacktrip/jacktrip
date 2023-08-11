@@ -31,6 +31,7 @@
     <file>WebView.qml</file>
     <file>WebEngine.qml</file>
     <file>WebNull.qml</file>
+    <file>FeedbackSurvey.qml</file>
     <file>AppIcon.qml</file>
     <file>logo.svg</file>
     <file>wedge.svg</file>
@@ -43,6 +44,7 @@
     <file>speed.svg</file>
     <file>share.svg</file>
     <file>start.svg</file>
+    <file>star.svg</file>
     <file>cog.svg</file>
     <file>mic.svg</file>
     <file>micoff.svg</file>

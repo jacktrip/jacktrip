@@ -971,6 +971,17 @@ bool VirtualStudio::vsFtux()
     return m_vsFtux;
 }
 
+void VirtualStudio::openUserFeedbackModal()
+{
+    emit openFeedbackModal();
+    return;
+}
+
+void VirtualStudio::collectSessionFeedback(QString serverId, int rating, QString message)
+{
+    return;
+}
+
 bool VirtualStudio::showWarnings()
 {
     return m_showWarnings;
