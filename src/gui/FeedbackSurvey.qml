@@ -34,6 +34,7 @@ Item {
     property int rating: 0
     property int hover: star1MouseArea.containsMouse ? 1 : star2MouseArea.containsMouse ? 2 : star3MouseArea.containsMouse ? 3 : star4MouseArea.containsMouse ? 4 : star5MouseArea.containsMouse ? 5 : 0
     property int currentView: (hover > 0 ? hover : rating)
+    property bool submitted: false;
 
     property string message: ""
 
@@ -69,6 +70,7 @@ Item {
                 anchors.bottom: parent.bottom
                 anchors.left: parent.left
                 anchors.right: parent.right
+                visible: !submitted
 
                 Text {
                     id: userFeedbackSurveyHeader
@@ -85,17 +87,17 @@ Item {
                 }
 
                 Text {
-                  id: ratingItemInstructions
-                  anchors.top: userFeedbackSurveyHeader.bottom
-                  anchors.topMargin: 12 * virtualstudio.uiScale
-                  anchors.horizontalCenter: parent.horizontalCenter
-                  width: parent.width
-                  text: "Rate your session on a scale of 1 to 5"
-                  font {family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-                  horizontalAlignment: Text.AlignHCenter
-                  color: textColour
-                  elide: Text.ElideRight
-                  wrapMode: Text.WordWrap
+                    id: ratingItemInstructions
+                    anchors.top: userFeedbackSurveyHeader.bottom
+                    anchors.topMargin: 12 * virtualstudio.uiScale
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    width: parent.width
+                    text: "Rate your session on a scale of 1 to 5"
+                    font {family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                    horizontalAlignment: Text.AlignHCenter
+                    color: textColour
+                    elide: Text.ElideRight
+                    wrapMode: Text.WordWrap
                 }
 
                 Item {
@@ -324,10 +326,12 @@ Item {
                         width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
                         onClicked: () => {
                             virtualstudio.collectSessionFeedback(serverId, rating, messageBox.text);
-                            userFeedbackModal.close();
+                            submitted = true;
                             rating = 0;
                             serverId = "";
                             messageBox.clear();
+                            userFeedbackModal.height = 150 * virtualstudio.uiScale
+                            submittedFeedbackTimer.start();
                         }
 
                         background: Rectangle {
@@ -346,6 +350,81 @@ Item {
                             anchors.horizontalCenter: parent.horizontalCenter
                             anchors.verticalCenter: parent.verticalCenter
                         }
+                    }
+
+                    Timer {
+                        id: submittedFeedbackTimer
+                        interval: 3000; running: false; repeat: false
+                        onTriggered: () => {
+                            submitted = false;
+                            userFeedbackModal.height = 300 * virtualstudio.uiScale
+                            userFeedbackModal.close();
+                        }
+                    }
+                }
+            }
+
+            Item {
+                id: submittedFeedbackContent
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                anchors.left: parent.left
+                anchors.right: parent.right
+                visible: submitted
+
+                Text {
+                    id: submittedFeedbackHeader
+                    anchors.top: submittedFeedbackContent.top
+                    anchors.topMargin: 24 * virtualstudio.uiScale
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    width: parent.width
+                    text: "Thank you"
+                    font {family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale; bold: true }
+                    horizontalAlignment: Text.AlignHCenter
+                    color: textColour
+                    elide: Text.ElideRight
+                    wrapMode: Text.WordWrap
+                }
+
+                Text {
+                    id: submittedFeedbackText
+                    anchors.top: submittedFeedbackHeader.bottom
+                    anchors.topMargin: 16 * virtualstudio.uiScale
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    width: parent.width
+                    text: "Your feedback is greatly appreciated!"
+                    font {family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                    horizontalAlignment: Text.AlignHCenter
+                    color: textColour
+                    elide: Text.ElideRight
+                    wrapMode: Text.WordWrap
+                }
+
+                Button {
+                    id: closeButtonFeedback
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.top: submittedFeedbackText.bottom
+                    anchors.topMargin: 16 * virtualstudio.uiScale
+                    width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+                    onClicked: () => {
+                        submitted = false;
+                        userFeedbackModal.height = 300 * virtualstudio.uiScale
+                        userFeedbackModal.close();
+                    }
+
+                    background: Rectangle {
+                        radius: 6 * virtualstudio.uiScale
+                        color: closeButtonFeedback.down ? buttonPressedColour : (closeButtonFeedback.hovered ? buttonHoverColour : buttonColour)
+                        border.width: 1
+                        border.color: closeButtonFeedback.down ? buttonPressedStroke : (closeButtonFeedback.hovered ? buttonHoverStroke : buttonStroke)
+                    }
+
+                    Text {
+                        text: "Close"
+                        font.family: "Poppins"
+                        font.pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        anchors.verticalCenter: parent.verticalCenter
                     }
                 }
             }
