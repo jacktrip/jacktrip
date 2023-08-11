@@ -26,6 +26,7 @@ Item {
     property string buttonPressedStroke: "#B0B5B5"
 
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
+    property string textAreaTextColour: virtualstudio.darkMode ? "#A6A6A6" : "#757575"
     property string textAreaColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
 
     required property string serverId
@@ -40,7 +41,7 @@ Item {
         id: userFeedbackModal
         padding: 1
         width: parent.width
-        height: 256 * virtualstudio.uiScale
+        height: 288 * virtualstudio.uiScale
         anchors.centerIn: parent
         modal: true
         focus: true
@@ -83,10 +84,24 @@ Item {
                     wrapMode: Text.WordWrap
                 }
 
+                Text {
+                  id: ratingItemInstructions
+                  anchors.top: userFeedbackSurveyHeader.bottom
+                  anchors.topMargin: 12 * virtualstudio.uiScale
+                  anchors.horizontalCenter: parent.horizontalCenter
+                  width: parent.width
+                  text: "Rate your session on a scale of 1 to 5"
+                  font {family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                  horizontalAlignment: Text.AlignHCenter
+                  color: textColour
+                  elide: Text.ElideRight
+                  wrapMode: Text.WordWrap
+                }
+
                 Item {
                     id: ratingItem
-                    anchors.top: userFeedbackSurveyHeader.bottom
-                    anchors.topMargin: 12 * virtualstudio.uiScale
+                    anchors.top: ratingItemInstructions.bottom
+                    anchors.topMargin: 4 * virtualstudio.uiScale
                     anchors.horizontalCenter: parent.horizontalCenter
                     height: 40 * virtualstudio.uiScale
                     width: 200 * virtualstudio.uiScale
@@ -101,8 +116,8 @@ Item {
                         AppIcon {
                             id: star1Icon
                             anchors.centerIn: parent
-                            width: currentView >= 1 ? parent.width : 16 * virtualstudio.uiScale
-                            height: currentView >= 1 ? parent.height : 16 * virtualstudio.uiScale
+                            width: currentView >= 1 ? parent.width : 20 * virtualstudio.uiScale
+                            height: currentView >= 1 ? parent.height : 20 * virtualstudio.uiScale
                             icon.source: "star.svg"
                             color: currentView >= 1 ? "#faaf00" : "#606060"
                         }
@@ -131,8 +146,8 @@ Item {
                         AppIcon {
                             id: star2Icon
                             anchors.centerIn: parent
-                            width: currentView >= 2 ? parent.width : 16 * virtualstudio.uiScale
-                            height: currentView >= 2 ? parent.height : 16 * virtualstudio.uiScale
+                            width: currentView >= 2 ? parent.width : 20 * virtualstudio.uiScale
+                            height: currentView >= 2 ? parent.height : 20 * virtualstudio.uiScale
                             icon.source: "star.svg"
                             color: currentView >= 2 ? "#faaf00" : "#606060"
                         }
@@ -161,8 +176,8 @@ Item {
                         AppIcon {
                             id: star3Icon
                             anchors.centerIn: parent
-                            width: currentView >= 3 ? parent.width : 16 * virtualstudio.uiScale
-                            height: currentView >= 3 ? parent.height : 16 * virtualstudio.uiScale
+                            width: currentView >= 3 ? parent.width : 20 * virtualstudio.uiScale
+                            height: currentView >= 3 ? parent.height : 20 * virtualstudio.uiScale
                             icon.source: "star.svg"
                             color: currentView >= 3 ? "#faaf00" : "#606060"
                         }
@@ -191,8 +206,8 @@ Item {
                         AppIcon {
                             id: star4Icon
                             anchors.centerIn: parent
-                            width: currentView >= 4 ? parent.width : 16 * virtualstudio.uiScale
-                            height: currentView >= 4 ? parent.height : 16 * virtualstudio.uiScale
+                            width: currentView >= 4 ? parent.width : 20 * virtualstudio.uiScale
+                            height: currentView >= 4 ? parent.height : 20 * virtualstudio.uiScale
                             icon.source: "star.svg"
                             color: currentView >= 4 ? "#faaf00" : "#606060"
                         }
@@ -221,8 +236,8 @@ Item {
                         AppIcon {
                             id: star5Icon
                             anchors.centerIn: parent
-                            width: currentView >= 5 ? parent.width : 16 * virtualstudio.uiScale
-                            height: currentView >= 5 ? parent.height : 16 * virtualstudio.uiScale
+                            width: currentView >= 5 ? parent.width : 20 * virtualstudio.uiScale
+                            height: currentView >= 5 ? parent.height : 20 * virtualstudio.uiScale
                             icon.source: "star.svg"
                             color: currentView >= 5 ? "#faaf00" : "#606060"
                         }
@@ -255,7 +270,7 @@ Item {
                   TextArea {
                     id: messageBox
                     placeholderText: qsTr("(Optional) Let us know how we can improve your experience.")
-                    placeholderTextColor: textColour
+                    placeholderTextColor: textAreaTextColour
                     color: textColour
                     background: Rectangle {
                       color: textAreaColour
