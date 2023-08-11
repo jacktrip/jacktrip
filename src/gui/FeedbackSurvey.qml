@@ -258,95 +258,95 @@ Item {
                 }
 
                 ScrollView {
-                  id: messageBoxScrollArea
-                  anchors.left: parent.left
-                  anchors.leftMargin: 32 * virtualstudio.uiScale
-                  anchors.right: parent.right
-                  anchors.rightMargin: 32 * virtualstudio.uiScale
-                  anchors.top: ratingItem.bottom
-                  anchors.topMargin: 12 * virtualstudio.uiScale
-                  height: 64 * virtualstudio.uiScale
+                    id: messageBoxScrollArea
+                    anchors.left: parent.left
+                    anchors.leftMargin: 32 * virtualstudio.uiScale
+                    anchors.right: parent.right
+                    anchors.rightMargin: 32 * virtualstudio.uiScale
+                    anchors.top: ratingItem.bottom
+                    anchors.topMargin: 12 * virtualstudio.uiScale
+                    height: 64 * virtualstudio.uiScale
 
-                  TextArea {
-                    id: messageBox
-                    placeholderText: qsTr("(Optional) Let us know how we can improve your experience.")
-                    placeholderTextColor: textAreaTextColour
-                    color: textColour
-                    background: Rectangle {
-                      color: textAreaColour
-                      radius: 6 * virtualstudio.uiScale
-                      border.width: 1
-                      border.color: buttonStroke
+                    TextArea {
+                        id: messageBox
+                        placeholderText: qsTr("(Optional) Let us know how we can improve your experience.")
+                        placeholderTextColor: textAreaTextColour
+                        color: textColour
+                        background: Rectangle {
+                        color: textAreaColour
+                        radius: 6 * virtualstudio.uiScale
+                        border.width: 1
+                        border.color: buttonStroke
+                        }
                     }
-                  }
                 }
 
                 Item {
-                  id: buttonsArea
-                  height: 32 * virtualstudio.uiScale
-                  width: 324 * virtualstudio.uiScale
-                  anchors.horizontalCenter: messageBoxScrollArea.horizontalCenter
-                  anchors.top: messageBoxScrollArea.bottom
-                  anchors.topMargin: 24 * virtualstudio.uiScale
+                    id: buttonsArea
+                    height: 32 * virtualstudio.uiScale
+                    width: 324 * virtualstudio.uiScale
+                    anchors.horizontalCenter: messageBoxScrollArea.horizontalCenter
+                    anchors.top: messageBoxScrollArea.bottom
+                    anchors.topMargin: 24 * virtualstudio.uiScale
 
-                  Button {
-                      id: noUserFeedbackButton
-                      anchors.left: buttonsArea.left
-                      anchors.verticalCenter: parent.buttonsArea
-                      width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
-                      onClicked: () => {
-                        userFeedbackModal.close();
-                        rating = 0;
-                        serverId = "";
-                        messageBox.clear();
-                      }
+                    Button {
+                        id: noUserFeedbackButton
+                        anchors.left: buttonsArea.left
+                        anchors.verticalCenter: parent.buttonsArea
+                        width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+                        onClicked: () => {
+                            userFeedbackModal.close();
+                            rating = 0;
+                            serverId = "";
+                            messageBox.clear();
+                        }
 
-                      background: Rectangle {
-                          radius: 6 * virtualstudio.uiScale
-                          color: noUserFeedbackButton.down ? buttonPressedColour : (noUserFeedbackButton.hovered ? buttonHoverColour : buttonColour)
-                          border.width: 1
-                          border.color: noUserFeedbackButton.down ? buttonPressedStroke : (noUserFeedbackButton.hovered ? buttonHoverStroke : buttonStroke)
-                      }
+                        background: Rectangle {
+                            radius: 6 * virtualstudio.uiScale
+                            color: noUserFeedbackButton.down ? buttonPressedColour : (noUserFeedbackButton.hovered ? buttonHoverColour : buttonColour)
+                            border.width: 1
+                            border.color: noUserFeedbackButton.down ? buttonPressedStroke : (noUserFeedbackButton.hovered ? buttonHoverStroke : buttonStroke)
+                        }
 
-                      Text {
-                          text: "No thanks"
-                          font.family: "Poppins"
-                          font.pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale
-                          anchors.horizontalCenter: parent.horizontalCenter
-                          anchors.verticalCenter: parent.verticalCenter
-                      }
-                  }
+                        Text {
+                            text: "No thanks"
+                            font.family: "Poppins"
+                            font.pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+                    }
 
-                  Button {
-                      id: submitUserFeedbackButton
-                      anchors.right: buttonsArea.right
-                      anchors.verticalCenter: parent.buttonsArea
-                      width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
-                      onClicked: () => {
-                        virtualstudio.collectSessionFeedback(serverId, rating, messageBox.text);
-                        userFeedbackModal.close();
-                        rating = 0;
-                        serverId = "";
-                        messageBox.clear();
-                      }
+                    Button {
+                        id: submitUserFeedbackButton
+                        anchors.right: buttonsArea.right
+                        anchors.verticalCenter: parent.buttonsArea
+                        width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+                        onClicked: () => {
+                            virtualstudio.collectSessionFeedback(serverId, rating, messageBox.text);
+                            userFeedbackModal.close();
+                            rating = 0;
+                            serverId = "";
+                            messageBox.clear();
+                        }
 
-                      background: Rectangle {
-                          radius: 6 * virtualstudio.uiScale
-                          color: submitUserFeedbackButton.down ? buttonPressedColour : (submitUserFeedbackButton.hovered ? buttonHoverColour : buttonColour)
-                          border.width: 1
-                          border.color: submitUserFeedbackButton.down ? buttonPressedStroke : (submitUserFeedbackButton.hovered ? buttonHoverStroke : buttonStroke)
-                      }
+                        background: Rectangle {
+                            radius: 6 * virtualstudio.uiScale
+                            color: submitUserFeedbackButton.down ? buttonPressedColour : (submitUserFeedbackButton.hovered ? buttonHoverColour : buttonColour)
+                            border.width: 1
+                            border.color: submitUserFeedbackButton.down ? buttonPressedStroke : (submitUserFeedbackButton.hovered ? buttonHoverStroke : buttonStroke)
+                        }
 
-                      Text {
-                          text: "Submit"
-                          font.family: "Poppins"
-                          font.pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale
-                          font.weight: Font.Bold
-                          color: "#DB0A0A"
-                          anchors.horizontalCenter: parent.horizontalCenter
-                          anchors.verticalCenter: parent.verticalCenter
-                      }
-                  }
+                        Text {
+                            text: "Submit"
+                            font.family: "Poppins"
+                            font.pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale
+                            font.weight: Font.Bold
+                            color: "#DB0A0A"
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+                    }
                 }
             }
         }
