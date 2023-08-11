@@ -979,9 +979,12 @@ void VirtualStudio::openUserFeedbackModal(QString serverId)
 
 void VirtualStudio::collectSessionFeedback(QString serverId, int rating, QString message)
 {
-    std::cout << "SERVER ID: " << serverId.toStdString() << std::endl;
-    std::cout << "RATING: " << rating << std::endl;
-    std::cout << "MESSAGE: " << message.toStdString() << std::endl;
+    QJsonObject feedback;
+    feedback.insert(QStringLiteral("rating"), rating);
+    feedback.insert(QStringLiteral("message"), message);
+
+    QJsonDocument data = QJsonDocument(feedback);
+    m_api->submitServerFeedback(serverId, data.toJson());
     return;
 }
 

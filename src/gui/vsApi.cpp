@@ -85,7 +85,7 @@ QNetworkReply* VsApi::postDeviceHeartbeat(const QString& deviceId, const QByteAr
         data);
 }
 
-QNetworkReply* VsApi::postServerFeedback(const QString& serverId, const QByteArray& data)
+QNetworkReply* VsApi::submitServerFeedback(const QString& serverId, const QByteArray& data)
 {
     return post(QUrl(QString("https://%1/api/servers/%2/feedback").arg(m_apiHost, serverId)), data);
 }
