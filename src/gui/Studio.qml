@@ -123,6 +123,16 @@ Rectangle {
         layer.effect: OpacityMask {
             maskSource: mask
         }
+
+        AppIcon {
+            id: defaultFlag
+            anchors.fill: parent
+            width: 32 * virtualstudio.uiScale
+            height: 32 * virtualstudio.uiScale
+            icon.source: "language.svg"
+            color: "white"
+            visible: flag.status != Image.Ready
+        }
     }
 
     Rectangle {
