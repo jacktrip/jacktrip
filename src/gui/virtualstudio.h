@@ -287,6 +287,10 @@ class VirtualStudio : public QObject
     void setApiHost(QString host);
     bool vsFtux();
 
+    Q_INVOKABLE void openUserFeedbackModal(QString serverId);
+    Q_INVOKABLE void collectSessionFeedback(QString serverId, int rating,
+                                            QString message);
+
    public slots:
     void toStandard();
     void toVirtualStudio();
@@ -395,6 +399,7 @@ class VirtualStudio : public QObject
     void audioReadyChanged();
     void windowStateUpdated();
     void apiHostChanged();
+    void openFeedbackModal(QString serverId);
 
    private slots:
     void slotAuthSucceeded();

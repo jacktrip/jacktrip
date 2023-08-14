@@ -307,6 +307,9 @@ Item {
         }
     }
 
+    FeedbackSurvey {
+    }
+
     Connections {
         target: virtualstudio
         // Need to do this to avoid layout issues with our section header.
