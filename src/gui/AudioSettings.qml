@@ -33,37 +33,37 @@ Rectangle {
     property string errorFlagColour: "#DB0A0A"
     property string disabledButtonTextColour: virtualstudio.darkMode ? "#827D7D" : "#BABCBC"
 
-    property bool isUsingJack: virtualstudio.audioBackend == "JACK"
-    property bool isUsingRtAudio: virtualstudio.audioBackend == "RtAudio"
-    property bool hasNoBackend: !isUsingJack && !isUsingRtAudio && !virtualstudio.backendAvailable
+    property bool isUsingJack: audio.audioBackend == "JACK"
+    property bool isUsingRtAudio: audio.audioBackend == "RtAudio"
+    property bool hasNoBackend: !isUsingJack && !isUsingRtAudio && !audio.backendAvailable
 
     function getCurrentInputDeviceIndex () {
-        if (virtualstudio.inputDevice === "") {
-            return virtualstudio.inputComboModel.findIndex(elem => elem.type === "element");
+        if (audio.inputDevice === "") {
+            return audio.inputComboModel.findIndex(elem => elem.type === "element");
         }
 
-        let idx = virtualstudio.inputComboModel.findIndex(elem => elem.type === "element" && elem.text === virtualstudio.inputDevice);
+        let idx = audio.inputComboModel.findIndex(elem => elem.type === "element" && elem.text === audio.inputDevice);
         if (idx < 0) {
-            idx = virtualstudio.inputComboModel.findIndex(elem => elem.type === "element");
+            idx = audio.inputComboModel.findIndex(elem => elem.type === "element");
         }
         return idx;
     }
 
     function getCurrentOutputDeviceIndex() {
-        if (virtualstudio.outputDevice === "") {
-            return virtualstudio.outputComboModel.findIndex(elem => elem.type === "element");
+        if (audio.outputDevice === "") {
+            return audio.outputComboModel.findIndex(elem => elem.type === "element");
         }
 
-        let idx = virtualstudio.outputComboModel.findIndex(elem => elem.type === "element" && elem.text === virtualstudio.outputDevice);
+        let idx = audio.outputComboModel.findIndex(elem => elem.type === "element" && elem.text === audio.outputDevice);
         if (idx < 0) {
-            idx = virtualstudio.outputComboModel.findIndex(elem => elem.type === "element");
+            idx = audio.outputComboModel.findIndex(elem => elem.type === "element");
         }
         return idx;
     }
 
     Loader {
         anchors.fill: parent
-        sourceComponent: virtualstudio.audioReady ? (isUsingRtAudio ? usingRtAudio : (isUsingJack ? usingJACK : scanningAudio)) : scanningAudio
+        sourceComponent: audio.audioReady ? (isUsingRtAudio ? usingRtAudio : (isUsingJack ? usingJACK : scanningAudio)) : scanningAudio
     }
 
     Component {
@@ -117,7 +117,7 @@ Rectangle {
                 anchors.verticalCenter: outputLabel.verticalCenter
                 anchors.rightMargin: rightMargin * virtualstudio.uiScale
                 width: parent.width - leftSpacer.width - rightMargin * virtualstudio.uiScale
-                model: virtualstudio.outputComboModel
+                model: audio.outputComboModel
                 currentIndex: getCurrentOutputDeviceIndex()
                 delegate: ItemDelegate {
                     required property var modelData
@@ -138,15 +138,15 @@ Rectangle {
                             if (modelData.type == "element") {
                                 outputCombo.currentIndex = index
                                 outputCombo.popup.close()
-                                virtualstudio.outputDevice = modelData.text
+                                audio.outputDevice = modelData.text
                                 if (modelData.category === "Low-Latency (ASIO)") {
                                     let inputComboIdx = inputCombo.model.findIndex(it => it.category === "Low-Latency (ASIO)" && it.text === modelData.text);
                                     if (inputComboIdx !== null && inputComboIdx !== undefined) {
                                         inputCombo.currentIndex = inputComboIdx;
-                                        virtualstudio.inputDevice = modelData.text
+                                        audio.inputDevice = modelData.text
                                     }
                                 }
-                                vsworker.startAudio()
+                                audio.restartAudio()
                             }
                         }
                     }
@@ -168,9 +168,9 @@ Rectangle {
                 anchors.top: outputCombo.bottom
                 anchors.topMargin: 16 * virtualstudio.uiScale
                 height: 24 * virtualstudio.uiScale
-                model: virtualstudio.outputMeterLevels
-                clipped: virtualstudio.outputClipped
-                enabled: virtualstudio.audioReady && !Boolean(virtualstudio.devicesError)
+                model: audio.outputMeterLevels
+                clipped: audio.outputClipped
+                enabled: audio.audioReady && !Boolean(audio.devicesError)
             }
 
             VolumeSlider {
@@ -206,10 +206,10 @@ Rectangle {
                 anchors.rightMargin: 8 * virtualstudio.uiScale
                 anchors.top: outputChannelsLabel.bottom
                 anchors.topMargin: 4 * virtualstudio.uiScale
-                model: virtualstudio.outputChannelsComboModel
+                model: audio.outputChannelsComboModel
                 currentIndex: (() => {
-                    let idx = virtualstudio.outputChannelsComboModel.findIndex(elem => elem.baseChannel === virtualstudio.baseOutputChannel
-                        && elem.numChannels === virtualstudio.numOutputChannels);
+                    let idx = audio.outputChannelsComboModel.findIndex(elem => elem.baseChannel === audio.baseOutputChannel
+                        && elem.numChannels === audio.numOutputChannels);
                     if (idx < 0) {
                         idx = 0;
                     }
@@ -228,9 +228,9 @@ Rectangle {
                         onClicked: {
                             outputChannelsCombo.currentIndex = index
                             outputChannelsCombo.popup.close()
-                            virtualstudio.baseOutputChannel = modelData.baseChannel
-                            virtualstudio.numOutputChannels = modelData.numChannels
-                            virtualstudio.validateDevicesState()
+                            audio.baseOutputChannel = modelData.baseChannel
+                            audio.numOutputChannels = modelData.numChannels
+                            audio.restartAudio()
                         }
                     }
                 }
@@ -252,7 +252,7 @@ Rectangle {
                     border.width: 1
                     border.color: testOutputAudioButton.down || testOutputAudioButton.hovered ? buttonPressedStroke : (testOutputAudioButton.hovered ? buttonHoverStroke : buttonStroke)
                 }
-                onClicked: { virtualstudio.playOutputAudio() }
+                onClicked: { audio.playOutputAudio() }
                 anchors.right: parent.right
                 anchors.rightMargin: rightMargin * virtualstudio.uiScale
                 anchors.verticalCenter: outputChannelsCombo.verticalCenter
@@ -303,7 +303,7 @@ Rectangle {
 
             ComboBox {
                 id: inputCombo
-                model: virtualstudio.inputComboModel
+                model: audio.inputComboModel
                 currentIndex: getCurrentInputDeviceIndex()
                 anchors.left: outputCombo.left
                 anchors.right: outputCombo.right
@@ -327,15 +327,15 @@ Rectangle {
                             if (modelData.type == "element") {
                                 inputCombo.currentIndex = index
                                 inputCombo.popup.close()
-                                virtualstudio.inputDevice = modelData.text
+                                audio.inputDevice = modelData.text
                                 if (modelData.category === "Low-Latency (ASIO)") {
                                     let outputComboIdx = outputCombo.model.findIndex(it => it.category === "Low-Latency (ASIO)" && it.text === modelData.text);
                                     if (outputComboIdx !== null && outputComboIdx !== undefined) {
                                         outputCombo.currentIndex = outputComboIdx;
-                                        virtualstudio.outputDevice = modelData.text
+                                        audio.outputDevice = modelData.text
                                     }
                                 }
-                                vsworker.startAudio()
+                                audio.restartAudio()
                             }
                         }
                     }
@@ -357,9 +357,9 @@ Rectangle {
                 anchors.top: inputCombo.bottom
                 anchors.topMargin: 16 * virtualstudio.uiScale
                 height: 24 * virtualstudio.uiScale
-                model: virtualstudio.inputMeterLevels
-                clipped: virtualstudio.inputClipped
-                enabled: virtualstudio.audioReady && !Boolean(virtualstudio.devicesError)
+                model: audio.inputMeterLevels
+                clipped: audio.inputClipped
+                enabled: audio.audioReady && !Boolean(audio.devicesError)
             }
 
             VolumeSlider {
@@ -404,10 +404,10 @@ Rectangle {
                 anchors.rightMargin: 8 * virtualstudio.uiScale
                 anchors.top: inputChannelsLabel.bottom
                 anchors.topMargin: 4 * virtualstudio.uiScale
-                model: virtualstudio.inputChannelsComboModel
+                model: audio.inputChannelsComboModel
                 currentIndex: (() => {
-                    let idx = virtualstudio.inputChannelsComboModel.findIndex(elem => elem.baseChannel === virtualstudio.baseInputChannel
-                        && elem.numChannels === virtualstudio.numInputChannels);
+                    let idx = audio.inputChannelsComboModel.findIndex(elem => elem.baseChannel === audio.baseInputChannel
+                        && elem.numChannels === audio.numInputChannels);
                     if (idx < 0) {
                         idx = 0;
                     }
@@ -426,9 +426,9 @@ Rectangle {
                         onClicked: {
                             inputChannelsCombo.currentIndex = index
                             inputChannelsCombo.popup.close()
-                            virtualstudio.baseInputChannel = modelData.baseChannel
-                            virtualstudio.numInputChannels = modelData.numChannels
-                            virtualstudio.validateDevicesState()
+                            audio.baseInputChannel = modelData.baseChannel
+                            audio.numInputChannels = modelData.numChannels
+                            audio.restartAudio()
                         }
                     }
                 }
@@ -462,9 +462,9 @@ Rectangle {
                 anchors.rightMargin: 8 * virtualstudio.uiScale
                 anchors.top: inputMixModeLabel.bottom
                 anchors.topMargin: 4 * virtualstudio.uiScale
-                model: virtualstudio.inputMixModeComboModel
+                model: audio.inputMixModeComboModel
                 currentIndex: (() => {
-                    let idx = virtualstudio.inputMixModeComboModel.findIndex(elem => elem.value === virtualstudio.inputMixMode);
+                    let idx = audio.inputMixModeComboModel.findIndex(elem => elem.value === audio.inputMixMode);
                     if (idx < 0) {
                         idx = 0;
                     }
@@ -483,8 +483,8 @@ Rectangle {
                         onClicked: {
                             inputMixModeCombo.currentIndex = index
                             inputMixModeCombo.popup.close()
-                            virtualstudio.inputMixMode = virtualstudio.inputMixModeComboModel[index].value
-                            virtualstudio.validateDevicesState()
+                            audio.inputMixMode = audio.inputMixModeComboModel[index].value
+                            audio.restartAudio()
                         }
                     }
                 }
@@ -522,11 +522,11 @@ Rectangle {
                 textFormat: Text.RichText
                 wrapMode: Text.WordWrap
                 text: (() => {
-                    if (virtualstudio.inputMixMode === 2) {
+                    if (audio.inputMixMode === 2) {
                         return "Treat the channels as Left and Right signals, coming through each speaker separately.";
-                    } else if (virtualstudio.inputMixMode === 3) {
+                    } else if (audio.inputMixMode === 3) {
                         return "Combine the channels into one central channel coming through both speakers.";
-                    } else if (virtualstudio.inputMixMode === 1) {
+                    } else if (audio.inputMixMode === 1) {
                         return "Send a single channel of audio";
                     } else {
                         return "";
@@ -587,9 +587,9 @@ Rectangle {
                 anchors.rightMargin: rightMargin * virtualstudio.uiScale
                 anchors.verticalCenter: jackOutputLabel.verticalCenter
                 height: 24 * virtualstudio.uiScale
-                model: virtualstudio.outputMeterLevels
-                clipped: virtualstudio.outputClipped
-                enabled: virtualstudio.audioReady && !Boolean(virtualstudio.devicesError)
+                model: audio.outputMeterLevels
+                clipped: audio.outputClipped
+                enabled: audio.audioReady && !Boolean(audio.devicesError)
             }
 
             Button {
@@ -600,7 +600,7 @@ Rectangle {
                     border.width: 1
                     border.color: jackTestOutputAudioButton.down ? buttonPressedStroke : (jackTestOutputAudioButton.hovered ? buttonHoverStroke : buttonStroke)
                 }
-                onClicked: { virtualstudio.playOutputAudio() }
+                onClicked: { audio.playOutputAudio() }
                 anchors.right: parent.right
                 anchors.rightMargin: rightMargin * virtualstudio.uiScale
                 anchors.verticalCenter: jackOutputVolumeSlider.verticalCenter
@@ -655,9 +655,9 @@ Rectangle {
                 anchors.rightMargin: rightMargin * virtualstudio.uiScale
                 anchors.verticalCenter: jackInputLabel.verticalCenter
                 height: 24 * virtualstudio.uiScale
-                model: virtualstudio.inputMeterLevels
-                clipped: virtualstudio.inputClipped
-                enabled: virtualstudio.audioReady && !Boolean(virtualstudio.devicesError)
+                model: audio.inputMeterLevels
+                clipped: audio.inputClipped
+                enabled: audio.audioReady && !Boolean(audio.devicesError)
             }
 
             VolumeSlider {

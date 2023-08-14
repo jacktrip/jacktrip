@@ -30,7 +30,7 @@ Button {
         color: textColour;
     }
     onClicked: {
-        vsworker.refreshDevices();
+        audio.refreshDevices();
     }
     font {
         family: "Poppins"

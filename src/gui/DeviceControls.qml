@@ -25,21 +25,21 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
 
             background: Rectangle {
-                color: isInput ? (virtualstudio.inputMuted ? muteButtonMutedColor : buttonColour) : "transparent"
+                color: isInput ? (audio.inputMuted ? muteButtonMutedColor : buttonColour) : "transparent"
                 width: 24 * virtualstudio.uiScale
                 radius: 4 * virtualstudio.uiScale
             }
 
-            onClicked: isInput ? virtualstudio.inputMuted = !virtualstudio.inputMuted : console.log()
+            onClicked: isInput ? audio.inputMuted = !audio.inputMuted : console.log()
 
             AppIcon {
                 id: iconImage
                 anchors.centerIn: parent
                 width: 24 * virtualstudio.uiScale
                 height: 24 * virtualstudio.uiScale
-                icon.source: isInput ? (virtualstudio.inputMuted ? "micoff.svg" : "mic.svg") : "headphones.svg"
-                color: isInput ? (virtualstudio.inputMuted ? "red" : ( virtualstudio.darkMode ? "#CCCCCC" : "#333333" )) : (virtualstudio.darkMode ? "#CCCCCC" : "#333333")
-                onClicked: isInput ? virtualstudio.inputMuted = !virtualstudio.inputMuted : console.log()
+                icon.source: isInput ? (audio.inputMuted ? "micoff.svg" : "mic.svg") : "headphones.svg"
+                color: isInput ? (audio.inputMuted ? "red" : ( virtualstudio.darkMode ? "#CCCCCC" : "#333333" )) : (virtualstudio.darkMode ? "#CCCCCC" : "#333333")
+                onClicked: isInput ? audio.inputMuted = !audio.inputMuted : console.log()
             }
 
             ToolTip {
@@ -48,7 +48,7 @@ Item {
                 y: iconButton.y + iconButton.height
 
                 contentItem: Text {
-                    text: virtualstudio.inputMuted ? qsTr("Click to unmute yourself") : qsTr("Click to mute yourself")
+                    text: audio.inputMuted ? qsTr("Click to unmute yourself") : qsTr("Click to mute yourself")
                     font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
                     color: textColour
                 }
@@ -78,12 +78,12 @@ Item {
                 Layout.fillHeight: true
                 labelText: "Send"
                 tooltipText: "How loudly other participants hear you"
-                sliderEnabled: !virtualstudio.inputMuted
+                sliderEnabled: !audio.inputMuted
             }
 
             DeviceWarning {
                 id: deviceWarning
-                visible: Boolean(virtualstudio.devicesError) || Boolean(virtualstudio.devicesWarning)
+                visible: Boolean(audio.devicesError) || Boolean(audio.devicesWarning)
             }
         }
     }
@@ -165,8 +165,8 @@ Item {
                         anchors.fill: parent
                         anchors.topMargin: 5 * virtualstudio.uiScale
                         anchors.rightMargin: 8 * virtualstudio.uiScale
-                        model: isInput ? virtualstudio.inputMeterLevels : virtualstudio.outputMeterLevels
-                        clipped: isInput ? virtualstudio.inputClipped : virtualstudio.outputClipped
+                        model: isInput ? audio.inputMeterLevels : audio.outputMeterLevels
+                        clipped: isInput ? audio.inputClipped : audio.outputClipped
                         enabled: true
                     }
                 }

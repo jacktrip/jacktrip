@@ -135,6 +135,8 @@ class RtAudioInterface : public AudioInterface
     // updates device and returns true if found
     bool getDeviceInfoFromId(const long deviceId, RtAudioDevice& device,
                              bool isInput) const;
+    long getDefaultDevice(RtAudio& rtaudio, bool isInput);
+    long getDefaultDeviceForLinuxPulseAudio(bool isInput);
 
     QVarLengthArray<float*>
         mInBuffer;  ///< Vector of Input buffers/channel read from JACK
@@ -144,11 +146,8 @@ class RtAudioInterface : public AudioInterface
         mDevices;   ///< Vector of audio interfaces available via RTAudio
     QSharedPointer<RtAudio>
         mRtAudio;   ///< RtAudio class if the input and output device are the same
-
-    long getDefaultDevice(RtAudio& rtaudio, bool isInput);
-    long getDefaultDeviceForLinuxPulseAudio(bool isInput);
-
-    StereoToMono* mStereoToMonoMixer = NULL;
+    QScopedPointer<StereoToMono>
+        mStereoToMonoMixerPtr;
 };
 
 #endif  // __RTAUDIOINTERFACE_H__

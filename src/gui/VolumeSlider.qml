@@ -64,14 +64,14 @@ Item {
 
         Slider {
             id: slider
-            value: labelText == "Monitor" ? virtualstudio.monitorVolume : (labelText == "Studio" ? virtualstudio.outputVolume : virtualstudio.inputVolume )
+            value: labelText == "Monitor" ? audio.monitorVolume : (labelText == "Studio" ? audio.outputVolume : audio.inputVolume )
             onMoved: {
                 if (labelText == "Monitor") {
-                    virtualstudio.monitorVolume = value;
+                    audio.monitorVolume = value;
                 } else if (labelText == "Studio") {
-                    virtualstudio.outputVolume = value;
+                    audio.outputVolume = value;
                 } else {
-                    virtualstudio.inputVolume = value;
+                    audio.inputVolume = value;
                 }
             }
             enabled: sliderEnabled

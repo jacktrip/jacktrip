@@ -33,7 +33,7 @@ Item {
         id: setupItem
         width: parent.width; height: parent.height
 
-        property bool isUsingRtAudio: virtualstudio.audioBackend == "RtAudio"
+        property bool isUsingRtAudio: audio.audioBackend == "RtAudio"
 
         Text {
             id: pageTitle
@@ -66,7 +66,7 @@ Item {
                 border.width: 1
                 border.color: backButton.down || backButton.hovered ? buttonPressedStroke : buttonStroke
             }
-            onClicked: { virtualstudio.windowState = "browse"; virtualstudio.studioToJoin = ""; vsworker.stopAudio(); }
+            onClicked: { virtualstudio.windowState = "browse"; virtualstudio.studioToJoin = ""; audio.stopAudio(); }
             anchors.left: parent.left
             anchors.leftMargin: 16 * virtualstudio.uiScale
             anchors.bottomMargin: rightMargin * virtualstudio.uiScale
@@ -87,7 +87,7 @@ Item {
             anchors.left: backButton.right
             anchors.leftMargin: 16 * virtualstudio.uiScale
             anchors.verticalCenter: backButton.verticalCenter
-            visible: Boolean(virtualstudio.devicesError) || Boolean(virtualstudio.devicesWarning)
+            visible: Boolean(audio.devicesError) || Boolean(audio.devicesWarning)
         }
 
         Button {
@@ -98,8 +98,13 @@ Item {
                 border.width: 1
                 border.color: saveButton.down || saveButton.hovered ? saveButtonPressedStroke : saveButtonStroke
             }
-            enabled: !Boolean(virtualstudio.devicesError) && virtualstudio.backendAvailable
-            onClicked: { virtualstudio.windowState = "connected"; vsworker.stopAudio(); virtualstudio.applySettings(); }
+            enabled: !Boolean(audio.devicesError) && audio.backendAvailable
+            onClicked: {
+                virtualstudio.windowState = "connected";
+                audio.stopAudio();
+                virtualstudio.saveSettings();
+                virtualstudio.joinStudio();
+            }
             anchors.right: parent.right
             anchors.rightMargin: rightMargin * virtualstudio.uiScale
             anchors.bottomMargin: rightMargin * virtualstudio.uiScale
@@ -110,7 +115,7 @@ Item {
                 font.family: "Poppins"
                 font.pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale
                 font.weight: Font.Bold
-                color: !Boolean(virtualstudio.devicesError) && virtualstudio.backendAvailable ? saveButtonText : disabledButtonText
+                color: !Boolean(audio.devicesError) && audio.backendAvailable ? saveButtonText : disabledButtonText
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
             }
@@ -119,7 +124,7 @@ Item {
         CheckBox {
             id: showAgainCheckbox
             checked: virtualstudio.showDeviceSetup
-            visible: virtualstudio.backendAvailable
+            visible: audio.backendAvailable
             text: qsTr("Ask again next time")
             anchors.right: saveButton.left
             anchors.rightMargin: 16 * virtualstudio.uiScale

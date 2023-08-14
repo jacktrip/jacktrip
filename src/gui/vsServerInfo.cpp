@@ -39,6 +39,29 @@
 
 VsServerInfo::VsServerInfo(QObject* parent) : QObject(parent) {}
 
+VsServerInfo& VsServerInfo::operator=(const VsServerInfo& info) {
+    m_section = info.m_section;
+    m_name = info.m_name;
+    m_host = info.m_host;
+    m_port = info.m_port;
+    m_enabled = info.m_enabled;
+    m_owner = info.m_owner;
+    m_admin = info.m_admin;
+    m_isManaged = info.m_isManaged;
+    m_isPublic = info.m_isPublic;
+    m_region = info.m_region;
+    m_period = info.m_period;
+    m_sampleRate = info.m_sampleRate;
+    m_queueBuffer = info.m_queueBuffer;
+    m_bannerURL = info.m_bannerURL;
+    m_id = info.m_id;
+    m_sessionId = info.m_sessionId;
+    m_status = info.m_status;
+    m_cloudId = info.m_cloudId;
+    m_inviteKey = info.m_inviteKey;
+    return *this;
+}
+
 VsServerInfo::serverSectionT VsServerInfo::section()
 {
     return m_section;

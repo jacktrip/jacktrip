@@ -104,6 +104,16 @@ void VsAuth::fetchUserInfo(QString accessToken)
         QJsonDocument userInfo = QJsonDocument::fromJson(response);
         QString userId         = userInfo.object()[QStringLiteral("sub")].toString();
 
+        reply->deleteLater();
+
+        if (userId.isEmpty()) {
+            std::cout << "VsAuth::fetchUserInfo Error: empty userId"
+                    << std::endl;
+            handleAuthFailed();  // handle failure
+            emit fetchUserInfoFailed();
+            return;
+        }
+
         handleAuthSucceeded(userId, accessToken);
     });
 }

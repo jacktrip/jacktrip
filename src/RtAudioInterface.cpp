@@ -103,9 +103,6 @@ RtAudioInterface::RtAudioInterface(QVarLengthArray<int> InputChans,
 //*******************************************************************************
 RtAudioInterface::~RtAudioInterface()
 {
-    if (mStereoToMonoMixer != NULL) {
-        delete mStereoToMonoMixer;
-    }
 }
 
 //*******************************************************************************
@@ -277,8 +274,8 @@ void RtAudioInterface::setup(bool verbose)
 
     unsigned int sampleRate   = getSampleRate();           // mSamplingRate;
     unsigned int bufferFrames = getBufferSizeInSamples();  // mBufferSize;
-    mStereoToMonoMixer        = new StereoToMono();
-    mStereoToMonoMixer->init(sampleRate, bufferFrames);
+    mStereoToMonoMixerPtr.reset(new StereoToMono());
+    mStereoToMonoMixerPtr->init(sampleRate, bufferFrames);
 
     // Setup parent class
     AudioInterface::setup(verbose);
@@ -439,7 +436,7 @@ int RtAudioInterface::RtAudioCallback(void* outputBuffer, void* inputBuffer,
         }
         if (in_chans_num == 2 && mInBuffer.size() == in_chans_num
             && mInputMixMode == AudioInterface::MIXTOMONO) {
-            mStereoToMonoMixer->compute(nFrames, mInBuffer.data(), mInBuffer.data());
+            mStereoToMonoMixerPtr->compute(nFrames, mInBuffer.data(), mInBuffer.data());
         }
         AudioInterface::callback(mInBuffer, mOutBuffer, nFrames);
     }
