@@ -129,12 +129,12 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
 
     m_webChannelServer.reset(new QWebSocketServer(
         QStringLiteral("Qt6 Virtual Studio Server"), QWebSocketServer::NonSecureMode));
-    m_webChannelClientWrapper.reset(
-        new WebSocketClientWrapper(m_webChannelServer.data()));
-    m_webChannel.reset(new QWebChannel());
+    connect(m_webChannelServer.data(), &QWebSocketServer::newConnection, this, [=]() {
+        m_webChannel->connectTo(
+            new WebSocketTransport(m_webChannelServer->nextPendingConnection()));
+    });
 
-    connect(m_webChannelClientWrapper.data(), &WebSocketClientWrapper::clientConnected,
-            m_webChannel.data(), &QWebChannel::connectTo);
+    m_webChannel.reset(new QWebChannel());
     m_webChannel->registerObject(QStringLiteral("virtualstudio"), this);
     m_webChannel->registerObject(QStringLiteral("appctl"), m_appController.data());
 

@@ -67,7 +67,6 @@
 #include "vsServerInfo.h"
 #include "vsUrlHandler.h"
 #include "vsWebSocket.h"
-#include "websocketclientwrapper.h"
 #include "websockettransport.h"
 
 #ifdef __APPLE__
@@ -441,7 +440,6 @@ class VirtualStudio : public QObject
 
     QScopedPointer<QWebSocketServer> m_webChannelServer;
     uint32_t m_webChannelPort;
-    QScopedPointer<WebSocketClientWrapper> m_webChannelClientWrapper;
     QScopedPointer<QWebChannel> m_webChannel;
 
     bool m_showFirstRun = false;
