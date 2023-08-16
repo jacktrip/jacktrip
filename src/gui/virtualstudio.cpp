@@ -381,6 +381,17 @@ bool VirtualStudio::vsFtux()
     return m_vsFtux;
 }
 
+void VirtualStudio::collectFeedbackSurvey(QString serverId, int rating, QString message)
+{
+    QJsonObject feedback;
+    feedback.insert(QStringLiteral("rating"), rating);
+    feedback.insert(QStringLiteral("message"), message);
+
+    QJsonDocument data = QJsonDocument(feedback);
+    m_api->submitServerFeedback(serverId, data.toJson());
+    return;
+}
+
 bool VirtualStudio::showWarnings()
 {
     return m_showWarnings;
@@ -822,6 +833,10 @@ void VirtualStudio::disconnect()
 
     m_connectionState = QStringLiteral("Disconnected");
     emit connectionStateChanged();
+
+    if (!m_currentStudio.id().isEmpty()) {
+        emit openFeedbackSurveyModal(m_currentStudio.id());
+    }
 
     // cleanup
     m_currentStudio.setId("");

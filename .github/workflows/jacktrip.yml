@@ -792,6 +792,8 @@ jobs:
           create_credentials_file: true
       - name: Upload files
         run: |
+          # this feature seems to produce permission denied errors on osx and linux runners (for larger files)
+          gcloud config set storage/parallel_composite_upload_enabled False
           gcloud storage cp ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-${{ steps.set-version.outputs.type }}${{ steps.set-version.outputs.extension }} gs://files.jacktrip.org/app-builds
       - name: Update edge manifests
         id: update-edge

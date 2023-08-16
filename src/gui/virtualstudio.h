@@ -186,6 +186,8 @@ class VirtualStudio : public QObject
     void setWindowState(QString state);
     void joinStudio();
     void disconnect();
+    void collectFeedbackSurvey(QString serverId, int rating,
+                               QString message);
 
    signals:
     void authSucceeded();
@@ -222,6 +224,7 @@ class VirtualStudio : public QObject
     void windowStateUpdated();
     void apiHostChanged();
     void feedbackDetected();
+    void openFeedbackSurveyModal(QString serverId);
 
    private slots:
     void slotAuthSucceeded();
