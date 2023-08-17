@@ -373,6 +373,7 @@ Item {
                 audio.stopAudio();
                 virtualstudio.windowState = "browse";
                 virtualstudio.loadSettings();
+                audio.validateDevices();
 
                 // switch mode
                 virtualstudio.toStandard();
@@ -704,6 +705,7 @@ Item {
                 audio.stopAudio();
                 virtualstudio.windowState = "browse";
                 virtualstudio.loadSettings();
+                audio.validateDevices();
             }
             anchors.verticalCenter: parent.verticalCenter
             x: parent.width - (230 * virtualstudio.uiScale)

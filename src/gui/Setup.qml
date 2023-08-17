@@ -98,7 +98,7 @@ Item {
                 border.width: 1
                 border.color: saveButton.down || saveButton.hovered ? saveButtonPressedStroke : saveButtonStroke
             }
-            enabled: !Boolean(audio.devicesError) && audio.backendAvailable
+            enabled: !Boolean(audio.devicesError) && audio.backendAvailable && audio.audioReady
             onClicked: {
                 virtualstudio.windowState = "connected";
                 audio.stopAudio();
@@ -115,7 +115,7 @@ Item {
                 font.family: "Poppins"
                 font.pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale
                 font.weight: Font.Bold
-                color: !Boolean(audio.devicesError) && audio.backendAvailable ? saveButtonText : disabledButtonText
+                color: !Boolean(audio.devicesError) && audio.backendAvailable && audio.audioReady ? saveButtonText : disabledButtonText
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.verticalCenter: parent.verticalCenter
             }
