@@ -302,7 +302,6 @@ class VsAudio : public QObject
     void updatedInputVuMeasurements(const float* valuesInDecibels, int numChannels);
     void updatedOutputVuMeasurements(const float* valuesInDecibels, int numChannels);
     void setupPlugins(int numInputChannels, int numOutputChannels);
-    void resetPlugins();
     void openJackAudioInterface();
     void openRtAudioInterface();
 

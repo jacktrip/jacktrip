@@ -158,10 +158,7 @@ VsAudio::VsAudio(QObject* parent)
 
 VsAudio::~VsAudio()
 {
-    if (m_audioInterfacePtr.isNull())
-        resetPlugins();
-    else
-        closeAudioInterface();
+    closeAudioInterface();
 }
 
 bool VsAudio::backendAvailable() const
@@ -528,7 +525,18 @@ void VsAudio::updatedOutputVuMeasurements(const float* valuesInDecibels, int num
 
 void VsAudio::setupPlugins(int numInputChannels, int numOutputChannels)
 {
-    resetPlugins();
+    // Make sure clip timers are stopped
+    m_inputClipTimer.stop();
+    m_outputClipTimer.stop();
+
+    // Reset meters
+    m_inputMeterLevels[0] = m_inputMeterLevels[1] = 0;
+    m_outputMeterLevels[0] = m_outputMeterLevels[1] = 0;
+    m_inputClipped = m_outputClipped = false;
+    emit updatedInputMeterLevels(m_inputMeterLevels);
+    emit updatedOutputMeterLevels(m_outputMeterLevels);
+    emit updatedInputClipped(m_inputClipped);
+    emit updatedOutputClipped(m_outputClipped);
 
     // Create plugins
     m_inputMeterPluginPtr   = new Meter(numInputChannels);
@@ -588,55 +596,6 @@ void VsAudio::appendProcessPlugins(JackTrip* jackTrip)
     // Note: Add this to monitor process to include self-volume
     m_outputMeterPluginPtr->setIsMonitoringMeter(true);
     jackTrip->appendProcessPluginToMonitor(m_outputMeterPluginPtr);
-}
-
-void VsAudio::resetPlugins()
-{
-    // Make sure clip timers are stopped
-    m_inputClipTimer.stop();
-    m_outputClipTimer.stop();
-
-    // Make sure plugins are disconnected before we destruct them
-    if (m_inputMeterPluginPtr != nullptr) {
-        QObject::disconnect(m_inputMeterPluginPtr);
-        m_inputMeterPluginPtr = nullptr;
-    }
-    if (m_outputMeterPluginPtr != nullptr) {
-        QObject::disconnect(m_outputMeterPluginPtr);
-        m_outputMeterPluginPtr = nullptr;
-    }
-    if (m_inputVolumePluginPtr != nullptr) {
-        QObject::disconnect(m_inputVolumePluginPtr);
-        m_inputVolumePluginPtr = nullptr;
-    }
-    if (m_outputVolumePluginPtr != nullptr) {
-        QObject::disconnect(m_outputVolumePluginPtr);
-        m_outputVolumePluginPtr = nullptr;
-    }
-    if (m_outputTonePluginPtr != nullptr) {
-        QObject::disconnect(m_outputTonePluginPtr);
-        m_outputTonePluginPtr = nullptr;
-    }
-    if (m_monitorPluginPtr != nullptr) {
-        QObject::disconnect(m_monitorPluginPtr);
-        m_monitorPluginPtr = nullptr;
-    }
-
-#ifndef NO_FEEDBACK
-    if (m_outputAnalyzerPluginPtr != nullptr) {
-        QObject::disconnect(m_outputAnalyzerPluginPtr);
-        m_outputAnalyzerPluginPtr = nullptr;
-    }
-#endif
-
-    // Reset meters
-    m_inputMeterLevels[0] = m_inputMeterLevels[1] = 0;
-    m_outputMeterLevels[0] = m_outputMeterLevels[1] = 0;
-    m_inputClipped = m_outputClipped = false;
-    emit updatedInputMeterLevels(m_inputMeterLevels);
-    emit updatedOutputMeterLevels(m_outputMeterLevels);
-    emit updatedInputClipped(m_inputClipped);
-    emit updatedOutputClipped(m_outputClipped);
 }
 
 #ifdef RT_AUDIO
@@ -1047,6 +1006,7 @@ void VsAudio::openAudioInterface()
     }
 #endif
     for (unsigned int tryNum = 0; tryNum < maxTries; ++tryNum) {
+#ifdef RT_AUDIO
         if (tryNum > 0) {
             if (getUseRtAudio()) {
                 updateDeviceModels(true);
@@ -1055,20 +1015,21 @@ void VsAudio::openAudioInterface()
                 setAudioBackend("RtAudio");
             }
         }
+#endif
         try {
             // Create AudioInterface Client Object
             if (m_backend == AudioBackendType::JACK) {
                 if constexpr (isBackendAvailable<AudioInterfaceMode::ALL>()
-                            || isBackendAvailable<AudioInterfaceMode::JACK>()) {
+                              || isBackendAvailable<AudioInterfaceMode::JACK>()) {
                     openJackAudioInterface();
                 } else {
                     if constexpr (isBackendAvailable<AudioInterfaceMode::RTAUDIO>()) {
                         openRtAudioInterface();
                     } else {
                         throw std::runtime_error(
-                            "JackTrip was compiled without RtAudio and can't find JACK. In "
-                            "order to use JackTrip, you'll need to install JACK or rebuild "
-                            "with RtAudio support.");
+                            "JackTrip was compiled without RtAudio and can't find JACK. "
+                            "In order to use JackTrip, you'll need to install JACK or "
+                            "rebuild with RtAudio support.");
                         std::exit(1);
                     }
                 }
@@ -1077,9 +1038,9 @@ void VsAudio::openAudioInterface()
                     openRtAudioInterface();
                 } else {
                     throw std::runtime_error(
-                        "JackTrip was compiled without RtAudio and can't find JACK. In order "
-                        "to use JackTrip, you'll need to install JACK or rebuild with "
-                        "RtAudio support.");
+                        "JackTrip was compiled without RtAudio and can't find JACK. "
+                        "In order to use JackTrip, you'll need to install JACK or "
+                        "rebuild with RtAudio support.");
                     std::exit(1);
                 }
             }
@@ -1095,12 +1056,12 @@ void VsAudio::openAudioInterface()
     std::cout << gPrintSeparator << std::endl;
     int AudioBufferSizeInBytes = m_audioBufferSize * sizeof(sample_t);
     std::cout << "The Audio Buffer Size is: " << m_audioBufferSize << " samples"
-                << std::endl;
+              << std::endl;
     std::cout << "                      or: " << AudioBufferSizeInBytes << " bytes"
-                << std::endl;
+              << std::endl;
     std::cout << gPrintSeparator << std::endl;
     std::cout << "The Number of Channels is: "
-                << m_audioInterfacePtr->getNumInputChannels() << std::endl;
+              << m_audioInterfacePtr->getNumInputChannels() << std::endl;
     std::cout << gPrintSeparator << std::endl;
 
     // setup audio plugins
@@ -1249,7 +1210,6 @@ void VsAudio::closeAudioInterface()
         return;
     std::cout << "Stopping Audio" << std::endl;
     setAudioReady(false);
-    resetPlugins();
     try {
         m_audioInterfacePtr->stopProcess();
     } catch (const std::exception& e) {
@@ -1264,10 +1224,13 @@ void VsAudio::privateRefreshDevices()
 #ifdef RT_AUDIO
     if (!getUseRtAudio())
         return;
-    closeAudioInterface();
+    bool restartAudio = !m_audioInterfacePtr.isNull();
+    if (restartAudio)
+        closeAudioInterface();
     updateDeviceModels(true);
     privateValidateDevices();
-    openAudioInterface();
+    if (restartAudio)
+        openAudioInterface();
 #endif
 }
 

@@ -452,7 +452,7 @@ void VirtualStudio::setTestMode(bool test)
     // deregister app
     if (!m_devicePtr.isNull()) {
         m_devicePtr->removeApp();
-        QObject::disconnect(m_devicePtr.get());
+        m_devicePtr->disconnect();
         m_devicePtr.reset();
     }
 
@@ -597,7 +597,7 @@ void VirtualStudio::logout()
     // deregister app
     if (!m_devicePtr.isNull()) {
         m_devicePtr->removeApp();
-        QObject::disconnect(m_devicePtr.get());
+        m_devicePtr->disconnect();
         m_devicePtr.reset();
     }
 
@@ -809,7 +809,7 @@ void VirtualStudio::disconnect()
     if (m_jackTripRunning) {
         m_devicePtr->stopPinger();
         m_devicePtr->stopJackTrip();
-        QObject::disconnect(m_devicePtr.get());
+        m_devicePtr->disconnect();
         // persist any volume level or device changes
         m_audioConfigPtr->saveSettings();
     } else {
@@ -838,10 +838,15 @@ void VirtualStudio::disconnect()
 
     // cleanup
     m_currentStudio.setId("");
+    emit currentStudioChanged();
 }
 
 void VirtualStudio::manageStudio(const QString& studioId, bool start)
 {
+    if (studioId.isEmpty()) {
+        processError("Manage requires a unique studio identifier");
+        return;
+    }
     QUrl url;
     if (!start) {
         url = QUrl(
@@ -884,6 +889,10 @@ void VirtualStudio::manageStudio(const QString& studioId, bool start)
 
 void VirtualStudio::launchVideo(const QString& studioId)
 {
+    if (studioId.isEmpty()) {
+        processError("Manage requires a unique studio identifier");
+        return;
+    }
     QUrl url = QUrl(
         QStringLiteral("https://%1/studios/%2/live").arg(m_api->getApiHost(), studioId));
     QDesktopServices::openUrl(url);
@@ -1323,7 +1332,7 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
             }
             if (firstLoad) {
                 emit authSucceeded();
-                m_refreshTimer.setInterval(10000);
+                m_refreshTimer.setInterval(3000);
                 m_refreshTimer.start();
                 m_heartbeatTimer.setInterval(5000);
                 m_heartbeatTimer.start();
