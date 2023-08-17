@@ -80,7 +80,8 @@ class VirtualStudio : public QObject
     Q_PROPERTY(
         QString connectedErrorMsg READ connectedErrorMsg NOTIFY connectedErrorMsgChanged)
 
-    Q_PROPERTY(QVector<VsServerInfo*> serverModel READ getServerModel NOTIFY serverModelChanged)
+    Q_PROPERTY(
+        QVector<VsServerInfo*> serverModel READ getServerModel NOTIFY serverModelChanged)
     Q_PROPERTY(VsServerInfo* currentStudio READ currentStudio NOTIFY currentStudioChanged)
     Q_PROPERTY(QUrl studioToJoin READ studioToJoin WRITE setStudioToJoin NOTIFY
                    studioToJoinChanged)
@@ -186,8 +187,7 @@ class VirtualStudio : public QObject
     void setWindowState(QString state);
     void joinStudio();
     void disconnect();
-    void collectFeedbackSurvey(QString serverId, int rating,
-                               QString message);
+    void collectFeedbackSurvey(QString serverId, int rating, QString message);
 
    signals:
     void authSucceeded();
@@ -250,34 +250,34 @@ class VirtualStudio : public QObject
     void connectToStudio(VsServerInfo& studio);
     void completeConnection();
 
-  private:
-    VsQuickView                           m_view;
-    VsServerInfo                          m_currentStudio;
-    QScopedPointer<JackTrip>              m_jackTrip;
-    QSharedPointer<QJackTrip>             m_standardWindow;
+   private:
+    VsQuickView m_view;
+    VsServerInfo m_currentStudio;
+    QScopedPointer<JackTrip> m_jackTrip;
+    QSharedPointer<QJackTrip> m_standardWindow;
     QScopedPointer<QNetworkAccessManager> m_networkAccessManager;
-    QScopedPointer<VsAuth>                m_auth;
-    QScopedPointer<VsApi>                 m_api;
-    QScopedPointer<VsDevice>              m_devicePtr;
-    QScopedPointer<VsWebSocket>           m_studioSocketPtr;
-    QScopedPointer<VsAudio>               m_audioConfigPtr;
-    QScopedPointer<QThread>               m_audioConfigThread;
-    QVector<VsServerInfoPointer>          m_servers;
-    QVector<VsServerInfo*>                m_serverModel;    //< qml doesn't like smart pointers
-    QMap<QString,bool>                    m_subscribedServers;
-    QJsonObject                           m_regions;
-    QJsonObject                           m_userMetadata;
-    QJsonObject                           m_networkStats;
-    QTimer                                m_startTimer;
-    QTimer                                m_refreshTimer;
-    QTimer                                m_heartbeatTimer;
-    QTimer                                m_networkOutageTimer;
-    QMutex                                m_refreshMutex;
-    QUrl                                  m_studioToJoin;
-    QString                               m_updateChannel;
-    QString                               m_refreshToken;
-    QString                               m_userId;
-    QString                               m_apiHost = PROD_API_HOST;
+    QScopedPointer<VsAuth> m_auth;
+    QScopedPointer<VsApi> m_api;
+    QScopedPointer<VsDevice> m_devicePtr;
+    QScopedPointer<VsWebSocket> m_studioSocketPtr;
+    QScopedPointer<VsAudio> m_audioConfigPtr;
+    QScopedPointer<QThread> m_audioConfigThread;
+    QVector<VsServerInfoPointer> m_servers;
+    QVector<VsServerInfo*> m_serverModel;  //< qml doesn't like smart pointers
+    QMap<QString, bool> m_subscribedServers;
+    QJsonObject m_regions;
+    QJsonObject m_userMetadata;
+    QJsonObject m_networkStats;
+    QTimer m_startTimer;
+    QTimer m_refreshTimer;
+    QTimer m_heartbeatTimer;
+    QTimer m_networkOutageTimer;
+    QMutex m_refreshMutex;
+    QUrl m_studioToJoin;
+    QString m_updateChannel;
+    QString m_refreshToken;
+    QString m_userId;
+    QString m_apiHost = PROD_API_HOST;
 
     bool m_jackTripRunning   = false;
     bool m_showFirstRun      = false;
@@ -299,12 +299,12 @@ class VirtualStudio : public QObject
     float m_fontScale        = 1;
     float m_uiScale          = 1;
 
-    QString     m_failedMessage         = QStringLiteral("");
-    QString     m_windowState           = QStringLiteral("loading");
-    QString     m_connectedErrorMsg     = QStringLiteral("");
-    QString     m_logoSection           = QStringLiteral("Your Studios");
-    QString     m_connectionState       = QStringLiteral("Waiting...");
-    QStringList m_updateChannelOptions  = {"Stable", "Edge"};
+    QString m_failedMessage            = QStringLiteral("");
+    QString m_windowState              = QStringLiteral("loading");
+    QString m_connectedErrorMsg        = QStringLiteral("");
+    QString m_logoSection              = QStringLiteral("Your Studios");
+    QString m_connectionState          = QStringLiteral("Waiting...");
+    QStringList m_updateChannelOptions = {"Stable", "Edge"};
 
 #ifdef __APPLE__
     NoNap m_noNap;

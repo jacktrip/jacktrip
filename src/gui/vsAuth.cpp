@@ -107,8 +107,7 @@ void VsAuth::fetchUserInfo(QString accessToken)
         reply->deleteLater();
 
         if (userId.isEmpty()) {
-            std::cout << "VsAuth::fetchUserInfo Error: empty userId"
-                    << std::endl;
+            std::cout << "VsAuth::fetchUserInfo Error: empty userId" << std::endl;
             handleAuthFailed();  // handle failure
             emit fetchUserInfoFailed();
             return;

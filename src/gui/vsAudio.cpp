@@ -59,15 +59,15 @@
 #include "../Analyzer.h"
 #endif
 
-#include "AudioInterfaceMode.h"
 #include "../JackTrip.h"
 #include "../Meter.h"
 #include "../Monitor.h"
 #include "../Tone.h"
 #include "../Volume.h"
+#include "AudioInterfaceMode.h"
 
 // Constructor
-VsAudio::VsAudio(QObject *parent)
+VsAudio::VsAudio(QObject* parent)
     : QObject(parent)
     , m_inputMeterLevels(2, 0)
     , m_outputMeterLevels(2, 0)
@@ -154,7 +154,6 @@ VsAudio::VsAudio(QObject *parent)
 #else
     m_permissionsPtr.reset(new VsPermissions());
 #endif
-
 }
 
 VsAudio::~VsAudio()
@@ -370,18 +369,16 @@ void VsAudio::loadSettings()
     m_inMuted       = settings.value(QStringLiteral("InMuted"), false).toBool();
     if constexpr (isBackendAvailable<AudioInterfaceMode::ALL>()) {
         m_backend = (settings.value(QStringLiteral("Backend"), 0).toInt() == 1)
-                                   ? AudioBackendType::RTAUDIO
-                                   : AudioBackendType::JACK;
+                        ? AudioBackendType::RTAUDIO
+                        : AudioBackendType::JACK;
     } else if constexpr (isBackendAvailable<AudioInterfaceMode::RTAUDIO>()) {
         m_backend = AudioBackendType::RTAUDIO;
     } else {
         m_backend = AudioBackendType::JACK;
     }
 
-    m_inputDevice =
-        settings.value(QStringLiteral("InputDevice"), "").toString();
-    m_outputDevice =
-        settings.value(QStringLiteral("OutputDevice"), "").toString();
+    m_inputDevice  = settings.value(QStringLiteral("InputDevice"), "").toString();
+    m_outputDevice = settings.value(QStringLiteral("OutputDevice"), "").toString();
     if (m_inputDevice == QStringLiteral("(default)")) {
         m_inputDevice = "";
     }
@@ -422,7 +419,7 @@ void VsAudio::loadSettings()
     }
 
     m_audioBufferSize = settings.value(QStringLiteral("BufferSize"), 128).toInt();
-    m_bufferStrategy = settings.value(QStringLiteral("BufferStrategy"), 2).toInt();
+    m_bufferStrategy  = settings.value(QStringLiteral("BufferStrategy"), 2).toInt();
     m_feedbackDetectionEnabled =
         settings.value(QStringLiteral("FeedbackDetectionEnabled"), true).toBool();
     settings.endGroup();
@@ -458,8 +455,7 @@ void VsAudio::detectedFeedbackLoop()
     emit feedbackDetected();
 }
 
-void VsAudio::updatedInputVuMeasurements(const float* valuesInDecibels,
-                                         int numChannels)
+void VsAudio::updatedInputVuMeasurements(const float* valuesInDecibels, int numChannels)
 {
     bool detectedClip = false;
 
@@ -497,8 +493,7 @@ void VsAudio::updatedInputVuMeasurements(const float* valuesInDecibels,
     emit updatedInputMeterLevels(m_inputMeterLevels);
 }
 
-void VsAudio::updatedOutputVuMeasurements(const float* valuesInDecibels,
-                                          int numChannels)
+void VsAudio::updatedOutputVuMeasurements(const float* valuesInDecibels, int numChannels)
 {
     bool detectedClip = false;
 
@@ -534,9 +529,9 @@ void VsAudio::setupPlugins(int numInputChannels, int numOutputChannels)
     resetPlugins();
 
     // Create plugins
-    m_inputMeterPluginPtr = new Meter(numInputChannels);
-    m_outputMeterPluginPtr = new Meter(numOutputChannels);
-    m_inputVolumePluginPtr = new Volume(numInputChannels);
+    m_inputMeterPluginPtr   = new Meter(numInputChannels);
+    m_outputMeterPluginPtr  = new Meter(numOutputChannels);
+    m_inputVolumePluginPtr  = new Volume(numInputChannels);
     m_outputVolumePluginPtr = new Volume(numOutputChannels);
 
     // initialize input and output volumes
@@ -602,27 +597,27 @@ void VsAudio::resetPlugins()
     // Make sure plugins are disconnected before we destruct them
     if (m_inputMeterPluginPtr != nullptr) {
         QObject::disconnect(m_inputMeterPluginPtr);
-        m_inputMeterPluginPtr = nullptr;;
+        m_inputMeterPluginPtr = nullptr;
     }
     if (m_outputMeterPluginPtr != nullptr) {
         QObject::disconnect(m_outputMeterPluginPtr);
-        m_outputMeterPluginPtr = nullptr;;
+        m_outputMeterPluginPtr = nullptr;
     }
     if (m_inputVolumePluginPtr != nullptr) {
         QObject::disconnect(m_inputVolumePluginPtr);
-        m_inputVolumePluginPtr = nullptr;;
+        m_inputVolumePluginPtr = nullptr;
     }
     if (m_outputVolumePluginPtr != nullptr) {
         QObject::disconnect(m_outputVolumePluginPtr);
-        m_outputVolumePluginPtr = nullptr;;
+        m_outputVolumePluginPtr = nullptr;
     }
     if (m_outputTonePluginPtr != nullptr) {
         QObject::disconnect(m_outputTonePluginPtr);
-        m_outputTonePluginPtr = nullptr;;
+        m_outputTonePluginPtr = nullptr;
     }
     if (m_monitorPluginPtr != nullptr) {
         QObject::disconnect(m_monitorPluginPtr);
-        m_monitorPluginPtr = nullptr;;
+        m_monitorPluginPtr = nullptr;
     }
 
 #ifndef NO_FEEDBACK
@@ -882,15 +877,12 @@ void VsAudio::updateDeviceModels(bool refresh)
     QStringList inputDeviceCategories;
     QStringList outputDeviceCategories;
 
-    qDebug() << "updating device models";
+    getDeviceList(m_inputDeviceList, inputDeviceCategories, m_inputDeviceChannels, true);
+    getDeviceList(m_outputDeviceList, outputDeviceCategories, m_outputDeviceChannels,
+                  false);
 
-    getDeviceList(m_inputDeviceList, inputDeviceCategories,
-                  m_inputDeviceChannels, true);
-    getDeviceList(m_outputDeviceList, outputDeviceCategories,
-                  m_outputDeviceChannels, false);
-
-    m_inputComboModel  = formatDeviceList(m_inputDeviceList, inputDeviceCategories,
-                                          m_inputDeviceChannels);
+    m_inputComboModel =
+        formatDeviceList(m_inputDeviceList, inputDeviceCategories, m_inputDeviceChannels);
     m_outputComboModel = formatDeviceList(m_outputDeviceList, outputDeviceCategories,
                                           m_outputDeviceChannels);
 
@@ -1127,7 +1119,6 @@ void VsAudio::openJackAudioInterface()
 #ifndef NO_JACK
     if constexpr (isBackendAvailable<AudioInterfaceMode::ALL>()
                   || isBackendAvailable<AudioInterfaceMode::JACK>()) {
-
         QVarLengthArray<int> inputChans;
         QVarLengthArray<int> outputChans;
         inputChans.resize(m_numInputChannels);
@@ -1159,8 +1150,8 @@ void VsAudio::openJackAudioInterface()
         setDevicesWarningMsg(QString::fromStdString(devicesWarningMsg));
         setDevicesErrorMsg(QString::fromStdString(devicesErrorMsg));
 
-        m_sampleRate = m_audioInterfacePtr->getSampleRate();
-        m_deviceID = m_audioInterfacePtr->getDeviceID();
+        m_sampleRate      = m_audioInterfacePtr->getSampleRate();
+        m_deviceID        = m_audioInterfacePtr->getDeviceID();
         m_audioBufferSize = m_audioInterfacePtr->getBufferSizeInSamples();
     } else {
         return;
@@ -1196,15 +1187,17 @@ void VsAudio::openRtAudioInterface()
         m_audioInterfacePtr->setInputDevice(m_inputDevice.toStdString());
         m_audioInterfacePtr->setOutputDevice(m_outputDevice.toStdString());
         m_audioInterfacePtr->setBufferSizeInSamples(m_audioBufferSize);
-        static_cast<RtAudioInterface*>(m_audioInterfacePtr.get())->setRtAudioDevices(m_devices);
+        static_cast<RtAudioInterface*>(m_audioInterfacePtr.get())
+            ->setRtAudioDevices(m_devices);
 
         // Note: setup might change the number of channels and/or buffer size
         m_audioInterfacePtr->setup(true);
 
-        std::string devicesWarningMsg     = m_audioInterfacePtr->getDevicesWarningMsg();
-        std::string devicesErrorMsg       = m_audioInterfacePtr->getDevicesErrorMsg();
-        std::string devicesWarningHelpUrl = m_audioInterfacePtr->getDevicesWarningHelpUrl();
-        std::string devicesErrorHelpUrl   = m_audioInterfacePtr->getDevicesErrorHelpUrl();
+        std::string devicesWarningMsg = m_audioInterfacePtr->getDevicesWarningMsg();
+        std::string devicesErrorMsg   = m_audioInterfacePtr->getDevicesErrorMsg();
+        std::string devicesWarningHelpUrl =
+            m_audioInterfacePtr->getDevicesWarningHelpUrl();
+        std::string devicesErrorHelpUrl = m_audioInterfacePtr->getDevicesErrorHelpUrl();
 
         if (devicesWarningMsg != "") {
             qDebug() << "Devices Warning: " << QString::fromStdString(devicesWarningMsg);

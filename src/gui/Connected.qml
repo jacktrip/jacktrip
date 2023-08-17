@@ -60,32 +60,6 @@ Item {
 
     property bool isUsingRtAudio: audio.audioBackend == "RtAudio"
 
-    function getCurrentInputDeviceIndex () {
-        if (audio.inputDevice === "") {
-            return audio.inputComboModel.findIndex(elem => elem.type === "element");
-        }
-
-        let idx = audio.inputComboModel.findIndex(elem => elem.type === "element" && elem.text === audio.inputDevice);
-        if (idx < 0) {
-            idx = audio.inputComboModel.findIndex(elem => elem.type === "element");
-        }
-
-        return idx;
-    }
-
-    function getCurrentOutputDeviceIndex() {
-        if (audio.outputDevice === "") {
-            return audio.outputComboModel.findIndex(elem => elem.type === "element");
-        }
-
-        let idx = audio.outputComboModel.findIndex(elem => elem.type === "element" && elem.text === audio.outputDevice);
-        if (idx < 0) {
-            idx = audio.outputComboModel.findIndex(elem => elem.type === "element");
-        }
-
-        return idx;
-    }
-
     Loader {
         id: studioWebLoader
         anchors.top: parent.top

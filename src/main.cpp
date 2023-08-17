@@ -48,10 +48,12 @@
 
 #if !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #include <QDebug>
+#include <QDir>
 #include <QFile>
 #include <QQmlEngine>
 #include <QQuickView>
 #include <QSettings>
+#include <QStandardPaths>
 #include <QTextStream>
 // TODO: Add support for QtWebView
 //#include <QtWebView>

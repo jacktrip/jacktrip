@@ -77,7 +77,7 @@ void sigint_handler(int sig)
 }
 #endif*/
 
-bool JackTrip::sSigInt      = false;
+bool JackTrip::sSigInt       = false;
 bool JackTrip::sAudioStopped = false;
 
 //*******************************************************************************

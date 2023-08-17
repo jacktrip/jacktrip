@@ -52,12 +52,11 @@
 // https://bugreports.qt.io/browse/QTBUG-55199
 #include <QSvgGenerator>
 
-#include "../Settings.h"
 #include "../JackTrip.h"
+#include "../Settings.h"
 #include "../jacktrip_globals.h"
 #include "about.h"
 #include "qjacktrip.h"
-
 #include "vsApi.h"
 #include "vsAudio.h"
 #include "vsAuth.h"
@@ -76,7 +75,8 @@
 
 VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     : QObject(parent)
-    , m_audioConfigPtr(new VsAudio(this))  // this needs to be constructed before loadSettings()
+    , m_audioConfigPtr(
+          new VsAudio(this))  // this needs to be constructed before loadSettings()
     , m_showFirstRun(firstRun)
 {
     // load or initialize persisted settings
@@ -147,7 +147,8 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("audio"),
                                                        m_audioConfigPtr.get());
     m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("permissions"), QVariant::fromValue(m_audioConfigPtr->getPermissions().get()));
+        QStringLiteral("permissions"),
+        QVariant::fromValue(m_audioConfigPtr->getPermissions().get()));
     m_view.engine()->rootContext()->setContextProperty(
         QStringLiteral("backendComboModel"),
         QVariant::fromValue(QStringList()
@@ -187,7 +188,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     // when connected to server, trigger UI modal when feedback is detected
     connect(m_audioConfigPtr.get(), &VsAudio::feedbackDetected, this,
             &VirtualStudio::detectedFeedbackLoop, Qt::QueuedConnection);
-    
+
     // call exit() when the UI window is closed
     connect(&m_view, &VsQuickView::windowClose, this, &VirtualStudio::exit,
             Qt::QueuedConnection);
@@ -533,7 +534,7 @@ void VirtualStudio::joinStudio()
         return;
     }
     if (m_windowState != "connected") {
-        return; // on audio setup screen before joining the studio
+        return;  // on audio setup screen before joining the studio
     }
 
     QString scheme = m_studioToJoin.scheme();
@@ -651,12 +652,12 @@ void VirtualStudio::loadSettings()
         settings.value(QStringLiteral("UpdateChannel"), "stable").toString().toLower();
 
     settings.beginGroup(QStringLiteral("VirtualStudio"));
-    m_refreshToken    = settings.value(QStringLiteral("RefreshToken"), "").toString();
-    m_userId          = settings.value(QStringLiteral("UserId"), "").toString();
+    m_refreshToken = settings.value(QStringLiteral("RefreshToken"), "").toString();
+    m_userId       = settings.value(QStringLiteral("UserId"), "").toString();
 
-    m_testMode        = settings.value(QStringLiteral("TestMode"), false).toBool();
-    m_showInactive    = settings.value(QStringLiteral("ShowInactive"), true).toBool();
-    m_showSelfHosted  = settings.value(QStringLiteral("ShowSelfHosted"), false).toBool();
+    m_testMode       = settings.value(QStringLiteral("TestMode"), false).toBool();
+    m_showInactive   = settings.value(QStringLiteral("ShowInactive"), true).toBool();
+    m_showSelfHosted = settings.value(QStringLiteral("ShowSelfHosted"), false).toBool();
 
     // use setters to emit signals for these if they change; otherwise, the
     // user interface will not revert back after cancelling settings changes
@@ -723,7 +724,8 @@ void VirtualStudio::connectToStudio(VsServerInfo& studio)
 
 void VirtualStudio::completeConnection()
 {
-    if (m_currentStudio.id() == "" || m_currentStudio.status() == QStringLiteral("Disabled")) {
+    if (m_currentStudio.id() == ""
+        || m_currentStudio.status() == QStringLiteral("Disabled")) {
         return;
     }
 
@@ -846,9 +848,8 @@ void VirtualStudio::manageStudio(const QString& studioId, bool start)
 {
     QUrl url;
     if (!start) {
-        url = QUrl(QStringLiteral("https://%1/studios/%2")
-                       .arg(m_api->getApiHost(),
-                            studioId));
+        url = QUrl(
+            QStringLiteral("https://%1/studios/%2").arg(m_api->getApiHost(), studioId));
     } else {
         QString expiration =
             QDateTime::currentDateTimeUtc().addSecs(60 * 30).toString(Qt::ISODate);
@@ -856,8 +857,7 @@ void VirtualStudio::manageStudio(const QString& studioId, bool start)
                             {QLatin1String("expiresAt"), expiration}};
         QJsonDocument request = QJsonDocument(json);
 
-        QNetworkReply* reply = m_api->updateServer(
-            studioId, request.toJson());
+        QNetworkReply* reply = m_api->updateServer(studioId, request.toJson());
         connect(reply, &QNetworkReply::finished, this, [&, reply]() {
             if (reply->error() != QNetworkReply::NoError) {
                 m_connectionState      = QStringLiteral("Unable to Start Studio");
@@ -888,9 +888,8 @@ void VirtualStudio::manageStudio(const QString& studioId, bool start)
 
 void VirtualStudio::launchVideo(const QString& studioId)
 {
-    QUrl url =
-        QUrl(QStringLiteral("https://%1/studios/%2/live")
-                 .arg(m_api->getApiHost(), studioId));
+    QUrl url = QUrl(
+        QStringLiteral("https://%1/studios/%2/live").arg(m_api->getApiHost(), studioId));
     QDesktopServices::openUrl(url);
 }
 
@@ -949,7 +948,7 @@ void VirtualStudio::slotAuthSucceeded()
 
     // Get refresh token and userId
     m_refreshToken = m_auth->refreshToken();
-    m_userId = m_auth->userId();
+    m_userId       = m_auth->userId();
     emit hasRefreshTokenChanged();
 
     QSettings settings;
@@ -962,13 +961,14 @@ void VirtualStudio::slotAuthSucceeded()
 
     // initialize new VsDevice and wire up signals/slots before registering app
     m_devicePtr.reset(new VsDevice(m_auth.data(), m_api.data()));
-    connect(m_devicePtr.get(), &VsDevice::updateNetworkStats, this, &VirtualStudio::updatedStats);
-    connect(m_devicePtr.get(), &VsDevice::updatedCaptureVolumeFromServer, m_audioConfigPtr.get(),
-            &VsAudio::setInputVolume);
-    connect(m_devicePtr.get(), &VsDevice::updatedCaptureMuteFromServer, m_audioConfigPtr.get(),
-            &VsAudio::setInputMuted);
-    connect(m_devicePtr.get(), &VsDevice::updatedPlaybackVolumeFromServer, m_audioConfigPtr.get(),
-            &VsAudio::setOutputVolume);
+    connect(m_devicePtr.get(), &VsDevice::updateNetworkStats, this,
+            &VirtualStudio::updatedStats);
+    connect(m_devicePtr.get(), &VsDevice::updatedCaptureVolumeFromServer,
+            m_audioConfigPtr.get(), &VsAudio::setInputVolume);
+    connect(m_devicePtr.get(), &VsDevice::updatedCaptureMuteFromServer,
+            m_audioConfigPtr.get(), &VsAudio::setInputMuted);
+    connect(m_devicePtr.get(), &VsDevice::updatedPlaybackVolumeFromServer,
+            m_audioConfigPtr.get(), &VsAudio::setOutputVolume);
     connect(m_devicePtr.get(), &VsDevice::updatedMonitorVolume, m_audioConfigPtr.get(),
             &VsAudio::setMonitorVolume);
     connect(m_audioConfigPtr.get(), &VsAudio::updatedInputVolume, m_devicePtr.get(),
@@ -1040,7 +1040,8 @@ void VirtualStudio::connectionFinished()
 
 void VirtualStudio::processError(const QString& errorMessage)
 {
-    const bool shouldSwitchToRtAudio = (errorMessage == QLatin1String("Maybe the JACK server is not running?"));
+    const bool shouldSwitchToRtAudio =
+        (errorMessage == QLatin1String("Maybe the JACK server is not running?"));
 
     QMessageBox msgBox;
     if (shouldSwitchToRtAudio) {
@@ -1097,7 +1098,8 @@ void VirtualStudio::handleWebsocketMessage(const QString& msg)
         if (serverStatus == QLatin1String("Ready") && m_onConnectedScreen) {
             m_currentStudio.setHost(serverState[QStringLiteral("serverHost")].toString());
             m_currentStudio.setPort(serverState[QStringLiteral("serverPort")].toInt());
-            m_currentStudio.setSessionId(serverState[QStringLiteral("sessionId")].toString());
+            m_currentStudio.setSessionId(
+                serverState[QStringLiteral("sessionId")].toString());
             completeConnection();
         }
     }
@@ -1269,7 +1271,8 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
             }
 
             // sort studios in each section by name
-            auto serverSorter = [](VsServerInfoPointer first, VsServerInfoPointer second) {
+            auto serverSorter = [](VsServerInfoPointer first,
+                                   VsServerInfoPointer second) {
                 return *first < *second;
             };
             std::sort(yourServers.begin(), yourServers.end(), serverSorter);
@@ -1321,8 +1324,7 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
             int index = -1;
             if (!topServerId.isEmpty()) {
                 for (int i = 0; i < m_servers.count(); i++) {
-                    if (m_servers.at(i)->id()
-                        == topServerId) {
+                    if (m_servers.at(i)->id() == topServerId) {
                         index = i;
                         break;
                     }
@@ -1413,8 +1415,8 @@ void VirtualStudio::stopStudio()
         return;
     }
 
-    QJsonObject json         = {{QLatin1String("enabled"), false}};
-    QJsonDocument request    = QJsonDocument(json);
+    QJsonObject json      = {{QLatin1String("enabled"), false}};
+    QJsonDocument request = QJsonDocument(json);
     m_currentStudio.setHost(QLatin1String(""));
     QNetworkReply* reply = m_api->updateServer(m_currentStudio.id(), request.toJson());
     connect(reply, &QNetworkReply::finished, this, [=]() {

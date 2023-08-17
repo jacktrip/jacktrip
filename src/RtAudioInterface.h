@@ -57,7 +57,10 @@ class JackTrip;  // Forward declaration
 /// \brief Simple Class that represents an audio interface available via RtAudio
 class RtAudioDevice : public RtAudio::DeviceInfo
 {
-public:
+   public:
+#if RTAUDIO_VERSION_MAJOR < 6
+    unsigned int ID;
+#endif
     RtAudio::Api api;
     void print() const;
     void printVerbose() const;
@@ -141,13 +144,12 @@ class RtAudioInterface : public AudioInterface
     QVarLengthArray<float*>
         mInBuffer;  ///< Vector of Input buffers/channel read from JACK
     QVarLengthArray<float*>
-        mOutBuffer; ///< Vector of Output buffer/channel to write to JACK
+        mOutBuffer;  ///< Vector of Output buffer/channel to write to JACK
     QVector<RtAudioDevice>
-        mDevices;   ///< Vector of audio interfaces available via RTAudio
+        mDevices;  ///< Vector of audio interfaces available via RTAudio
     QSharedPointer<RtAudio>
-        mRtAudio;   ///< RtAudio class if the input and output device are the same
-    QScopedPointer<StereoToMono>
-        mStereoToMonoMixerPtr;
+        mRtAudio;  ///< RtAudio class if the input and output device are the same
+    QScopedPointer<StereoToMono> mStereoToMonoMixerPtr;
 };
 
 #endif  // __RTAUDIOINTERFACE_H__
