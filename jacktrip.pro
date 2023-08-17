@@ -264,7 +264,7 @@ HEADERS += src/DataProtocol.h \
                src/gui/vsDeviceCodeFlow.h \
                src/gui/vsInit.h \
                src/gui/vsDevice.h \
-               src/gui/vsAudioInterface.h \
+               src/gui/vsAudio.h \
                src/gui/vsServerInfo.h \
                src/gui/vsQuickView.h \
                src/gui/vsWebSocket.h \
@@ -334,7 +334,7 @@ SOURCES += src/DataProtocol.cpp \
                src/gui/vsDeviceCodeFlow.cpp \
                src/gui/vsInit.cpp \
                src/gui/vsDevice.cpp \
-               src/gui/vsAudioInterface.cpp \
+               src/gui/vsAudio.cpp \
                src/gui/vsServerInfo.cpp \
                src/gui/vsQuickView.cpp \
                src/gui/vsWebSocket.cpp \

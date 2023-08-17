@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import org.jacktrip.jacktrip 1.0
 
 Item {
     width: parent.width; height: parent.height
@@ -19,10 +20,10 @@ Item {
     property int bottomToolTipMargin: 8
     property int rightToolTipMargin: 4
 
-    property string studioStatus: (virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].status : "")
+    property string studioStatus: (virtualstudio.currentStudio.id === "" ? "" : virtualstudio.currentStudio.status)
     property bool showReadyScreen: studioStatus === "Ready"
     property bool showStartingScreen: studioStatus === "Starting"
-    property bool showStoppingScreen: (virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].isAdmin && !serverModel[virtualstudio.currentStudio].enabled && serverModel[virtualstudio.currentStudio].cloudId !== "" : false)
+    property bool showStoppingScreen: (virtualstudio.currentStudio.id === "" ? false : (virtualstudio.currentStudio.isAdmin && !virtualstudio.currentStudio.enabled && virtualstudio.currentStudio.cloudId !== ""))
     property bool showWaitingScreen: !showStoppingScreen && !showStartingScreen && !showReadyScreen
 
     property string buttonColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
@@ -57,33 +58,7 @@ Item {
     property string meterYellow: "#F5BF4F"
     property string meterRed: "#F21B1B"
 
-    property bool isUsingRtAudio: virtualstudio.audioBackend == "RtAudio"
-
-    function getCurrentInputDeviceIndex () {
-        if (virtualstudio.inputDevice === "") {
-            return virtualstudio.inputComboModel.findIndex(elem => elem.type === "element");
-        }
-
-        let idx = virtualstudio.inputComboModel.findIndex(elem => elem.type === "element" && elem.text === virtualstudio.inputDevice);
-        if (idx < 0) {
-            idx = virtualstudio.inputComboModel.findIndex(elem => elem.type === "element");
-        }
-
-        return idx;
-    }
-
-    function getCurrentOutputDeviceIndex() {
-        if (virtualstudio.outputDevice === "") {
-            return virtualstudio.outputComboModel.findIndex(elem => elem.type === "element");
-        }
-
-        let idx = virtualstudio.outputComboModel.findIndex(elem => elem.type === "element" && elem.text === virtualstudio.outputDevice);
-        if (idx < 0) {
-            idx = virtualstudio.outputComboModel.findIndex(elem => elem.type === "element");
-        }
-
-        return idx;
-    }
+    property bool isUsingRtAudio: audio.audioBackend == "RtAudio"
 
     Loader {
         id: studioWebLoader
@@ -93,7 +68,7 @@ Item {
         anchors.bottom: deviceControlsGroup.top
 
         property string accessToken: auth.isAuthenticated && Boolean(auth.accessToken) ? auth.accessToken : ""
-        property string studioId: virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].id : ""
+        property string studioId: virtualstudio.currentStudio.id
 
         source: accessToken && studioId ? "Web.qml" : "WebNull.qml"
     }

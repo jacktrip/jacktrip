@@ -35,6 +35,9 @@
  * \date December 2022
  */
 
+#ifndef AUDIOINTERFACEMODE_H
+#define AUDIOINTERFACEMODE_H
+
 enum class AudioInterfaceMode {
     JACK,     ///< Jack Mode
     RTAUDIO,  ///< RtAudio Mode
@@ -81,3 +84,5 @@ constexpr auto isBackendAvailable()
         return false;
     }
 }
+
+#endif  // AUDIOINTERFACEMODE_H

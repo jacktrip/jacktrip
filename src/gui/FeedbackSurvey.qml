@@ -325,7 +325,7 @@ Item {
                         anchors.verticalCenter: parent.buttonsArea
                         width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
                         onClicked: () => {
-                            virtualstudio.collectSessionFeedback(serverId, rating, messageBox.text);
+                            virtualstudio.collectFeedbackSurvey(serverId, rating, messageBox.text);
                             submitted = true;
                             rating = 0;
                             serverId = "";
@@ -434,7 +434,7 @@ Item {
     Connections {
       target: virtualstudio
 
-      function onOpenFeedbackModal(serverId) {
+      function onOpenFeedbackSurveyModal(serverId) {
         userFeedbackSurvey.serverId = serverId;
         userFeedbackModal.open();
       }

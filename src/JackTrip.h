@@ -158,7 +158,7 @@ class JackTrip : public QObject
         sSigInt = true;
     }
     static bool sSigInt;
-    static bool sJackStopped;
+    static bool sAudioStopped;
 
     /// \brief Starting point for the thread
     /*virtual void run() {

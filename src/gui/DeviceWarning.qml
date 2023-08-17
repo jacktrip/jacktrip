@@ -13,16 +13,16 @@ Item {
         height: parent.height
         icon.source: "warning.svg"
         color: devicesWarningColour
-        visible: Boolean(virtualstudio.devicesError) || Boolean(virtualstudio.devicesWarning)
+        visible: Boolean(audio.devicesError) || Boolean(audio.devicesWarning)
     }
     
     Text {
         id: warningOrErrorText
-        text: Boolean(virtualstudio.devicesError) ? "Audio Configuration Error" : "Audio Configuration Warning"
+        text: Boolean(audio.devicesError) ? "Audio Configuration Error" : "Audio Configuration Warning"
         anchors.left: devicesWarningIcon.right
         anchors.leftMargin: 4 * virtualstudio.uiScale
         anchors.verticalCenter: devicesWarningIcon.verticalCenter
-        visible: Boolean(virtualstudio.devicesError) || Boolean(virtualstudio.devicesWarning)
+        visible: Boolean(audio.devicesError) || Boolean(audio.devicesWarning)
         font { family: "Poppins"; pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale }
         color: devicesWarningColour
     }
@@ -33,10 +33,10 @@ Item {
         anchors.leftMargin: 2 * virtualstudio.uiScale
         anchors.bottom: warningOrErrorText.bottom
         anchors.bottomMargin: 6 * virtualstudio.uiScale
-        content: qsTr(virtualstudio.devicesError || virtualstudio.devicesWarning)
+        content: qsTr(audio.devicesError || audio.devicesWarning)
         iconColor: devicesWarningColour
         size: 16 * virtualstudio.uiScale
-        visible: Boolean(virtualstudio.devicesError) || Boolean(virtualstudio.devicesWarning)
+        visible: Boolean(audio.devicesError) || Boolean(audio.devicesWarning)
     }
 
     MouseArea {

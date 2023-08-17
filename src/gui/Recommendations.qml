@@ -39,14 +39,6 @@ Item {
     property string recommendationScreen: virtualstudio.showWarnings ? "ethernet" : ( permissions.micPermission == "unknown" ? "microphone" : "acknowledged")
     property bool onWindows: Qt.platform.os === "windows"
 
-    Timer {
-        id: resetRecommendationScreenTimer
-        interval: 2000; running: false; repeat: false
-        onTriggered: () => {
-            recommendationScreen = virtualstudio.showWarnings ? "ethernet" : ( permissions.micPermission == "unknown" ? "microphone" : "acknowledged");
-        }
-    }
-
     Rectangle {
         id: recommendationsHeader
         x: -1
@@ -476,15 +468,18 @@ Item {
                 }
                 onClicked: {
                     virtualstudio.showWarnings = true;
-                    if (permissions.micPermission === "granted") {
-                        virtualstudio.windowState = "browse";
-                        virtualstudio.applySettings();
-                    } else {
+                    virtualstudio.saveSettings();
+                    if (permissions.micPermission !== "granted") {
                         virtualstudio.windowState = "permissions";
-                        virtualstudio.applySettings();
+                    } else if (virtualstudio.studioToJoin.toString() === "") {
+                        virtualstudio.windowState = "browse";
+                    } else if (virtualstudio.showDeviceSetup) {
+                        virtualstudio.windowState = "setup";
+                        audio.startAudio();
+                    } else {
+                        virtualstudio.windowState = "connected";
+                        virtualstudio.joinStudio();
                     }
-
-                    resetRecommendationScreenTimer.start();
                 }
                 width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
                 Text {
@@ -512,15 +507,18 @@ Item {
                 }
                 onClicked: {
                     virtualstudio.showWarnings = false;
-                    if (permissions.micPermission === "granted") {
-                        virtualstudio.windowState = "browse";
-                        virtualstudio.applySettings();
-                    } else {
+                    virtualstudio.saveSettings();
+                    if (permissions.micPermission !== "granted") {
                         virtualstudio.windowState = "permissions";
-                        virtualstudio.applySettings();
+                    } else if (virtualstudio.studioToJoin.toString() === "") {
+                        virtualstudio.windowState = "browse";
+                    } else if (virtualstudio.showDeviceSetup) {
+                        virtualstudio.windowState = "setup";
+                        audio.startAudio();
+                    } else {
+                        virtualstudio.windowState = "connected";
+                        virtualstudio.joinStudio();
                     }
-
-                    resetRecommendationScreenTimer.start();
                 }
                 width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
                 Text {

@@ -270,7 +270,7 @@ void JackAudioInterface::jackShutdown(jack_status_t /*code*/, const char* reason
                                       void* /*arg*/)
 {
     std::cout << reason << std::endl;
-    JackTrip::sJackStopped = true;
+    JackTrip::sAudioStopped = true;
     std::cout << "The Jack Server was shut down!" << std::endl;
 }
 

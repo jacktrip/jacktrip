@@ -154,12 +154,15 @@ AudioInterface::~AudioInterface()
     }
 #endif  // endwhere
     for (auto* i : qAsConst(mProcessPluginsFromNetwork)) {
+        i->disconnect();
         delete i;
     }
     for (auto* i : qAsConst(mProcessPluginsToNetwork)) {
+        i->disconnect();
         delete i;
     }
     for (auto* i : qAsConst(mProcessPluginsToMonitor)) {
+        i->disconnect();
         delete i;
     }
     for (int i = 0; i < mInBufCopy.size(); i++) {
