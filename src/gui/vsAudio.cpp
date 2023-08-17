@@ -183,7 +183,7 @@ void VsAudio::setAudioReady(bool ready)
     emit signalAudioReadyChanged();
 }
 
-void VsAudio::setAudioBackend(const QString& backend)
+void VsAudio::setAudioBackend([[maybe_unused]] const QString& backend)
 {
 #ifdef RT_AUDIO
     bool useRtAudio = (backend == QStringLiteral("RtAudio"));

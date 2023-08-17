@@ -402,11 +402,6 @@ void VirtualStudio::setShowWarnings(bool show)
 {
     m_showWarnings = show;
     emit showWarningsChanged();
-
-    // attempt to join studio if requested
-    if (!m_studioToJoin.isEmpty()) {
-        joinStudio();
-    }
 }
 
 float VirtualStudio::fontScale()
@@ -540,7 +535,7 @@ void VirtualStudio::joinStudio()
     QString scheme = m_studioToJoin.scheme();
     QString path   = m_studioToJoin.path();
     QString url    = m_studioToJoin.toString();
-    m_studioToJoin.clear();
+    setStudioToJoin(QUrl(""));
 
     m_failedMessage = "";
     if (scheme != "jacktrip" || path.length() <= 1) {
@@ -554,6 +549,7 @@ void VirtualStudio::joinStudio()
     for (const VsServerInfoPointer& s : m_servers) {
         if (s->id() == targetId) {
             connectToStudio(*s);
+            return;
         }
     }
 
@@ -986,11 +982,6 @@ void VirtualStudio::slotAuthSucceeded()
     getServerList(true, false);
     getRegions();
     getUserMetadata();
-
-    // attempt to join studio if requested
-    if (!m_studioToJoin.isEmpty()) {
-        joinStudio();
-    }
 }
 
 void VirtualStudio::slotAuthFailed()
