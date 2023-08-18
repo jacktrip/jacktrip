@@ -157,7 +157,7 @@ class VirtualStudio : public QObject
     bool darkMode();
     void setDarkMode(bool dark);
     bool collapseDeviceControls();
-    void setCollapseDeviceControls(bool deviceControlsCollapsed);
+    void setCollapseDeviceControls(bool collapseDeviceControls);
     bool testMode();
     void setTestMode(bool test);
     QUrl studioToJoin();

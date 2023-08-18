@@ -87,8 +87,8 @@ Item {
     Connections {
         target: virtualstudio
 
-        function onDeviceControlsCollapsedChanged(deviceControlsCollapsed) {
-            deviceControlsGroup.showMinified = deviceControlsCollapsed;
+        function onCollapseDeviceControlsChanged(collapseDeviceControls) {
+            deviceControlsGroup.showMinified = collapseDeviceControls;
         }
     }
 }
