@@ -92,7 +92,7 @@ Rectangle {
                         radius: 4 * virtualstudio.uiScale
                         color: expandButton.down ? browserButtonPressedColour : (expandButton.hovered ? browserButtonHoverColour : browserButtonColour)
                     }
-                    onClicked: showMinified = !showMinified
+                    onClicked: virtualstudio.collapseDeviceControls = !showMinified
 
                     AppIcon {
                         id: expandIcon
@@ -100,7 +100,7 @@ Rectangle {
                         width: 20 * virtualstudio.uiScale
                         height: 20 * virtualstudio.uiScale
                         icon.source: showMinified ? "expand_less.svg" : "expand_more.svg"
-                        onClicked: showMinified = !showMinified
+                        onClicked: virtualstudio.collapseDeviceControls = !showMinified
                     }
                 }
 

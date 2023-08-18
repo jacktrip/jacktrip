@@ -49,6 +49,8 @@
 #include <QTimer>
 #include <QUrl>
 #include <QVector>
+#include <QWebChannel>
+#include <QWebSocketServer>
 
 #include "vsConstants.h"
 #include "vsQuickView.h"
@@ -72,6 +74,7 @@ typedef QSharedPointer<VsServerInfo> VsServerInfoPointer;
 class VirtualStudio : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(int webChannelPort READ webChannelPort NOTIFY webChannelPortChanged)
     Q_PROPERTY(bool showFirstRun READ showFirstRun WRITE setShowFirstRun NOTIFY
                    showFirstRunChanged)
     Q_PROPERTY(bool hasRefreshToken READ hasRefreshToken NOTIFY hasRefreshTokenChanged)
@@ -102,6 +105,8 @@ class VirtualStudio : public QObject
     Q_PROPERTY(float fontScale READ fontScale CONSTANT)
     Q_PROPERTY(float uiScale READ uiScale WRITE setUiScale NOTIFY uiScaleChanged)
     Q_PROPERTY(bool darkMode READ darkMode WRITE setDarkMode NOTIFY darkModeChanged)
+    Q_PROPERTY(bool collapseDeviceControls READ collapseDeviceControls WRITE
+                   setCollapseDeviceControls NOTIFY collapseDeviceControlsChanged)
     Q_PROPERTY(bool testMode READ testMode WRITE setTestMode NOTIFY testModeChanged)
     Q_PROPERTY(bool showDeviceSetup READ showDeviceSetup WRITE setShowDeviceSetup NOTIFY
                    showDeviceSetupChanged)
@@ -124,6 +129,7 @@ class VirtualStudio : public QObject
     void raiseToTop();
     bool vsModeActive();
 
+    int webChannelPort();
     bool showFirstRun();
     void setShowFirstRun(bool show);
     bool hasRefreshToken();
@@ -150,6 +156,8 @@ class VirtualStudio : public QObject
     void setUiScale(float scale);
     bool darkMode();
     void setDarkMode(bool dark);
+    bool collapseDeviceControls();
+    void setCollapseDeviceControls(bool collapseDeviceControls);
     bool testMode();
     void setTestMode(bool test);
     QUrl studioToJoin();
@@ -196,6 +204,7 @@ class VirtualStudio : public QObject
     void connected();
     void disconnected();
     void refreshFinished(int index);
+    void webChannelPortChanged(int webChannelPort);
     void showFirstRunChanged();
     void hasRefreshTokenChanged();
     void logoSectionChanged();
@@ -213,6 +222,7 @@ class VirtualStudio : public QObject
     void showDeviceSetupChanged();
     void showWarningsChanged();
     void uiScaleChanged();
+    void collapseDeviceControlsChanged(bool collapseDeviceControls);
     void newScale();
     void darkModeChanged();
     void testModeChanged();
@@ -264,6 +274,8 @@ class VirtualStudio : public QObject
     QScopedPointer<QThread> m_audioConfigThread;
     QVector<VsServerInfoPointer> m_servers;
     QVector<VsServerInfo*> m_serverModel;  //< qml doesn't like smart pointers
+    QScopedPointer<QWebSocketServer> m_webChannelServer;
+    QScopedPointer<QWebChannel> m_webChannel;
     QMap<QString, bool> m_subscribedServers;
     QJsonObject m_regions;
     QJsonObject m_userMetadata;
@@ -279,25 +291,27 @@ class VirtualStudio : public QObject
     QString m_userId;
     QString m_apiHost = PROD_API_HOST;
 
-    bool m_jackTripRunning   = false;
-    bool m_showFirstRun      = false;
-    bool m_checkSsl          = true;
-    bool m_vsModeActive      = false;
-    bool m_allowRefresh      = true;
-    bool m_refreshInProgress = false;
-    bool m_onConnectedScreen = false;
-    bool m_isExiting         = false;
-    bool m_showInactive      = true;
-    bool m_showSelfHosted    = false;
-    bool m_showCreateStudio  = false;
-    bool m_showDeviceSetup   = true;
-    bool m_showWarnings      = true;
-    bool m_darkMode          = false;
-    bool m_testMode          = false;
-    bool m_authenticated     = false;
-    bool m_networkOutage     = false;
-    float m_fontScale        = 1;
-    float m_uiScale          = 1;
+    bool m_jackTripRunning        = false;
+    bool m_showFirstRun           = false;
+    bool m_checkSsl               = true;
+    bool m_vsModeActive           = false;
+    bool m_allowRefresh           = true;
+    bool m_refreshInProgress      = false;
+    bool m_onConnectedScreen      = false;
+    bool m_isExiting              = false;
+    bool m_showInactive           = true;
+    bool m_showSelfHosted         = false;
+    bool m_showCreateStudio       = false;
+    bool m_showDeviceSetup        = true;
+    bool m_showWarnings           = true;
+    bool m_darkMode               = false;
+    bool m_collapseDeviceControls = false;
+    bool m_testMode               = false;
+    bool m_authenticated          = false;
+    bool m_networkOutage          = false;
+    float m_fontScale             = 1;
+    float m_uiScale               = 1;
+    uint32_t m_webChannelPort     = 1;
 
     QString m_failedMessage            = QStringLiteral("");
     QString m_windowState              = QStringLiteral("loading");

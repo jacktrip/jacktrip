@@ -55,6 +55,7 @@
 #include "../JackTrip.h"
 #include "../Settings.h"
 #include "../jacktrip_globals.h"
+#include "WebSocketTransport.h"
 #include "about.h"
 #include "qjacktrip.h"
 #include "vsApi.h"
@@ -110,6 +111,16 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     connect(m_auth.data(), &VsAuth::deviceCodeExpired, this, [=]() {
         m_auth->authenticate(QStringLiteral(""));  // retry without using refresh token
     });
+
+    m_webChannelServer.reset(new QWebSocketServer(
+        QStringLiteral("Qt6 Virtual Studio Server"), QWebSocketServer::NonSecureMode));
+    connect(m_webChannelServer.data(), &QWebSocketServer::newConnection, this, [=]() {
+        m_webChannel->connectTo(
+            new WebSocketTransport(m_webChannelServer->nextPendingConnection()));
+    });
+
+    m_webChannel.reset(new QWebChannel());
+    m_webChannel->registerObject(QStringLiteral("virtualstudio"), this);
 
     // Load our font for our qml interface
     QFontDatabase::addApplicationFont(QStringLiteral(":/vs/Poppins-Regular.ttf"));
@@ -239,6 +250,11 @@ void VirtualStudio::raiseToTop()
 bool VirtualStudio::vsModeActive()
 {
     return m_vsModeActive;
+}
+
+int VirtualStudio::webChannelPort()
+{
+    return m_webChannelPort;
 }
 
 bool VirtualStudio::showFirstRun()
@@ -435,6 +451,17 @@ void VirtualStudio::setDarkMode(bool dark)
     emit darkModeChanged();
 }
 
+bool VirtualStudio::collapseDeviceControls()
+{
+    return m_collapseDeviceControls;
+}
+
+void VirtualStudio::setCollapseDeviceControls(bool collapseDeviceControls)
+{
+    m_collapseDeviceControls = collapseDeviceControls;
+    emit collapseDeviceControlsChanged(collapseDeviceControls);
+}
+
 bool VirtualStudio::testMode()
 {
     return m_testMode;
@@ -565,6 +592,9 @@ void VirtualStudio::toStandard()
         m_standardWindow->show();
         m_vsModeActive = false;
     }
+
+    m_webChannelServer->close();
+
     QSettings settings;
     settings.setValue(QStringLiteral("UiMode"), QJackTrip::STANDARD);
     m_refreshTimer.stop();
@@ -600,6 +630,8 @@ void VirtualStudio::logout()
         m_devicePtr->disconnect();
         m_devicePtr.reset();
     }
+
+    m_webChannelServer->close();
 
     QUrl logoutURL = QUrl("https://auth.jacktrip.org/v2/logout");
     QUrlQuery query;
@@ -986,6 +1018,14 @@ void VirtualStudio::slotAuthSucceeded()
             &VsDevice::updateMonitorVolume);
 
     m_devicePtr->registerApp();
+
+    if (!m_webChannelServer->listen(QHostAddress::LocalHost)) {
+        // shouldn't happen
+        std::cout << "ERROR: Failed to start server!" << std::endl;
+    }
+    m_webChannelPort = m_webChannelServer->serverPort();
+    emit webChannelPortChanged(m_webChannelPort);
+    std::cout << "QWebChannel listening on port: " << m_webChannelPort << std::endl;
 
     getSubscriptions();
     getServerList(true, false);

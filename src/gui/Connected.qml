@@ -83,4 +83,12 @@ Item {
         id: footer
         anchors.bottom: parent.bottom
     }
+
+    Connections {
+        target: virtualstudio
+
+        function onCollapseDeviceControlsChanged(collapseDeviceControls) {
+            deviceControlsGroup.showMinified = collapseDeviceControls;
+        }
+    }
 }

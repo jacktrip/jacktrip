@@ -159,7 +159,8 @@ else
 			'src/gui/vsUrlHandler.cpp',
 			'src/gui/vsPermissions.cpp',
 			'src/gui/vsPinger.cpp',
-			'src/gui/vsPing.cpp'
+			'src/gui/vsPing.cpp',
+			'src/gui/WebSocketTransport.cpp'
 		]
 		moc_h += [
 			'src/gui/virtualstudio.h',
@@ -177,7 +178,8 @@ else
 			'src/gui/vsPing.h',
 			'src/gui/vsUrlHandler.h',
 			'src/gui/vsQmlClipboard.h',
-			'src/JTApplication.h'
+			'src/JTApplication.h',
+			'src/gui/WebSocketTransport.h'
 		]
 
 		if host_machine.system() == 'darwin'
@@ -189,9 +191,9 @@ else
 		endif
 
 		if qt_version == '5'
-			deps += dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'QuickControls2', 'Qml', 'Svg', 'WebSockets'], include_type: 'system')
+			deps += dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'QuickControls2', 'Qml', 'Svg', 'WebSockets', 'WebChannel'], include_type: 'system')
 		else
-			deps += dependency('qt6', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'QuickControls2', 'Qml', 'Svg', 'WebSockets', 'WebEngineCore', 'WebEngineQuick'], include_type: 'system')
+			deps += dependency('qt6', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'QuickControls2', 'Qml', 'Svg', 'WebSockets', 'WebEngineCore', 'WebEngineQuick', 'WebChannel'], include_type: 'system')
 		endif
 		qres = ['src/gui/qjacktrip.qrc']
 	endif
