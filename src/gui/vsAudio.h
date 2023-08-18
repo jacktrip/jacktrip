@@ -68,6 +68,8 @@ class VsAudio : public QObject
 
     // state shared with QML
     Q_PROPERTY(bool audioReady READ getAudioReady NOTIFY signalAudioReadyChanged)
+    Q_PROPERTY(bool scanningDevices READ getScanningDevices WRITE setScanningDevices
+                   NOTIFY signalScanningDevicesChanged)
     Q_PROPERTY(bool feedbackDetectionEnabled READ getFeedbackDetectionEnabled WRITE
                    setFeedbackDetectionEnabled NOTIFY feedbackDetectionEnabledChanged)
     Q_PROPERTY(bool deviceModelsInitialized READ getDeviceModelsInitialized NOTIFY
@@ -153,6 +155,7 @@ class VsAudio : public QObject
     // getters for state shared with QML
     bool backendAvailable() const;
     bool getAudioReady() const { return m_audioReady; }
+    bool getScanningDevices() const { return m_scanningDevices; }
     bool getFeedbackDetectionEnabled() const { return m_feedbackDetectionEnabled; }
     bool getDeviceModelsInitialized() const { return m_deviceModelsInitialized; }
     bool getUseRtAudio() const { return m_backend == AudioBackendType::RTAUDIO; }
@@ -240,6 +243,7 @@ class VsAudio : public QObject
 
     // signals for QML state changes
     void signalAudioReadyChanged();
+    void signalScanningDevicesChanged();
     void deviceModelsInitializedChanged(bool initialized);
     void audioBackendChanged(bool useRtAudio);
     void bufferSizeChanged();
@@ -288,6 +292,7 @@ class VsAudio : public QObject
    private:
     // private methods
     void setAudioReady(bool ready);
+    void setScanningDevices(bool b);
     void detectedFeedbackLoop();
     void updatedInputVuMeasurements(const float* valuesInDecibels, int numChannels);
     void updatedOutputVuMeasurements(const float* valuesInDecibels, int numChannels);
@@ -300,6 +305,7 @@ class VsAudio : public QObject
     // state shared with QML
     AudioBackendType m_backend      = AudioBackendType::JACK;
     bool m_audioReady               = false;
+    bool m_scanningDevices          = false;
     bool m_feedbackDetectionEnabled = true;
     bool m_deviceModelsInitialized  = false;
     int m_audioBufferSize =
