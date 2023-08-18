@@ -1007,6 +1007,8 @@ void VirtualStudio::slotAuthSucceeded()
             &VsDevice::updatePlaybackVolume);
     connect(m_audioConfigPtr.get(), &VsAudio::updatedMonitorVolume, m_devicePtr.get(),
             &VsDevice::updateMonitorVolume);
+    connect(m_audioConfigPtr.get(), &VsAudio::highLatencyFlagChanged, m_devicePtr.get(),
+            &VsDevice::updateHighLatencyFlag);
 
     m_devicePtr->registerApp();
 

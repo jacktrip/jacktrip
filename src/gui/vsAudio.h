@@ -130,6 +130,7 @@ class VsAudio : public QObject
                    devicesWarningHelpUrlChanged)
     Q_PROPERTY(QString devicesErrorHelpUrl READ getDevicesErrorHelpUrl NOTIFY
                    devicesErrorHelpUrlChanged)
+    Q_PROPERTY(bool highLatencyFlag READ getHighLatencyFlag NOTIFY highLatencyFlagChanged)
 
    public:
     enum AudioBackendType {
@@ -207,7 +208,7 @@ class VsAudio : public QObject
     const QString& getDevicesError() const { return m_devicesErrorMsg; }
     const QString& getDevicesWarningHelpUrl() const { return m_devicesWarningHelpUrl; }
     const QString& getDevicesErrorHelpUrl() const { return m_devicesErrorHelpUrl; }
-
+    bool getHighLatencyFlag() const { return m_highLatencyFlag; }
    public slots:
 
     // setters for state shared with QML
@@ -230,6 +231,7 @@ class VsAudio : public QObject
     void setDevicesWarningMsg(const QString& msg);
     void setDevicesErrorHelpUrl(const QString& url);
     void setDevicesWarningHelpUrl(const QString& url);
+    void setHighLatencyFlag(bool highLatency);
 
     // public methods accessible by QML
     void restartAudio() { emit signalStartAudio(); }
@@ -274,6 +276,7 @@ class VsAudio : public QObject
     void devicesErrorChanged();
     void devicesWarningHelpUrlChanged();
     void devicesErrorHelpUrlChanged();
+    void highLatencyFlagChanged(bool highLatencyFlag);
 
     // other signals to perform actions
     void signalPlayOutputAudio();
@@ -336,6 +339,7 @@ class VsAudio : public QObject
     QString m_devicesErrorMsg       = QStringLiteral("");
     QString m_devicesWarningHelpUrl = QStringLiteral("");
     QString m_devicesErrorHelpUrl   = QStringLiteral("");
+    bool m_highLatencyFlag          = false;
 
     // other state not shared with QML
     QSharedPointer<VsPermissions> m_permissionsPtr;
@@ -425,7 +429,10 @@ class VsAudioWorker : public QObject
     {
         m_parentPtr->setDevicesWarningHelpUrl(url);
     }
-
+    void setHighLatencyFlag(bool highLatency)
+    {
+        m_parentPtr->setHighLatencyFlag(highLatency);
+    }
     // other private methods
     void openJackAudioInterface();
 

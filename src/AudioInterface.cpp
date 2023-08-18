@@ -954,6 +954,12 @@ void AudioInterface::setDevicesWarningMsg(warningMessageT msg)
         break;
     }
 
+    if (msg == DEVICE_WARN_LATENCY) {
+        mHighLatencyFlag = true;
+    } else {
+        mHighLatencyFlag = false;
+    }
+
     return;
 }
 
@@ -1021,4 +1027,10 @@ std::string AudioInterface::getDevicesWarningHelpUrl()
 std::string AudioInterface::getDevicesErrorHelpUrl()
 {
     return mErrorHelpUrl;
+}
+
+//*******************************************************************************
+bool AudioInterface::getHighLatencyFlag()
+{
+    return mHighLatencyFlag;
 }

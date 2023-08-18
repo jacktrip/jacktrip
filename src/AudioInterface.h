@@ -255,7 +255,7 @@ class AudioInterface
     std::string getDevicesErrorMsg();
     std::string getDevicesWarningHelpUrl();
     std::string getDevicesErrorHelpUrl();
-
+    bool getHighLatencyFlag();
     //------------------------------------------------------------------
 
    private:
@@ -321,6 +321,7 @@ class AudioInterface
     std::string mErrorMsg;
     std::string mWarningHelpUrl;
     std::string mErrorHelpUrl;
+    bool mHighLatencyFlag;
 };
 
 #endif  // __AUDIOINTERFACE_H__
