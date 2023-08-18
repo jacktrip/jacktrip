@@ -63,7 +63,7 @@ Rectangle {
 
     Loader {
         anchors.fill: parent
-        sourceComponent: audio.audioReady ? (isUsingRtAudio ? usingRtAudio : (isUsingJack ? usingJACK : scanningAudio)) : scanningAudio
+        sourceComponent: !audio.deviceModelsInitialized || audio.scanningDevices ? scanningDevices : (isUsingRtAudio ? usingRtAudio : (isUsingJack ? usingJACK : scanningDevices))
     }
 
     Component {
@@ -231,6 +231,7 @@ Rectangle {
                             outputChannelsCombo.popup.close()
                             audio.baseOutputChannel = modelData.baseChannel
                             audio.numOutputChannels = modelData.numChannels
+                            audio.validateDevices()
                             audio.restartAudio()
                         }
                     }
@@ -430,6 +431,7 @@ Rectangle {
                             inputChannelsCombo.popup.close()
                             audio.baseInputChannel = modelData.baseChannel
                             audio.numInputChannels = modelData.numChannels
+                            audio.validateDevices()
                             audio.restartAudio()
                         }
                     }
@@ -486,6 +488,7 @@ Rectangle {
                             inputMixModeCombo.currentIndex = index
                             inputMixModeCombo.popup.close()
                             audio.inputMixMode = audio.inputMixModeComboModel[index].value
+                            audio.validateDevices();
                             audio.restartAudio()
                         }
                     }
@@ -711,7 +714,7 @@ Rectangle {
     }
 
     Component {
-        id: scanningAudio
+        id: scanningDevices
 
         Item {
             anchors.top: parent.top
@@ -722,7 +725,7 @@ Rectangle {
             anchors.right: parent.right
 
             Text {
-                id: scanningAudioLabel
+                id: scanningDevicesLabel
                 x: 0; y: 0
                 width: parent.width - (16 * virtualstudio.uiScale)
                 text: "Scanning audio devices..."

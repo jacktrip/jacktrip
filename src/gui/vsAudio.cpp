@@ -186,6 +186,14 @@ void VsAudio::setAudioReady(bool ready)
     emit signalAudioReadyChanged();
 }
 
+void VsAudio::setScanningDevices(bool b)
+{
+    if (b == m_scanningDevices)
+        return;
+    m_scanningDevices = b;
+    emit signalScanningDevicesChanged();
+}
+
 void VsAudio::setAudioBackend([[maybe_unused]] const QString& backend)
 {
 #ifdef RT_AUDIO
@@ -891,6 +899,7 @@ void VsAudioWorker::updateDeviceModels()
         return;
 
     // note: audio must not be active when scanning devices
+    m_parentPtr->setScanningDevices(true);
     closeAudioInterface();
     RtAudioInterface::scanDevices(m_devices);
 
@@ -910,6 +919,7 @@ void VsAudioWorker::updateDeviceModels()
     validateDevices();
 
     // let VsAudio know that things have been updated
+    m_parentPtr->setScanningDevices(false);
     emit signalUpdatedDeviceModels(inputComboModel, outputComboModel);
 }
 

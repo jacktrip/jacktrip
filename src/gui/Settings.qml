@@ -112,6 +112,17 @@ Item {
                 anchors.right: headerContent.right;
                 anchors.rightMargin: 16 * virtualstudio.uiScale;
                 visible: parent.isUsingRtAudio && settingsGroupView == "Audio"
+                enabled: audio.audioReady && !audio.scanningDevices
+            }
+
+            Text {
+                text: "Restarting Audio"
+                anchors.verticalCenter: pageTitle.verticalCenter;
+                anchors.right: refreshButton.left;
+                anchors.rightMargin: 16 * virtualstudio.uiScale;
+                font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                color: textColour
+                visible: !audio.audioReady
             }
         }
     }

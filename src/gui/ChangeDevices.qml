@@ -88,11 +88,22 @@ Rectangle {
                 id: refreshButton
                 y: 0;
                 x: parent.width - (144 + rightMargin) * virtualstudio.uiScale;
+                enabled: !audio.scanningDevices
                 onClicked: {
                     audio.refreshDevices();
                     inputCombo.currentIndex = getCurrentInputDeviceIndex();
                     outputCombo.currentIndex = getCurrentOutputDeviceIndex();
                 }
+            }
+
+            Text {
+                text: "Scanning Devices"
+                y: 0;
+                anchors.right: refreshButton.left;
+                anchors.rightMargin: 16 * virtualstudio.uiScale;
+                font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                color: textColour
+                visible: audio.scanningDevices
             }
 
             Text {
