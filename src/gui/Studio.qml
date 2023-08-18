@@ -123,6 +123,16 @@ Rectangle {
         layer.effect: OpacityMask {
             maskSource: mask
         }
+
+        AppIcon {
+            id: defaultFlag
+            anchors.fill: parent
+            width: 32 * virtualstudio.uiScale
+            height: 32 * virtualstudio.uiScale
+            icon.source: "language.svg"
+            color: "white"
+            visible: flag.status != Image.Ready
+        }
     }
 
     Rectangle {
@@ -187,13 +197,13 @@ Rectangle {
         }
         visible: !connected
         onClicked: {
+            virtualstudio.studioToJoin = `jacktrip://join/${studioId}`
             if (virtualstudio.showDeviceSetup) {
-                virtualstudio.studioToJoin = `jacktrip://join/${studioId}`
-                virtualstudio.audioActivated = true;
                 virtualstudio.windowState = "setup";
+                audio.startAudio();
             } else {
                 virtualstudio.windowState = "connected";
-                virtualstudio.connectToStudio(index);
+                virtualstudio.joinStudio();
             }
         }
         Image {
@@ -328,9 +338,9 @@ Rectangle {
         }
         onClicked: {
             if (connected) {
-                virtualstudio.launchVideo(-1)
+                virtualstudio.launchVideo(studioId)
             } else {
-                virtualstudio.manageStudio(index);
+                virtualstudio.manageStudio(studioId);
             }
         }
         visible: admin || connected

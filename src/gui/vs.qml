@@ -286,8 +286,14 @@ Rectangle {
             }
             if (virtualstudio.showWarnings) {
                 virtualstudio.windowState = "recommendations";
-            } else {
+            } else if (virtualstudio.studioToJoin.toString() === "") {
                 virtualstudio.windowState = "browse";
+            } else if (virtualstudio.showDeviceSetup) {
+                virtualstudio.windowState = "setup";
+                audio.startAudio();
+            } else {
+                virtualstudio.windowState = "connected";
+                virtualstudio.joinStudio();
             }
         }
         function onConnected() {

@@ -194,9 +194,10 @@ if (NOT nogui)
       src/gui/vsPing.cpp
       src/gui/vsPinger.cpp
       src/gui/vsDevice.cpp
-      src/gui/vsAudioInterface.cpp
+      src/gui/vsAudio.cpp
       src/gui/vsUrlHandler.cpp
       src/gui/vsWebSocket.cpp
+      src/gui/vsWorker.cpp
       src/gui/vsPermissions.cpp
       src/gui/qjacktrip.qrc
       src/Analyzer.cpp

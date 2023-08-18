@@ -71,24 +71,24 @@ Item {
         spacing: 16 * virtualstudio.uiScale
         header: footer
         footer: footer
-        model: serverModel
+        model: virtualstudio.serverModel
         clip: true
         boundsBehavior: Flickable.StopAtBounds
         delegate: Studio {
             x: 16 * virtualstudio.uiScale
             width: studioListView.width - (2 * x)
-            serverLocation: virtualstudio.regions[location] ? "in " + virtualstudio.regions[location].label : ""
-            flagImage: bannerURL ? bannerURL : flag
-            studioName: name
-            publicStudio: isPublic
-            admin: isAdmin
-            available: canConnect
+            serverLocation: virtualstudio.regions[modelData.location] ? "in " + virtualstudio.regions[modelData.location].label : ""
+            flagImage: modelData.bannerURL ? modelData.bannerURL : modelData.flag
+            studioName: modelData.name
+            publicStudio: modelData.isPublic
+            admin: modelData.isAdmin
+            available: modelData.canConnect
             connected: false
-            studioId: id ? id : ""
-            inviteKeyString: inviteKey ? inviteKey : ""
+            studioId: modelData.id ? modelData.id : ""
+            inviteKeyString: modelData.inviteKey ? modelData.inviteKey : ""
         }
 
-        section {property: "type"; criteria: ViewSection.FullString; delegate: SectionHeading {} }
+        section { property: "modelData.type"; criteria: ViewSection.FullString; delegate: SectionHeading {} }
 
         // Show sectionHeading if there are no Studios in list
         SectionHeading {
@@ -287,12 +287,7 @@ Item {
                 border.width: 1
                 border.color: settingsButton.down ? buttonPressedStroke : (settingsButton.hovered ? buttonHoverStroke : buttonStroke)
             }
-            Timer {
-                id: restartAudioTimer
-                interval: 805; running: false; repeat: false
-                onTriggered: virtualstudio.audioActivated = true;
-            }
-            onClicked: { virtualstudio.windowState = "settings"; restartAudioTimer.restart(); }
+            onClicked: { virtualstudio.windowState = "settings"; audio.startAudio(); }
             display: AbstractButton.TextBesideIcon
             font {
                 family: "Poppins";
@@ -305,6 +300,9 @@ Item {
             x: parent.width - ((119 + extraSettingsButtonWidth) * virtualstudio.uiScale)
             width: (buttonWidth + extraSettingsButtonWidth) * virtualstudio.uiScale; height: buttonHeight * virtualstudio.uiScale
         }
+    }
+
+    FeedbackSurvey {
     }
 
     Connections {

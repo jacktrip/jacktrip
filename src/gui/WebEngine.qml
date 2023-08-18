@@ -52,7 +52,7 @@ Item {
         anchors.fill: parent
 
         property string accessToken: auth.isAuthenticated && Boolean(auth.accessToken) ? auth.accessToken : ""
-        property string studioId: virtualstudio.currentStudio >= 0 ? serverModel[virtualstudio.currentStudio].id : ""
+        property string studioId: virtualstudio.currentStudio.id
 
         WebEngineView {
             id: webEngineView

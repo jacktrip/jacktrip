@@ -1,9 +1,13 @@
 # JackTrip License
 
-Copyright © 2020 Juan-Pablo Caceres, Chris Chafe.  
-SoundWIRE group at CCRMA, Stanford University.  
-Graphical user interface originally released as QJackTrip, 
+Copyright © 2008-2020 Juan-Pablo Caceres, Chris Chafe.
+SoundWIRE group at CCRMA, Stanford University.
+
+Classic mode graphical user interface originally released as QJackTrip,
 Copyright © 2020 Aaron Wyatt
+
+Virtual Studio interface and integration
+Copyright © 2022-2023 JackTrip Labs, Inc.
 
 JackTrip project consists of files under MIT and GPL licenses, indicated in the
 header of individual files. Early versions of JackTrip were licensed under MIT.

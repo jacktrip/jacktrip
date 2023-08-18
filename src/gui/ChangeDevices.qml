@@ -36,26 +36,26 @@ Rectangle {
     property string linkText: virtualstudio.darkMode ? "#8B8D8D" : "#272525"
 
     function getCurrentInputDeviceIndex () {
-        if (virtualstudio.inputDevice === "") {
-            return virtualstudio.inputComboModel.findIndex(elem => elem.type === "element");
+        if (audio.inputDevice === "") {
+            return audio.inputComboModel.findIndex(elem => elem.type === "element");
         }
 
-        let idx = virtualstudio.inputComboModel.findIndex(elem => elem.type === "element" && elem.text === virtualstudio.inputDevice);
+        let idx = audio.inputComboModel.findIndex(elem => elem.type === "element" && elem.text === audio.inputDevice);
         if (idx < 0) {
-            idx = virtualstudio.inputComboModel.findIndex(elem => elem.type === "element");
+            idx = audio.inputComboModel.findIndex(elem => elem.type === "element");
         }
 
         return idx;
     }
 
     function getCurrentOutputDeviceIndex() {
-        if (virtualstudio.outputDevice === "") {
-            return virtualstudio.outputComboModel.findIndex(elem => elem.type === "element");
+        if (audio.outputDevice === "") {
+            return audio.outputComboModel.findIndex(elem => elem.type === "element");
         }
 
-        let idx = virtualstudio.outputComboModel.findIndex(elem => elem.type === "element" && elem.text === virtualstudio.outputDevice);
+        let idx = audio.outputComboModel.findIndex(elem => elem.type === "element" && elem.text === audio.outputDevice);
         if (idx < 0) {
-            idx = virtualstudio.outputComboModel.findIndex(elem => elem.type === "element");
+            idx = audio.outputComboModel.findIndex(elem => elem.type === "element");
         }
 
         return idx;
@@ -84,9 +84,22 @@ Rectangle {
                 color: "transparent"
             }
 
+            DeviceRefreshButton {
+                id: refreshButton
+                y: 0;
+                x: parent.width - (144 + rightMargin) * virtualstudio.uiScale;
+                onClicked: {
+                    audio.refreshDevices();
+                    inputCombo.currentIndex = getCurrentInputDeviceIndex();
+                    outputCombo.currentIndex = getCurrentOutputDeviceIndex();
+                }
+            }
+
             Text {
                 id: outputLabel
-                x: 0; y: 0
+                x: 0;
+                anchors.top: refreshButton.bottom
+                anchors.topMargin: 24 * virtualstudio.uiScale
                 text: "Output Device"
                 font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
                 color: textColour
@@ -118,7 +131,7 @@ Rectangle {
                 anchors.rightMargin: rightMargin * virtualstudio.uiScale
                 width: parent.width - leftSpacer.width - rightMargin * virtualstudio.uiScale
                 enabled: virtualstudio.connectionState == "Connected"
-                model: virtualstudio.outputComboModel
+                model: audio.outputComboModel
                 currentIndex: getCurrentOutputDeviceIndex()
                 delegate: ItemDelegate {
                     required property var modelData
@@ -139,15 +152,15 @@ Rectangle {
                             if (modelData.type == "element") {
                                 outputCombo.currentIndex = index
                                 outputCombo.popup.close()
-                                virtualstudio.outputDevice = modelData.text
+                                audio.outputDevice = modelData.text
                                 if (modelData.category === "Low-Latency (ASIO)") {
                                     let inputComboIdx = inputCombo.model.findIndex(it => it.category === "Low-Latency (ASIO)" && it.text === modelData.text);
                                     if (inputComboIdx !== null && inputComboIdx !== undefined) {
                                         inputCombo.currentIndex = inputComboIdx;
-                                        virtualstudio.inputDevice = modelData.text
+                                        audio.inputDevice = modelData.text
                                     }
                                 }
-                                virtualstudio.validateDevicesState()
+                                audio.validateDevices();
                             }
                         }
                     }
@@ -182,10 +195,10 @@ Rectangle {
                 anchors.top: outputChannelsLabel.bottom
                 anchors.topMargin: 4 * virtualstudio.uiScale
                 enabled: virtualstudio.connectionState == "Connected"
-                model: virtualstudio.outputChannelsComboModel
+                model: audio.outputChannelsComboModel
                 currentIndex: (() => {
-                    let idx = virtualstudio.outputChannelsComboModel.findIndex(elem => elem.baseChannel === virtualstudio.baseOutputChannel
-                        && elem.numChannels === virtualstudio.numOutputChannels);
+                    let idx = audio.outputChannelsComboModel.findIndex(elem => elem.baseChannel === audio.baseOutputChannel
+                        && elem.numChannels === audio.numOutputChannels);
                     if (idx < 0) {
                         idx = 0;
                     }
@@ -204,9 +217,9 @@ Rectangle {
                         onClicked: {
                             outputChannelsCombo.currentIndex = index
                             outputChannelsCombo.popup.close()
-                            virtualstudio.baseOutputChannel = modelData.baseChannel
-                            virtualstudio.numOutputChannels = modelData.numChannels
-                            virtualstudio.validateDevicesState()
+                            audio.baseOutputChannel = modelData.baseChannel
+                            audio.numOutputChannels = modelData.numChannels
+                            audio.validateDevices();
                         }
                     }
                 }
@@ -251,7 +264,7 @@ Rectangle {
 
             ComboBox {
                 id: inputCombo
-                model: virtualstudio.inputComboModel
+                model: audio.inputComboModel
                 currentIndex: getCurrentInputDeviceIndex()
                 anchors.left: outputCombo.left
                 anchors.right: outputCombo.right
@@ -276,15 +289,15 @@ Rectangle {
                             if (modelData.type == "element") {
                                 inputCombo.currentIndex = index
                                 inputCombo.popup.close()
-                                virtualstudio.inputDevice = modelData.text
+                                audio.inputDevice = modelData.text
                                 if (modelData.category === "Low-Latency (ASIO)") {
                                     let outputComboIdx = outputCombo.model.findIndex(it => it.category === "Low-Latency (ASIO)" && it.text === modelData.text);
                                     if (outputComboIdx !== null && outputComboIdx !== undefined) {
                                         outputCombo.currentIndex = outputComboIdx;
-                                        virtualstudio.outputDevice = modelData.text
+                                        audio.outputDevice = modelData.text
                                     }
                                 }
-                                virtualstudio.validateDevicesState()
+                                audio.validateDevices();
                             }
                         }
                     }
@@ -319,10 +332,10 @@ Rectangle {
                 anchors.top: inputChannelsLabel.bottom
                 anchors.topMargin: 4 * virtualstudio.uiScale
                 enabled: virtualstudio.connectionState == "Connected"
-                model: virtualstudio.inputChannelsComboModel
+                model: audio.inputChannelsComboModel
                 currentIndex: (() => {
-                    let idx = virtualstudio.inputChannelsComboModel.findIndex(elem => elem.baseChannel === virtualstudio.baseInputChannel
-                        && elem.numChannels === virtualstudio.numInputChannels);
+                    let idx = audio.inputChannelsComboModel.findIndex(elem => elem.baseChannel === audio.baseInputChannel
+                        && elem.numChannels === audio.numInputChannels);
                     if (idx < 0) {
                         idx = 0;
                     }
@@ -341,9 +354,9 @@ Rectangle {
                         onClicked: {
                             inputChannelsCombo.currentIndex = index
                             inputChannelsCombo.popup.close()
-                            virtualstudio.baseInputChannel = modelData.baseChannel
-                            virtualstudio.numInputChannels = modelData.numChannels
-                            virtualstudio.validateDevicesState()
+                            audio.baseInputChannel = modelData.baseChannel
+                            audio.numInputChannels = modelData.numChannels
+                            audio.validateDevices();
                         }
                     }
                 }
@@ -378,9 +391,9 @@ Rectangle {
                 anchors.top: inputMixModeLabel.bottom
                 anchors.topMargin: 4 * virtualstudio.uiScale
                 enabled: virtualstudio.connectionState == "Connected"
-                model: virtualstudio.inputMixModeComboModel
+                model: audio.inputMixModeComboModel
                 currentIndex: (() => {
-                    let idx = virtualstudio.inputMixModeComboModel.findIndex(elem => elem.value === virtualstudio.inputMixMode);
+                    let idx = audio.inputMixModeComboModel.findIndex(elem => elem.value === audio.inputMixMode);
                     if (idx < 0) {
                         idx = 0;
                     }
@@ -399,8 +412,8 @@ Rectangle {
                         onClicked: {
                             inputMixModeCombo.currentIndex = index
                             inputMixModeCombo.popup.close()
-                            virtualstudio.inputMixMode = virtualstudio.inputMixModeComboModel[index].value
-                            virtualstudio.validateDevicesState()
+                            audio.inputMixMode = audio.inputMixModeComboModel[index].value
+                            audio.validateDevices();
                         }
                     }
                 }
@@ -438,11 +451,11 @@ Rectangle {
                 textFormat: Text.RichText
                 wrapMode: Text.WordWrap
                 text: (() => {
-                    if (virtualstudio.inputMixMode === 2) {
+                    if (audio.inputMixMode === 2) {
                         return "Treat the channels as Left and Right signals, coming through each speaker separately.";
-                    } else if (virtualstudio.inputMixMode === 3) {
+                    } else if (audio.inputMixMode === 3) {
                         return "Combine the channels into one central channel coming through both speakers.";
-                    } else if (virtualstudio.inputMixMode === 1) {
+                    } else if (audio.inputMixMode === 1) {
                         return "Send a single channel of audio";
                     } else {
                         return "";
@@ -457,7 +470,7 @@ Rectangle {
                 anchors.left: inputCombo.left
                 anchors.top: inputMixModeHelpMessage.bottom
                 anchors.topMargin: 48 * virtualstudio.uiScale
-                visible: Boolean(virtualstudio.devicesError) || Boolean(virtualstudio.devicesWarning)
+                visible: Boolean(audio.devicesError) || Boolean(audio.devicesWarning)
             }
         }
     }
@@ -468,7 +481,10 @@ Rectangle {
             radius: 6 * virtualstudio.uiScale
             color: backButton.down ? browserButtonPressedColour : (backButton.hovered ? browserButtonHoverColour : browserButtonColour)
         }
-        onClicked: virtualstudio.windowState = "connected";
+        onClicked: {
+            virtualstudio.saveSettings();
+            virtualstudio.windowState = "connected";
+        }
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 16 * virtualstudio.uiScale;
         anchors.left: parent.left
@@ -480,26 +496,6 @@ Rectangle {
             font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale}
             anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
             color: textColour
-        }
-    }
-
-    Button {
-        id: leaveButton
-        background: Rectangle {
-            radius: 6 * virtualstudio.uiScale
-            color: leaveButton.down ? browserButtonPressedColour : (leaveButton.hovered ? browserButtonHoverColour : browserButtonColour)
-        }
-        onClicked: virtualstudio.disconnect()
-        anchors.left: backButton.right
-        anchors.leftMargin: 16 * virtualstudio.uiScale;
-        anchors.verticalCenter: backButton.verticalCenter
-        width: 150 * virtualstudio.uiScale; height: 36 * virtualstudio.uiScale
-
-        Text {
-            text: "Leave"
-            font { family: "Poppins"; weight: Font.Bold; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale}
-            anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-            color: saveButtonText
         }
     }
 }

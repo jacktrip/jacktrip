@@ -5,6 +5,8 @@ import QtQuick.Layouts
 Rectangle {
     required property bool showMinified
 
+    property string disabledButtonText: "#D3D4D4"
+    property string saveButtonText: "#DB0A0A"
     property int minifiedHeight: 36
     property int fullHeight: 80
 
@@ -118,7 +120,12 @@ Rectangle {
                             radius: 8 * virtualstudio.uiScale
                             color: changeDevicesButton.down ? browserButtonPressedColour : (changeDevicesButton.hovered ? browserButtonHoverColour : browserButtonColour)
                         }
-                        onClicked: virtualstudio.windowState = "change_devices"
+                        onClicked: {
+                            virtualstudio.windowState = "change_devices"
+                            if (!audio.deviceModelsInitialized) {
+                                audio.refreshDevices();
+                            }
+                        }
 
                         AppIcon {
                             id: changeDevicesIcon
@@ -126,7 +133,12 @@ Rectangle {
                             width: 20 * virtualstudio.uiScale
                             height: 20 * virtualstudio.uiScale
                             icon.source: "cog.svg"
-                            onClicked: virtualstudio.windowState = "change_devices"
+                            onClicked: {
+                                virtualstudio.windowState = "change_devices"
+                                if (!audio.deviceModelsInitialized) {
+                                    audio.refreshDevices();
+                                }
+                            }
                         }
                     }
 
@@ -286,7 +298,7 @@ Rectangle {
                         font.family: "Poppins"
                         font.pixelSize: showMinified ? fontTiny * virtualstudio.fontScale * virtualstudio.uiScale : fontSmall * virtualstudio.fontScale * virtualstudio.uiScale
                         font.weight: Font.Bold
-                        color: !Boolean(virtualstudio.devicesError) && virtualstudio.backendAvailable ? saveButtonText : disabledButtonText
+                        color: !Boolean(audio.devicesError) && audio.backendAvailable ? saveButtonText : disabledButtonText
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.verticalCenter: parent.verticalCenter
                     }
@@ -314,7 +326,7 @@ Rectangle {
                         font.family: "Poppins"
                         font.pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale
                         font.weight: Font.Bold
-                        color: !Boolean(virtualstudio.devicesError) && virtualstudio.backendAvailable ? saveButtonText : disabledButtonText
+                        color: !Boolean(audio.devicesError) && audio.backendAvailable ? saveButtonText : disabledButtonText
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.verticalCenter: parent.verticalCenter
                     }
