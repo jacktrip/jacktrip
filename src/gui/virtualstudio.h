@@ -62,7 +62,6 @@
 
 class JackTrip;
 class QJackTrip;
-class QThread;
 class VsAudio;
 class VsApi;
 class VsAuth;
@@ -271,7 +270,6 @@ class VirtualStudio : public QObject
     QScopedPointer<VsDevice> m_devicePtr;
     QScopedPointer<VsWebSocket> m_studioSocketPtr;
     QScopedPointer<VsAudio> m_audioConfigPtr;
-    QScopedPointer<QThread> m_audioConfigThread;
     QVector<VsServerInfoPointer> m_servers;
     QVector<VsServerInfo*> m_serverModel;  //< qml doesn't like smart pointers
     QScopedPointer<QWebSocketServer> m_webChannelServer;

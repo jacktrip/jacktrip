@@ -44,7 +44,6 @@
 #include <QQmlEngine>
 #include <QSettings>
 #include <QSslSocket>
-#include <QThread>
 #include <algorithm>
 #include <iostream>
 
@@ -138,14 +137,6 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
         emit updatedNetworkOutage(m_networkOutage);
     });
 
-    // move audio confit to its own thread
-    /*
-    m_audioConfigThread.reset(new QThread);
-    m_audioConfigThread->setObjectName("AudioConfigThread");
-    m_audioConfigThread->start();
-    m_audioConfigPtr->moveToThread(m_audioConfigThread.get());
-    */
-
     // register QML types
     qmlRegisterType<VsServerInfo>("org.jacktrip.jacktrip", 1, 0, "VsServerInfo");
 
@@ -159,7 +150,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
                                                        m_audioConfigPtr.get());
     m_view.engine()->rootContext()->setContextProperty(
         QStringLiteral("permissions"),
-        QVariant::fromValue(m_audioConfigPtr->getPermissions().get()));
+        QVariant::fromValue(&m_audioConfigPtr->getPermissions()));
     m_view.engine()->rootContext()->setContextProperty(
         QStringLiteral("backendComboModel"),
         QVariant::fromValue(QStringList()
@@ -189,11 +180,11 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
             Qt::QueuedConnection);
 
     // handle audio config errors
-    connect(m_audioConfigPtr.get(), &VsAudio::signalError, this,
+    connect(&m_audioConfigPtr->getWorker(), &VsAudioWorker::signalError, this,
             &VirtualStudio::processError, Qt::QueuedConnection);
 
     // when connected to server, trigger reconnect after device validation
-    connect(m_audioConfigPtr.get(), &VsAudio::signalDevicesValidated, this,
+    connect(&m_audioConfigPtr->getWorker(), &VsAudioWorker::signalDevicesValidated, this,
             &VirtualStudio::triggerReconnect, Qt::QueuedConnection);
 
     // when connected to server, trigger UI modal when feedback is detected

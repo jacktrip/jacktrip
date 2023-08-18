@@ -40,6 +40,7 @@
 #include <QDebug>
 #include <QJsonObject>
 #include <QSettings>
+#include <QThread>
 
 #ifdef USE_WEAK_JACK
 #include "weak_libjack.h"
@@ -78,6 +79,7 @@ VsAudio::VsAudio(QObject* parent)
     , m_outputChannelsComboModel(
           QJsonArray::fromStringList(QStringList(QLatin1String(""))))
     , m_inputMixModeComboModel(QJsonArray::fromStringList(QStringList(QLatin1String(""))))
+    , m_audioWorkerPtr(new VsAudioWorker(this))
 {
     loadSettings();
 
@@ -134,15 +136,25 @@ VsAudio::VsAudio(QObject* parent)
         }
     });
 
+    // move audio worker to its own thread
+    m_workerThread.reset(new QThread);
+    m_workerThread->setObjectName("VsAudioWorker");
+    m_workerThread->start();
+    m_audioWorkerPtr->moveToThread(m_workerThread.get());
+
     // connect worker signals to slots
-    connect(this, &VsAudio::signalStartAudio, this, &VsAudio::openAudioInterface,
-            Qt::QueuedConnection);
-    connect(this, &VsAudio::signalStopAudio, this, &VsAudio::closeAudioInterface,
-            Qt::QueuedConnection);
-    connect(this, &VsAudio::signalRefreshDevices, this, &VsAudio::privateRefreshDevices,
-            Qt::QueuedConnection);
-    connect(this, &VsAudio::signalValidateDevices, this, &VsAudio::privateValidateDevices,
-            Qt::QueuedConnection);
+    connect(this, &VsAudio::signalStartAudio, m_audioWorkerPtr.get(),
+            &VsAudioWorker::openAudioInterface, Qt::QueuedConnection);
+    connect(this, &VsAudio::signalStopAudio, m_audioWorkerPtr.get(),
+            &VsAudioWorker::closeAudioInterface, Qt::QueuedConnection);
+#ifdef RT_AUDIO
+    connect(this, &VsAudio::signalRefreshDevices, m_audioWorkerPtr.get(),
+            &VsAudioWorker::refreshDevices, Qt::QueuedConnection);
+    connect(this, &VsAudio::signalValidateDevices, m_audioWorkerPtr.get(),
+            &VsAudioWorker::validateDevices, Qt::QueuedConnection);
+    connect(m_audioWorkerPtr.get(), &VsAudioWorker::signalUpdatedDeviceModels, this,
+            &VsAudio::setDeviceModels, Qt::QueuedConnection);
+#endif
 
     // Add permissions for Mac
 #ifdef __APPLE__
@@ -154,11 +166,6 @@ VsAudio::VsAudio(QObject* parent)
 #else
     m_permissionsPtr.reset(new VsPermissions());
 #endif
-}
-
-VsAudio::~VsAudio()
-{
-    closeAudioInterface();
 }
 
 bool VsAudio::backendAvailable() const
@@ -176,7 +183,6 @@ void VsAudio::setAudioReady(bool ready)
     if (ready == m_audioReady)
         return;
     m_audioReady = ready;
-    qDebug() << "audioReady => " << m_audioReady;
     emit signalAudioReadyChanged();
 }
 
@@ -188,8 +194,7 @@ void VsAudio::setAudioBackend([[maybe_unused]] const QString& backend)
         if (getUseRtAudio())
             return;
         m_backend = AudioBackendType::RTAUDIO;
-        updateDeviceModels(true);
-        privateValidateDevices();
+        refreshDevices();
     } else {
         if (!getUseRtAudio())
             return;
@@ -365,7 +370,8 @@ void VsAudio::loadSettings()
     m_inMultiplier  = settings.value(QStringLiteral("InMultiplier"), 1).toFloat();
     m_outMultiplier = settings.value(QStringLiteral("OutMultiplier"), 1).toFloat();
     m_monMultiplier = settings.value(QStringLiteral("MonMultiplier"), 0).toFloat();
-    m_inMuted       = settings.value(QStringLiteral("InMuted"), false).toBool();
+    m_inMuted       = false;
+    // m_inMuted       = settings.value(QStringLiteral("InMuted"), false).toBool();
     if constexpr (isBackendAvailable<AudioInterfaceMode::ALL>()) {
         m_backend = (settings.value(QStringLiteral("Backend"), 0).toInt() == 1)
                         ? AudioBackendType::RTAUDIO
@@ -431,7 +437,7 @@ void VsAudio::saveSettings()
     settings.setValue(QStringLiteral("InMultiplier"), m_inMultiplier);
     settings.setValue(QStringLiteral("OutMultiplier"), m_outMultiplier);
     settings.setValue(QStringLiteral("MonMultiplier"), m_monMultiplier);
-    settings.setValue(QStringLiteral("InMuted"), m_inMuted);
+    // settings.setValue(QStringLiteral("InMuted"), m_inMuted);
     settings.setValue(QStringLiteral("Backend"), getUseRtAudio() ? 1 : 0);
     settings.setValue(QStringLiteral("InputDevice"), m_inputDevice);
     settings.setValue(QStringLiteral("OutputDevice"), m_outputDevice);
@@ -537,6 +543,7 @@ void VsAudio::setupPlugins(int numInputChannels, int numOutputChannels)
     emit updatedOutputMeterLevels(m_outputMeterLevels);
     emit updatedInputClipped(m_inputClipped);
     emit updatedOutputClipped(m_outputClipped);
+    setInputMuted(false);
 
     // Create plugins
     m_inputMeterPluginPtr   = new Meter(numInputChannels);
@@ -598,255 +605,10 @@ void VsAudio::appendProcessPlugins(JackTrip* jackTrip)
     jackTrip->appendProcessPluginToMonitor(m_outputMeterPluginPtr);
 }
 
-#ifdef RT_AUDIO
-
-void VsAudio::validateInputDevicesState()
+void VsAudio::setDeviceModels(QJsonArray inputComboModel, QJsonArray outputComboModel)
 {
-    if (!getUseRtAudio()) {
-        return;
-    }
-    if (m_inputDeviceList.size() == 0 || m_outputDeviceList.size() == 0) {
-        return;
-    }
-
-    // Given input device list, check that the currently set device
-    // actually exists
-    if (m_inputDevice == QStringLiteral("")
-        || m_inputDeviceList.indexOf(m_inputDevice) == -1) {
-        m_inputDevice = m_inputDeviceList[0];
-    }
-    emit inputDeviceChanged(m_inputDevice);
-
-    // Given the currently selected input device, reset the available input channel
-    // options
-    int indexOfInput = m_inputDeviceList.indexOf(m_inputDevice);
-    if (indexOfInput == -1) {
-        std::cerr << "Invalid state. Input device index should never be -1" << std::endl;
-        return;
-    }
-
-    int numDevicesChannelsAvailable = m_inputDeviceChannels.at(indexOfInput);
-    if (numDevicesChannelsAvailable < 1) {
-        std::cerr << "Invalid state. Number of channels should never be less than 1"
-                  << std::endl;
-        return;
-    } else if (numDevicesChannelsAvailable == 1) {
-        // Set the input mix mode to just have "Mono" as the option
-        QJsonObject inputMixModeComboElement = QJsonObject();
-        inputMixModeComboElement.insert(QString::fromStdString("label"),
-                                        QString::fromStdString("Mono"));
-        inputMixModeComboElement.insert(QString::fromStdString("value"),
-                                        static_cast<int>(AudioInterface::MONO));
-        m_inputMixModeComboModel = QJsonArray();
-        m_inputMixModeComboModel.push_back(inputMixModeComboElement);
-        emit inputMixModeComboModelChanged();
-
-        // Set the input channels combo to only have channel 1 as an option
-        QJsonObject inputChannelsComboElement;
-        inputChannelsComboElement.insert(QString::fromStdString("label"),
-                                         QString::fromStdString("1"));
-        inputChannelsComboElement.insert(QString::fromStdString("baseChannel"),
-                                         QVariant(0).toInt());
-        inputChannelsComboElement.insert(QString::fromStdString("numChannels"),
-                                         QVariant(1).toInt());
-        m_inputChannelsComboModel = QJsonArray();
-        m_inputChannelsComboModel.push_back(inputChannelsComboElement);
-        emit inputChannelsComboModelChanged();
-
-        // Set the only allowed options for these variables automatically
-        m_baseInputChannel = 0;
-        m_numInputChannels = 1;
-        m_inputMixMode     = static_cast<int>(AudioInterface::MONO);
-
-        emit baseInputChannelChanged(m_baseInputChannel);
-        emit numInputChannelsChanged(m_numInputChannels);
-        emit inputMixModeChanged(m_inputMixMode);
-    } else {
-        // set the input channels selector to have the options based on the currently
-        // selected device
-        m_inputChannelsComboModel = QJsonArray();
-        for (int i = 0; i < numDevicesChannelsAvailable; i++) {
-            QJsonObject element = QJsonObject();
-            element.insert(QString::fromStdString("label"), QVariant(i + 1).toString());
-            element.insert(QString::fromStdString("baseChannel"), QVariant(i).toInt());
-            element.insert(QString::fromStdString("numChannels"), QVariant(1).toInt());
-            m_inputChannelsComboModel.push_back(element);
-        }
-        for (int i = 0; i < numDevicesChannelsAvailable; i++) {
-            if (i % 2 == 0) {
-                QJsonObject element = QJsonObject();
-                element.insert(
-                    QString::fromStdString("label"),
-                    QVariant(i + 1).toString() + " & " + QVariant(i + 2).toString());
-                element.insert(QString::fromStdString("baseChannel"),
-                               QVariant(i).toInt());
-                element.insert(QString::fromStdString("numChannels"),
-                               QVariant(2).toInt());
-                m_inputChannelsComboModel.push_back(element);
-            }
-        }
-        emit inputChannelsComboModelChanged();
-
-        // if the current m_baseInputChannel or m_numInputChannels is invalid based on
-        // this device's option, use the first two channels by default
-        if (m_baseInputChannel + m_numInputChannels > numDevicesChannelsAvailable) {
-            // we're in the case where numDevicesChannelsAvailable >= 2, so always have
-            // the ability to use the first 2 channels
-            m_baseInputChannel = 0;
-            m_numInputChannels = 2;
-            emit baseInputChannelChanged(m_baseInputChannel);
-            emit numInputChannelsChanged(m_numInputChannels);
-        }
-        if (m_numInputChannels != 1) {
-            // Set the input mix mode to have two options: "Stereo" and "Mix to Mono" if
-            // we're using 2 channels
-            QJsonObject inputMixModeComboElement1 = QJsonObject();
-            inputMixModeComboElement1.insert(QString::fromStdString("label"),
-                                             QString::fromStdString("Stereo"));
-            inputMixModeComboElement1.insert(QString::fromStdString("value"),
-                                             static_cast<int>(AudioInterface::STEREO));
-            QJsonObject inputMixModeComboElement2 = QJsonObject();
-            inputMixModeComboElement2.insert(QString::fromStdString("label"),
-                                             QString::fromStdString("Mix to Mono"));
-            inputMixModeComboElement2.insert(QString::fromStdString("value"),
-                                             static_cast<int>(AudioInterface::MIXTOMONO));
-            m_inputMixModeComboModel = QJsonArray();
-            m_inputMixModeComboModel.push_back(inputMixModeComboElement1);
-            m_inputMixModeComboModel.push_back(inputMixModeComboElement2);
-            emit inputMixModeComboModelChanged();
-
-            // if m_inputMixMode is an invalid value, set it to "stereo" by default
-            // given that we are using 2 channels
-            if (m_inputMixMode != static_cast<int>(AudioInterface::STEREO)
-                && m_inputMixMode != static_cast<int>(AudioInterface::MIXTOMONO)) {
-                m_inputMixMode = static_cast<int>(AudioInterface::STEREO);
-                emit inputMixModeChanged(m_inputMixMode);
-            }
-        } else {
-            // Set the input mix mode to just have "Mono" as the option if we're using 1
-            // channel
-            QJsonObject inputMixModeComboElement = QJsonObject();
-            inputMixModeComboElement.insert(QString::fromStdString("label"),
-                                            QString::fromStdString("Mono"));
-            inputMixModeComboElement.insert(QString::fromStdString("value"),
-                                            static_cast<int>(AudioInterface::MONO));
-            m_inputMixModeComboModel = QJsonArray();
-            m_inputMixModeComboModel.push_back(inputMixModeComboElement);
-            emit inputMixModeComboModelChanged();
-
-            // if m_inputMixMode is an invalid value, set it to AudioInterface::MONO
-            if (m_inputMixMode != static_cast<int>(AudioInterface::MONO)) {
-                m_inputMixMode = static_cast<int>(AudioInterface::MONO);
-                emit inputMixModeChanged(m_inputMixMode);
-            }
-        }
-    }
-}
-
-void VsAudio::validateOutputDevicesState()
-{
-    if (!getUseRtAudio()) {
-        return;
-    }
-    if (m_outputDeviceList.size() == 0 || m_outputDeviceList.size() == 0) {
-        return;
-    }
-
-    // Given output device list, check that the currently set device
-    // actually exists
-    if (m_outputDevice == QStringLiteral("")
-        || m_outputDeviceList.indexOf(m_outputDevice) == -1) {
-        m_outputDevice = m_outputDeviceList[0];
-    }
-    emit outputDeviceChanged(m_outputDevice);
-
-    // Given the currently selected output device, reset the available output channel
-    // options
-    int indexOfOutput = m_outputDeviceList.indexOf(m_outputDevice);
-    if (indexOfOutput == -1) {
-        std::cerr << "Invalid state. Output device index should never be -1" << std::endl;
-        return;
-    }
-
-    int numDevicesChannelsAvailable = m_outputDeviceChannels.at(indexOfOutput);
-    if (numDevicesChannelsAvailable < 1) {
-        std::cerr << "Invalid state. Number of channels should never be less than 1"
-                  << std::endl;
-        return;
-    } else if (numDevicesChannelsAvailable == 1) {
-        // Set the output channels combo to only have channel 1 as an option
-        QJsonObject outputChannelsComboElement = QJsonObject();
-        outputChannelsComboElement.insert(QString::fromStdString("label"),
-                                          QString::fromStdString("1"));
-        outputChannelsComboElement.insert(QString::fromStdString("baseChannel"),
-                                          QVariant(0).toInt());
-        outputChannelsComboElement.insert(QString::fromStdString("numChannels"),
-                                          QVariant(1).toInt());
-        m_outputChannelsComboModel = QJsonArray();
-        m_outputChannelsComboModel.push_back(outputChannelsComboElement);
-        emit outputChannelsComboModelChanged();
-
-        // Set the only allowed options for these variables automatically
-        m_baseOutputChannel = 0;
-        m_numOutputChannels = 1;
-
-        emit baseOutputChannelChanged(m_baseOutputChannel);
-        emit numOutputChannelsChanged(m_numOutputChannels);
-    } else {
-        // set the output channels selector to have the options based on the currently
-        // selected device
-        m_outputChannelsComboModel = QJsonArray();
-        for (int i = 0; i < numDevicesChannelsAvailable; i++) {
-            if (i % 2 == 0) {
-                QJsonObject element = QJsonObject();
-                element.insert(
-                    QString::fromStdString("label"),
-                    QVariant(i + 1).toString() + " & " + QVariant(i + 2).toString());
-                element.insert(QString::fromStdString("baseChannel"),
-                               QVariant(i).toInt());
-                element.insert(QString::fromStdString("numChannels"),
-                               QVariant(2).toInt());
-                m_outputChannelsComboModel.push_back(element);
-            }
-        }
-        emit outputChannelsComboModelChanged();
-
-        // if the current m_baseOutputChannel or m_numOutputChannels is invalid based on
-        // this device's option, use the first two channels by default
-        if (m_baseOutputChannel + m_numOutputChannels > numDevicesChannelsAvailable) {
-            // we're in the case where numDevicesChannelsAvailable >= 2, so always have
-            // the ability to use the first 2 channels
-            m_baseOutputChannel = 0;
-            m_numOutputChannels = 2;
-            emit baseOutputChannelChanged(m_baseOutputChannel);
-            emit numOutputChannelsChanged(m_numOutputChannels);
-        }
-    }
-}
-
-void VsAudio::updateDeviceModels(bool refresh)
-{
-    if (!getUseRtAudio())
-        return;
-
-    if (refresh) {
-        // note: audio must not be active when scanning devices
-        closeAudioInterface();
-        RtAudioInterface::scanDevices(m_devices);
-    }
-
-    QStringList inputDeviceCategories;
-    QStringList outputDeviceCategories;
-
-    getDeviceList(m_inputDeviceList, inputDeviceCategories, m_inputDeviceChannels, true);
-    getDeviceList(m_outputDeviceList, outputDeviceCategories, m_outputDeviceChannels,
-                  false);
-
-    m_inputComboModel =
-        formatDeviceList(m_inputDeviceList, inputDeviceCategories, m_inputDeviceChannels);
-    m_outputComboModel = formatDeviceList(m_outputDeviceList, outputDeviceCategories,
-                                          m_outputDeviceChannels);
-
+    m_inputComboModel  = inputComboModel;
+    m_outputComboModel = outputComboModel;
     emit inputComboModelChanged();
     emit outputComboModelChanged();
     if (!m_deviceModelsInitialized) {
@@ -855,8 +617,305 @@ void VsAudio::updateDeviceModels(bool refresh)
     }
 }
 
-void VsAudio::getDeviceList(QStringList& list, QStringList& categories,
-                            QList<int>& channels, bool isInput)
+void VsAudio::setInputChannelsComboModel(QJsonArray& model)
+{
+    m_inputChannelsComboModel = model;
+    emit inputChannelsComboModelChanged();
+}
+
+void VsAudio::setOutputChannelsComboModel(QJsonArray& model)
+{
+    m_outputChannelsComboModel = model;
+    emit outputChannelsComboModelChanged();
+}
+
+void VsAudio::setInputMixModeComboModel(QJsonArray& model)
+{
+    m_inputMixModeComboModel = model;
+    emit inputMixModeComboModelChanged();
+}
+
+// VsAudioWorker methods
+
+VsAudioWorker::VsAudioWorker(VsAudio* ptr) : m_parentPtr(ptr) {}
+
+void VsAudioWorker::openAudioInterface()
+{
+#ifdef __APPLE__
+    if (m_parentPtr->m_permissionsPtr->micPermission() != "granted") {
+        return;
+    }
+#endif
+
+    if constexpr (!(isBackendAvailable<AudioInterfaceMode::JACK>()
+                    || isBackendAvailable<AudioInterfaceMode::RTAUDIO>())) {
+        return;
+    }
+
+    if (!m_audioInterfacePtr.isNull()) {
+        std::cout << "Restarting Audio" << std::endl;
+        closeAudioInterface();
+    } else {
+        std::cout << "Starting Audio" << std::endl;
+    }
+
+    unsigned int maxTries = 2;
+#ifdef RT_AUDIO
+    // Update devices, if not already initialized
+    if (getUseRtAudio()) {
+        if (!m_parentPtr->getDeviceModelsInitialized()) {
+            updateDeviceModels();
+            maxTries = 1;
+        }
+    }
+#endif
+    for (unsigned int tryNum = 0; tryNum < maxTries; ++tryNum) {
+#ifdef RT_AUDIO
+        if (tryNum > 0) {
+            if (getUseRtAudio()) {
+                updateDeviceModels();
+            } else {
+                m_parentPtr->setAudioBackend("RtAudio");
+            }
+        }
+#endif
+        try {
+            // Create AudioInterface Client Object
+            if (m_parentPtr->m_backend == VsAudio::AudioBackendType::JACK) {
+                if constexpr (isBackendAvailable<AudioInterfaceMode::ALL>()
+                              || isBackendAvailable<AudioInterfaceMode::JACK>()) {
+                    openJackAudioInterface();
+                } else {
+                    if constexpr (!isBackendAvailable<AudioInterfaceMode::RTAUDIO>()) {
+                        throw std::runtime_error(
+                            "JackTrip was compiled without RtAudio and can't find JACK. "
+                            "In order to use JackTrip, you'll need to install JACK or "
+                            "rebuild with RtAudio support.");
+                        std::exit(1);
+                    }
+#ifdef RT_AUDIO
+                    openRtAudioInterface();
+#endif
+                }
+            } else if (m_parentPtr->m_backend == VsAudio::AudioBackendType::RTAUDIO) {
+                if constexpr (!isBackendAvailable<AudioInterfaceMode::RTAUDIO>()) {
+                    throw std::runtime_error(
+                        "JackTrip was compiled without RtAudio and can't find JACK. "
+                        "In order to use JackTrip, you'll need to install JACK or "
+                        "rebuild with RtAudio support.");
+                    std::exit(1);
+                }
+#ifdef RT_AUDIO
+                openRtAudioInterface();
+#endif
+            }
+
+            break;  // success!
+
+        } catch (const std::exception& e) {
+            emit signalError(QString::fromUtf8(e.what()));
+        }
+    }
+
+    std::cout << "The Sampling Rate is: " << m_sampleRate << std::endl;
+    std::cout << gPrintSeparator << std::endl;
+    int AudioBufferSizeInBytes = getBufferSize() * sizeof(sample_t);
+    std::cout << "The Audio Buffer Size is: " << getBufferSize() << " samples"
+              << std::endl;
+    std::cout << "                      or: " << AudioBufferSizeInBytes << " bytes"
+              << std::endl;
+    std::cout << gPrintSeparator << std::endl;
+    std::cout << "The Number of Channels is: "
+              << m_audioInterfacePtr->getNumInputChannels() << std::endl;
+    std::cout << gPrintSeparator << std::endl;
+
+    // setup audio plugins
+    m_parentPtr->setupPlugins(getNumInputChannels(), getNumOutputChannels());
+
+    // tone plugin is used to test audio output
+    Tone* outputTonePluginPtr = new Tone(getNumOutputChannels());
+    connect(m_parentPtr, &VsAudio::signalPlayOutputAudio, outputTonePluginPtr,
+            &Tone::triggerPlayback);
+
+    // Add plugins to audio interface chains
+    // Note that this passes ownership to the AudioInterface
+    m_audioInterfacePtr->appendProcessPluginFromNetwork(outputTonePluginPtr);
+    m_audioInterfacePtr->appendProcessPluginFromNetwork(
+        m_parentPtr->m_outputVolumePluginPtr);
+    m_audioInterfacePtr->appendProcessPluginFromNetwork(
+        m_parentPtr->m_outputMeterPluginPtr);
+    m_audioInterfacePtr->appendProcessPluginToNetwork(
+        m_parentPtr->m_inputVolumePluginPtr);
+    m_audioInterfacePtr->appendProcessPluginToNetwork(m_parentPtr->m_inputMeterPluginPtr);
+    m_audioInterfacePtr->initPlugins(false);
+    m_audioInterfacePtr->startProcess();
+
+#ifndef NO_JACK
+    if (m_parentPtr->m_backend == VsAudio::AudioBackendType::JACK) {
+        m_audioInterfacePtr->connectDefaultPorts();
+    }
+#endif
+
+    setAudioReady(true);
+}
+
+void VsAudioWorker::openJackAudioInterface()
+{
+#ifndef NO_JACK
+    if constexpr (isBackendAvailable<AudioInterfaceMode::ALL>()
+                  || isBackendAvailable<AudioInterfaceMode::JACK>()) {
+        QVarLengthArray<int> inputChans;
+        QVarLengthArray<int> outputChans;
+        inputChans.resize(getNumInputChannels());
+        outputChans.resize(getNumOutputChannels());
+
+        for (int i = 0; i < getNumInputChannels(); i++) {
+            inputChans[i] = 1 + i;
+        }
+        for (int i = 0; i < getNumOutputChannels(); i++) {
+            outputChans[i] = 1 + i;
+        }
+
+        m_audioInterfacePtr.reset(
+            new JackAudioInterface(inputChans, outputChans, m_audioBitResolution));
+        m_audioInterfacePtr->setClientName(QStringLiteral("JackTrip"));
+        m_audioInterfacePtr->setup(true);
+
+        std::string devicesWarningMsg = m_audioInterfacePtr->getDevicesWarningMsg();
+        std::string devicesErrorMsg   = m_audioInterfacePtr->getDevicesErrorMsg();
+
+        if (devicesWarningMsg != "") {
+            qDebug() << "Devices Warning: " << QString::fromStdString(devicesWarningMsg);
+        }
+
+        if (devicesErrorMsg != "") {
+            qDebug() << "Devices Error: " << QString::fromStdString(devicesErrorMsg);
+        }
+
+        setDevicesWarningMsg(QString::fromStdString(devicesWarningMsg));
+        setDevicesErrorMsg(QString::fromStdString(devicesErrorMsg));
+
+        m_sampleRate = m_audioInterfacePtr->getSampleRate();
+    } else {
+        return;
+    }
+#else
+    return;
+#endif
+}
+
+void VsAudioWorker::closeAudioInterface()
+{
+    if (m_audioInterfacePtr.isNull())
+        return;
+    std::cout << "Stopping Audio" << std::endl;
+    setAudioReady(false);
+    try {
+        m_audioInterfacePtr->stopProcess();
+    } catch (const std::exception& e) {
+        emit signalError(QString::fromUtf8(e.what()));
+    }
+    m_audioInterfacePtr.clear();
+}
+
+#ifdef RT_AUDIO
+
+void VsAudioWorker::openRtAudioInterface()
+{
+    QVarLengthArray<int> inputChans;
+    QVarLengthArray<int> outputChans;
+    inputChans.resize(getNumInputChannels());
+    outputChans.resize(getNumOutputChannels());
+
+    for (int i = 0; i < getNumInputChannels(); i++) {
+        inputChans[i] = getBaseInputChannel() + i;
+    }
+    for (int i = 0; i < getNumOutputChannels(); i++) {
+        outputChans[i] = getBaseOutputChannel() + i;
+    }
+
+    m_audioInterfacePtr.reset(new RtAudioInterface(
+        inputChans, outputChans,
+        static_cast<AudioInterface::inputMixModeT>(getInputMixMode()),
+        m_audioBitResolution));
+    m_audioInterfacePtr->setSampleRate(m_sampleRate);
+    m_audioInterfacePtr->setInputDevice(getInputDevice().toStdString());
+    m_audioInterfacePtr->setOutputDevice(getOutputDevice().toStdString());
+    m_audioInterfacePtr->setBufferSizeInSamples(getBufferSize());
+    static_cast<RtAudioInterface*>(m_audioInterfacePtr.get())
+        ->setRtAudioDevices(m_devices);
+
+    // Note: setup might change the number of channels and/or buffer size
+    m_audioInterfacePtr->setup(true);
+
+    std::string devicesWarningMsg     = m_audioInterfacePtr->getDevicesWarningMsg();
+    std::string devicesErrorMsg       = m_audioInterfacePtr->getDevicesErrorMsg();
+    std::string devicesWarningHelpUrl = m_audioInterfacePtr->getDevicesWarningHelpUrl();
+    std::string devicesErrorHelpUrl   = m_audioInterfacePtr->getDevicesErrorHelpUrl();
+
+    if (devicesWarningMsg != "") {
+        qDebug() << "Devices Warning: " << QString::fromStdString(devicesWarningMsg);
+        if (devicesWarningHelpUrl != "") {
+            qDebug() << "Learn More: " << QString::fromStdString(devicesWarningHelpUrl);
+        }
+    }
+
+    if (devicesErrorMsg != "") {
+        qDebug() << "Devices Error: " << QString::fromStdString(devicesErrorMsg);
+        if (devicesErrorHelpUrl != "") {
+            qDebug() << "Learn More: " << QString::fromStdString(devicesErrorHelpUrl);
+        }
+    }
+
+    setDevicesWarningMsg(QString::fromStdString(devicesWarningMsg));
+    setDevicesErrorMsg(QString::fromStdString(devicesErrorMsg));
+    setDevicesWarningHelpUrl(QString::fromStdString(devicesWarningHelpUrl));
+    setDevicesErrorHelpUrl(QString::fromStdString(devicesErrorHelpUrl));
+}
+
+void VsAudioWorker::refreshDevices()
+{
+    if (!getUseRtAudio())
+        return;
+    bool restartAudio = !m_audioInterfacePtr.isNull();
+    if (restartAudio)
+        closeAudioInterface();
+    updateDeviceModels();
+    if (restartAudio)
+        openAudioInterface();
+}
+
+void VsAudioWorker::updateDeviceModels()
+{
+    if (!getUseRtAudio())
+        return;
+
+    // note: audio must not be active when scanning devices
+    closeAudioInterface();
+    RtAudioInterface::scanDevices(m_devices);
+
+    QStringList inputDeviceCategories;
+    QStringList outputDeviceCategories;
+
+    getDeviceList(m_devices, m_inputDeviceList, inputDeviceCategories,
+                  m_inputDeviceChannels, true);
+    getDeviceList(m_devices, m_outputDeviceList, outputDeviceCategories,
+                  m_outputDeviceChannels, false);
+
+    QJsonArray inputComboModel =
+        formatDeviceList(m_inputDeviceList, inputDeviceCategories, m_inputDeviceChannels);
+    QJsonArray outputComboModel = formatDeviceList(
+        m_outputDeviceList, outputDeviceCategories, m_outputDeviceChannels);
+
+    validateDevices();
+
+    // let VsAudio know that things have been updated
+    emit signalUpdatedDeviceModels(inputComboModel, outputComboModel);
+}
+
+void VsAudioWorker::getDeviceList(const QVector<RtAudioDevice>& devices,
+                                  QStringList& list, QStringList& categories,
+                                  QList<int>& channels, bool isInput)
 {
     categories.clear();
     channels.clear();
@@ -873,13 +932,13 @@ void VsAudio::getDeviceList(QStringList& list, QStringList& categories,
         QString::fromUtf8("JackRouter"),
     };
 
-    for (int n = 0; n < m_devices.size(); ++n) {
+    for (int n = 0; n < devices.size(); ++n) {
 #ifdef _WIN32
-        if (m_devices[n].api == RtAudio::UNIX_JACK) {
+        if (devices[n].api == RtAudio::UNIX_JACK) {
             continue;
         }
 #endif
-        const QString deviceName(QString::fromStdString(m_devices[n].name));
+        const QString deviceName(QString::fromStdString(devices[n].name));
 
         // Don't include duplicate entries
         if (list.contains(deviceName)) {
@@ -887,29 +946,29 @@ void VsAudio::getDeviceList(QStringList& list, QStringList& categories,
         }
 
         // Skip if no channels available
-        if ((isInput && m_devices[n].inputChannels == 0)
-            || (!isInput && m_devices[n].outputChannels == 0)) {
+        if ((isInput && devices[n].inputChannels == 0)
+            || (!isInput && devices[n].outputChannels == 0)) {
             continue;
         }
 
         // Skip blacklisted devices
         if (blacklisted_devices.contains(deviceName)) {
             std::cout << "RTAudio: blacklisted " << (isInput ? "input" : "output")
-                      << " device: " << m_devices[n].name << std::endl;
+                      << " device: " << devices[n].name << std::endl;
             continue;
         }
 
         // Good to go!
         if (isInput) {
             list.append(deviceName);
-            channels.append(m_devices[n].inputChannels);
+            channels.append(devices[n].inputChannels);
         } else {
             list.append(deviceName);
-            channels.append(m_devices[n].outputChannels);
+            channels.append(devices[n].outputChannels);
         }
 
 #ifdef _WIN32
-        switch (m_devices[n].api) {
+        switch (devices[n].api) {
         case RtAudio::WINDOWS_ASIO:
             categories.append("Low-Latency (ASIO)");
             break;
@@ -929,9 +988,9 @@ void VsAudio::getDeviceList(QStringList& list, QStringList& categories,
     }
 }
 
-QJsonArray VsAudio::formatDeviceList(const QStringList& devices,
-                                     const QStringList& categories,
-                                     const QList<int>& channels)
+QJsonArray VsAudioWorker::formatDeviceList(const QStringList& devices,
+                                           const QStringList& categories,
+                                           const QList<int>& channels)
 {
     QStringList uniqueCategories = QStringList(categories);
     uniqueCategories.removeDuplicates();
@@ -972,275 +1031,223 @@ QJsonArray VsAudio::formatDeviceList(const QStringList& devices,
     return items;
 }
 
-#endif  // RT_AUDIO
-
-void VsAudio::openAudioInterface()
+void VsAudioWorker::validateDevices()
 {
-#ifdef __APPLE__
-    if (m_permissionsPtr->micPermission() != "granted") {
-        return;
-    }
-#endif
-
-    if constexpr (!(isBackendAvailable<AudioInterfaceMode::JACK>()
-                    || isBackendAvailable<AudioInterfaceMode::RTAUDIO>())) {
-        return;
-    }
-
-    if (!m_audioInterfacePtr.isNull()) {
-        std::cout << "Restarting Audio" << std::endl;
-        closeAudioInterface();
-    } else {
-        std::cout << "Starting Audio" << std::endl;
-    }
-
-    unsigned int maxTries = 2;
-#ifdef RT_AUDIO
-    // Update devices, if not already initialized
-    if (getUseRtAudio()) {
-        if (!getDeviceModelsInitialized()) {
-            updateDeviceModels(true);
-            privateValidateDevices();
-            maxTries = 1;
-        }
-    }
-#endif
-    for (unsigned int tryNum = 0; tryNum < maxTries; ++tryNum) {
-#ifdef RT_AUDIO
-        if (tryNum > 0) {
-            if (getUseRtAudio()) {
-                updateDeviceModels(true);
-                privateValidateDevices();
-            } else {
-                setAudioBackend("RtAudio");
-            }
-        }
-#endif
-        try {
-            // Create AudioInterface Client Object
-            if (m_backend == AudioBackendType::JACK) {
-                if constexpr (isBackendAvailable<AudioInterfaceMode::ALL>()
-                              || isBackendAvailable<AudioInterfaceMode::JACK>()) {
-                    openJackAudioInterface();
-                } else {
-                    if constexpr (isBackendAvailable<AudioInterfaceMode::RTAUDIO>()) {
-                        openRtAudioInterface();
-                    } else {
-                        throw std::runtime_error(
-                            "JackTrip was compiled without RtAudio and can't find JACK. "
-                            "In order to use JackTrip, you'll need to install JACK or "
-                            "rebuild with RtAudio support.");
-                        std::exit(1);
-                    }
-                }
-            } else if (m_backend == AudioBackendType::RTAUDIO) {
-                if constexpr (isBackendAvailable<AudioInterfaceMode::RTAUDIO>()) {
-                    openRtAudioInterface();
-                } else {
-                    throw std::runtime_error(
-                        "JackTrip was compiled without RtAudio and can't find JACK. "
-                        "In order to use JackTrip, you'll need to install JACK or "
-                        "rebuild with RtAudio support.");
-                    std::exit(1);
-                }
-            }
-
-            break;  // success!
-
-        } catch (const std::exception& e) {
-            emit signalError(QString::fromUtf8(e.what()));
-        }
-    }
-
-    std::cout << "The Sampling Rate is: " << m_sampleRate << std::endl;
-    std::cout << gPrintSeparator << std::endl;
-    int AudioBufferSizeInBytes = m_audioBufferSize * sizeof(sample_t);
-    std::cout << "The Audio Buffer Size is: " << m_audioBufferSize << " samples"
-              << std::endl;
-    std::cout << "                      or: " << AudioBufferSizeInBytes << " bytes"
-              << std::endl;
-    std::cout << gPrintSeparator << std::endl;
-    std::cout << "The Number of Channels is: "
-              << m_audioInterfacePtr->getNumInputChannels() << std::endl;
-    std::cout << gPrintSeparator << std::endl;
-
-    // setup audio plugins
-    setupPlugins(getNumInputChannels(), getNumOutputChannels());
-
-    // tone plugin is used to test audio output
-    m_outputTonePluginPtr = new Tone(getNumOutputChannels());
-    connect(this, &VsAudio::signalPlayOutputAudio, m_outputTonePluginPtr,
-            &Tone::triggerPlayback);
-
-    // Add plugins to audio interface chains
-    // Note that this passes ownership to the AudioInterface
-    m_audioInterfacePtr->appendProcessPluginFromNetwork(m_outputTonePluginPtr);
-    m_audioInterfacePtr->appendProcessPluginFromNetwork(m_outputVolumePluginPtr);
-    m_audioInterfacePtr->appendProcessPluginFromNetwork(m_outputMeterPluginPtr);
-    m_audioInterfacePtr->appendProcessPluginToNetwork(m_inputVolumePluginPtr);
-    m_audioInterfacePtr->appendProcessPluginToNetwork(m_inputMeterPluginPtr);
-
-    m_audioInterfacePtr->initPlugins(false);
-    m_audioInterfacePtr->startProcess();
-
-#ifndef NO_JACK
-    if (m_backend == AudioBackendType::JACK) {
-        m_audioInterfacePtr->connectDefaultPorts();
-    }
-#endif
-
-    setAudioReady(true);
-}
-
-void VsAudio::openJackAudioInterface()
-{
-#ifndef NO_JACK
-    if constexpr (isBackendAvailable<AudioInterfaceMode::ALL>()
-                  || isBackendAvailable<AudioInterfaceMode::JACK>()) {
-        QVarLengthArray<int> inputChans;
-        QVarLengthArray<int> outputChans;
-        inputChans.resize(m_numInputChannels);
-        outputChans.resize(m_numOutputChannels);
-
-        for (int i = 0; i < m_numInputChannels; i++) {
-            inputChans[i] = 1 + i;
-        }
-        for (int i = 0; i < m_numOutputChannels; i++) {
-            outputChans[i] = 1 + i;
-        }
-
-        m_audioInterfacePtr.reset(
-            new JackAudioInterface(inputChans, outputChans, m_audioBitResolution));
-        m_audioInterfacePtr->setClientName(QStringLiteral("JackTrip"));
-        m_audioInterfacePtr->setup(true);
-
-        std::string devicesWarningMsg = m_audioInterfacePtr->getDevicesWarningMsg();
-        std::string devicesErrorMsg   = m_audioInterfacePtr->getDevicesErrorMsg();
-
-        if (devicesWarningMsg != "") {
-            qDebug() << "Devices Warning: " << QString::fromStdString(devicesWarningMsg);
-        }
-
-        if (devicesErrorMsg != "") {
-            qDebug() << "Devices Error: " << QString::fromStdString(devicesErrorMsg);
-        }
-
-        setDevicesWarningMsg(QString::fromStdString(devicesWarningMsg));
-        setDevicesErrorMsg(QString::fromStdString(devicesErrorMsg));
-
-        m_sampleRate      = m_audioInterfacePtr->getSampleRate();
-        m_deviceID        = m_audioInterfacePtr->getDeviceID();
-        m_audioBufferSize = m_audioInterfacePtr->getBufferSizeInSamples();
-    } else {
-        return;
-    }
-#else
-    return;
-#endif
-}
-
-void VsAudio::openRtAudioInterface()
-{
-#ifdef RT_AUDIO
-    if constexpr (isBackendAvailable<AudioInterfaceMode::ALL>()
-                  || isBackendAvailable<AudioInterfaceMode::RTAUDIO>()) {
-        QVarLengthArray<int> inputChans;
-        QVarLengthArray<int> outputChans;
-        inputChans.resize(m_numInputChannels);
-        outputChans.resize(m_numOutputChannels);
-
-        for (int i = 0; i < m_numInputChannels; i++) {
-            inputChans[i] = m_baseInputChannel + i;
-        }
-        for (int i = 0; i < m_numOutputChannels; i++) {
-            outputChans[i] = m_baseOutputChannel + i;
-        }
-
-        m_audioInterfacePtr.reset(new RtAudioInterface(
-            inputChans, outputChans,
-            static_cast<AudioInterface::inputMixModeT>(m_inputMixMode),
-            m_audioBitResolution));
-        m_audioInterfacePtr->setSampleRate(m_sampleRate);
-        m_audioInterfacePtr->setDeviceID(m_deviceID);
-        m_audioInterfacePtr->setInputDevice(m_inputDevice.toStdString());
-        m_audioInterfacePtr->setOutputDevice(m_outputDevice.toStdString());
-        m_audioInterfacePtr->setBufferSizeInSamples(m_audioBufferSize);
-        static_cast<RtAudioInterface*>(m_audioInterfacePtr.get())
-            ->setRtAudioDevices(m_devices);
-
-        // Note: setup might change the number of channels and/or buffer size
-        m_audioInterfacePtr->setup(true);
-
-        std::string devicesWarningMsg = m_audioInterfacePtr->getDevicesWarningMsg();
-        std::string devicesErrorMsg   = m_audioInterfacePtr->getDevicesErrorMsg();
-        std::string devicesWarningHelpUrl =
-            m_audioInterfacePtr->getDevicesWarningHelpUrl();
-        std::string devicesErrorHelpUrl = m_audioInterfacePtr->getDevicesErrorHelpUrl();
-
-        if (devicesWarningMsg != "") {
-            qDebug() << "Devices Warning: " << QString::fromStdString(devicesWarningMsg);
-            if (devicesWarningHelpUrl != "") {
-                qDebug() << "Learn More: "
-                         << QString::fromStdString(devicesWarningHelpUrl);
-            }
-        }
-
-        if (devicesErrorMsg != "") {
-            qDebug() << "Devices Error: " << QString::fromStdString(devicesErrorMsg);
-            if (devicesErrorHelpUrl != "") {
-                qDebug() << "Learn More: " << QString::fromStdString(devicesErrorHelpUrl);
-            }
-        }
-
-        setDevicesWarningMsg(QString::fromStdString(devicesWarningMsg));
-        setDevicesErrorMsg(QString::fromStdString(devicesErrorMsg));
-        setDevicesWarningHelpUrl(QString::fromStdString(devicesWarningHelpUrl));
-        setDevicesErrorHelpUrl(QString::fromStdString(devicesErrorHelpUrl));
-    } else {
-        return;
-    }
-#else
-    return;
-#endif
-}
-
-void VsAudio::closeAudioInterface()
-{
-    if (m_audioInterfacePtr.isNull())
-        return;
-    std::cout << "Stopping Audio" << std::endl;
-    setAudioReady(false);
-    try {
-        m_audioInterfacePtr->stopProcess();
-    } catch (const std::exception& e) {
-        emit signalError(QString::fromUtf8(e.what()));
-    }
-    m_audioInterfacePtr.clear();
-    m_deviceID = gDefaultDeviceID;
-}
-
-void VsAudio::privateRefreshDevices()
-{
-#ifdef RT_AUDIO
-    if (!getUseRtAudio())
-        return;
-    bool restartAudio = !m_audioInterfacePtr.isNull();
-    if (restartAudio)
-        closeAudioInterface();
-    updateDeviceModels(true);
-    privateValidateDevices();
-    if (restartAudio)
-        openAudioInterface();
-#endif
-}
-
-void VsAudio::privateValidateDevices()
-{
-#ifdef RT_AUDIO
     if (!getUseRtAudio())
         return;
     validateInputDevicesState();
     validateOutputDevicesState();
     emit signalDevicesValidated();
-#endif
 }
+
+void VsAudioWorker::validateInputDevicesState()
+{
+    if (!getUseRtAudio()) {
+        return;
+    }
+    if (m_inputDeviceList.size() == 0 || m_outputDeviceList.size() == 0) {
+        return;
+    }
+
+    // Given input device list, check that the currently set device
+    // actually exists
+    if (getInputDevice() == QStringLiteral("")
+        || m_inputDeviceList.indexOf(getInputDevice()) == -1) {
+        m_parentPtr->setInputDevice(m_inputDeviceList[0]);
+    }
+
+    // Given the currently selected input device, reset the available input channel
+    // options
+    int indexOfInput = m_inputDeviceList.indexOf(getInputDevice());
+    if (indexOfInput == -1) {
+        std::cerr << "Invalid state. Input device index should never be -1" << std::endl;
+        return;
+    }
+
+    int numDevicesChannelsAvailable = m_inputDeviceChannels.at(indexOfInput);
+    if (numDevicesChannelsAvailable < 1) {
+        std::cerr << "Invalid state. Number of channels should never be less than 1"
+                  << std::endl;
+        return;
+    } else if (numDevicesChannelsAvailable == 1) {
+        // Set the input mix mode to just have "Mono" as the option
+        QJsonObject inputMixModeComboElement = QJsonObject();
+        inputMixModeComboElement.insert(QString::fromStdString("label"),
+                                        QString::fromStdString("Mono"));
+        inputMixModeComboElement.insert(QString::fromStdString("value"),
+                                        static_cast<int>(AudioInterface::MONO));
+        QJsonArray inputMixModeComboModel;
+        inputMixModeComboModel.push_back(inputMixModeComboElement);
+        m_parentPtr->setInputMixModeComboModel(inputMixModeComboModel);
+
+        // Set the input channels combo to only have channel 1 as an option
+        QJsonObject inputChannelsComboElement;
+        inputChannelsComboElement.insert(QString::fromStdString("label"),
+                                         QString::fromStdString("1"));
+        inputChannelsComboElement.insert(QString::fromStdString("baseChannel"),
+                                         QVariant(0).toInt());
+        inputChannelsComboElement.insert(QString::fromStdString("numChannels"),
+                                         QVariant(1).toInt());
+        QJsonArray inputChannelsComboModel;
+        inputChannelsComboModel.push_back(inputChannelsComboElement);
+        m_parentPtr->setInputChannelsComboModel(inputChannelsComboModel);
+
+        // Set the only allowed options for these variables automatically
+        m_parentPtr->setBaseInputChannel(0);
+        m_parentPtr->setNumInputChannels(1);
+        m_parentPtr->setInputMixMode(static_cast<int>(AudioInterface::MONO));
+    } else {
+        // set the input channels selector to have the options based on the currently
+        // selected device
+        QJsonArray inputChannelsComboModel;
+        for (int i = 0; i < numDevicesChannelsAvailable; i++) {
+            QJsonObject element = QJsonObject();
+            element.insert(QString::fromStdString("label"), QVariant(i + 1).toString());
+            element.insert(QString::fromStdString("baseChannel"), QVariant(i).toInt());
+            element.insert(QString::fromStdString("numChannels"), QVariant(1).toInt());
+            inputChannelsComboModel.push_back(element);
+        }
+        for (int i = 0; i < numDevicesChannelsAvailable; i++) {
+            if (i % 2 == 0) {
+                QJsonObject element = QJsonObject();
+                element.insert(
+                    QString::fromStdString("label"),
+                    QVariant(i + 1).toString() + " & " + QVariant(i + 2).toString());
+                element.insert(QString::fromStdString("baseChannel"),
+                               QVariant(i).toInt());
+                element.insert(QString::fromStdString("numChannels"),
+                               QVariant(2).toInt());
+                inputChannelsComboModel.push_back(element);
+            }
+        }
+        m_parentPtr->setInputChannelsComboModel(inputChannelsComboModel);
+
+        // if the current m_baseInputChannel or m_numInputChannels is invalid based on
+        // this device's option, use the first two channels by default
+        if (getBaseInputChannel() + getNumInputChannels() > numDevicesChannelsAvailable) {
+            // we're in the case where numDevicesChannelsAvailable >= 2, so always have
+            // the ability to use the first 2 channels
+            m_parentPtr->setBaseInputChannel(0);
+            m_parentPtr->setNumInputChannels(2);
+        }
+        if (getNumInputChannels() != 1) {
+            // Set the input mix mode to have two options: "Stereo" and "Mix to Mono" if
+            // we're using 2 channels
+            QJsonObject inputMixModeComboElement1 = QJsonObject();
+            inputMixModeComboElement1.insert(QString::fromStdString("label"),
+                                             QString::fromStdString("Stereo"));
+            inputMixModeComboElement1.insert(QString::fromStdString("value"),
+                                             static_cast<int>(AudioInterface::STEREO));
+            QJsonObject inputMixModeComboElement2 = QJsonObject();
+            inputMixModeComboElement2.insert(QString::fromStdString("label"),
+                                             QString::fromStdString("Mix to Mono"));
+            inputMixModeComboElement2.insert(QString::fromStdString("value"),
+                                             static_cast<int>(AudioInterface::MIXTOMONO));
+            QJsonArray inputMixModeComboModel;
+            inputMixModeComboModel.push_back(inputMixModeComboElement1);
+            inputMixModeComboModel.push_back(inputMixModeComboElement2);
+            m_parentPtr->setInputMixModeComboModel(inputMixModeComboModel);
+
+            // if m_inputMixMode is an invalid value, set it to "stereo" by default
+            // given that we are using 2 channels
+            if (getInputMixMode() != static_cast<int>(AudioInterface::STEREO)
+                && getInputMixMode() != static_cast<int>(AudioInterface::MIXTOMONO)) {
+                m_parentPtr->setInputMixMode(static_cast<int>(AudioInterface::STEREO));
+            }
+        } else {
+            // Set the input mix mode to just have "Mono" as the option if we're using 1
+            // channel
+            QJsonObject inputMixModeComboElement = QJsonObject();
+            inputMixModeComboElement.insert(QString::fromStdString("label"),
+                                            QString::fromStdString("Mono"));
+            inputMixModeComboElement.insert(QString::fromStdString("value"),
+                                            static_cast<int>(AudioInterface::MONO));
+            QJsonArray inputMixModeComboModel;
+            inputMixModeComboModel.push_back(inputMixModeComboElement);
+            m_parentPtr->setInputMixModeComboModel(inputMixModeComboModel);
+
+            // if m_inputMixMode is an invalid value, set it to AudioInterface::MONO
+            if (getInputMixMode() != static_cast<int>(AudioInterface::MONO)) {
+                m_parentPtr->setInputMixMode(static_cast<int>(AudioInterface::MONO));
+            }
+        }
+    }
+}
+
+void VsAudioWorker::validateOutputDevicesState()
+{
+    if (!getUseRtAudio()) {
+        return;
+    }
+    if (m_outputDeviceList.size() == 0 || m_outputDeviceList.size() == 0) {
+        return;
+    }
+
+    // Given output device list, check that the currently set device
+    // actually exists
+    if (getOutputDevice() == QStringLiteral("")
+        || m_outputDeviceList.indexOf(getOutputDevice()) == -1) {
+        m_parentPtr->setOutputDevice(m_outputDeviceList[0]);
+    }
+
+    // Given the currently selected output device, reset the available output channel
+    // options
+    int indexOfOutput = m_outputDeviceList.indexOf(getOutputDevice());
+    if (indexOfOutput == -1) {
+        std::cerr << "Invalid state. Output device index should never be -1" << std::endl;
+        return;
+    }
+
+    int numDevicesChannelsAvailable = m_outputDeviceChannels.at(indexOfOutput);
+    if (numDevicesChannelsAvailable < 1) {
+        std::cerr << "Invalid state. Number of channels should never be less than 1"
+                  << std::endl;
+        return;
+    } else if (numDevicesChannelsAvailable == 1) {
+        // Set the output channels combo to only have channel 1 as an option
+        QJsonObject outputChannelsComboElement = QJsonObject();
+        outputChannelsComboElement.insert(QString::fromStdString("label"),
+                                          QString::fromStdString("1"));
+        outputChannelsComboElement.insert(QString::fromStdString("baseChannel"),
+                                          QVariant(0).toInt());
+        outputChannelsComboElement.insert(QString::fromStdString("numChannels"),
+                                          QVariant(1).toInt());
+        QJsonArray outputChannelsComboModel;
+        outputChannelsComboModel.push_back(outputChannelsComboElement);
+        m_parentPtr->setOutputChannelsComboModel(outputChannelsComboModel);
+
+        // Set the only allowed options for these variables automatically
+        m_parentPtr->setBaseOutputChannel(0);
+        m_parentPtr->setNumOutputChannels(1);
+    } else {
+        // set the output channels selector to have the options based on the currently
+        // selected device
+        QJsonArray outputChannelsComboModel;
+        for (int i = 0; i < numDevicesChannelsAvailable; i++) {
+            if (i % 2 == 0) {
+                QJsonObject element = QJsonObject();
+                element.insert(
+                    QString::fromStdString("label"),
+                    QVariant(i + 1).toString() + " & " + QVariant(i + 2).toString());
+                element.insert(QString::fromStdString("baseChannel"),
+                               QVariant(i).toInt());
+                element.insert(QString::fromStdString("numChannels"),
+                               QVariant(2).toInt());
+                outputChannelsComboModel.push_back(element);
+            }
+        }
+        m_parentPtr->setOutputChannelsComboModel(outputChannelsComboModel);
+
+        // if the current m_baseOutputChannel or m_numOutputChannels is invalid based on
+        // this device's option, use the first two channels by default
+        if (getBaseOutputChannel() + getNumOutputChannels()
+            > numDevicesChannelsAvailable) {
+            // we're in the case where numDevicesChannelsAvailable >= 2, so always have
+            // the ability to use the first 2 channels
+            m_parentPtr->setBaseOutputChannel(0);
+            m_parentPtr->setNumOutputChannels(2);
+        }
+    }
+}
+
+#endif  // RT_AUDIO

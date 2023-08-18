@@ -56,9 +56,11 @@ class Analyzer;
 class JackTrip;
 class Meter;
 class Monitor;
+class QThread;
 class Tone;
 class Volume;
 class VsPermissions;
+class VsAudioWorker;
 
 class VsAudio : public QObject
 {
@@ -135,10 +137,11 @@ class VsAudio : public QObject
 
     // Constructor
     explicit VsAudio(QObject* parent = nullptr);
-    virtual ~VsAudio();
+    virtual ~VsAudio() {}
 
     // allow VirtualStudio to get Permissions to bind to QML view
-    QSharedPointer<VsPermissions> getPermissions() { return m_permissionsPtr; }
+    VsPermissions& getPermissions() { return *m_permissionsPtr; }
+    VsAudioWorker& getWorker() { return *m_audioWorkerPtr; }
 
     // allow VirtualStudio to append plugins
     void appendProcessPlugins(JackTrip* jackTrip);
@@ -275,35 +278,20 @@ class VsAudio : public QObject
     void signalRefreshDevices();
     void signalValidateDevices();
     void signalDevicesValidated();
-    void signalError(const QString& errorMessage);
 
    private slots:
-
-    void openAudioInterface();
-    void closeAudioInterface();
-    void privateRefreshDevices();
-    void privateValidateDevices();
+    void setDeviceModels(QJsonArray inputComboModel, QJsonArray outputComboModel);
+    void setInputChannelsComboModel(QJsonArray& model);
+    void setOutputChannelsComboModel(QJsonArray& model);
+    void setInputMixModeComboModel(QJsonArray& model);
 
    private:
-#ifdef RT_AUDIO
-    void validateInputDevicesState();
-    void validateOutputDevicesState();
-    void updateDeviceModels(bool refresh = true);
-    void getDeviceList(QStringList& list, QStringList& categories, QList<int>& channels,
-                       bool isInput);
-    static QJsonArray formatDeviceList(const QStringList& devices,
-                                       const QStringList& categories,
-                                       const QList<int>& channels);
-#endif
-
     // private methods
     void setAudioReady(bool ready);
     void detectedFeedbackLoop();
     void updatedInputVuMeasurements(const float* valuesInDecibels, int numChannels);
     void updatedOutputVuMeasurements(const float* valuesInDecibels, int numChannels);
     void setupPlugins(int numInputChannels, int numOutputChannels);
-    void openJackAudioInterface();
-    void openRtAudioInterface();
 
     // range for volume meters
     static constexpr float m_meterMax = 0.0;
@@ -333,10 +321,6 @@ class VsAudio : public QObject
     QString m_outputDevice;
     QVector<float> m_inputMeterLevels;
     QVector<float> m_outputMeterLevels;
-    QList<int> m_inputDeviceChannels;
-    QList<int> m_outputDeviceChannels;
-    QStringList m_inputDeviceList;
-    QStringList m_outputDeviceList;
     QJsonArray m_inputComboModel;
     QJsonArray m_outputComboModel;
     QJsonArray m_inputChannelsComboModel;
@@ -348,26 +332,19 @@ class VsAudio : public QObject
     QString m_devicesErrorHelpUrl   = QStringLiteral("");
 
     // other state not shared with QML
-    QSharedPointer<AudioInterface> m_audioInterfacePtr;
     QSharedPointer<VsPermissions> m_permissionsPtr;
-    AudioInterface::audioBitResolutionT m_audioBitResolution = AudioInterface::BIT16;
-    uint32_t m_sampleRate                                    = gDefaultSampleRate;
-    uint32_t m_deviceID = gDefaultDeviceID;  ///< RTAudio DeviceID
+    QScopedPointer<VsAudioWorker> m_audioWorkerPtr;
+    QScopedPointer<QThread> m_workerThread;
     QTimer m_inputClipTimer;
     QTimer m_outputClipTimer;
     Meter* m_inputMeterPluginPtr;
     Meter* m_outputMeterPluginPtr;
     Volume* m_inputVolumePluginPtr;
     Volume* m_outputVolumePluginPtr;
-    Tone* m_outputTonePluginPtr;
     Monitor* m_monitorPluginPtr;
 
 #ifndef NO_FEEDBACK
     Analyzer* m_outputAnalyzerPluginPtr;
-#endif
-
-#ifdef RT_AUDIO
-    QVector<RtAudioDevice> m_devices;
 #endif
 
     QStringList m_feedbackDetectionComboModel = {"Enabled", "Disabled"};
@@ -375,6 +352,85 @@ class VsAudio : public QObject
     QStringList m_bufferStrategyComboModel = {"Minimal Latency", "Stable Latency",
                                               "Loss Concealment (3)",
                                               "Loss Concealment (4)"};
+
+    friend class VsAudioWorker;
+};
+
+/// VsAudioWorker uses a separate thread to help VsAudio
+class VsAudioWorker : public QObject
+{
+    Q_OBJECT
+
+   public:
+    VsAudioWorker(VsAudio* ptr);
+    virtual ~VsAudioWorker() {}
+
+   signals:
+    void signalDevicesValidated();
+    void signalUpdatedDeviceModels(QJsonArray inputComboModel,
+                                   QJsonArray outputComboModel);
+    void signalError(const QString& errorMessage);
+
+   public slots:
+    void openAudioInterface();
+    void closeAudioInterface();
+#ifdef RT_AUDIO
+    void refreshDevices();
+    void validateDevices();
+
+   private:
+    void openRtAudioInterface();
+    void updateDeviceModels();
+    void validateInputDevicesState();
+    void validateOutputDevicesState();
+    static void getDeviceList(const QVector<RtAudioDevice>& devices, QStringList& list,
+                              QStringList& categories, QList<int>& channels,
+                              bool isInput);
+    static QJsonArray formatDeviceList(const QStringList& devices,
+                                       const QStringList& categories,
+                                       const QList<int>& channels);
+    QVector<RtAudioDevice> m_devices;
+#endif
+
+   private:
+    // parent getter wrappers
+    bool getUseRtAudio() const { return m_parentPtr->getUseRtAudio(); }
+    int getNumInputChannels() const { return m_parentPtr->getNumInputChannels(); }
+    int getNumOutputChannels() const { return m_parentPtr->getNumOutputChannels(); }
+    int getBaseInputChannel() const { return m_parentPtr->getBaseInputChannel(); }
+    int getBaseOutputChannel() const { return m_parentPtr->getBaseOutputChannel(); }
+    int getBufferSize() const { return m_parentPtr->getBufferSize(); }
+    int getInputMixMode() const { return m_parentPtr->getInputMixMode(); }
+    const QString& getInputDevice() const { return m_parentPtr->getInputDevice(); }
+    const QString& getOutputDevice() const { return m_parentPtr->getOutputDevice(); }
+
+    // parent setter wrappers
+    void setAudioReady(bool ready) { m_parentPtr->setAudioReady(ready); }
+    void setDevicesErrorMsg(const QString& msg) { m_parentPtr->setDevicesErrorMsg(msg); }
+    void setDevicesWarningMsg(const QString& msg)
+    {
+        m_parentPtr->setDevicesWarningMsg(msg);
+    }
+    void setDevicesErrorHelpUrl(const QString& url)
+    {
+        m_parentPtr->setDevicesErrorHelpUrl(url);
+    }
+    void setDevicesWarningHelpUrl(const QString& url)
+    {
+        m_parentPtr->setDevicesWarningHelpUrl(url);
+    }
+
+    // other private methods
+    void openJackAudioInterface();
+
+    VsAudio* m_parentPtr;
+    QSharedPointer<AudioInterface> m_audioInterfacePtr;
+    QList<int> m_inputDeviceChannels;
+    QList<int> m_outputDeviceChannels;
+    QStringList m_inputDeviceList;
+    QStringList m_outputDeviceList;
+    uint32_t m_sampleRate                                    = gDefaultSampleRate;
+    AudioInterface::audioBitResolutionT m_audioBitResolution = AudioInterface::BIT16;
 };
 
 #endif  // VSDAUDIO_H
