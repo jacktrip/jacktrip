@@ -1157,6 +1157,11 @@ void VirtualStudio::updatedStats(const QJsonObject& stats)
         newStats.insert(key, stats[key].toDouble());
     }
 
+    bool highLatency = m_audioConfigPtr->getHighLatencyFlag();
+    if (highLatency) {
+        newStats.insert(QStringLiteral("highLatency"), highLatency);
+    }
+
     m_networkStats = newStats;
     emit networkStatsChanged();
     return;
