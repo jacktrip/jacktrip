@@ -366,7 +366,7 @@ void VsAudio::setDevicesWarningHelpUrl(const QString& url)
 void VsAudio::setHighLatencyFlag(bool highLatencyFlag)
 {
     m_highLatencyFlag = highLatencyFlag;
-    emit highLatencyFlagChanged();
+    emit highLatencyFlagChanged(highLatencyFlag);
 }
 
 void VsAudio::loadSettings()

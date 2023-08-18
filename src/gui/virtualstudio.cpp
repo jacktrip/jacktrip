@@ -1007,6 +1007,8 @@ void VirtualStudio::slotAuthSucceeded()
             &VsDevice::updatePlaybackVolume);
     connect(m_audioConfigPtr.get(), &VsAudio::updatedMonitorVolume, m_devicePtr.get(),
             &VsDevice::updateMonitorVolume);
+    connect(m_audioConfigPtr.get(), &VsAudio::highLatencyFlagChanged, m_devicePtr.get(),
+            &VsDevice::updateHighLatencyFlag);
 
     m_devicePtr->registerApp();
 
@@ -1155,11 +1157,6 @@ void VirtualStudio::updatedStats(const QJsonObject& stats)
     for (int i = 0; i < stats.keys().size(); i++) {
         QString key = stats.keys().at(i);
         newStats.insert(key, stats[key].toDouble());
-    }
-
-    bool highLatency = m_audioConfigPtr->getHighLatencyFlag();
-    if (highLatency) {
-        newStats.insert(QStringLiteral("highLatency"), highLatency);
     }
 
     m_networkStats = newStats;

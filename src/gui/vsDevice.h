@@ -95,6 +95,7 @@ class VsDevice : public QObject
     void updatePlaybackVolume(float multiplier);
     void updatePlaybackMute(bool muted);
     void updateMonitorVolume(float multiplier);
+    void updateHighLatencyFlag(bool highLatency);
 
    private slots:
     void terminateJackTrip();
@@ -127,6 +128,7 @@ class VsDevice : public QObject
     float m_monitorVolume  = 0;
     QTimer m_sendVolumeTimer;
     bool m_reconnect = false;
+    bool m_highLatencyFlag = false;
 };
 
 #endif  // VSDEVICE_H

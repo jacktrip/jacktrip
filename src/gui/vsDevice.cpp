@@ -261,6 +261,7 @@ void VsDevice::sendHeartbeat()
         json.insert(QLatin1String("max_rtt"), (qint64)(stats.maxRtt * ns_per_ms));
         json.insert(QLatin1String("avg_rtt"), (qint64)(stats.avgRtt * ns_per_ms));
         json.insert(QLatin1String("stddev_rtt"), (qint64)(stats.stdDevRtt * ns_per_ms));
+        json.insert(QLatin1String("high_latency"), m_highLatencyFlag);
 
         // For the internal application UI, ms will suffice. No conversion needed
         QJsonObject pingStats = {};
@@ -271,6 +272,7 @@ void VsDevice::sendHeartbeat()
         pingStats.insert(QLatin1String("avgRtt"), ((int)(10 * stats.avgRtt)) / 10.0);
         pingStats.insert(QLatin1String("stdDevRtt"),
                          ((int)(10 * stats.stdDevRtt)) / 10.0);
+        pingStats.insert(QLatin1String("highLatency"), m_highLatencyFlag);
         emit updateNetworkStats(pingStats);
     }
 
@@ -541,6 +543,12 @@ void VsDevice::updateMonitorVolume(float multiplier)
     }
     m_monitorVolume = multiplier;
     m_sendVolumeTimer.start(100);
+}
+
+// updateHighLatencyFlag sets VsDevice's high latency flag to the provided boolean
+void VsDevice::updateHighLatencyFlag(bool highLatency)
+{
+    m_highLatencyFlag = highLatency;
 }
 
 // terminateJackTrip is a slot intended to be triggered on jacktrip process signals

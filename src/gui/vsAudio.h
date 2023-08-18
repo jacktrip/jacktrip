@@ -272,7 +272,7 @@ class VsAudio : public QObject
     void devicesErrorChanged();
     void devicesWarningHelpUrlChanged();
     void devicesErrorHelpUrlChanged();
-    void highLatencyFlagChanged();
+    void highLatencyFlagChanged(bool highLatencyFlag);
 
     // other signals to perform actions
     void signalPlayOutputAudio();
