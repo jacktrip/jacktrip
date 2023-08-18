@@ -510,7 +510,8 @@ int RtAudioInterface::stopProcess()
 #if RTAUDIO_VERSION_MAJOR < 6
     try {
         mRtAudio->closeStream();
-        mRtAudio->abortStream();
+        // this causes it to crash for some reason
+        // mRtAudio->abortStream();
     } catch (RtAudioError& e) {
         errorText = e.getMessage();
     }
@@ -597,6 +598,7 @@ void RtAudioInterface::scanDevices(QVector<RtAudioDevice>& devices)
             device     = rtaudio.getDeviceInfo(deviceId);
             device.api = rtaudio.getCurrentApi();
 #if RTAUDIO_VERSION_MAJOR < 6
+            device.ID = deviceId;
             // probed was removed from DeviceInfo in 6.0
             if (device.probed == false)
                 continue;
