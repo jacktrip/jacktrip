@@ -146,6 +146,7 @@ Rectangle {
                                         audio.inputDevice = modelData.text
                                     }
                                 }
+                                audio.validateDevices()
                                 audio.restartAudio()
                             }
                         }
@@ -335,6 +336,7 @@ Rectangle {
                                         audio.outputDevice = modelData.text
                                     }
                                 }
+                                audio.validateDevices()
                                 audio.restartAudio()
                             }
                         }
