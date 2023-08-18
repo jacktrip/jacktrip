@@ -101,7 +101,7 @@ Rectangle {
                 y: 0;
                 anchors.right: refreshButton.left;
                 anchors.rightMargin: 16 * virtualstudio.uiScale;
-                font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
                 color: textColour
                 visible: audio.scanningDevices
             }
