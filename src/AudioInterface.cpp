@@ -1004,33 +1004,3 @@ void AudioInterface::setDevicesErrorMsg(errorMessageT msg)
     }
     return;
 }
-
-//*******************************************************************************
-std::string AudioInterface::getDevicesWarningMsg()
-{
-    return mWarningMsg;
-}
-
-//*******************************************************************************
-std::string AudioInterface::getDevicesErrorMsg()
-{
-    return mErrorMsg;
-}
-
-//*******************************************************************************
-std::string AudioInterface::getDevicesWarningHelpUrl()
-{
-    return mWarningHelpUrl;
-}
-
-//*******************************************************************************
-std::string AudioInterface::getDevicesErrorHelpUrl()
-{
-    return mErrorHelpUrl;
-}
-
-//*******************************************************************************
-bool AudioInterface::getHighLatencyFlag()
-{
-    return mHighLatencyFlag;
-}

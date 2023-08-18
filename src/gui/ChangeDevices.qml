@@ -89,10 +89,8 @@ Rectangle {
                 y: 0;
                 x: parent.width - (144 + rightMargin) * virtualstudio.uiScale;
                 enabled: !audio.scanningDevices
-                onClicked: {
-                    audio.refreshDevices();
-                    inputCombo.currentIndex = getCurrentInputDeviceIndex();
-                    outputCombo.currentIndex = getCurrentOutputDeviceIndex();
+                onDeviceRefresh: function () {
+                    virtualstudio.triggerReconnect(true);
                 }
             }
 
@@ -171,7 +169,7 @@ Rectangle {
                                         audio.inputDevice = modelData.text
                                     }
                                 }
-                                audio.validateDevices();
+                                virtualstudio.triggerReconnect(false);
                             }
                         }
                     }
@@ -230,7 +228,7 @@ Rectangle {
                             outputChannelsCombo.popup.close()
                             audio.baseOutputChannel = modelData.baseChannel
                             audio.numOutputChannels = modelData.numChannels
-                            audio.validateDevices();
+                            virtualstudio.triggerReconnect(false);
                         }
                     }
                 }
@@ -308,7 +306,7 @@ Rectangle {
                                         audio.outputDevice = modelData.text
                                     }
                                 }
-                                audio.validateDevices();
+                                virtualstudio.triggerReconnect(false);
                             }
                         }
                     }
@@ -367,7 +365,7 @@ Rectangle {
                             inputChannelsCombo.popup.close()
                             audio.baseInputChannel = modelData.baseChannel
                             audio.numInputChannels = modelData.numChannels
-                            audio.validateDevices();
+                            virtualstudio.triggerReconnect(false);
                         }
                     }
                 }
@@ -424,7 +422,7 @@ Rectangle {
                             inputMixModeCombo.currentIndex = index
                             inputMixModeCombo.popup.close()
                             audio.inputMixMode = audio.inputMixModeComboModel[index].value
-                            audio.validateDevices();
+                            virtualstudio.triggerReconnect(false);
                         }
                     }
                 }

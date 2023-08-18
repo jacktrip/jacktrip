@@ -251,11 +251,11 @@ class AudioInterface
      * \return Sample Rate in Hz
      */
     static int getSampleRateFromType(samplingRateT rate_type);
-    std::string getDevicesWarningMsg();
-    std::string getDevicesErrorMsg();
-    std::string getDevicesWarningHelpUrl();
-    std::string getDevicesErrorHelpUrl();
-    bool getHighLatencyFlag();
+    const std::string& getDevicesWarningMsg() const { return mWarningMsg; }
+    const std::string& getDevicesErrorMsg() const { return mErrorMsg; }
+    const std::string& getDevicesWarningHelpUrl() const { return mWarningHelpUrl; }
+    const std::string& getDevicesErrorHelpUrl() const { return mErrorHelpUrl; }
+    bool getHighLatencyFlag() const { return mHighLatencyFlag; }
     //------------------------------------------------------------------
 
    private:

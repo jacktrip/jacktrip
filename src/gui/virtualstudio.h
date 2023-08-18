@@ -183,7 +183,7 @@ class VirtualStudio : public QObject
     void refreshStudios(int index, bool signalRefresh = false);
     void loadSettings();
     void saveSettings();
-    void triggerReconnect();
+    void triggerReconnect(bool refresh);
     void manageStudio(const QString& studioId, bool start = false);
     void launchVideo(const QString& studioId);
     void createStudio();
@@ -260,6 +260,12 @@ class VirtualStudio : public QObject
     void completeConnection();
 
    private:
+    enum ReconnectState {
+        NOT_RECONNECTING = 0,
+        RECONNECTING_VALIDATE,
+        RECONNECTING_REFRESH
+    };
+
     VsQuickView m_view;
     VsServerInfo m_currentStudio;
     QScopedPointer<JackTrip> m_jackTrip;
@@ -287,7 +293,8 @@ class VirtualStudio : public QObject
     QString m_updateChannel;
     QString m_refreshToken;
     QString m_userId;
-    QString m_apiHost = PROD_API_HOST;
+    QString m_apiHost               = PROD_API_HOST;
+    ReconnectState m_reconnectState = ReconnectState::NOT_RECONNECTING;
 
     bool m_jackTripRunning        = false;
     bool m_showFirstRun           = false;
@@ -307,6 +314,7 @@ class VirtualStudio : public QObject
     bool m_testMode               = false;
     bool m_authenticated          = false;
     bool m_networkOutage          = false;
+    bool m_refreshServers         = false;
     float m_fontScale             = 1;
     float m_uiScale               = 1;
     uint32_t m_webChannelPort     = 1;

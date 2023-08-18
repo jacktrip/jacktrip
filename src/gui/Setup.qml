@@ -111,8 +111,8 @@ Item {
             }
             enabled: !Boolean(audio.devicesError) && audio.backendAvailable && audio.audioReady
             onClicked: {
+                audio.stopAudio(true);
                 virtualstudio.windowState = "connected";
-                audio.stopAudio();
                 virtualstudio.saveSettings();
                 virtualstudio.joinStudio();
             }

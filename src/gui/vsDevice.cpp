@@ -299,26 +299,6 @@ void VsDevice::sendHeartbeat()
     }
 }
 
-bool VsDevice::reconnect()
-{
-    return m_reconnect;
-}
-
-void VsDevice::setReconnect(bool reconnect)
-{
-    m_reconnect = reconnect;
-    if (reconnect) {
-        stopPinger();
-        if (m_webSocket != nullptr && m_webSocket->isValid()) {
-            m_webSocket->closeSocket();
-        }
-        if (!m_jackTrip.isNull()) {
-            m_jackTrip->stop();
-            m_jackTrip.reset();
-        }
-    }
-}
-
 bool VsDevice::hasTerminated()
 {
     return m_jackTrip.isNull();

@@ -38,6 +38,7 @@
 #include "vsAudio.h"
 
 #include <QDebug>
+#include <QEventLoop>
 #include <QJsonObject>
 #include <QSettings>
 #include <QThread>
@@ -66,6 +67,21 @@
 #include "../Tone.h"
 #include "../Volume.h"
 #include "AudioInterfaceMode.h"
+
+// generic function to wait for a signal to be emitted
+template<typename SignalSenderPtr, typename SignalFuncPtr>
+static inline void WaitForSignal(SignalSenderPtr sender, SignalFuncPtr signal)
+{
+    QTimer timer;
+    timer.setTimerType(Qt::CoarseTimer);
+    timer.setSingleShot(true);
+
+    QEventLoop loop;
+    QObject::connect(sender, signal, &loop, &QEventLoop::quit);
+    QObject::connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+    timer.start(10000);  // wait for max 10 seconds
+    loop.exec();
+}
 
 // Constructor
 VsAudio::VsAudio(QObject* parent)
@@ -184,6 +200,10 @@ void VsAudio::setAudioReady(bool ready)
         return;
     m_audioReady = ready;
     emit signalAudioReadyChanged();
+    if (m_audioReady)
+        emit signalAudioIsReady();
+    else
+        emit signalAudioIsNotReady();
 }
 
 void VsAudio::setScanningDevices(bool b)
@@ -349,32 +369,81 @@ void VsAudio::setOutputDevice([[maybe_unused]] const QString& device)
 
 void VsAudio::setDevicesErrorMsg(const QString& msg)
 {
+    if (m_devicesErrorMsg == msg)
+        return;
     m_devicesErrorMsg = msg;
     emit devicesErrorChanged();
 }
 
 void VsAudio::setDevicesWarningMsg(const QString& msg)
 {
+    if (m_devicesWarningMsg == msg)
+        return;
     m_devicesWarningMsg = msg;
     emit devicesWarningChanged();
 }
 
 void VsAudio::setDevicesErrorHelpUrl(const QString& url)
 {
+    if (m_devicesErrorHelpUrl == url)
+        return;
     m_devicesErrorHelpUrl = url;
     emit devicesErrorHelpUrlChanged();
 }
 
 void VsAudio::setDevicesWarningHelpUrl(const QString& url)
 {
+    if (m_devicesWarningHelpUrl == url)
+        return;
     m_devicesWarningHelpUrl = url;
     emit devicesWarningHelpUrlChanged();
 }
 
 void VsAudio::setHighLatencyFlag(bool highLatencyFlag)
 {
+    if (m_highLatencyFlag == highLatencyFlag)
+        return;
     m_highLatencyFlag = highLatencyFlag;
     emit highLatencyFlagChanged(highLatencyFlag);
+}
+
+void VsAudio::startAudio(bool block)
+{
+    // note this is also used for restartAudio()
+    emit signalStartAudio();
+    if (!block)
+        return;
+    WaitForSignal(this, &VsAudio::signalAudioIsReady);
+}
+
+void VsAudio::stopAudio(bool block)
+{
+    if (!getAudioReady())
+        return;
+    emit signalStopAudio();
+    if (!block)
+        return;
+    WaitForSignal(this, &VsAudio::signalAudioIsNotReady);
+}
+
+void VsAudio::refreshDevices(bool block)
+{
+    if (!getUseRtAudio())
+        return;
+    emit signalRefreshDevices();
+    if (!block)
+        return;
+    WaitForSignal(m_audioWorkerPtr.get(), &VsAudioWorker::signalDevicesValidated);
+}
+
+void VsAudio::validateDevices(bool block)
+{
+    if (!getUseRtAudio())
+        return;
+    emit signalValidateDevices();
+    if (!block)
+        return;
+    WaitForSignal(m_audioWorkerPtr.get(), &VsAudioWorker::signalDevicesValidated);
 }
 
 void VsAudio::loadSettings()
@@ -770,7 +839,8 @@ void VsAudioWorker::openAudioInterface()
     }
 #endif
 
-    setAudioReady(true);
+    updateDeviceMessages(*m_audioInterfacePtr);
+    m_parentPtr->setAudioReady(true);
 }
 
 void VsAudioWorker::openJackAudioInterface()
@@ -795,22 +865,6 @@ void VsAudioWorker::openJackAudioInterface()
         m_audioInterfacePtr->setClientName(QStringLiteral("JackTrip"));
         m_audioInterfacePtr->setup(true);
 
-        std::string devicesWarningMsg = m_audioInterfacePtr->getDevicesWarningMsg();
-        std::string devicesErrorMsg   = m_audioInterfacePtr->getDevicesErrorMsg();
-        bool highLatencyFlag          = m_audioInterfacePtr->getHighLatencyFlag();
-
-        if (devicesWarningMsg != "") {
-            qDebug() << "Devices Warning: " << QString::fromStdString(devicesWarningMsg);
-        }
-
-        if (devicesErrorMsg != "") {
-            qDebug() << "Devices Error: " << QString::fromStdString(devicesErrorMsg);
-        }
-
-        setDevicesWarningMsg(QString::fromStdString(devicesWarningMsg));
-        setDevicesErrorMsg(QString::fromStdString(devicesErrorMsg));
-        setHighLatencyFlag(highLatencyFlag);
-
         m_sampleRate = m_audioInterfacePtr->getSampleRate();
     } else {
         return;
@@ -820,18 +874,49 @@ void VsAudioWorker::openJackAudioInterface()
 #endif
 }
 
+void VsAudioWorker::updateDeviceMessages(AudioInterface& audioInterface)
+{
+    QString devicesWarningMsg =
+        QString::fromStdString(audioInterface.getDevicesWarningMsg());
+    QString devicesErrorMsg = QString::fromStdString(audioInterface.getDevicesErrorMsg());
+    QString devicesWarningHelpUrl =
+        QString::fromStdString(audioInterface.getDevicesWarningHelpUrl());
+    QString devicesErrorHelpUrl =
+        QString::fromStdString(audioInterface.getDevicesErrorHelpUrl());
+
+    if (devicesWarningMsg != "") {
+        qDebug() << "Devices Warning: " << devicesWarningMsg;
+        if (devicesWarningHelpUrl != "") {
+            qDebug() << "Learn More: " << devicesWarningHelpUrl;
+        }
+    }
+
+    if (devicesErrorMsg != "") {
+        qDebug() << "Devices Error: " << devicesErrorMsg;
+        if (devicesErrorHelpUrl != "") {
+            qDebug() << "Learn More: " << devicesErrorHelpUrl;
+        }
+    }
+
+    m_parentPtr->setDevicesWarningMsg(devicesWarningMsg);
+    m_parentPtr->setDevicesErrorMsg(devicesErrorMsg);
+    m_parentPtr->setDevicesWarningHelpUrl(devicesWarningHelpUrl);
+    m_parentPtr->setDevicesErrorHelpUrl(devicesErrorHelpUrl);
+    m_parentPtr->setHighLatencyFlag(m_audioInterfacePtr->getHighLatencyFlag());
+}
+
 void VsAudioWorker::closeAudioInterface()
 {
     if (m_audioInterfacePtr.isNull())
         return;
     std::cout << "Stopping Audio" << std::endl;
-    setAudioReady(false);
     try {
         m_audioInterfacePtr->stopProcess();
     } catch (const std::exception& e) {
         emit signalError(QString::fromUtf8(e.what()));
     }
     m_audioInterfacePtr.clear();
+    m_parentPtr->setAudioReady(false);
 }
 
 #ifdef RT_AUDIO
@@ -863,32 +948,6 @@ void VsAudioWorker::openRtAudioInterface()
 
     // Note: setup might change the number of channels and/or buffer size
     m_audioInterfacePtr->setup(true);
-
-    std::string devicesWarningMsg     = m_audioInterfacePtr->getDevicesWarningMsg();
-    std::string devicesErrorMsg       = m_audioInterfacePtr->getDevicesErrorMsg();
-    std::string devicesWarningHelpUrl = m_audioInterfacePtr->getDevicesWarningHelpUrl();
-    std::string devicesErrorHelpUrl   = m_audioInterfacePtr->getDevicesErrorHelpUrl();
-    bool highLatencyFlag              = m_audioInterfacePtr->getHighLatencyFlag();
-
-    if (devicesWarningMsg != "") {
-        qDebug() << "Devices Warning: " << QString::fromStdString(devicesWarningMsg);
-        if (devicesWarningHelpUrl != "") {
-            qDebug() << "Learn More: " << QString::fromStdString(devicesWarningHelpUrl);
-        }
-    }
-
-    if (devicesErrorMsg != "") {
-        qDebug() << "Devices Error: " << QString::fromStdString(devicesErrorMsg);
-        if (devicesErrorHelpUrl != "") {
-            qDebug() << "Learn More: " << QString::fromStdString(devicesErrorHelpUrl);
-        }
-    }
-
-    setDevicesWarningMsg(QString::fromStdString(devicesWarningMsg));
-    setDevicesErrorMsg(QString::fromStdString(devicesErrorMsg));
-    setDevicesWarningHelpUrl(QString::fromStdString(devicesWarningHelpUrl));
-    setDevicesErrorHelpUrl(QString::fromStdString(devicesErrorHelpUrl));
-    setHighLatencyFlag(highLatencyFlag);
 }
 
 void VsAudioWorker::refreshDevices()

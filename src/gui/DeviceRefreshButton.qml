@@ -13,6 +13,7 @@ Button {
     property string buttonStroke: virtualstudio.darkMode ? "#80827D7D" : "#34979797"
     property string buttonHoverStroke: virtualstudio.darkMode ? "#7B7777" : "#BABCBC"
     property string buttonPressedStroke: virtualstudio.darkMode ? "#827D7D" : "#BABCBC"
+    property var onDeviceRefresh: function () { audio.refreshDevices(); };
 
     width: 144 * virtualstudio.uiScale;
     height: 30 * virtualstudio.uiScale
@@ -29,9 +30,7 @@ Button {
         source: "refresh.svg";
         color: textColour;
     }
-    onClicked: {
-        audio.refreshDevices();
-    }
+    onClicked: { onDeviceRefresh(); }
     font {
         family: "Poppins"
         pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale

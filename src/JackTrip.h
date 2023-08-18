@@ -514,6 +514,35 @@ class JackTrip : public QObject
 #endif        // endwhere
             return mAudioInterface->getSizeInBytesPerChannel() * mNumAudioChansOut;
     }
+    QString getDevicesWarningMsg() const
+    {
+        if (mAudioInterface == nullptr)
+            return QLatin1String("");
+        return QString::fromStdString(mAudioInterface->getDevicesWarningMsg());
+    }
+    QString getDevicesErrorMsg() const
+    {
+        if (mAudioInterface == nullptr)
+            return QLatin1String("");
+        return QString::fromStdString(mAudioInterface->getDevicesErrorMsg());
+    }
+    QString getDevicesWarningHelpUrl() const
+    {
+        if (mAudioInterface == nullptr)
+            return QLatin1String("");
+        return QString::fromStdString(mAudioInterface->getDevicesWarningHelpUrl());
+    }
+    QString getDevicesErrorHelpUrl() const
+    {
+        if (mAudioInterface == nullptr)
+            return QLatin1String("");
+        return QString::fromStdString(mAudioInterface->getDevicesErrorHelpUrl());
+    }
+    bool getHighLatencyFlag() const
+    {
+        return (mAudioInterface == nullptr) ? false
+                                            : mAudioInterface->getHighLatencyFlag();
+    }
     //@}
     //------------------------------------------------------------------------------------
 

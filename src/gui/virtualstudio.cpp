@@ -183,10 +183,6 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     connect(&m_audioConfigPtr->getWorker(), &VsAudioWorker::signalError, this,
             &VirtualStudio::processError, Qt::QueuedConnection);
 
-    // when connected to server, trigger reconnect after device validation
-    connect(&m_audioConfigPtr->getWorker(), &VsAudioWorker::signalDevicesValidated, this,
-            &VirtualStudio::triggerReconnect, Qt::QueuedConnection);
-
     // when connected to server, trigger UI modal when feedback is detected
     connect(m_audioConfigPtr.get(), &VsAudio::feedbackDetected, this,
             &VirtualStudio::detectedFeedbackLoop, Qt::QueuedConnection);
@@ -255,6 +251,8 @@ bool VirtualStudio::showFirstRun()
 
 void VirtualStudio::setShowFirstRun(bool show)
 {
+    if (m_showFirstRun == show)
+        return;
     m_showFirstRun = show;
     emit showFirstRunChanged();
 }
@@ -281,6 +279,8 @@ QString VirtualStudio::connectedErrorMsg()
 
 void VirtualStudio::setConnectedErrorMsg(const QString& msg)
 {
+    if (m_connectedErrorMsg == msg)
+        return;
     m_connectedErrorMsg = msg;
     emit connectedErrorMsgChanged();
 }
@@ -317,6 +317,8 @@ QString VirtualStudio::updateChannel()
 
 void VirtualStudio::setUpdateChannel(const QString& channel)
 {
+    if (m_updateChannel == channel)
+        return;
     m_updateChannel = channel;
     emit updateChannelChanged();
 }
@@ -328,7 +330,15 @@ bool VirtualStudio::showInactive()
 
 void VirtualStudio::setShowInactive(bool inactive)
 {
+    if (m_showInactive == inactive)
+        return;
     m_showInactive = inactive;
+    emit showInactiveChanged();
+
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("VirtualStudio"));
+    settings.setValue(QStringLiteral("ShowInactive"), m_showInactive);
+    settings.endGroup();
 }
 
 bool VirtualStudio::showSelfHosted()
@@ -338,7 +348,15 @@ bool VirtualStudio::showSelfHosted()
 
 void VirtualStudio::setShowSelfHosted(bool selfHosted)
 {
+    if (m_showSelfHosted == selfHosted)
+        return;
     m_showSelfHosted = selfHosted;
+    emit showSelfHostedChanged();
+
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("VirtualStudio"));
+    settings.setValue(QStringLiteral("ShowSelfHosted"), m_showSelfHosted);
+    settings.endGroup();
 }
 
 bool VirtualStudio::showCreateStudio()
@@ -348,6 +366,8 @@ bool VirtualStudio::showCreateStudio()
 
 void VirtualStudio::setShowCreateStudio(bool createStudio)
 {
+    if (m_showCreateStudio == createStudio)
+        return;
     m_showCreateStudio = createStudio;
     emit showCreateStudioChanged();
 }
@@ -359,7 +379,10 @@ bool VirtualStudio::showDeviceSetup()
 
 void VirtualStudio::setShowDeviceSetup(bool show)
 {
+    if (m_showDeviceSetup == show)
+        return;
     m_showDeviceSetup = show;
+    emit showDeviceSetupChanged();
 }
 
 QString VirtualStudio::windowState()
@@ -369,6 +392,8 @@ QString VirtualStudio::windowState()
 
 void VirtualStudio::setWindowState(QString state)
 {
+    if (m_windowState == state)
+        return;
     m_windowState = state;
     emit windowStateUpdated();
 }
@@ -380,6 +405,8 @@ QString VirtualStudio::apiHost()
 
 void VirtualStudio::setApiHost(QString host)
 {
+    if (m_apiHost == host)
+        return;
     m_apiHost = host;
     emit apiHostChanged();
 }
@@ -407,6 +434,8 @@ bool VirtualStudio::showWarnings()
 
 void VirtualStudio::setShowWarnings(bool show)
 {
+    if (m_showWarnings == show)
+        return;
     m_showWarnings = show;
     emit showWarningsChanged();
 }
@@ -449,6 +478,8 @@ bool VirtualStudio::collapseDeviceControls()
 
 void VirtualStudio::setCollapseDeviceControls(bool collapseDeviceControls)
 {
+    if (m_collapseDeviceControls == collapseDeviceControls)
+        return;
     m_collapseDeviceControls = collapseDeviceControls;
     emit collapseDeviceControlsChanged(collapseDeviceControls);
 }
@@ -460,6 +491,9 @@ bool VirtualStudio::testMode()
 
 void VirtualStudio::setTestMode(bool test)
 {
+    if (m_testMode == test)
+        return;
+
     QString userEmail = m_userMetadata[QStringLiteral("email")].toString();
     if (m_userMetadata.isEmpty() || userEmail == ""
         || !userEmail.endsWith("@jacktrip.org")) {
@@ -507,6 +541,8 @@ QUrl VirtualStudio::studioToJoin()
 
 void VirtualStudio::setStudioToJoin(const QUrl& url)
 {
+    if (m_studioToJoin == url)
+        return;
     m_studioToJoin = url;
     emit studioToJoinChanged();
 }
@@ -671,9 +707,8 @@ void VirtualStudio::loadSettings()
         settings.value(QStringLiteral("UpdateChannel"), "stable").toString().toLower();
 
     settings.beginGroup(QStringLiteral("VirtualStudio"));
-    m_refreshToken = settings.value(QStringLiteral("RefreshToken"), "").toString();
-    m_userId       = settings.value(QStringLiteral("UserId"), "").toString();
-
+    m_refreshToken   = settings.value(QStringLiteral("RefreshToken"), "").toString();
+    m_userId         = settings.value(QStringLiteral("UserId"), "").toString();
     m_testMode       = settings.value(QStringLiteral("TestMode"), false).toBool();
     m_showInactive   = settings.value(QStringLiteral("ShowInactive"), true).toBool();
     m_showSelfHosted = settings.value(QStringLiteral("ShowSelfHosted"), false).toBool();
@@ -717,6 +752,7 @@ void VirtualStudio::connectToStudio(VsServerInfo& studio)
     m_currentStudio = studio;
     emit currentStudioChanged();
     m_onConnectedScreen = true;
+    m_reconnectState    = ReconnectState::NOT_RECONNECTING;
 
     m_studioSocketPtr.reset(new VsWebSocket(
         QUrl(QStringLiteral("wss://%1/api/servers/%2?auth_code=%3")
@@ -734,10 +770,6 @@ void VirtualStudio::connectToStudio(VsServerInfo& studio)
         emit connectionStateChanged();
     } else {
         completeConnection();
-    }
-
-    if (!m_devicePtr.isNull()) {
-        m_devicePtr->setReconnect(false);
     }
 }
 
@@ -798,6 +830,16 @@ void VirtualStudio::completeConnection()
         emit connectionStateChanged();
         m_devicePtr->startJackTrip();
         m_devicePtr->startPinger(&m_currentStudio);
+
+        // update device error messages and warnings based on latest results
+        // this is necessary because we may have never loaded audio settings,
+        // or the state may have changed via the connected change devices screen
+        m_audioConfigPtr->setDevicesWarningMsg(jackTrip->getDevicesWarningMsg());
+        m_audioConfigPtr->setDevicesErrorMsg(jackTrip->getDevicesErrorMsg());
+        m_audioConfigPtr->setDevicesWarningHelpUrl(jackTrip->getDevicesWarningHelpUrl());
+        m_audioConfigPtr->setDevicesErrorHelpUrl(jackTrip->getDevicesErrorHelpUrl());
+        m_audioConfigPtr->setHighLatencyFlag(jackTrip->getHighLatencyFlag());
+
     } catch (const std::exception& e) {
         // Let the user know what our exception was.
         m_connectionState = QStringLiteral("JackTrip Error");
@@ -812,15 +854,28 @@ void VirtualStudio::completeConnection()
 #endif
 }
 
-void VirtualStudio::triggerReconnect()
+void VirtualStudio::triggerReconnect(bool refresh)
 {
-    if (m_jackTripRunning) {
-        m_connectionState = QStringLiteral("Reconnecting...");
-        emit connectionStateChanged();
-        if (!m_devicePtr.isNull()) {
-            m_devicePtr->setReconnect(true);
-        }
+    if (!m_jackTripRunning || m_devicePtr.isNull()) {
+        if (refresh)
+            m_audioConfigPtr->refreshDevices(true);
+        else
+            m_audioConfigPtr->validateDevices();
+        return;
     }
+
+    // this needs to be synchronous to avoid both trying
+    // to use the audio interfaces at the same time
+    // note that connectionFinished() checks m_reconnectState
+    // and uses that to update audio, then reconnect
+    m_reconnectState  = refresh ? ReconnectState::RECONNECTING_REFRESH
+                                : ReconnectState::RECONNECTING_VALIDATE;
+    m_connectionState = QStringLiteral("Reconnecting...");
+    emit connectionStateChanged();
+
+    m_devicePtr->stopPinger();
+    m_devicePtr->stopJackTrip();
+    m_devicePtr->disconnect();
 }
 
 void VirtualStudio::disconnect()
@@ -1033,12 +1088,20 @@ void VirtualStudio::slotAuthFailed()
 
 void VirtualStudio::connectionFinished()
 {
-    if (!m_devicePtr.isNull() && m_devicePtr->reconnect()) {
-        if (m_devicePtr != nullptr && m_devicePtr->hasTerminated()) {
+    if (!m_devicePtr.isNull()
+        && (m_reconnectState == ReconnectState::RECONNECTING_VALIDATE
+            || m_reconnectState == ReconnectState::RECONNECTING_REFRESH)) {
+        if (m_devicePtr->hasTerminated()) {
+            if (m_reconnectState == ReconnectState::RECONNECTING_REFRESH) {
+                m_audioConfigPtr->refreshDevices(true);
+            } else {
+                m_audioConfigPtr->validateDevices(true);
+            }
             connectToStudio(m_currentStudio);
         }
         return;
     }
+    m_reconnectState = ReconnectState::NOT_RECONNECTING;
 
     // use disconnect function to handle reset of all internal flags and timers
     disconnect();
