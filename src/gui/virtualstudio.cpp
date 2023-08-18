@@ -55,6 +55,7 @@
 #include "../JackTrip.h"
 #include "../Settings.h"
 #include "../jacktrip_globals.h"
+#include "WebSocketTransport.h"
 #include "about.h"
 #include "qjacktrip.h"
 #include "vsApi.h"
@@ -62,7 +63,6 @@
 #include "vsAuth.h"
 #include "vsDevice.h"
 #include "vsWebSocket.h"
-#include "WebSocketTransport.h"
 
 #ifdef __APPLE__
 #include "vsMacPermissions.h"
