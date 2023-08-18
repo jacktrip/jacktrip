@@ -127,7 +127,7 @@ class VsDevice : public QObject
     bool m_playbackMute    = false;
     float m_monitorVolume  = 0;
     QTimer m_sendVolumeTimer;
-    bool m_reconnect = false;
+    bool m_reconnect       = false;
     bool m_highLatencyFlag = false;
 };
 
