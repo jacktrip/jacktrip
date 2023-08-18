@@ -62,7 +62,7 @@
 #include "vsAuth.h"
 #include "vsDevice.h"
 #include "vsWebSocket.h"
-#include "websockettransport.h"
+#include "WebSocketTransport.h"
 
 #ifdef __APPLE__
 #include "vsMacPermissions.h"

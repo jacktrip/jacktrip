@@ -32,7 +32,7 @@
 **
 ****************************************************************************/
 
-#include "websockettransport.h"
+#include "WebSocketTransport.h"
 
 #include <QDebug>
 #include <QJsonDocument>
