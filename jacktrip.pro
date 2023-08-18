@@ -260,7 +260,6 @@ HEADERS += src/DataProtocol.h \
   !novs {
     HEADERS += src/gui/virtualstudio.h \
                src/gui/vsApi.h \
-               src/gui/vsAppController.h \
                src/gui/vsAuth.h \
                src/gui/vsDeviceCodeFlow.h \
                src/gui/vsInit.h \
@@ -331,7 +330,6 @@ SOURCES += src/DataProtocol.cpp \
   !novs {
     SOURCES += src/gui/virtualstudio.cpp \
                src/gui/vsApi.cpp \
-               src/gui/vsAppController.cpp \
                src/gui/vsAuth.cpp \
                src/gui/vsDeviceCodeFlow.cpp \
                src/gui/vsInit.cpp \

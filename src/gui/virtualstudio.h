@@ -58,7 +58,6 @@
 #include "../Monitor.h"
 #include "../Volume.h"
 #include "vsApi.h"
-#include "vsAppController.h"
 #include "vsAudioInterface.h"
 #include "vsAuth.h"
 #include "vsConstants.h"
@@ -145,6 +144,8 @@ class VirtualStudio : public QObject
     Q_PROPERTY(float fontScale READ fontScale CONSTANT)
     Q_PROPERTY(float uiScale READ uiScale WRITE setUiScale NOTIFY uiScaleChanged)
     Q_PROPERTY(bool darkMode READ darkMode WRITE setDarkMode NOTIFY darkModeChanged)
+    Q_PROPERTY(bool collapseDeviceControls READ collapseDeviceControls WRITE
+                   setCollapseDeviceControls NOTIFY collapseDeviceControlsChanged)
     Q_PROPERTY(bool testMode READ testMode WRITE setTestMode NOTIFY testModeChanged)
     Q_PROPERTY(bool showDeviceSetup READ showDeviceSetup WRITE setShowDeviceSetup NOTIFY
                    showDeviceSetupChanged)
@@ -264,6 +265,8 @@ class VirtualStudio : public QObject
     void setUiScale(float scale);
     bool darkMode();
     void setDarkMode(bool dark);
+    bool collapseDeviceControls();
+    void setCollapseDeviceControls(bool deviceControlsCollapsed);
     bool testMode();
     void setTestMode(bool test);
     QUrl studioToJoin();
@@ -374,6 +377,7 @@ class VirtualStudio : public QObject
     void showDeviceSetupChanged();
     void showWarningsChanged();
     void uiScaleChanged();
+    void collapseDeviceControlsChanged(bool collapseDeviceControls);
     void newScale();
     void darkModeChanged();
     void testModeChanged();
@@ -450,7 +454,6 @@ class VirtualStudio : public QObject
     QString m_userId;
     VsQuickView m_view;
     QSharedPointer<QJackTrip> m_standardWindow;
-    QScopedPointer<VsAppController> m_appController;
     QScopedPointer<VsAuth> m_auth;
     QScopedPointer<VsApi> m_api;
     QScopedPointer<QNetworkAccessManager> m_networkAccessManager;
@@ -482,14 +485,15 @@ class VirtualStudio : public QObject
     VsWebSocket* m_heartbeatWebSocket = NULL;
     VsDevice* m_device                = NULL;
 
-    bool m_onConnectedScreen = false;
-    bool m_isExiting         = false;
-    bool m_showInactive      = true;
-    bool m_showSelfHosted    = false;
-    bool m_showCreateStudio  = false;
-    bool m_showDeviceSetup   = true;
-    bool m_showWarnings      = true;
-    float m_fontScale        = 1;
+    bool m_onConnectedScreen      = false;
+    bool m_isExiting              = false;
+    bool m_showInactive           = true;
+    bool m_showSelfHosted         = false;
+    bool m_showCreateStudio       = false;
+    bool m_showDeviceSetup        = true;
+    bool m_showWarnings           = true;
+    bool m_collapseDeviceControls = true;
+    float m_fontScale             = 1;
     float m_uiScale;
     float m_previousUiScale;
     int m_bufferStrategy            = 0;

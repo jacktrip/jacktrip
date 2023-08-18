@@ -102,9 +102,6 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     // use a singleton QNetworkAccessManager
     m_networkAccessManager.reset(new QNetworkAccessManager);
 
-    // instantiate App Controller
-    m_appController.reset(new VsAppController(&m_view));
-
     // instantiate API
     m_api.reset(new VsApi(m_networkAccessManager.data()));
     m_api->setApiHost(PROD_API_HOST);
@@ -136,7 +133,6 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
 
     m_webChannel.reset(new QWebChannel());
     m_webChannel->registerObject(QStringLiteral("virtualstudio"), this);
-    m_webChannel->registerObject(QStringLiteral("appctl"), m_appController.data());
 
     // Load our font for our qml interface
     QFontDatabase::addApplicationFont(QStringLiteral(":/vs/Poppins-Regular.ttf"));
@@ -1038,6 +1034,17 @@ void VirtualStudio::setDarkMode(bool dark)
     settings.setValue(QStringLiteral("DarkMode"), m_darkMode);
     settings.endGroup();
     emit darkModeChanged();
+}
+
+bool VirtualStudio::collapseDeviceControls()
+{
+    return m_collapseDeviceControls;
+}
+
+void VirtualStudio::setCollapseDeviceControls(bool collapseDeviceControls)
+{
+    m_collapseDeviceControls = collapseDeviceControls;
+    emit collapseDeviceControlsChanged(collapseDeviceControls);
 }
 
 bool VirtualStudio::testMode()

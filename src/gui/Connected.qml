@@ -110,7 +110,7 @@ Item {
     }
 
     Connections {
-        target: appctl
+        target: virtualstudio
 
         function onDeviceControlsCollapsedChanged(deviceControlsCollapsed) {
             deviceControlsGroup.showMinified = deviceControlsCollapsed;
