@@ -33,10 +33,6 @@ Rectangle {
     property string errorFlagColour: "#DB0A0A"
     property string disabledButtonTextColour: virtualstudio.darkMode ? "#827D7D" : "#BABCBC"
 
-    property bool isUsingJack: audio.audioBackend == "JACK"
-    property bool isUsingRtAudio: audio.audioBackend == "RtAudio"
-    property bool hasNoBackend: !isUsingJack && !isUsingRtAudio && !audio.backendAvailable
-
     function getCurrentInputDeviceIndex () {
         if (audio.inputDevice === "") {
             return audio.inputComboModel.findIndex(elem => elem.type === "element");
@@ -61,9 +57,35 @@ Rectangle {
         return idx;
     }
 
+    function getCurrentInputChannelsIndex() {
+        let idx = audio.inputChannelsComboModel.findIndex(elem => elem.baseChannel === audio.baseInputChannel
+            && elem.numChannels === audio.numInputChannels);
+        if (idx < 0) {
+            idx = 0;
+        }
+        return idx;
+    }
+
+    function getCurrentOutputChannelsIndex() {
+        let idx = audio.outputChannelsComboModel.findIndex(elem => elem.baseChannel === audio.baseOutputChannel
+            && elem.numChannels === audio.numOutputChannels);
+        if (idx < 0) {
+            idx = 0;
+        }
+        return idx;
+    }
+
+    function getCurrentMixModeIndex() {
+        let idx = audio.inputMixModeComboModel.findIndex(elem => elem.value === audio.inputMixMode);
+        if (idx < 0) {
+            idx = 0;
+        }
+        return idx;
+    }
+
     Loader {
         anchors.fill: parent
-        sourceComponent: !audio.deviceModelsInitialized || audio.scanningDevices ? scanningDevices : (isUsingRtAudio ? usingRtAudio : (isUsingJack ? usingJACK : scanningDevices))
+        sourceComponent: !audio.deviceModelsInitialized || audio.scanningDevices ? scanningDevices : (audio.audioBackend == "RtAudio" ? usingRtAudio : (audio.audioBackend == "JACK" ? usingJACK : scanningDevices))
     }
 
     Component {
@@ -208,14 +230,7 @@ Rectangle {
                 anchors.top: outputChannelsLabel.bottom
                 anchors.topMargin: 4 * virtualstudio.uiScale
                 model: audio.outputChannelsComboModel
-                currentIndex: (() => {
-                    let idx = audio.outputChannelsComboModel.findIndex(elem => elem.baseChannel === audio.baseOutputChannel
-                        && elem.numChannels === audio.numOutputChannels);
-                    if (idx < 0) {
-                        idx = 0;
-                    }
-                    return idx;
-                })()
+                currentIndex: getCurrentOutputChannelsIndex()
                 delegate: ItemDelegate {
                     required property var modelData
                     required property int index
@@ -408,14 +423,7 @@ Rectangle {
                 anchors.top: inputChannelsLabel.bottom
                 anchors.topMargin: 4 * virtualstudio.uiScale
                 model: audio.inputChannelsComboModel
-                currentIndex: (() => {
-                    let idx = audio.inputChannelsComboModel.findIndex(elem => elem.baseChannel === audio.baseInputChannel
-                        && elem.numChannels === audio.numInputChannels);
-                    if (idx < 0) {
-                        idx = 0;
-                    }
-                    return idx;
-                })()
+                currentIndex: getCurrentInputChannelsIndex()
                 delegate: ItemDelegate {
                     required property var modelData
                     required property int index
@@ -467,13 +475,7 @@ Rectangle {
                 anchors.top: inputMixModeLabel.bottom
                 anchors.topMargin: 4 * virtualstudio.uiScale
                 model: audio.inputMixModeComboModel
-                currentIndex: (() => {
-                    let idx = audio.inputMixModeComboModel.findIndex(elem => elem.value === audio.inputMixMode);
-                    if (idx < 0) {
-                        idx = 0;
-                    }
-                    return idx;
-                })()
+                currentIndex: getCurrentMixModeIndex()
                 delegate: ItemDelegate {
                     required property var modelData
                     required property int index
@@ -539,6 +541,33 @@ Rectangle {
                 })()
                 font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
                 color: textColour
+            }
+
+            Connections {
+                target: audio
+                // anything that sets currentIndex to the value of a function needs
+                // to be manually updated whenever there is a change to any vars it uses
+                function onInputDeviceChanged() {
+                    inputCombo.currentIndex = getCurrentInputDeviceIndex();
+                }
+                function onOutputDeviceChanged() {
+                    outputCombo.currentIndex = getCurrentOutputDeviceIndex();
+                }
+                function onNumInputChannelsChanged() {
+                    inputChannelsCombo.currentIndex = getCurrentInputChannelsIndex();
+                }
+                function onBaseInputChannelChanged() {
+                    inputChannelsCombo.currentIndex = getCurrentInputChannelsIndex();
+                }
+                function onNumOutputChannelsChanged() {
+                    outputChannelsCombo.currentIndex = getCurrentOutputChannelsIndex();
+                }
+                function onBaseOutputChannelChanged() {
+                    outputChannelsCombo.currentIndex = getCurrentOutputChannelsIndex();
+                }
+                function onInputMixModeChanged() {
+                    inputMixModeCombo.currentIndex = getCurrentMixModeIndex();
+                }
             }
         }
     }

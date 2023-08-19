@@ -41,8 +41,6 @@ Item {
     property string disabledButtonTextColour: virtualstudio.darkMode ? "#827D7D" : "#BABCBC"
 
     property string settingsGroupView: "Audio"
-    property bool currShowWarnings: virtualstudio.showWarnings
-    property bool currShowDeviceSetup: virtualstudio.showDeviceSetup
 
     function getCurrentBufferSizeIndex () {
         let bufferSize = audio.bufferSize;
@@ -515,10 +513,10 @@ Item {
 
         CheckBox {
             id: showStartupSetup
-            checked: currShowDeviceSetup
+            checked: virtualstudio.showDeviceSetup
             text: qsTr("Show device setup screen before connecting to a studio")
             x: updateChannelCombo.x; y: feedbackDetectionCombo.y + (48 * virtualstudio.uiScale)
-            onClicked: { currShowDeviceSetup = showStartupSetup.checkState == Qt.Checked; virtualstudio.showDeviceSetup = currShowDeviceSetup }
+            onClicked: { virtualstudio.showDeviceSetup = showStartupSetup.checkState == Qt.Checked; }
             indicator: Rectangle {
                 implicitWidth: 16 * virtualstudio.uiScale
                 implicitHeight: 16 * virtualstudio.uiScale
@@ -558,10 +556,10 @@ Item {
 
         CheckBox {
             id: showStartupWarnings
-            checked: currShowWarnings
+            checked: virtualstudio.showWarnings
             text: qsTr("Show recommendations on startup again next time")
             x: updateChannelCombo.x; y: showStartupSetup.y + (48 * virtualstudio.uiScale)
-            onClicked: { currShowWarnings = showStartupWarnings.checkState == Qt.Checked; virtualstudio.showWarnings = currShowWarnings; }
+            onClicked: { virtualstudio.showWarnings = showStartupWarnings.checkState == Qt.Checked; }
             indicator: Rectangle {
                 implicitWidth: 16 * virtualstudio.uiScale
                 implicitHeight: 16 * virtualstudio.uiScale

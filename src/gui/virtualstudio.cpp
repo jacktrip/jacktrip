@@ -703,8 +703,8 @@ void VirtualStudio::refreshStudios(int index, bool signalRefresh)
 void VirtualStudio::loadSettings()
 {
     QSettings settings;
-    m_updateChannel =
-        settings.value(QStringLiteral("UpdateChannel"), "stable").toString().toLower();
+    setUpdateChannel(
+        settings.value(QStringLiteral("UpdateChannel"), "stable").toString().toLower());
 
     settings.beginGroup(QStringLiteral("VirtualStudio"));
     m_refreshToken   = settings.value(QStringLiteral("RefreshToken"), "").toString();
@@ -717,9 +717,8 @@ void VirtualStudio::loadSettings()
     // user interface will not revert back after cancelling settings changes
     setUiScale(settings.value(QStringLiteral("UiScale"), 1).toFloat());
     setDarkMode(settings.value(QStringLiteral("DarkMode"), false).toBool());
-
-    m_showDeviceSetup = settings.value(QStringLiteral("ShowDeviceSetup"), true).toBool();
-    m_showWarnings    = settings.value(QStringLiteral("ShowWarnings"), true).toBool();
+    setShowDeviceSetup(settings.value(QStringLiteral("ShowDeviceSetup"), true).toBool());
+    setShowWarnings(settings.value(QStringLiteral("ShowWarnings"), true).toBool());
     settings.endGroup();
 
     m_audioConfigPtr->loadSettings();
