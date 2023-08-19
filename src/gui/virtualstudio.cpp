@@ -682,9 +682,8 @@ void VirtualStudio::loadSettings()
     // user interface will not revert back after cancelling settings changes
     setUiScale(settings.value(QStringLiteral("UiScale"), 1).toFloat());
     setDarkMode(settings.value(QStringLiteral("DarkMode"), false).toBool());
-
-    m_showDeviceSetup = settings.value(QStringLiteral("ShowDeviceSetup"), true).toBool();
-    m_showWarnings    = settings.value(QStringLiteral("ShowWarnings"), true).toBool();
+    setShowDeviceSetup(settings.value(QStringLiteral("ShowDeviceSetup"), true).toBool());
+    setShowWarnings(settings.value(QStringLiteral("ShowWarnings"), true).toBool());
     settings.endGroup();
 
     m_audioConfigPtr->loadSettings();

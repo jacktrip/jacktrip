@@ -381,66 +381,75 @@ void VsAudio::loadSettings()
 {
     QSettings settings;
     settings.beginGroup(QStringLiteral("Audio"));
-    m_inMultiplier  = settings.value(QStringLiteral("InMultiplier"), 1).toFloat();
-    m_outMultiplier = settings.value(QStringLiteral("OutMultiplier"), 1).toFloat();
-    m_monMultiplier = settings.value(QStringLiteral("MonMultiplier"), 0).toFloat();
-    m_inMuted       = false;
-    // m_inMuted       = settings.value(QStringLiteral("InMuted"), false).toBool();
+    setInputVolume(settings.value(QStringLiteral("InMultiplier"), 1).toFloat());
+    setOutputVolume(settings.value(QStringLiteral("OutMultiplier"), 1).toFloat());
+    setMonitorVolume(settings.value(QStringLiteral("MonMultiplier"), 0).toFloat());
+    // note: we should always reset input muted to false; otherwise, bad things
+    setInputMuted(false);
+    // setInputMuted(settings.value(QStringLiteral("InMuted"), false).toBool());
+    AudioBackendType audioBackend = m_backend;
     if constexpr (isBackendAvailable<AudioInterfaceMode::ALL>()) {
-        m_backend = (settings.value(QStringLiteral("Backend"), 0).toInt() == 1)
-                        ? AudioBackendType::RTAUDIO
-                        : AudioBackendType::JACK;
+        audioBackend = (settings.value(QStringLiteral("Backend"), 0).toInt() == 1)
+                           ? AudioBackendType::RTAUDIO
+                           : AudioBackendType::JACK;
     } else if constexpr (isBackendAvailable<AudioInterfaceMode::RTAUDIO>()) {
-        m_backend = AudioBackendType::RTAUDIO;
+        audioBackend = AudioBackendType::RTAUDIO;
     } else {
-        m_backend = AudioBackendType::JACK;
+        audioBackend = AudioBackendType::JACK;
+    }
+    if (audioBackend != m_backend) {
+        setAudioBackend(audioBackend == AudioBackendType::RTAUDIO
+                            ? QStringLiteral("RtAudio")
+                            : QStringLiteral("JACK"));
     }
 
-    m_inputDevice  = settings.value(QStringLiteral("InputDevice"), "").toString();
-    m_outputDevice = settings.value(QStringLiteral("OutputDevice"), "").toString();
-    if (m_inputDevice == QStringLiteral("(default)")) {
-        m_inputDevice = "";
+    QString inputDevice  = settings.value(QStringLiteral("InputDevice"), "").toString();
+    QString outputDevice = settings.value(QStringLiteral("OutputDevice"), "").toString();
+    if (inputDevice == QStringLiteral("(default)")) {
+        inputDevice = "";
     }
-    if (m_outputDevice == QStringLiteral("(default)")) {
-        m_outputDevice = "";
+    if (outputDevice == QStringLiteral("(default)")) {
+        outputDevice = "";
     }
+    setInputDevice(inputDevice);
+    setOutputDevice(outputDevice);
 
     // use default base channel 0, if the setting does not exist
-    m_baseInputChannel  = settings.value(QStringLiteral("BaseInputChannel"), 0).toInt();
-    m_baseOutputChannel = settings.value(QStringLiteral("BaseOutputChannel"), 0).toInt();
+    setBaseInputChannel(settings.value(QStringLiteral("BaseInputChannel"), 0).toInt());
+    setBaseOutputChannel(settings.value(QStringLiteral("BaseOutputChannel"), 0).toInt());
 
     // Handle migration scenarios. Assume this is a new user
     // if we have m_inputDevice == "" and m_outputDevice == ""
     if (m_inputDevice == "" && m_outputDevice == "") {
         // for fresh installs, use mono by default
-        m_numInputChannels =
-            settings.value(QStringLiteral("NumInputChannels"), 1).toInt();
-        m_inputMixMode = settings
-                             .value(QStringLiteral("InputMixMode"),
-                                    static_cast<int>(AudioInterface::MONO))
-                             .toInt();
+        setNumInputChannels(
+            settings.value(QStringLiteral("NumInputChannels"), 1).toInt());
+        setInputMixMode(settings
+                            .value(QStringLiteral("InputMixMode"),
+                                   static_cast<int>(AudioInterface::MONO))
+                            .toInt());
 
         // use 2 channels for output
-        m_numOutputChannels =
-            settings.value(QStringLiteral("NumOutputChannels"), 2).toInt();
+        setNumOutputChannels(
+            settings.value(QStringLiteral("NumOutputChannels"), 2).toInt());
     } else {
         // existing installs - keep using stereo
-        m_numInputChannels =
-            settings.value(QStringLiteral("NumInputChannels"), 2).toInt();
-        m_inputMixMode = settings
-                             .value(QStringLiteral("InputMixMode"),
-                                    static_cast<int>(AudioInterface::STEREO))
-                             .toInt();
+        setNumInputChannels(
+            settings.value(QStringLiteral("NumInputChannels"), 2).toInt());
+        setInputMixMode(settings
+                            .value(QStringLiteral("InputMixMode"),
+                                   static_cast<int>(AudioInterface::STEREO))
+                            .toInt());
 
         // use 2 channels for output
-        m_numOutputChannels =
-            settings.value(QStringLiteral("NumOutputChannels"), 2).toInt();
+        setNumOutputChannels(
+            settings.value(QStringLiteral("NumOutputChannels"), 2).toInt());
     }
 
-    m_audioBufferSize = settings.value(QStringLiteral("BufferSize"), 128).toInt();
-    m_bufferStrategy  = settings.value(QStringLiteral("BufferStrategy"), 2).toInt();
-    m_feedbackDetectionEnabled =
-        settings.value(QStringLiteral("FeedbackDetectionEnabled"), true).toBool();
+    setBufferSize(settings.value(QStringLiteral("BufferSize"), 128).toInt());
+    setBufferStrategy(settings.value(QStringLiteral("BufferStrategy"), 2).toInt());
+    setFeedbackDetectionEnabled(
+        settings.value(QStringLiteral("FeedbackDetectionEnabled"), true).toBool());
     settings.endGroup();
 }
 
