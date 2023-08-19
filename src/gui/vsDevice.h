@@ -66,6 +66,7 @@ class VsDevice : public QObject
     void registerApp();
     void removeApp();
     void sendHeartbeat();
+    void reconnect();
     bool hasTerminated();
     void setServerId(QString studioID);
     JackTrip* initJackTrip(bool useRtAudio, std::string input, std::string output,

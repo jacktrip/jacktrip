@@ -751,7 +751,6 @@ void VirtualStudio::connectToStudio(VsServerInfo& studio)
     m_currentStudio = studio;
     emit currentStudioChanged();
     m_onConnectedScreen = true;
-    m_reconnectState    = ReconnectState::NOT_RECONNECTING;
 
     m_studioSocketPtr.reset(new VsWebSocket(
         QUrl(QStringLiteral("wss://%1/api/servers/%2?auth_code=%3")
@@ -770,6 +769,8 @@ void VirtualStudio::connectToStudio(VsServerInfo& studio)
     } else {
         completeConnection();
     }
+
+    m_reconnectState = ReconnectState::NOT_RECONNECTING;
 }
 
 void VirtualStudio::completeConnection()
@@ -872,9 +873,7 @@ void VirtualStudio::triggerReconnect(bool refresh)
     m_connectionState = QStringLiteral("Reconnecting...");
     emit connectionStateChanged();
 
-    m_devicePtr->stopPinger();
-    m_devicePtr->stopJackTrip();
-    m_devicePtr->disconnect();
+    m_devicePtr->reconnect();
 }
 
 void VirtualStudio::disconnect()

@@ -299,6 +299,18 @@ void VsDevice::sendHeartbeat()
     }
 }
 
+void VsDevice::reconnect()
+{
+    stopPinger();
+    if (m_webSocket != nullptr && m_webSocket->isValid()) {
+        m_webSocket->closeSocket();
+    }
+    if (!m_jackTrip.isNull()) {
+        m_jackTrip->stop();
+        m_jackTrip.reset();
+    }
+}
+
 bool VsDevice::hasTerminated()
 {
     return m_jackTrip.isNull();
