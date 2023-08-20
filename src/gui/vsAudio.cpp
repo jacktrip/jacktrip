@@ -621,7 +621,8 @@ void VsAudio::updatedOutputVuMeasurements(const float* valuesInDecibels, int num
     emit updatedOutputMeterLevels(m_outputMeterLevels);
 }
 
-void VsAudio::setupPlugins(int numInputChannels, int numOutputChannels)
+void VsAudio::appendProcessPlugins(AudioInterface& audioInterface, bool forJackTrip,
+                                   int numInputChannels, int numOutputChannels)
 {
     // Make sure clip timers are stopped
     m_inputClipTimer.stop();
@@ -659,42 +660,51 @@ void VsAudio::setupPlugins(int numInputChannels, int numOutputChannels)
             &Volume::volumeUpdated);
     connect(this, &VsAudio::updatedInputMuted, m_inputVolumePluginPtr,
             &Volume::muteUpdated);
-}
-
-void VsAudio::appendProcessPlugins(JackTrip* jackTrip)
-{
-    setupPlugins(jackTrip->getNumInputChannels(), jackTrip->getNumOutputChannels());
 
     // Note that plugin ownership is passed to the JackTrip class
     // In particular, the AudioInterface that it uses to connect
-    jackTrip->appendProcessPluginToNetwork(m_inputVolumePluginPtr);
-    jackTrip->appendProcessPluginToNetwork(m_inputMeterPluginPtr);
-    jackTrip->appendProcessPluginFromNetwork(m_outputVolumePluginPtr);
+    audioInterface.appendProcessPluginToNetwork(m_inputVolumePluginPtr);
+    audioInterface.appendProcessPluginToNetwork(m_inputMeterPluginPtr);
 
-    // Setup monitor
-    // Note: Constructor determines how many internal monitor buffers to allocate
-    m_monitorPluginPtr = new Monitor(
-        std::max(jackTrip->getNumInputChannels(), jackTrip->getNumOutputChannels()));
-    m_monitorPluginPtr->volumeUpdated(m_monMultiplier);
-    jackTrip->appendProcessPluginToMonitor(m_monitorPluginPtr);
-    connect(this, &VsAudio::updatedMonitorVolume, m_monitorPluginPtr,
-            &Monitor::volumeUpdated);
+    if (forJackTrip) {
+        // plugins for stream going to audio interface
+        audioInterface.appendProcessPluginFromNetwork(m_outputVolumePluginPtr);
+
+        // Setup monitor
+        // Note: Constructor determines how many internal monitor buffers to allocate
+        m_monitorPluginPtr = new Monitor(std::max(numInputChannels, numOutputChannels));
+        m_monitorPluginPtr->volumeUpdated(m_monMultiplier);
+        audioInterface.appendProcessPluginToMonitor(m_monitorPluginPtr);
+        connect(this, &VsAudio::updatedMonitorVolume, m_monitorPluginPtr,
+                &Monitor::volumeUpdated);
 
 #ifndef NO_FEEDBACK
-    // Setup output analyzer
-    if (m_feedbackDetectionEnabled) {
-        m_outputAnalyzerPluginPtr = new Analyzer(jackTrip->getNumOutputChannels());
-        m_outputAnalyzerPluginPtr->setIsMonitoringAnalyzer(true);
-        jackTrip->appendProcessPluginToMonitor(m_outputAnalyzerPluginPtr);
-        connect(m_outputAnalyzerPluginPtr, &Analyzer::signalFeedbackDetected, this,
-                &VsAudio::detectedFeedbackLoop);
-    }
+        // Setup output analyzer
+        if (m_feedbackDetectionEnabled) {
+            m_outputAnalyzerPluginPtr = new Analyzer(numOutputChannels);
+            m_outputAnalyzerPluginPtr->setIsMonitoringAnalyzer(true);
+            audioInterface.appendProcessPluginToMonitor(m_outputAnalyzerPluginPtr);
+            connect(m_outputAnalyzerPluginPtr, &Analyzer::signalFeedbackDetected, this,
+                    &VsAudio::detectedFeedbackLoop);
+        }
 #endif
 
-    // Setup output meter
-    // Note: Add this to monitor process to include self-volume
-    m_outputMeterPluginPtr->setIsMonitoringMeter(true);
-    jackTrip->appendProcessPluginToMonitor(m_outputMeterPluginPtr);
+        // Setup output meter
+        // Note: Add this to monitor process to include self-volume
+        m_outputMeterPluginPtr->setIsMonitoringMeter(true);
+        audioInterface.appendProcessPluginToMonitor(m_outputMeterPluginPtr);
+
+    } else {
+        // tone plugin is used to test audio output
+        Tone* outputTonePluginPtr = new Tone(getNumOutputChannels());
+        connect(this, &VsAudio::signalPlayOutputAudio, outputTonePluginPtr,
+                &Tone::triggerPlayback);
+        audioInterface.appendProcessPluginFromNetwork(outputTonePluginPtr);
+
+        // plugins for stream going to audio interface
+        audioInterface.appendProcessPluginFromNetwork(m_outputVolumePluginPtr);
+        audioInterface.appendProcessPluginFromNetwork(m_outputMeterPluginPtr);
+    }
 }
 
 void VsAudio::setDeviceModels(QJsonArray inputComboModel, QJsonArray outputComboModel)
@@ -725,6 +735,157 @@ void VsAudio::setInputMixModeComboModel(QJsonArray& model)
 {
     m_inputMixModeComboModel = model;
     emit inputMixModeComboModelChanged();
+}
+
+void VsAudio::updateDeviceMessages(AudioInterface& audioInterface)
+{
+    QString devicesWarningMsg =
+        QString::fromStdString(audioInterface.getDevicesWarningMsg());
+    QString devicesErrorMsg = QString::fromStdString(audioInterface.getDevicesErrorMsg());
+    QString devicesWarningHelpUrl =
+        QString::fromStdString(audioInterface.getDevicesWarningHelpUrl());
+    QString devicesErrorHelpUrl =
+        QString::fromStdString(audioInterface.getDevicesErrorHelpUrl());
+
+    if (devicesWarningMsg != "") {
+        qDebug() << "Devices Warning: " << devicesWarningMsg;
+        if (devicesWarningHelpUrl != "") {
+            qDebug() << "Learn More: " << devicesWarningHelpUrl;
+        }
+    }
+
+    if (devicesErrorMsg != "") {
+        qDebug() << "Devices Error: " << devicesErrorMsg;
+        if (devicesErrorHelpUrl != "") {
+            qDebug() << "Learn More: " << devicesErrorHelpUrl;
+        }
+    }
+
+    setDevicesWarningMsg(devicesWarningMsg);
+    setDevicesErrorMsg(devicesErrorMsg);
+    setDevicesWarningHelpUrl(devicesWarningHelpUrl);
+    setDevicesErrorHelpUrl(devicesErrorHelpUrl);
+    setHighLatencyFlag(audioInterface.getHighLatencyFlag());
+}
+
+AudioInterface* VsAudio::newAudioInterface(JackTrip* jackTripPtr)
+{
+    AudioInterface* ifPtr = nullptr;
+
+    // Create AudioInterface Client Object
+    if (m_backend == VsAudio::AudioBackendType::JACK) {
+        if constexpr (isBackendAvailable<AudioInterfaceMode::ALL>()
+                      || isBackendAvailable<AudioInterfaceMode::JACK>()) {
+            ifPtr = newJackAudioInterface(jackTripPtr);
+        } else {
+            if constexpr (!isBackendAvailable<AudioInterfaceMode::RTAUDIO>()) {
+                throw std::runtime_error(
+                    "JackTrip was compiled without RtAudio and can't find JACK. "
+                    "In order to use JackTrip, you'll need to install JACK or "
+                    "rebuild with RtAudio support.");
+                std::exit(1);
+            }
+#ifdef RT_AUDIO
+            ifPtr = newRtAudioInterface(jackTripPtr);
+#endif
+        }
+    } else if (m_backend == VsAudio::AudioBackendType::RTAUDIO) {
+        if constexpr (!isBackendAvailable<AudioInterfaceMode::RTAUDIO>()) {
+            throw std::runtime_error(
+                "JackTrip was compiled without RtAudio and can't find JACK. "
+                "In order to use JackTrip, you'll need to install JACK or "
+                "rebuild with RtAudio support.");
+            std::exit(1);
+        }
+#ifdef RT_AUDIO
+        ifPtr = newRtAudioInterface(jackTripPtr);
+#endif
+    }
+
+    if (ifPtr == nullptr)
+        return ifPtr;
+
+    std::cout << "The Sampling Rate is: " << m_sampleRate << std::endl;
+    std::cout << gPrintSeparator << std::endl;
+    int AudioBufferSizeInBytes = getBufferSize() * sizeof(sample_t);
+    std::cout << "The Audio Buffer Size is: " << getBufferSize() << " samples"
+              << std::endl;
+    std::cout << "                      or: " << AudioBufferSizeInBytes << " bytes"
+              << std::endl;
+    std::cout << gPrintSeparator << std::endl;
+    std::cout << "The Number of Channels is: " << ifPtr->getNumInputChannels()
+              << std::endl;
+    std::cout << gPrintSeparator << std::endl;
+
+    // setup audio plugins
+    appendProcessPlugins(*ifPtr, jackTripPtr != nullptr, getNumInputChannels(),
+                         getNumOutputChannels());
+
+    return ifPtr;
+}
+
+AudioInterface* VsAudio::newJackAudioInterface([[maybe_unused]] JackTrip* jackTripPtr)
+{
+    AudioInterface* ifPtr = nullptr;
+#ifndef NO_JACK
+    if constexpr (isBackendAvailable<AudioInterfaceMode::ALL>()
+                  || isBackendAvailable<AudioInterfaceMode::JACK>()) {
+        QVarLengthArray<int> inputChans;
+        QVarLengthArray<int> outputChans;
+        inputChans.resize(getNumInputChannels());
+        outputChans.resize(getNumOutputChannels());
+
+        for (int i = 0; i < getNumInputChannels(); i++) {
+            inputChans[i] = 1 + i;
+        }
+        for (int i = 0; i < getNumOutputChannels(); i++) {
+            outputChans[i] = 1 + i;
+        }
+
+        ifPtr = new JackAudioInterface(inputChans, outputChans, m_audioBitResolution,
+                                       jackTripPtr != nullptr, jackTripPtr);
+        ifPtr->setClientName(QStringLiteral("JackTrip"));
+        ifPtr->setup(true);
+
+        m_sampleRate = ifPtr->getSampleRate();
+    }
+#endif
+    return ifPtr;
+}
+
+AudioInterface* VsAudio::newRtAudioInterface([[maybe_unused]] JackTrip* jackTripPtr)
+{
+    AudioInterface* ifPtr = nullptr;
+#ifdef RT_AUDIO
+    QVarLengthArray<int> inputChans;
+    QVarLengthArray<int> outputChans;
+    inputChans.resize(getNumInputChannels());
+    outputChans.resize(getNumOutputChannels());
+
+    for (int i = 0; i < getNumInputChannels(); i++) {
+        inputChans[i] = getBaseInputChannel() + i;
+    }
+    for (int i = 0; i < getNumOutputChannels(); i++) {
+        outputChans[i] = getBaseOutputChannel() + i;
+    }
+
+    ifPtr = new RtAudioInterface(
+        inputChans, outputChans,
+        static_cast<AudioInterface::inputMixModeT>(getInputMixMode()),
+        m_audioBitResolution, jackTripPtr != nullptr, jackTripPtr);
+    ifPtr->setSampleRate(m_sampleRate);
+    ifPtr->setInputDevice(getInputDevice().toStdString());
+    ifPtr->setOutputDevice(getOutputDevice().toStdString());
+    ifPtr->setBufferSizeInSamples(getBufferSize());
+
+    QVector<RtAudioDevice> devices = m_audioWorkerPtr->getDevices();
+    if (!devices.empty())
+        static_cast<RtAudioInterface*>(ifPtr)->setRtAudioDevices(devices);
+
+    // Note: setup might change the number of channels and/or buffer size
+    ifPtr->setup(true);
+#endif  // RT_AUDIO
+    return ifPtr;
 }
 
 // VsAudioWorker methods
@@ -772,73 +933,21 @@ void VsAudioWorker::openAudioInterface()
         }
 #endif
         try {
-            // Create AudioInterface Client Object
-            if (m_parentPtr->m_backend == VsAudio::AudioBackendType::JACK) {
-                if constexpr (isBackendAvailable<AudioInterfaceMode::ALL>()
-                              || isBackendAvailable<AudioInterfaceMode::JACK>()) {
-                    openJackAudioInterface();
-                } else {
-                    if constexpr (!isBackendAvailable<AudioInterfaceMode::RTAUDIO>()) {
-                        throw std::runtime_error(
-                            "JackTrip was compiled without RtAudio and can't find JACK. "
-                            "In order to use JackTrip, you'll need to install JACK or "
-                            "rebuild with RtAudio support.");
-                        std::exit(1);
-                    }
-#ifdef RT_AUDIO
-                    openRtAudioInterface();
-#endif
-                }
-            } else if (m_parentPtr->m_backend == VsAudio::AudioBackendType::RTAUDIO) {
-                if constexpr (!isBackendAvailable<AudioInterfaceMode::RTAUDIO>()) {
-                    throw std::runtime_error(
-                        "JackTrip was compiled without RtAudio and can't find JACK. "
-                        "In order to use JackTrip, you'll need to install JACK or "
-                        "rebuild with RtAudio support.");
-                    std::exit(1);
-                }
-#ifdef RT_AUDIO
-                openRtAudioInterface();
-#endif
-            }
-
-            break;  // success!
-
+            // create and setup a new audio interface
+            m_audioInterfacePtr.reset(m_parentPtr->newAudioInterface());
+            // success if it doesn't throw
+            break;
         } catch (const std::exception& e) {
             emit signalError(QString::fromUtf8(e.what()));
         }
     }
 
-    std::cout << "The Sampling Rate is: " << m_sampleRate << std::endl;
-    std::cout << gPrintSeparator << std::endl;
-    int AudioBufferSizeInBytes = getBufferSize() * sizeof(sample_t);
-    std::cout << "The Audio Buffer Size is: " << getBufferSize() << " samples"
-              << std::endl;
-    std::cout << "                      or: " << AudioBufferSizeInBytes << " bytes"
-              << std::endl;
-    std::cout << gPrintSeparator << std::endl;
-    std::cout << "The Number of Channels is: "
-              << m_audioInterfacePtr->getNumInputChannels() << std::endl;
-    std::cout << gPrintSeparator << std::endl;
+    if (m_audioInterfacePtr.isNull()) {
+        emit signalError(QStringLiteral("Failed to initialize audio interface"));
+        return;
+    }
 
-    // setup audio plugins
-    m_parentPtr->setupPlugins(getNumInputChannels(), getNumOutputChannels());
-
-    // tone plugin is used to test audio output
-    Tone* outputTonePluginPtr = new Tone(getNumOutputChannels());
-    connect(m_parentPtr, &VsAudio::signalPlayOutputAudio, outputTonePluginPtr,
-            &Tone::triggerPlayback);
-
-    // Add plugins to audio interface chains
-    // Note that this passes ownership to the AudioInterface
-    m_audioInterfacePtr->appendProcessPluginFromNetwork(outputTonePluginPtr);
-    m_audioInterfacePtr->appendProcessPluginFromNetwork(
-        m_parentPtr->m_outputVolumePluginPtr);
-    m_audioInterfacePtr->appendProcessPluginFromNetwork(
-        m_parentPtr->m_outputMeterPluginPtr);
-    m_audioInterfacePtr->appendProcessPluginToNetwork(
-        m_parentPtr->m_inputVolumePluginPtr);
-    m_audioInterfacePtr->appendProcessPluginToNetwork(m_parentPtr->m_inputMeterPluginPtr);
+    // initialize plugins and start the audio callback process
     m_audioInterfacePtr->initPlugins(false);
     m_audioInterfacePtr->startProcess();
 
@@ -848,70 +957,8 @@ void VsAudioWorker::openAudioInterface()
     }
 #endif
 
-    updateDeviceMessages(*m_audioInterfacePtr);
+    m_parentPtr->updateDeviceMessages(*m_audioInterfacePtr);
     m_parentPtr->setAudioReady(true);
-}
-
-void VsAudioWorker::openJackAudioInterface()
-{
-#ifndef NO_JACK
-    if constexpr (isBackendAvailable<AudioInterfaceMode::ALL>()
-                  || isBackendAvailable<AudioInterfaceMode::JACK>()) {
-        QVarLengthArray<int> inputChans;
-        QVarLengthArray<int> outputChans;
-        inputChans.resize(getNumInputChannels());
-        outputChans.resize(getNumOutputChannels());
-
-        for (int i = 0; i < getNumInputChannels(); i++) {
-            inputChans[i] = 1 + i;
-        }
-        for (int i = 0; i < getNumOutputChannels(); i++) {
-            outputChans[i] = 1 + i;
-        }
-
-        m_audioInterfacePtr.reset(
-            new JackAudioInterface(inputChans, outputChans, m_audioBitResolution));
-        m_audioInterfacePtr->setClientName(QStringLiteral("JackTrip"));
-        m_audioInterfacePtr->setup(true);
-
-        m_sampleRate = m_audioInterfacePtr->getSampleRate();
-    } else {
-        return;
-    }
-#else
-    return;
-#endif
-}
-
-void VsAudioWorker::updateDeviceMessages(AudioInterface& audioInterface)
-{
-    QString devicesWarningMsg =
-        QString::fromStdString(audioInterface.getDevicesWarningMsg());
-    QString devicesErrorMsg = QString::fromStdString(audioInterface.getDevicesErrorMsg());
-    QString devicesWarningHelpUrl =
-        QString::fromStdString(audioInterface.getDevicesWarningHelpUrl());
-    QString devicesErrorHelpUrl =
-        QString::fromStdString(audioInterface.getDevicesErrorHelpUrl());
-
-    if (devicesWarningMsg != "") {
-        qDebug() << "Devices Warning: " << devicesWarningMsg;
-        if (devicesWarningHelpUrl != "") {
-            qDebug() << "Learn More: " << devicesWarningHelpUrl;
-        }
-    }
-
-    if (devicesErrorMsg != "") {
-        qDebug() << "Devices Error: " << devicesErrorMsg;
-        if (devicesErrorHelpUrl != "") {
-            qDebug() << "Learn More: " << devicesErrorHelpUrl;
-        }
-    }
-
-    m_parentPtr->setDevicesWarningMsg(devicesWarningMsg);
-    m_parentPtr->setDevicesErrorMsg(devicesErrorMsg);
-    m_parentPtr->setDevicesWarningHelpUrl(devicesWarningHelpUrl);
-    m_parentPtr->setDevicesErrorHelpUrl(devicesErrorHelpUrl);
-    m_parentPtr->setHighLatencyFlag(m_audioInterfacePtr->getHighLatencyFlag());
 }
 
 void VsAudioWorker::closeAudioInterface()
@@ -929,35 +976,6 @@ void VsAudioWorker::closeAudioInterface()
 }
 
 #ifdef RT_AUDIO
-
-void VsAudioWorker::openRtAudioInterface()
-{
-    QVarLengthArray<int> inputChans;
-    QVarLengthArray<int> outputChans;
-    inputChans.resize(getNumInputChannels());
-    outputChans.resize(getNumOutputChannels());
-
-    for (int i = 0; i < getNumInputChannels(); i++) {
-        inputChans[i] = getBaseInputChannel() + i;
-    }
-    for (int i = 0; i < getNumOutputChannels(); i++) {
-        outputChans[i] = getBaseOutputChannel() + i;
-    }
-
-    m_audioInterfacePtr.reset(new RtAudioInterface(
-        inputChans, outputChans,
-        static_cast<AudioInterface::inputMixModeT>(getInputMixMode()),
-        m_audioBitResolution));
-    m_audioInterfacePtr->setSampleRate(m_sampleRate);
-    m_audioInterfacePtr->setInputDevice(getInputDevice().toStdString());
-    m_audioInterfacePtr->setOutputDevice(getOutputDevice().toStdString());
-    m_audioInterfacePtr->setBufferSizeInSamples(getBufferSize());
-    static_cast<RtAudioInterface*>(m_audioInterfacePtr.get())
-        ->setRtAudioDevices(m_devices);
-
-    // Note: setup might change the number of channels and/or buffer size
-    m_audioInterfacePtr->setup(true);
-}
 
 void VsAudioWorker::refreshDevices()
 {
