@@ -46,6 +46,7 @@
 #include <QStringList>
 #include <QTimer>
 
+#include "../AudioInterface.h"
 #include "../jacktrip_globals.h"
 
 #ifdef RT_AUDIO
@@ -124,8 +125,9 @@ class VsAudio : public QObject
     Q_PROPERTY(QStringList bufferSizeComboModel READ getBufferSizeComboModel CONSTANT)
     Q_PROPERTY(
         QStringList bufferStrategyComboModel READ getBufferStrategyComboModel CONSTANT)
-    Q_PROPERTY(QString devicesWarning READ getDevicesWarning NOTIFY devicesWarningChanged)
-    Q_PROPERTY(QString devicesError READ getDevicesError NOTIFY devicesErrorChanged)
+    Q_PROPERTY(
+        QString devicesWarning READ getDevicesWarningMsg NOTIFY devicesWarningChanged)
+    Q_PROPERTY(QString devicesError READ getDevicesErrorMsg NOTIFY devicesErrorChanged)
     Q_PROPERTY(QString devicesWarningHelpUrl READ getDevicesWarningHelpUrl NOTIFY
                    devicesWarningHelpUrlChanged)
     Q_PROPERTY(QString devicesErrorHelpUrl READ getDevicesErrorHelpUrl NOTIFY
@@ -204,8 +206,8 @@ class VsAudio : public QObject
     {
         return m_bufferStrategyComboModel;
     }
-    const QString& getDevicesWarning() const { return m_devicesWarningMsg; }
-    const QString& getDevicesError() const { return m_devicesErrorMsg; }
+    const QString& getDevicesWarningMsg() const { return m_devicesWarningMsg; }
+    const QString& getDevicesErrorMsg() const { return m_devicesErrorMsg; }
     const QString& getDevicesWarningHelpUrl() const { return m_devicesWarningHelpUrl; }
     const QString& getDevicesErrorHelpUrl() const { return m_devicesErrorHelpUrl; }
     bool getHighLatencyFlag() const { return m_highLatencyFlag; }
@@ -234,17 +236,19 @@ class VsAudio : public QObject
     void setHighLatencyFlag(bool highLatency);
 
     // public methods accessible by QML
-    void restartAudio() { emit signalStartAudio(); }
-    void startAudio() { emit signalStartAudio(); }
-    void stopAudio() { emit signalStopAudio(); }
-    void refreshDevices() { emit signalRefreshDevices(); }
-    void validateDevices() { emit signalValidateDevices(); }
+    void startAudio(bool block = false);
+    void stopAudio(bool block = false);
+    void refreshDevices(bool block = false);
+    void validateDevices(bool block = false);
+    void restartAudio(bool block = false) { return startAudio(block); }
     void playOutputAudio() { emit signalPlayOutputAudio(); }
 
    signals:
 
     // signals for QML state changes
     void signalAudioReadyChanged();
+    void signalAudioIsReady();
+    void signalAudioIsNotReady();
     void signalScanningDevicesChanged();
     void deviceModelsInitializedChanged(bool initialized);
     void audioBackendChanged(bool useRtAudio);
@@ -414,26 +418,8 @@ class VsAudioWorker : public QObject
     const QString& getInputDevice() const { return m_parentPtr->getInputDevice(); }
     const QString& getOutputDevice() const { return m_parentPtr->getOutputDevice(); }
 
-    // parent setter wrappers
-    void setAudioReady(bool ready) { m_parentPtr->setAudioReady(ready); }
-    void setDevicesErrorMsg(const QString& msg) { m_parentPtr->setDevicesErrorMsg(msg); }
-    void setDevicesWarningMsg(const QString& msg)
-    {
-        m_parentPtr->setDevicesWarningMsg(msg);
-    }
-    void setDevicesErrorHelpUrl(const QString& url)
-    {
-        m_parentPtr->setDevicesErrorHelpUrl(url);
-    }
-    void setDevicesWarningHelpUrl(const QString& url)
-    {
-        m_parentPtr->setDevicesWarningHelpUrl(url);
-    }
-    void setHighLatencyFlag(bool highLatency)
-    {
-        m_parentPtr->setHighLatencyFlag(highLatency);
-    }
     // other private methods
+    void updateDeviceMessages(AudioInterface& audioInterface);
     void openJackAudioInterface();
 
     VsAudio* m_parentPtr;

@@ -269,6 +269,16 @@ bool isRunFromCmd()
             if (size >= 6 && strncmp(pname + size - 6, "wt.exe", 6) == 0) {
                 return true;
             }
+            // a few extras for msys/cygwin/etc
+            if (size >= 8 && strncmp(pname + size - 8, "bash.exe", 8) == 0) {
+                return true;
+            }
+            if (size >= 6 && strncmp(pname + size - 6, "sh.exe", 6) == 0) {
+                return true;
+            }
+            if (size >= 7 && strncmp(pname + size - 7, "zsh.exe", 7) == 0) {
+                return true;
+            }
         } else {
             CloseHandle(h);
         }
