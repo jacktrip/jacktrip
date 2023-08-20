@@ -10,6 +10,9 @@ Rectangle {
     color: backgroundColour
     clip: true
 
+    property string connectionStateColor: getConnectionStateColor()
+    property variant networkStatsText: getNetworkStatsText()
+
     function getConnectionStateColor() {
         if (virtualstudio.connectionState == "Connected") {
             return meterGreen
@@ -101,9 +104,9 @@ Rectangle {
                 anchors.left: connectionQualityText.right
                 anchors.leftMargin: 2 * virtualstudio.uiScale
                 anchors.verticalCenter: parent.verticalCenter
-                text: getNetworkStatsText()[0]
+                text: networkStatsText[0]
                 font { family: "Poppins"; weight: Font.Bold; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
-                color: getNetworkStatsText()[2]
+                color: networkStatsText[2]
             }
 
             Text {
@@ -111,7 +114,7 @@ Rectangle {
                 anchors.left: connectionQualityName.right
                 anchors.leftMargin: 8 * virtualstudio.uiScale
                 anchors.verticalCenter: parent.verticalCenter
-                text: getNetworkStatsText()[1]
+                text: networkStatsText[1]
                 font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
                 color: textColour
             }
@@ -137,7 +140,7 @@ Rectangle {
                 width: 12
                 height: connectionStatusDot.width
                 radius: connectionStatusDot.height / 2
-                color: getConnectionStateColor()
+                color: connectionStateColor
             }
 
             Text {
@@ -158,5 +161,19 @@ Rectangle {
         height: 1
         y: parent.height - footer.height
         color: buttonStroke
+    }
+
+    Connections {
+        target: virtualstudio
+
+        function onConnectionStateChanged() {
+            connectionStatusDot.color = getConnectionStateColor()
+        }
+        function onNetworkStatsChanged() {
+            networkStatsText = getNetworkStatsText();
+        }
+        function onUpdatedNetworkOutage() {
+            networkStatsText = getNetworkStatsText();
+        }
     }
 }
