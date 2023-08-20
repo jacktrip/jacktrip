@@ -44,6 +44,7 @@
 #endif
 
 #ifdef RT_AUDIO
+#include "../RtAudioInterface.h"
 #include "RtAudio.h"
 #endif
 
@@ -1984,28 +1985,17 @@ void QJackTrip::populateDeviceMenu(QComboBox* menu, bool isInput)
     menu->clear();
     menu->addItem(QStringLiteral("(default)"));
 
-    std::vector<RtAudio::Api> apis;
-    RtAudio::getCompiledApi(apis);
-
-    for (uint32_t i = 0; i < apis.size(); i++) {
-        RtAudio rtaudio(apis.at(i));
-        unsigned int devices = rtaudio.getDeviceCount();
-        for (unsigned int j = 0; j < devices; j++) {
-            RtAudio::DeviceInfo info = rtaudio.getDeviceInfo(j);
-#if RTAUDIO_VERSION_MAJOR < 6
-            // probed was removed from DeviceInfo in 6.0
-            if (info.probed == false)
-                continue;
-#endif
-            // Don't include duplicate entries
-            if (menu->findText(QString::fromStdString(info.name)) != -1) {
-                continue;
-            }
-            if (isInput && info.inputChannels > 0) {
-                menu->addItem(QString::fromStdString(info.name));
-            } else if (!isInput && info.outputChannels > 0) {
-                menu->addItem(QString::fromStdString(info.name));
-            }
+    QVector<RtAudioDevice> devices;
+    RtAudioInterface::scanDevices(devices);
+    for (auto info : devices) {
+        // Don't include duplicate entries
+        if (menu->findText(QString::fromStdString(info.name)) != -1) {
+            continue;
+        }
+        if (isInput && info.inputChannels > 0) {
+            menu->addItem(QString::fromStdString(info.name));
+        } else if (!isInput && info.outputChannels > 0) {
+            menu->addItem(QString::fromStdString(info.name));
         }
     }
 
