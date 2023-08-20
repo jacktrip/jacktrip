@@ -46,7 +46,6 @@
 
 #include "vsApi.h"
 #include "vsDeviceCodeFlow.h"
-#include "vsQuickView.h"
 
 class VsAuth : public QObject
 {
@@ -66,7 +65,7 @@ class VsAuth : public QObject
     Q_PROPERTY(QString accessToken READ accessToken CONSTANT);
 
    public:
-    VsAuth(VsQuickView* view, QNetworkAccessManager* networkAccessManager, VsApi* api);
+    VsAuth(QNetworkAccessManager* networkAccessManager, VsApi* api);
 
     void authenticate(QString currentRefreshToken);
     void refreshAccessToken(QString refreshToken);
@@ -125,7 +124,6 @@ class VsAuth : public QObject
     QString m_accessToken;
     QString m_refreshToken;
 
-    VsQuickView* m_view;
     QNetworkAccessManager* m_networkAccessManager;
     VsApi* m_api;
     QScopedPointer<VsDeviceCodeFlow> m_deviceCodeFlow;

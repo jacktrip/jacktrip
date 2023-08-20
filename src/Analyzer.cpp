@@ -136,7 +136,7 @@ void Analyzer::onTick()
         return;
     }
 
-    const uint32_t buffers = mCircularBufferPtr->size();
+    const uint32_t buffers = uint32_t(mCircularBufferPtr->size());
     const uint32_t samples = buffers * mBufferSize;
 
     // require at least mFftSize values to process, otherwise return

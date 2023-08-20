@@ -197,8 +197,6 @@ class VirtualStudio : public QObject
     void collectFeedbackSurvey(QString serverId, int rating, QString message);
 
    signals:
-    void authSucceeded();
-    void authFailed();
     void failed();
     void connected();
     void disconnected();
@@ -237,7 +235,6 @@ class VirtualStudio : public QObject
 
    private slots:
     void slotAuthSucceeded();
-    void slotAuthFailed();
     void receivedConnectionFromPeer();
     void handleWebsocketMessage(const QString& msg);
     void launchBrowser(const QUrl& url);
@@ -249,8 +246,7 @@ class VirtualStudio : public QObject
     void exit();
 
    private:
-    void getServerList(bool firstLoad = false, bool signalRefresh = false,
-                       int index = -1);
+    void getServerList(bool signalRefresh = false, int index = -1);
     void getSubscriptions();
     void getRegions();
     void getUserMetadata();
@@ -296,11 +292,11 @@ class VirtualStudio : public QObject
     QString m_apiHost               = PROD_API_HOST;
     ReconnectState m_reconnectState = ReconnectState::NOT_RECONNECTING;
 
+    bool m_firstRefresh           = true;
     bool m_jackTripRunning        = false;
     bool m_showFirstRun           = false;
     bool m_checkSsl               = true;
     bool m_vsModeActive           = false;
-    bool m_allowRefresh           = true;
     bool m_refreshInProgress      = false;
     bool m_onConnectedScreen      = false;
     bool m_isExiting              = false;
@@ -314,7 +310,6 @@ class VirtualStudio : public QObject
     bool m_testMode               = false;
     bool m_authenticated          = false;
     bool m_networkOutage          = false;
-    bool m_refreshServers         = false;
     float m_fontScale             = 1;
     float m_uiScale               = 1;
     uint32_t m_webChannelPort     = 1;
