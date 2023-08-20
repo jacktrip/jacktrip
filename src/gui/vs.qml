@@ -278,7 +278,7 @@ Rectangle {
     }
 
     Connections {
-        target: virtualstudio
+        target: auth
         function onAuthSucceeded() {
             if (virtualstudio.windowState !== "login") {
                 // can happen on settings screen when switching between prod and test
@@ -296,6 +296,9 @@ Rectangle {
                 virtualstudio.joinStudio();
             }
         }
+    }
+    Connections {
+        target: virtualstudio
         function onConnected() {
             if (virtualstudio.windowState == "change_devices") {
                 return;

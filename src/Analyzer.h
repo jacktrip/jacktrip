@@ -87,9 +87,9 @@ class Analyzer : public ProcessPlugin
     bool testSpectralPeakGrowing();
 
     int mInterval                           = 100;
-    float mPeakThresholdMultipler           = 0.5;
-    float mPeakDeviationThresholdMultiplier = 0.4;
-    float mDifferentialThresholdMultiplier  = 0.05;
+    float mPeakThresholdMultipler           = float(0.5);
+    float mPeakDeviationThresholdMultiplier = float(0.4);
+    float mDifferentialThresholdMultiplier  = float(0.05);
 
     float fs;
     int mNumChannels;

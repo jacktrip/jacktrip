@@ -384,7 +384,7 @@ class Effects
             if (gVerboseFlag) {
                 std::cout << "parseCompressorArgs = " << args << std::endl;
             }
-            ulong argLen   = strlen(args);
+            ulong argLen   = ulong(strlen(args));
             char lastParam = '\0';
 
             CompressorPreset newPreset(
@@ -510,7 +510,7 @@ class Effects
             if (gVerboseFlag) {
                 std::cout << cmd << " argument = " << optarg << std::endl;
             }
-            ulong argLen = strlen(optarg);
+            ulong argLen = ulong(strlen(optarg));
 
             for (ulong i = 0; i < argLen; i++) {
                 if (optarg[i] != ')' && parenLevel > 0) {

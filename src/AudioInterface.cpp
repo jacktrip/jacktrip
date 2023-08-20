@@ -77,7 +77,7 @@ AudioInterface::AudioInterface(QVarLengthArray<int> InputChans,
 #ifndef WAIR
     // cc
     // Initialize and assign memory for ProcessPlugins Buffers
-    int monitorChans = std::min<size_t>(mInputChans.size(), mOutputChans.size());
+    int monitorChans = int(std::min<size_t>(mInputChans.size(), mOutputChans.size()));
     mInProcessBuffer.resize(mInputChans.size());
     mOutProcessBuffer.resize(mOutputChans.size());
     mMonProcessBuffer.resize(monitorChans);
@@ -187,8 +187,8 @@ void AudioInterface::setup(bool /*verbose*/)
     // Allocate buffer memory to read and write
     mSizeInBytesPerChannel = getSizeInBytesPerChannel();
 
-    int size_audio_input  = mSizeInBytesPerChannel * nChansIn;
-    int size_audio_output = mSizeInBytesPerChannel * nChansOut;
+    int size_audio_input  = int(mSizeInBytesPerChannel * nChansIn);
+    int size_audio_output = int(mSizeInBytesPerChannel * nChansOut);
 #ifdef WAIR               // WAIR
     if (mNumNetRevChans)  // else don't change sizes
     {

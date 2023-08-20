@@ -502,7 +502,7 @@ class JackTrip : public QObject
             return mAudioInterface->getSizeInBytesPerChannel() * mNumNetRevChans;
         else  // not wair
 #endif        // endwhere
-            return mAudioInterface->getSizeInBytesPerChannel() * mNumAudioChansIn;
+            return int(mAudioInterface->getSizeInBytesPerChannel()) * mNumAudioChansIn;
     }
 
     int getTotalAudioOutputPacketSizeInBytes() const
@@ -512,7 +512,7 @@ class JackTrip : public QObject
             return mAudioInterface->getSizeInBytesPerChannel() * mNumNetRevChans;
         else  // not wair
 #endif        // endwhere
-            return mAudioInterface->getSizeInBytesPerChannel() * mNumAudioChansOut;
+            return int(mAudioInterface->getSizeInBytesPerChannel()) * mNumAudioChansOut;
     }
     QString getDevicesWarningMsg() const
     {

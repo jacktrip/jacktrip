@@ -97,10 +97,9 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     }
 
     // instantiate auth
-    m_auth.reset(new VsAuth(&m_view, m_networkAccessManager.data(), m_api.data()));
+    m_auth.reset(new VsAuth(m_networkAccessManager.data(), m_api.data()));
     connect(m_auth.data(), &VsAuth::authSucceeded, this,
             &VirtualStudio::slotAuthSucceeded);
-    connect(m_auth.data(), &VsAuth::authFailed, this, &VirtualStudio::slotAuthFailed);
     connect(m_auth.data(), &VsAuth::refreshTokenFailed, this, [=]() {
         m_auth->authenticate(QStringLiteral(""));  // retry without using refresh token
     });
@@ -126,7 +125,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     QFontDatabase::addApplicationFont(QStringLiteral(":/vs/Poppins-Bold.ttf"));
 
     // Set our font scaling to convert points to pixels
-    m_fontScale = 4.0 / 3.0;
+    m_fontScale = float(4.0 / 3.0);
 
     // Initialize timer needed for network outage indicator
     m_networkOutageTimer.setTimerType(Qt::CoarseTimer);
@@ -146,6 +145,8 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
         QVariant::fromValue(m_updateChannelOptions));
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("virtualstudio"),
                                                        this);
+    m_view.engine()->rootContext()->setContextProperty(QStringLiteral("auth"),
+                                                       m_auth.get());
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("audio"),
                                                        m_audioConfigPtr.get());
     m_view.engine()->rootContext()->setContextProperty(
@@ -163,13 +164,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
 
     // Connect our timers
     connect(&m_refreshTimer, &QTimer::timeout, this, [&]() {
-        m_refreshMutex.lock();
-        if (m_allowRefresh) {
-            m_refreshMutex.unlock();
-            emit periodicRefresh();
-        } else {
-            m_refreshMutex.unlock();
-        }
+        emit periodicRefresh();
     });
     connect(&m_heartbeatTimer, &QTimer::timeout, this, &VirtualStudio::sendHeartbeat,
             Qt::QueuedConnection);
@@ -572,13 +567,15 @@ QString VirtualStudio::failedMessage()
 
 void VirtualStudio::joinStudio()
 {
+    QMutexLocker locker(&m_refreshMutex);
     bool authenticated = m_auth->isAuthenticated();
     if (!authenticated || m_studioToJoin.isEmpty() || m_servers.isEmpty()) {
         // No servers yet. Making sure we have them.
         // getServerList emits refreshFinished which
         // will come back to this function.
         if (authenticated && !m_studioToJoin.isEmpty() && m_servers.isEmpty()) {
-            getServerList(true, true);
+            locker.unlock();
+            getServerList(true);
         }
         return;
     }
@@ -600,11 +597,18 @@ void VirtualStudio::joinStudio()
     }
     QString targetId = path.remove(0, 1);
 
+    VsServerInfoPointer sPtr;
     for (const VsServerInfoPointer& s : m_servers) {
         if (s->id() == targetId) {
-            connectToStudio(*s);
-            return;
+            sPtr = s;
+            break;
         }
+    }
+    locker.unlock();
+
+    if (!sPtr.isNull()) {
+        connectToStudio(*sPtr);
+        return;
     }
 
     m_failedMessage = "Unable to find studio " + targetId;
@@ -697,7 +701,7 @@ void VirtualStudio::logout()
 void VirtualStudio::refreshStudios(int index, bool signalRefresh)
 {
     getSubscriptions();
-    getServerList(false, signalRefresh, index);
+    getServerList(signalRefresh, index);
 }
 
 void VirtualStudio::loadSettings()
@@ -739,10 +743,6 @@ void VirtualStudio::saveSettings()
 
 void VirtualStudio::connectToStudio(VsServerInfo& studio)
 {
-    {
-        QMutexLocker locker(&m_refreshMutex);
-        m_allowRefresh = false;
-    }
     m_refreshTimer.stop();
 
     m_networkStats = QJsonObject();
@@ -900,8 +900,6 @@ void VirtualStudio::disconnect()
 
     // Restart our studio refresh timer.
     if (!m_isExiting) {
-        QMutexLocker locker(&m_refreshMutex);
-        m_allowRefresh = true;
         m_refreshTimer.start();
     }
 
@@ -1073,15 +1071,10 @@ void VirtualStudio::slotAuthSucceeded()
     emit webChannelPortChanged(m_webChannelPort);
     std::cout << "QWebChannel listening on port: " << m_webChannelPort << std::endl;
 
-    getSubscriptions();
-    getServerList(true, false);
     getRegions();
     getUserMetadata();
-}
-
-void VirtualStudio::slotAuthFailed()
-{
-    emit authFailed();
+    getSubscriptions();
+    getServerList(false);
 }
 
 void VirtualStudio::connectionFinished()
@@ -1240,37 +1233,31 @@ void VirtualStudio::sendHeartbeat()
     }
 }
 
-void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
+void VirtualStudio::getServerList(bool signalRefresh, int index)
 {
-    {
-        QMutexLocker locker(&m_refreshMutex);
-        if (!m_allowRefresh || m_refreshInProgress) {
-            if (signalRefresh) {
-                emit refreshFinished(index);
-            }
-            return;
-        } else {
-            m_refreshInProgress = true;
-        }
-    }
+    QMutexLocker refreshLock(&m_refreshMutex);
+    if (m_refreshInProgress)
+        return;
+    m_refreshInProgress = true;
 
     // Get the serverId of the server at the top of our screen if we know it
     QString topServerId;
     if (index >= 0 && index < m_servers.count()) {
         topServerId = m_servers.at(index)->id();
     }
+    refreshLock.unlock();
 
     QNetworkReply* reply = m_api->getServers();
     connect(
-        reply, &QNetworkReply::finished, this,
-        [&, reply, topServerId, firstLoad, signalRefresh]() {
+        reply, &QNetworkReply::finished, this, [&, reply, topServerId, signalRefresh]() {
             if (reply->error() != QNetworkReply::NoError) {
                 if (signalRefresh) {
                     emit refreshFinished(index);
                 }
                 std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
-                emit authFailed();
                 reply->deleteLater();
+                QMutexLocker getServersLock(&m_refreshMutex);
+                m_refreshInProgress = false;
                 return;
             }
 
@@ -1284,9 +1271,11 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
                 std::cout << "Error: Not an array" << std::endl;
                 QMutexLocker locker(&m_refreshMutex);
                 m_refreshInProgress = false;
-                emit authFailed();
+                QMutexLocker getServersLock(&m_refreshMutex);
+                m_refreshInProgress = false;
                 return;
             }
+
             QJsonArray servers = serverList.array();
             // Divide our servers by category initially so that they're easier to sort
             QVector<VsServerInfoPointer> yourServers;
@@ -1396,16 +1385,7 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
                 emit logoSectionChanged();
             }
 
-            QMutexLocker locker(&m_refreshMutex);
-            // Check that we haven't tried connecting to a server between the
-            // request going out and the response.
-            if (!m_allowRefresh) {
-                m_refreshInProgress = false;
-                if (signalRefresh) {
-                    emit refreshFinished(index);
-                }
-                return;
-            }
+            QMutexLocker getServersLock(&m_refreshMutex);
             m_servers.clear();
             m_servers.append(yourServers);
             m_servers.append(subServers);
@@ -1424,16 +1404,14 @@ void VirtualStudio::getServerList(bool firstLoad, bool signalRefresh, int index)
                     }
                 }
             }
-            if (firstLoad) {
-                emit authSucceeded();
-                m_refreshTimer.setInterval(3000);
+            if (m_firstRefresh) {
+                m_refreshTimer.setInterval(5000);
                 m_refreshTimer.start();
                 m_heartbeatTimer.setInterval(5000);
                 m_heartbeatTimer.start();
+                m_firstRefresh = false;
             }
-
             m_refreshInProgress = false;
-
             if (signalRefresh) {
                 emit refreshFinished(index);
             }
@@ -1446,7 +1424,6 @@ void VirtualStudio::getSubscriptions()
     connect(reply, &QNetworkReply::finished, this, [&, reply]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
-            emit authFailed();
             reply->deleteLater();
             return;
         }
@@ -1455,7 +1432,6 @@ void VirtualStudio::getSubscriptions()
         QJsonDocument subscriptionList = QJsonDocument::fromJson(response);
         if (!subscriptionList.isArray()) {
             std::cout << "Error: Not an array" << std::endl;
-            emit authFailed();
             reply->deleteLater();
             return;
         }
@@ -1475,7 +1451,6 @@ void VirtualStudio::getRegions()
     connect(reply, &QNetworkReply::finished, this, [&, reply]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
-            emit authFailed();
             reply->deleteLater();
             return;
         }
@@ -1492,7 +1467,6 @@ void VirtualStudio::getUserMetadata()
     connect(reply, &QNetworkReply::finished, this, [&, reply]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
-            emit authFailed();
             reply->deleteLater();
             return;
         }

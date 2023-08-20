@@ -39,10 +39,9 @@
 
 #include "./vsConstants.h"
 
-VsAuth::VsAuth(VsQuickView* view, QNetworkAccessManager* networkAccessManager, VsApi* api)
+VsAuth::VsAuth(QNetworkAccessManager* networkAccessManager, VsApi* api)
     : m_clientId(AUTH_CLIENT_ID), m_authorizationServerHost(AUTH_SERVER_HOST)
 {
-    m_view                 = view;
     m_networkAccessManager = networkAccessManager;
     m_api                  = api;
     m_deviceCodeFlow.reset(new VsDeviceCodeFlow(networkAccessManager));
@@ -55,8 +54,6 @@ VsAuth::VsAuth(VsQuickView* view, QNetworkAccessManager* networkAccessManager, V
             &VsAuth::codeFlowCompleted);
     connect(m_deviceCodeFlow.data(), &VsDeviceCodeFlow::deviceCodeFlowTimedOut, this,
             &VsAuth::codeExpired);
-
-    m_view->engine()->rootContext()->setContextProperty(QStringLiteral("auth"), this);
 
     m_verificationUrl = QStringLiteral("https://auth.jacktrip.org/activate");
 }
