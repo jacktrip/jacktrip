@@ -148,8 +148,8 @@ class VsAudio : public QObject
     VsPermissions& getPermissions() { return *m_permissionsPtr; }
     VsAudioWorker& getWorker() { return *m_audioWorkerPtr; }
 
-    // allow VirtualStudio to append plugins
-    void appendProcessPlugins(JackTrip* jackTrip);
+    //  allow VirtualStudio to create new audio interfaces
+    AudioInterface* newAudioInterface(JackTrip* jackTripPtr = nullptr);
 
     // allow VirtualStudio to load and save settings
     void loadSettings();
@@ -303,11 +303,19 @@ class VsAudio : public QObject
     void detectedFeedbackLoop();
     void updatedInputVuMeasurements(const float* valuesInDecibels, int numChannels);
     void updatedOutputVuMeasurements(const float* valuesInDecibels, int numChannels);
-    void setupPlugins(int numInputChannels, int numOutputChannels);
+    void appendProcessPlugins(AudioInterface& audioInterface, bool forJackTrip,
+                              int numInputChannels, int numOutputChannels);
+    void updateDeviceMessages(AudioInterface& audioInterface);
+    AudioInterface* newJackAudioInterface(JackTrip* jackTripPtr = nullptr);
+    AudioInterface* newRtAudioInterface(JackTrip* jackTripPtr = nullptr);
 
     // range for volume meters
     static constexpr float m_meterMax = 0.0;
     static constexpr float m_meterMin = -64.0;
+
+    // audio bit resolution
+    static constexpr AudioInterface::audioBitResolutionT m_audioBitResolution =
+        AudioInterface::BIT16;
 
     // state shared with QML
     AudioBackendType m_backend      = AudioBackendType::JACK;
@@ -329,6 +337,7 @@ class VsAudio : public QObject
     float m_inMultiplier    = 1.0;
     float m_outMultiplier   = 1.0;
     float m_monMultiplier   = 0;
+    uint32_t m_sampleRate   = gDefaultSampleRate;
 
     QString m_inputDevice;
     QString m_outputDevice;
@@ -393,7 +402,6 @@ class VsAudioWorker : public QObject
     void validateDevices();
 
    private:
-    void openRtAudioInterface();
     void updateDeviceModels();
     void validateInputDevicesState();
     void validateOutputDevicesState();
@@ -404,6 +412,9 @@ class VsAudioWorker : public QObject
                                        const QStringList& categories,
                                        const QList<int>& channels);
     QVector<RtAudioDevice> m_devices;
+
+   public:
+    QVector<RtAudioDevice> getDevices() const { return m_devices; }
 #endif
 
    private:
@@ -418,18 +429,12 @@ class VsAudioWorker : public QObject
     const QString& getInputDevice() const { return m_parentPtr->getInputDevice(); }
     const QString& getOutputDevice() const { return m_parentPtr->getOutputDevice(); }
 
-    // other private methods
-    void updateDeviceMessages(AudioInterface& audioInterface);
-    void openJackAudioInterface();
-
     VsAudio* m_parentPtr;
     QSharedPointer<AudioInterface> m_audioInterfacePtr;
     QList<int> m_inputDeviceChannels;
     QList<int> m_outputDeviceChannels;
     QStringList m_inputDeviceList;
     QStringList m_outputDeviceList;
-    uint32_t m_sampleRate                                    = gDefaultSampleRate;
-    AudioInterface::audioBitResolutionT m_audioBitResolution = AudioInterface::BIT16;
 };
 
 #endif  // VSDAUDIO_H

@@ -177,13 +177,8 @@ void JackTrip::setupAudio(
 )
 {
     // Check if mAudioInterface has already been created or not
-    if (mAudioInterface
-        != NULL) {  // if it has been created, disconnect it from JACK and delete it
-        cout << "WARNING: JackAudio interface was setup already:" << endl;
-        cout << "It will be erased and setup again." << endl;
-        cout << gPrintSeparator << endl;
-        closeAudio();
-    }
+    if (mAudioInterface != nullptr)
+        return;
 
     // Create AudioInterface Client Object
     if (mAudiointerfaceMode == JackTrip::JACK) {

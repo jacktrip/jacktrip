@@ -795,7 +795,11 @@ void VirtualStudio::completeConnection()
         int baseOutputChannel = 0;
         int numOutputChannels = 2;
 #ifdef RT_AUDIO
-        if (useRtAudio && !m_audioConfigPtr.isNull()) {
+        if (useRtAudio) {
+            // pre-populate device cache and validate first, if using rtaudio
+            if (!m_audioConfigPtr->getDeviceModelsInitialized())
+                m_audioConfigPtr->refreshDevices(true);
+            // initialize jacktrip using audio settings
             input             = m_audioConfigPtr->getInputDevice().toStdString();
             output            = m_audioConfigPtr->getOutputDevice().toStdString();
             buffer_size       = m_audioConfigPtr->getBufferSize();
@@ -814,7 +818,9 @@ void VirtualStudio::completeConnection()
             processError("Could not bind port");
             return;
         }
-        m_audioConfigPtr->appendProcessPlugins(jackTrip);
+
+        // this passes ownership to JackTrip
+        jackTrip->setAudioInterface(m_audioConfigPtr->newAudioInterface(jackTrip));
 
         QObject::connect(jackTrip, &JackTrip::signalProcessesStopped, this,
                          &VirtualStudio::connectionFinished, Qt::QueuedConnection);
