@@ -188,14 +188,13 @@ if (NOT nogui)
       src/gui/vsApi.cpp
       src/gui/vsAuth.cpp
       src/gui/vsDeviceCodeFlow.cpp
-      src/gui/vsInit.cpp
+      src/gui/vsDeeplink.cpp
       src/gui/vsQuickView.cpp
       src/gui/vsServerInfo.cpp
       src/gui/vsPing.cpp
       src/gui/vsPinger.cpp
       src/gui/vsDevice.cpp
       src/gui/vsAudio.cpp
-      src/gui/vsUrlHandler.cpp
       src/gui/vsWebSocket.cpp
       src/gui/vsPermissions.cpp
       src/gui/qjacktrip.qrc

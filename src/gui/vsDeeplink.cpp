@@ -30,39 +30,74 @@
 //*****************************************************************
 
 /**
- * \file vsInit.cpp
+ * \file vsDeeplink.cpp
  * \author Aaron Wyatt, based on code by Matt Horton
  * \date February 2023
  */
 
-#include "vsInit.h"
+#include "vsDeeplink.h"
 
 #include <QCommandLineParser>
+#include <QDebug>
+#include <QDesktopServices>
 #include <QDir>
+#include <QEventLoop>
+#include <QMutexLocker>
 #include <QSettings>
+#include <QTimer>
 
-QString VsInit::parseDeeplink(QCoreApplication* app)
+VsDeeplink::VsDeeplink(QCoreApplication* app) : m_deeplink(parseDeeplink(app))
 {
-    // Parse command line for deep link
-    QCommandLineParser parser;
-    QCommandLineOption deeplinkOption(QStringList() << QStringLiteral("deeplink"));
-    deeplinkOption.setValueName(QStringLiteral("deeplink"));
-    parser.addOption(deeplinkOption);
-    parser.parse(app->arguments());
-    if (parser.isSet(deeplinkOption)) {
-        return parser.value(deeplinkOption);
-    } else {
-        return QLatin1String("");
+    setUrlScheme();
+    checkForInstance();
+    QDesktopServices::setUrlHandler(QStringLiteral("jacktrip"), this, "handleUrl");
+}
+
+VsDeeplink::~VsDeeplink()
+{
+    QDesktopServices::unsetUrlHandler(QStringLiteral("jacktrip"));
+}
+
+bool VsDeeplink::waitForReady()
+{
+    while (!m_isReady) {
+        QTimer timer;
+        timer.setTimerType(Qt::CoarseTimer);
+        timer.setSingleShot(true);
+
+        QEventLoop loop;
+        QObject::connect(this, &VsDeeplink::signalIsReady, &loop, &QEventLoop::quit);
+        QObject::connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+        timer.start(100);  // wait for 100ms
+        loop.exec();
+    }
+    return m_readyToExit;
+}
+
+void VsDeeplink::readyForSignals()
+{
+    m_readyForSignals = true;
+    if (!m_deeplink.isEmpty()) {
+        emit signalDeeplink(m_deeplink);
+        m_deeplink.clear();
     }
 }
 
-void VsInit::checkForInstance(QString& deeplink)
+void VsDeeplink::handleUrl(const QUrl& url)
 {
-    m_deeplink = deeplink;
+    if (m_readyForSignals) {
+        emit signalDeeplink(url);
+    } else {
+        m_deeplink = url;
+    }
+}
+
+void VsDeeplink::checkForInstance()
+{
     // Create socket
     m_instanceCheckSocket.reset(new QLocalSocket(this));
     QObject::connect(m_instanceCheckSocket.data(), &QLocalSocket::connected, this,
-                     &VsInit::connectionReceived, Qt::QueuedConnection);
+                     &VsDeeplink::connectionReceived, Qt::QueuedConnection);
     // Create instanceServer to prevent new instances from being created
     void (QLocalSocket::*errorFunc)(QLocalSocket::LocalSocketError);
 #if (QT_VERSION < QT_VERSION_CHECK(5, 15, 0))
@@ -71,70 +106,67 @@ void VsInit::checkForInstance(QString& deeplink)
     errorFunc = &QLocalSocket::errorOccurred;
 #endif
     QObject::connect(m_instanceCheckSocket.data(), errorFunc, this,
-                     &VsInit::connectionFailed);
+                     &VsDeeplink::connectionFailed);
     // Check for existing instance
     m_instanceCheckSocket->connectToServer("jacktripExists");
 }
 
-#ifdef _WIN32
-void VsInit::setUrlScheme()
+void VsDeeplink::connectionReceived()
 {
-    // Set url scheme in registry
-    QString path = QDir::toNativeSeparators(qApp->applicationFilePath());
-
-    QSettings set("HKEY_CURRENT_USER\\Software\\Classes", QSettings::NativeFormat);
-    set.beginGroup("jacktrip");
-    set.setValue("Default", "URL:JackTrip Protocol");
-    set.setValue("DefaultIcon/Default", path);
-    set.setValue("URL Protocol", "");
-    set.setValue("shell/open/command/Default",
-                 QString("\"%1\"").arg(path) + " --gui --deeplink \"%1\"");
-    set.endGroup();
-}
-#endif
-
-void VsInit::connectionReceived()
-{
-    // pass deeplink to existing instance before quitting
+    // another jacktrip instance is running
     if (!m_deeplink.isEmpty()) {
-        QByteArray baDeeplink = m_deeplink.toLocal8Bit();
+        // pass deeplink to existing instance before quitting
+        QString deeplinkStr   = m_deeplink.toString();
+        QByteArray baDeeplink = deeplinkStr.toLocal8Bit();
         qint64 writeBytes     = m_instanceCheckSocket->write(baDeeplink);
-        m_instanceCheckSocket->flush();
-        m_instanceCheckSocket->disconnectFromServer();  // remove next
-
         if (writeBytes < 0) {
             qDebug() << "sending deeplink failed";
+        } else {
+            qDebug() << "Sent deeplink request to remote instance";
         }
+
+        // make sure it isn't processed again
+        m_deeplink.clear();
+
+        // End process if another instance exists
+        m_readyToExit = true;
     }
-    // End process if instance exists
-    emit QCoreApplication::quit();
+
+    m_instanceCheckSocket->flush();
+    m_instanceCheckSocket->disconnectFromServer();  // remove next
+
+    // let main thread know we are finished
+    m_isReady = true;
+    emit signalIsReady();
 }
 
-void VsInit::connectionFailed(QLocalSocket::LocalSocketError socketError)
+void VsDeeplink::connectionFailed(QLocalSocket::LocalSocketError socketError)
 {
     switch (socketError) {
     case QLocalSocket::ServerNotFoundError:
     case QLocalSocket::SocketTimeoutError:
     case QLocalSocket::ConnectionRefusedError:
+        // no other jacktrip instance is running, so we will take over handling deep links
+        qDebug() << "Listening for deep link requests";
         m_instanceServer.reset(new QLocalServer(this));
         m_instanceServer->setSocketOptions(QLocalServer::WorldAccessOption);
         m_instanceServer->listen("jacktripExists");
         QObject::connect(m_instanceServer.data(), &QLocalServer::newConnection, this,
-                         &VsInit::responseReceived, Qt::QueuedConnection);
+                         &VsDeeplink::handleDeeplinkRequest, Qt::QueuedConnection);
         break;
     case QLocalSocket::PeerClosedError:
         break;
     default:
         qDebug() << m_instanceCheckSocket->errorString();
     }
+
+    // let main thread know we are finished
+    m_isReady = true;
+    emit signalIsReady();
 }
 
-void VsInit::responseReceived()
+void VsDeeplink::handleDeeplinkRequest()
 {
-    // This is the first instance. Bring it to the top.
-    if (!m_vs.isNull() && m_vs->vsModeActive()) {
-        m_vs->raiseToTop();
-    }
     while (m_instanceServer->hasPendingConnections()) {
         // Receive URL from 2nd instance
         QLocalSocket* connectedSocket = m_instanceServer->nextPendingConnection();
@@ -159,12 +191,38 @@ void VsInit::responseReceived()
 
         QByteArray in(connectedSocket->readAll());
         QString urlString(in);
-        QUrl url(urlString);
-
-        // Join studio using received URL
-        if (!m_vs.isNull() && m_vs->vsModeActive() && url.scheme() == "jacktrip"
-            && url.host() == "join") {
-            m_vs->setStudioToJoin(url);
-        }
+        handleUrl(urlString);
     }
+}
+
+QUrl VsDeeplink::parseDeeplink(QCoreApplication* app)
+{
+    // Parse command line for deep link
+    QCommandLineParser parser;
+    QCommandLineOption deeplinkOption(QStringList() << QStringLiteral("deeplink"));
+    deeplinkOption.setValueName(QStringLiteral("deeplink"));
+    parser.addOption(deeplinkOption);
+    parser.parse(app->arguments());
+    if (parser.isSet(deeplinkOption)) {
+        return QUrl(parser.value(deeplinkOption));
+    } else {
+        return QUrl("");
+    }
+}
+
+void VsDeeplink::setUrlScheme()
+{
+#ifdef _WIN32
+    // Set url scheme in registry
+    QString path = QDir::toNativeSeparators(qApp->applicationFilePath());
+
+    QSettings set("HKEY_CURRENT_USER\\Software\\Classes", QSettings::NativeFormat);
+    set.beginGroup("jacktrip");
+    set.setValue("Default", "URL:JackTrip Protocol");
+    set.setValue("DefaultIcon/Default", path);
+    set.setValue("URL Protocol", "");
+    set.setValue("shell/open/command/Default",
+                 QString("\"%1\"").arg(path) + " --gui --deeplink \"%1\"");
+    set.endGroup();
+#endif
 }

@@ -190,6 +190,7 @@ class VirtualStudio : public QObject
     void editProfile();
     void showAbout();
     void openLink(const QString& url);
+    void handleDeeplinkRequest(const QUrl& url);
     void udpWaitingTooLong();
     void setWindowState(QString state);
     void joinStudio();

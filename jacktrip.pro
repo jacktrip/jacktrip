@@ -262,7 +262,7 @@ HEADERS += src/DataProtocol.h \
                src/gui/vsApi.h \
                src/gui/vsAuth.h \
                src/gui/vsDeviceCodeFlow.h \
-               src/gui/vsInit.h \
+               src/gui/vsDeeplink.h \
                src/gui/vsDevice.h \
                src/gui/vsAudio.h \
                src/gui/vsServerInfo.h \
@@ -271,7 +271,6 @@ HEADERS += src/DataProtocol.h \
                src/gui/vsPermissions.h \
                src/gui/vsPinger.h \
                src/gui/vsPing.h \
-               src/gui/vsUrlHandler.h \
                src/gui/vsQmlClipboard.h \
                src/JTApplication.h
   }
@@ -332,7 +331,7 @@ SOURCES += src/DataProtocol.cpp \
                src/gui/vsApi.cpp \
                src/gui/vsAuth.cpp \
                src/gui/vsDeviceCodeFlow.cpp \
-               src/gui/vsInit.cpp \
+               src/gui/vsDeeplink.cpp \
                src/gui/vsDevice.cpp \
                src/gui/vsAudio.cpp \
                src/gui/vsServerInfo.cpp \
@@ -340,8 +339,7 @@ SOURCES += src/DataProtocol.cpp \
                src/gui/vsWebSocket.cpp \
                src/gui/vsPermissions.cpp \
                src/gui/vsPinger.cpp \
-               src/gui/vsPing.cpp \
-               src/gui/vsUrlHandler.cpp
+               src/gui/vsPing.cpp
   }
   !noupdater:!linux-g++:!linux-g++-64 {
     SOURCES += src/dblsqd/feed.cpp \

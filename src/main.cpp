@@ -61,9 +61,8 @@
 
 #include "JTApplication.h"
 #include "gui/virtualstudio.h"
-#include "gui/vsInit.h"
+#include "gui/vsDeeplink.h"
 #include "gui/vsQmlClipboard.h"
-#include "gui/vsUrlHandler.h"
 #endif  // NO_VS && QT_VERSION
 
 #include "gui/qjacktrip.h"
@@ -309,11 +308,8 @@ int main(int argc, char* argv[])
 #endif  // QT_VERSION
 
 #if !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    QString deeplink;
-    QSharedPointer<VirtualStudio> vs;
-#ifdef _WIN32
-    QScopedPointer<VsInit> vsInit;
-#endif  // _WIN32
+    QSharedPointer<VirtualStudio> vsPtr;
+    QScopedPointer<VsDeeplink> vsDeeplinkPtr;
 #endif  // NO_VS && QT_VERSION
 
 #if defined(Q_OS_MACOS) && !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
@@ -350,51 +346,38 @@ int main(int argc, char* argv[])
         // Register clipboard Qml type
         qmlRegisterType<VsQmlClipboard>("VS", 1, 0, "Clipboard");
 
-        // Parse command line for deep link
-        deeplink = VsInit::parseDeeplink(app.data());
+        // prepare handler for deeplinks jacktrip://join/<StudioID>
+        vsDeeplinkPtr.reset(new VsDeeplink(app.data()));
+        if (!vsDeeplinkPtr->getDeeplink().isEmpty()) {
+            bool readyForExit = vsDeeplinkPtr->waitForReady();
+            if (readyForExit)
+                return 0;
+        }
 
         // Check if we need to show our first run window.
         QSettings settings;
         int uiMode = settings.value(QStringLiteral("UiMode"), QJackTrip::UNSET).toInt();
-#ifdef _WIN32
-        // Set url scheme in registry
-        VsInit::setUrlScheme();
-        vsInit.reset(new VsInit());
-        vsInit->checkForInstance(deeplink);
-#endif  // _WIN32
-        window.reset(new QJackTrip(cliSettings, !deeplink.isEmpty()));
+        window.reset(new QJackTrip(cliSettings, !vsDeeplinkPtr->getDeeplink().isEmpty()));
 #else
         window.reset(new QJackTrip(cliSettings));
 #endif  // NO_VS
         QObject::connect(window.data(), &QJackTrip::signalExit, app.data(),
                          &QCoreApplication::quit, Qt::QueuedConnection);
-#if !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-        vs.reset(new VirtualStudio(uiMode == QJackTrip::UNSET));
-        QObject::connect(vs.data(), &VirtualStudio::signalExit, app.data(),
-                         &QCoreApplication::quit, Qt::QueuedConnection);
-#ifdef _WIN32
-        vsInit->setVs(vs);
-#endif
-        vs->setStandardWindow(window);
-        window->setVs(vs);
 
-        VsUrlHandler* m_urlHandler = new VsUrlHandler();
-        QDesktopServices::setUrlHandler(QStringLiteral("jacktrip"), m_urlHandler,
-                                        "handleUrl");
-        QObject::connect(m_urlHandler, &VsUrlHandler::joinUrlClicked, vs.data(),
-                         [&](const QUrl& url) {
-                             if (url.scheme() == QLatin1String("jacktrip")
-                                 && url.host() == QLatin1String("join")) {
-                                 vs->setStudioToJoin(url);
-                             }
-                         });
-        // Open with any command line-passed url
-        QDesktopServices::openUrl(QUrl(deeplink));
+#if !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        vsPtr.reset(new VirtualStudio(uiMode == QJackTrip::UNSET));
+        QObject::connect(vsPtr.data(), &VirtualStudio::signalExit, app.data(),
+                         &QCoreApplication::quit, Qt::QueuedConnection);
+        vsPtr->setStandardWindow(window);
+        window->setVs(vsPtr);
+        QObject::connect(vsDeeplinkPtr.get(), &VsDeeplink::signalDeeplink, vsPtr.get(),
+                         &VirtualStudio::handleDeeplinkRequest, Qt::QueuedConnection);
+        vsDeeplinkPtr->readyForSignals();
 
         if (uiMode == QJackTrip::UNSET) {
-            vs->show();
+            vsPtr->show();
         } else if (uiMode == QJackTrip::VIRTUAL_STUDIO) {
-            vs->show();
+            vsPtr->show();
         } else {
             window->show();
         }
