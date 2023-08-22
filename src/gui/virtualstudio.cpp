@@ -695,6 +695,7 @@ void VirtualStudio::logout()
 
     // reset window state
     setWindowState(QStringLiteral("login"));
+    login();  // called to retrieve new code flow token
 }
 
 void VirtualStudio::refreshStudios(int index, bool signalRefresh)
