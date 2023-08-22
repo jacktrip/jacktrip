@@ -76,7 +76,11 @@ class AudioInterface
         UNDEF   ///< Undefined
     };
 
-    enum warningMessageT { DEVICE_WARN_NONE, DEVICE_WARN_LATENCY };
+    enum warningMessageT {
+        DEVICE_WARN_NONE,
+        DEVICE_WARN_BUFFER_LATENCY,
+        DEVICE_WARN_ASIO_LATENCY
+    };
 
     enum errorMessageT {
         DEVICE_ERR_NONE,
@@ -255,6 +259,7 @@ class AudioInterface
     const std::string& getDevicesErrorMsg() const { return mErrorMsg; }
     const std::string& getDevicesWarningHelpUrl() const { return mWarningHelpUrl; }
     const std::string& getDevicesErrorHelpUrl() const { return mErrorHelpUrl; }
+    bool highLatencyBufferSize() const { return getBufferSizeInSamples() > 256; }
     bool getHighLatencyFlag() const { return mHighLatencyFlag; }
     //------------------------------------------------------------------
 

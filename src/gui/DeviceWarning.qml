@@ -23,7 +23,7 @@ Item {
         anchors.leftMargin: 4 * virtualstudio.uiScale
         anchors.verticalCenter: devicesWarningIcon.verticalCenter
         visible: Boolean(audio.devicesError) || Boolean(audio.devicesWarning)
-        font { family: "Poppins"; pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale }
+        font { family: "Poppins"; pixelSize: 9 * virtualstudio.fontScale * virtualstudio.uiScale }
         color: devicesWarningColour
     }
 

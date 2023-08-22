@@ -937,30 +937,28 @@ int AudioInterface::getSampleRateFromType(samplingRateT rate_type)
 void AudioInterface::setDevicesWarningMsg(warningMessageT msg)
 {
     switch (msg) {
-    case DEVICE_WARN_LATENCY:
+    case DEVICE_WARN_BUFFER_LATENCY:
         mWarningMsg =
-            "The selected Input and Output devices are Non-ASIO and may cause high "
-            "latency or audio delay. Installing ASIO drivers and using ASIO Input and "
-            "Output devices will lower audio delays for a 'same room experience'.";
-#ifdef _WIN32
-        mWarningHelpUrl = "https://help.jacktrip.org/hc/en-us/articles/4409919243155";
-#else
-        mWarningHelpUrl = "";
-#endif
+            "The buffer size setting for your audio device will cause high latency "
+            "or audio delay. Use an audio device that supports small buffer sizes "
+            "to reduce audio delays.";
+        mWarningHelpUrl  = "";
+        mHighLatencyFlag = true;
+        break;
+    case DEVICE_WARN_ASIO_LATENCY:
+        mWarningMsg =
+            "You audio device drivers may cause high latency or audio delay. Install "
+            "and use ASIO drivers provided by your device's manufacturer to reduce "
+            "audio delays.";
+        mWarningHelpUrl  = "https://help.jacktrip.org/hc/en-us/articles/4409919243155";
+        mHighLatencyFlag = true;
         break;
     default:
-        mWarningMsg     = "";
-        mWarningHelpUrl = "";
+        mWarningMsg      = "";
+        mWarningHelpUrl  = "";
+        mHighLatencyFlag = false;
         break;
     }
-
-    if (msg == DEVICE_WARN_LATENCY) {
-        mHighLatencyFlag = true;
-    } else {
-        mHighLatencyFlag = false;
-    }
-
-    return;
 }
 
 //*******************************************************************************
@@ -975,7 +973,7 @@ void AudioInterface::setDevicesErrorMsg(errorMessageT msg)
 #ifdef _WIN32
         mErrorHelpUrl = "https://help.jacktrip.org/hc/en-us/articles/4409919243155";
 #else
-        mErrorHelpUrl   = "";
+        mErrorHelpUrl = "";
 #endif
         break;
     case DEVICE_ERR_NO_INPUTS:
@@ -1002,5 +1000,4 @@ void AudioInterface::setDevicesErrorMsg(errorMessageT msg)
         mErrorHelpUrl = "";
         break;
     }
-    return;
 }

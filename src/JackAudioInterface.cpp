@@ -88,6 +88,12 @@ void JackAudioInterface::setup(bool verbose)
     setupClient();
     AudioInterface::setup(verbose);
     setProcessCallback();
+    if (highLatencyBufferSize()) {
+        AudioInterface::setDevicesWarningMsg(AudioInterface::DEVICE_WARN_BUFFER_LATENCY);
+    } else {
+        AudioInterface::setDevicesWarningMsg(AudioInterface::DEVICE_WARN_NONE);
+    }
+    AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_NONE);
 }
 
 //*******************************************************************************
