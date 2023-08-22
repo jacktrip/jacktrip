@@ -805,11 +805,17 @@ AudioInterface* VsAudio::newAudioInterface(JackTrip* jackTripPtr)
     if (ifPtr == nullptr)
         return ifPtr;
 
+    // AudioInterface::setup() can return a different buffer size
+    // if the audio interface doesn't support the one that was requested
+    if (ifPtr->getBufferSizeInSamples() != uint32_t(getBufferSize())) {
+        setBufferSize(ifPtr->getBufferSizeInSamples());
+    }
+
     std::cout << "The Sampling Rate is: " << m_sampleRate << std::endl;
     std::cout << gPrintSeparator << std::endl;
-    int AudioBufferSizeInBytes = getBufferSize() * sizeof(sample_t);
-    std::cout << "The Audio Buffer Size is: " << getBufferSize() << " samples"
-              << std::endl;
+    int AudioBufferSizeInBytes = ifPtr->getBufferSizeInSamples() * sizeof(sample_t);
+    std::cout << "The Audio Buffer Size is: " << ifPtr->getBufferSizeInSamples()
+              << " samples" << std::endl;
     std::cout << "                      or: " << AudioBufferSizeInBytes << " bytes"
               << std::endl;
     std::cout << gPrintSeparator << std::endl;

@@ -222,7 +222,8 @@ void RtAudioInterface::setup(bool verbose)
     if (in_device.api == out_device.api) {
 #ifdef _WIN32
         if (in_device.api != RtAudio::WINDOWS_ASIO) {
-            AudioInterface::setDevicesWarningMsg(AudioInterface::DEVICE_WARN_LATENCY);
+            AudioInterface::setDevicesWarningMsg(
+                AudioInterface::DEVICE_WARN_ASIO_LATENCY);
             AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_NONE);
         } else if (in_device.api == RtAudio::WINDOWS_ASIO
                    && in_device.ID != out_device.ID) {
@@ -276,8 +277,6 @@ void RtAudioInterface::setup(bool verbose)
     mStereoToMonoMixerPtr.reset(new StereoToMono());
     mStereoToMonoMixerPtr->init(sampleRate, bufferFrames);
 
-    // Setup parent class
-    AudioInterface::setup(verbose);
     if (in_device.api != out_device.api)
         return;
 
@@ -312,7 +311,22 @@ void RtAudioInterface::setup(bool verbose)
         throw std::runtime_error(errorText);
     }
 
-    setBufferSize(bufferFrames);
+    // RtAudio::openStream() can return a different buffer size
+    // if the audio interface doesn't support the one that was requested
+    if (bufferFrames != getBufferSizeInSamples()) {
+        std::cout << "RtAudioInterface updated buffer size to " << bufferFrames
+                  << " samples" << std::endl;
+        setBufferSize(bufferFrames);
+    }
+
+    if (highLatencyBufferSize() && getDevicesWarningMsg().empty()) {
+        setDevicesWarningMsg(AudioInterface::DEVICE_WARN_BUFFER_LATENCY);
+    }
+
+    // Setup parent class
+    // This MUST be after buffer size is finalized, so that plugins
+    // are initialized with the correct settings
+    AudioInterface::setup(verbose);
 }
 
 //*******************************************************************************

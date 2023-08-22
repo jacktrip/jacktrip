@@ -557,6 +557,12 @@ void JackTrip::startProcess(
         return;
     }
 
+    // AudioInterface::setup() can return a different buffer size
+    // if the audio interface doesn't support the one that was requested
+    if (mAudioInterface->getBufferSizeInSamples() != getBufferSizeInSamples()) {
+        setAudioBufferSizeInSamples(mAudioInterface->getBufferSizeInSamples());
+    }
+
     // cc redundant with instance creator  createHeader(mPacketHeaderType); next line
     // fixme
     createHeader(mPacketHeaderType);
