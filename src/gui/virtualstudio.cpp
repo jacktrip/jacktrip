@@ -1002,6 +1002,55 @@ void VirtualStudio::openLink(const QString& link)
     QDesktopServices::openUrl(url);
 }
 
+void VirtualStudio::handleDeeplinkRequest(const QUrl& link)
+{
+    // check link is valid
+    if (link.scheme() != QLatin1String("jacktrip")
+        || link.host() != QLatin1String("join")) {
+        qDebug() << "Ignoring invalid deeplink to " << link;
+        return;
+    }
+
+    // check if already connected (ignore)
+    if (m_windowState == "connected" || m_windowState == "change_devices") {
+        qDebug() << "Already connected; ignoring deeplink to " << link;
+        return;
+    }
+
+    qDebug() << "Handling deeplink to " << link;
+    setStudioToJoin(link);
+    raiseToTop();
+
+    // special case if on settings screen
+    if (m_windowState == "settings") {
+        if (showDeviceSetup()) {
+            // audio is already active, so we can just flip screens
+            setWindowState("setup");
+        } else {
+            // we need to stop audio before connecting
+            setWindowState("connected");
+            m_audioConfigPtr->stopAudio(true);
+            joinStudio();
+        }
+        return;
+    }
+
+    // special case if on browsing screen
+    if (m_windowState == "browse") {
+        setWindowState("connected");
+        joinStudio();
+        return;
+    }
+
+    if (m_windowState == "failed") {
+        setWindowState("connected");
+        joinStudio();
+        return;
+    }
+
+    // otherwise, assume we are on setup screens and can let the normal flow handle it
+}
+
 void VirtualStudio::exit()
 {
     m_startTimer.stop();
