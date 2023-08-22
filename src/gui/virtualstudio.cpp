@@ -136,6 +136,10 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
         emit updatedNetworkOutage(m_networkOutage);
     });
 
+    if (vsFtux() || hasRefreshToken()) {
+        m_windowState = QStringLiteral("login");
+    }
+
     // register QML types
     qmlRegisterType<VsServerInfo>("org.jacktrip.jacktrip", 1, 0, "VsServerInfo");
 
@@ -185,6 +189,10 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     // call exit() when the UI window is closed
     connect(&m_view, &VsQuickView::windowClose, this, &VirtualStudio::exit,
             Qt::QueuedConnection);
+
+    if (vsFtux() || hasRefreshToken()) {
+        login();
+    }
 }
 
 void VirtualStudio::setStandardWindow(QSharedPointer<QJackTrip> window)
@@ -212,15 +220,6 @@ void VirtualStudio::show()
         m_checkSsl = false;
     }
     m_view.show();
-    if (m_windowState == "loading") {
-        if (vsFtux() || hasRefreshToken()) {
-            setWindowState(QStringLiteral("login"));
-        } else {
-            setWindowState(QStringLiteral("start"));
-        }
-    } else if (m_windowState == "login") {
-        login();
-    }
 }
 
 void VirtualStudio::raiseToTop()

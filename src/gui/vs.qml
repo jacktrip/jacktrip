@@ -12,23 +12,7 @@ Rectangle {
     id: window
     states: [
         State {
-            name: "loading"
-            PropertyChanges { target: loadingScreen; x: 0; }
-            PropertyChanges { target: startScreen; x: -startScreen.width; }
-            PropertyChanges { target: loginScreen; x: window.width; }
-            PropertyChanges { target: recommendationsScreen; x: window.width }
-            PropertyChanges { target: permissionsScreen; x: window.width }
-            PropertyChanges { target: setupScreen; x: window.width }
-            PropertyChanges { target: browseScreen; x: window.width }
-            PropertyChanges { target: settingsScreen; x: window.width }
-            PropertyChanges { target: connectedScreen; x: window.width }
-            PropertyChanges { target: changeDevicesScreen; x: 2*window.width }
-            PropertyChanges { target: failedScreen; x: window.width }
-        },
-
-        State {
             name: "start"
-            PropertyChanges { target: loadingScreen; x: window.width; }
             PropertyChanges { target: startScreen; x: 0 }
             PropertyChanges { target: loginScreen; x: window.width; }
             PropertyChanges { target: recommendationsScreen; x: window.width }
@@ -43,7 +27,6 @@ Rectangle {
 
         State {
             name: "login"
-            PropertyChanges { target: loadingScreen; x: window.width; }
             PropertyChanges { target: startScreen; x: -startScreen.width }
             PropertyChanges { target: loginScreen; x: 0; }
             PropertyChanges { target: recommendationsScreen; x: window.width }
@@ -58,7 +41,6 @@ Rectangle {
 
         State {
             name: "recommendations"
-            PropertyChanges { target: loadingScreen; x: window.width; }
             PropertyChanges { target: loginScreen; x: -loginScreen.width }
             PropertyChanges { target: startScreen; x: -startScreen.width }
             PropertyChanges { target: recommendationsScreen; x: 0 }
@@ -73,7 +55,6 @@ Rectangle {
 
         State {
             name: "permissions"
-            PropertyChanges { target: loadingScreen; x: window.width; }
             PropertyChanges { target: loginScreen; x: -loginScreen.width }
             PropertyChanges { target: startScreen; x: -startScreen.width }
             PropertyChanges { target: recommendationsScreen; x: -recommendationsScreen.width }
@@ -88,7 +69,6 @@ Rectangle {
 
         State {
             name: "setup"
-            PropertyChanges { target: loadingScreen; x: window.width; }
             PropertyChanges { target: loginScreen; x: -loginScreen.width }
             PropertyChanges { target: startScreen; x: -startScreen.width }
             PropertyChanges { target: recommendationsScreen; x: -recommendationsScreen.width }
@@ -103,7 +83,6 @@ Rectangle {
 
         State {
             name: "browse"
-            PropertyChanges { target: loadingScreen; x: window.width; }
             PropertyChanges { target: loginScreen; x: -loginScreen.width }
             PropertyChanges { target: startScreen; x: -startScreen.width }
             PropertyChanges { target: recommendationsScreen; x: -recommendationsScreen.width }
@@ -118,7 +97,6 @@ Rectangle {
 
         State {
             name: "settings"
-            PropertyChanges { target: loadingScreen; x: window.width; }
             PropertyChanges { target: loginScreen; x: -loginScreen.width }
             PropertyChanges { target: startScreen; x: -startScreen.width }
             PropertyChanges { target: recommendationsScreen; x: -recommendationsScreen.width }
@@ -133,7 +111,6 @@ Rectangle {
 
         State {
             name: "connected"
-            PropertyChanges { target: loadingScreen; x: window.width; }
             PropertyChanges { target: loginScreen; x: -loginScreen.width }
             PropertyChanges { target: startScreen; x: -startScreen.width }
             PropertyChanges { target: recommendationsScreen; x: -recommendationsScreen.width }
@@ -148,7 +125,6 @@ Rectangle {
 
         State {
             name: "change_devices"
-            PropertyChanges { target: loadingScreen; x: window.width; }
             PropertyChanges { target: loginScreen; x: -loginScreen.width }
             PropertyChanges { target: startScreen; x: -startScreen.width }
             PropertyChanges { target: recommendationsScreen; x: -recommendationsScreen.width }
@@ -163,7 +139,6 @@ Rectangle {
 
         State {
             name: "failed"
-            PropertyChanges { target: loadingScreen; x: window.width; }
             PropertyChanges { target: loginScreen; x: -loginScreen.width }
             PropertyChanges { target: startScreen; x: -startScreen.width }
             PropertyChanges { target: recommendationsScreen; x: -recommendationsScreen.width }
@@ -179,10 +154,6 @@ Rectangle {
 
     transitions: Transition {
         NumberAnimation { properties: "x"; duration: 500; easing.type: Easing.InOutQuad }
-    }
-
-    Item {
-        id: loadingScreen
     }
 
     FirstLaunch {
@@ -226,9 +197,7 @@ Rectangle {
     }
 
     onWidthChanged: {
-        if (virtualstudio.windowState === "loading") {
-            loadingScreen.x = 0
-        } else if (virtualstudio.windowState === "start") {
+        if (virtualstudio.windowState === "start") {
             startScreen.x = 0
         } else if (virtualstudio.windowState === "login") {
             loginScreen.x = 0
@@ -252,9 +221,7 @@ Rectangle {
     }
 
     onHeightChanged: {
-        if (virtualstudio.windowState === "loading") {
-            loadingScreen.x = 0
-        } else if (virtualstudio.windowState === "start") {
+        if (virtualstudio.windowState === "start") {
             startScreen.x = 0
         } else if (virtualstudio.windowState === "login") {
             loginScreen.x = 0
@@ -310,11 +277,6 @@ Rectangle {
         }
         function onDisconnected() {
             virtualstudio.windowState = "browse";
-        }
-        function onWindowStateUpdated() {
-            if (virtualstudio.windowState === "login") {
-                virtualstudio.login();
-            }
         }
     }
 }

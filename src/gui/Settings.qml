@@ -457,7 +457,7 @@ Item {
                 audio.restartAudio();
             }
             font.family: "Poppins"
-            visible: audio.audioBackend != "JACK"
+            enabled: audio.audioBackend != "JACK"
         }
 
         Text {

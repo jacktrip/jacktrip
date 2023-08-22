@@ -316,7 +316,7 @@ class VirtualStudio : public QObject
     uint32_t m_webChannelPort     = 1;
 
     QString m_failedMessage            = QStringLiteral("");
-    QString m_windowState              = QStringLiteral("loading");
+    QString m_windowState              = QStringLiteral("start");
     QString m_connectedErrorMsg        = QStringLiteral("");
     QString m_logoSection              = QStringLiteral("Your Studios");
     QString m_connectionState          = QStringLiteral("Waiting...");
