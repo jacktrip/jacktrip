@@ -111,6 +111,7 @@ class VirtualStudio : public QObject
                    showDeviceSetupChanged)
     Q_PROPERTY(bool showWarnings READ showWarnings WRITE setShowWarnings NOTIFY
                    showWarningsChanged)
+    Q_PROPERTY(bool isExiting READ isExiting NOTIFY isExitingChanged)
     Q_PROPERTY(bool noUpdater READ noUpdater CONSTANT)
     Q_PROPERTY(bool psiBuild READ psiBuild CONSTANT)
     Q_PROPERTY(QString failedMessage READ failedMessage NOTIFY failedMessageChanged)
@@ -174,6 +175,7 @@ class VirtualStudio : public QObject
     QString apiHost();
     void setApiHost(QString host);
     bool vsFtux();
+    bool isExiting();
 
    public slots:
     void toStandard();
@@ -230,6 +232,7 @@ class VirtualStudio : public QObject
     void studioToJoinChanged();
     void updatedNetworkOutage(bool outage);
     void windowStateUpdated();
+    void isExitingChanged();
     void apiHostChanged();
     void feedbackDetected();
     void openFeedbackSurveyModal(QString serverId);
