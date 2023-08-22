@@ -85,7 +85,7 @@ Rectangle {
 
     Loader {
         anchors.fill: parent
-        sourceComponent: !audio.deviceModelsInitialized || audio.scanningDevices ? scanningDevices : (audio.audioBackend == "RtAudio" ? usingRtAudio : (audio.audioBackend == "JACK" ? usingJACK : scanningDevices))
+        sourceComponent: audio.audioBackend == "JACK" ? usingJACK : ((!audio.deviceModelsInitialized || audio.scanningDevices) ? scanningDevices : usingRtAudio);
     }
 
     Component {

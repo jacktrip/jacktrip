@@ -99,15 +99,13 @@ VsAudio::VsAudio(QObject* parent)
 {
     loadSettings();
 
-#ifdef USE_WEAK_JACK
+#ifdef RT_AUDIO
+    m_backend = AudioBackendType::RTAUDIO;
+#elif defined(USE_WEAK_JACK)
     // Check if Jack is available
     if (have_libjack() != 0) {
-#ifdef RT_AUDIO
-        m_backend = AudioBackendType::RTAUDIO;
-#else
         // TODO: Handle this more gracefully, even if it's an unlikely scenario
         qFatal("JACK not found and not built with RtAudio support.");
-#endif  // RT_AUDIO
     }
 #endif  // USE_WEAK_JACK
 
@@ -242,8 +240,6 @@ void VsAudio::setFeedbackDetectionEnabled(bool enabled)
 
 void VsAudio::setBufferSize([[maybe_unused]] int bufSize)
 {
-    if (m_backend != AudioBackendType::RTAUDIO)
-        return;
     if (m_audioBufferSize == bufSize)
         return;
     m_audioBufferSize = bufSize;

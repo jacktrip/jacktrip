@@ -93,7 +93,7 @@ Item {
             border.color: standardButton.down ? buttonPressedStroke : (standardButton.hovered ? buttonHoverStroke : buttonStroke)
             layer.enabled: standardButton.hovered && !standardButton.down
         }
-        onClicked: { virtualstudio.windowState = "login"; virtualstudio.toStandard(); }
+        onClicked: { virtualstudio.toStandard(); }
         x: parent.width / 2 + (32 * virtualstudio.uiScale); y: 290 * virtualstudio.uiScale
         width: 234 * virtualstudio.uiScale; height: 49 * virtualstudio.uiScale
         Text {

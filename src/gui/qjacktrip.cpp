@@ -1124,6 +1124,7 @@ void QJackTrip::virtualStudioMode()
 {
     this->hide();
     m_vs->show();
+    m_vs->toVirtualStudio();
 }
 #endif
 
