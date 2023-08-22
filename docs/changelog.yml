@@ -1,3 +1,15 @@
+- Version: "2.0.0-beta2"
+  Date: 2023-08-22
+  Description:
+  - (added) VS feedback survey request after leaving studios
+  - (added) VS indicators for high latency audio interfaces
+  - (added) VS audio buttons in toolbar now collapse/expand settings
+  - (added) VS support for refreshing devices while connected to studio
+  - (updated) Improved user experience when using the RtAudio backend
+  - (fixed) Crashes when audio interfaces don't support buffer size
+  - (fixed) Crashes when audio interfaces are unplugged while active
+  - (fixed) VS Settings will now revert back when Cancel is selected
+  - (fixed) Bugs with Virtual Studio deep links and connections stats
 - Version: "2.0.0-beta1"
   Date: 2023-08-04
   Description:
