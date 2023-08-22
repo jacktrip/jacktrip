@@ -410,6 +410,11 @@ bool VirtualStudio::vsFtux()
     return m_vsFtux;
 }
 
+bool VirtualStudio::isExiting()
+{
+    return m_isExiting;
+}
+
 void VirtualStudio::collectFeedbackSurvey(QString serverId, int rating, QString message)
 {
     QJsonObject feedback;
@@ -1053,19 +1058,19 @@ void VirtualStudio::handleDeeplinkRequest(const QUrl& link)
 
 void VirtualStudio::exit()
 {
+    // triggering isExitingChanged will force any WebEngine things to close properly
+    m_isExiting = true;
+    emit isExitingChanged();
+
     m_startTimer.stop();
     m_refreshTimer.stop();
     m_heartbeatTimer.stop();
     m_networkOutageTimer.stop();
     if (m_onConnectedScreen) {
-        m_isExiting = true;
-
-        if (!m_devicePtr.isNull()) {
-            m_devicePtr->stopPinger();
-            m_devicePtr->stopJackTrip();
+        // manually disconnect on self-managed studios
+        if (!m_currentStudio.id().isEmpty() && !m_currentStudio.isManaged()) {
+            disconnect();
         }
-
-        disconnect();
     } else {
         emit signalExit();
     }
