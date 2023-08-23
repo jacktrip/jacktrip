@@ -464,9 +464,8 @@ VsPinger* VsDevice::startPinger(VsServerInfo* studioInfo)
     QString host = studioInfo->sessionId();
     host.append(QString::fromStdString(".jacktrip.cloud"));
 
-    m_pinger.reset(
-        new VsPinger(QString::fromStdString("wss"), host,
-                     QString::fromStdString("/ping")));
+    m_pinger.reset(new VsPinger(QString::fromStdString("wss"), host,
+                                QString::fromStdString("/ping")));
     return m_pinger.get();
 }
 
