@@ -264,20 +264,9 @@ void VsDevice::sendHeartbeat()
         // Send heartbeat via websocket
         m_deviceSocketPtr->sendMessage(request.toJson());
     } else {
-        // Send heartbeat via POST API
-        QNetworkReply* reply = m_api->postDeviceHeartbeat(m_appID, request.toJson());
-        connect(reply, &QNetworkReply::finished, this, [=]() {
-            if (reply->error() != QNetworkReply::NoError) {
-                std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
-                reply->deleteLater();
-                return;
-            } else {
-                QJsonDocument response = QJsonDocument::fromJson(reply->readAll());
-                reconcileAgentConfig(response);
-            }
-
-            reply->deleteLater();
-        });
+        if (enabled()) {
+            qDebug() << "Heartbeat not sent";
+        }
     }
 }
 
