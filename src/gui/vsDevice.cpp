@@ -126,6 +126,9 @@ VsDevice::VsDevice(VsAuth* auth, VsApi* api, QObject* parent)
 VsDevice::~VsDevice()
 {
     m_sendVolumeTimer.stop();
+    if (!m_deviceSocketPtr.isNull()) {
+        m_deviceSocketPtr->closeSocket();
+    }
     stopJackTrip();
     stopPinger();
 }
@@ -217,25 +220,6 @@ void VsDevice::removeApp()
 // sendHeartbeat is reponsible for sending liveness heartbeats to the API
 void VsDevice::sendHeartbeat()
 {
-    if (m_webSocket == nullptr) {
-        m_webSocket =
-            new VsWebSocket(QUrl(QStringLiteral("wss://%1/api/devices/%2/heartbeat")
-                                     .arg(m_api->getApiHost(), m_appID)),
-                            m_auth->accessToken(), m_apiPrefix, m_apiSecret);
-        connect(m_webSocket, &VsWebSocket::textMessageReceived, this,
-                &VsDevice::onTextMessageReceived);
-    }
-
-    if (enabled()) {
-        // When the device is connected to a server, use the underlying wss connection
-        if (!m_webSocket->isValid()) {
-            m_webSocket->openSocket();
-        }
-    } else {
-        // When the device is not connected to a server, use the standard API
-        m_webSocket->closeSocket();
-    }
-
     QString now = QDateTime::currentDateTimeUtc().toString(Qt::ISODate);
 
     QJsonObject json = {
@@ -278,9 +262,9 @@ void VsDevice::sendHeartbeat()
 
     QJsonDocument request = QJsonDocument(json);
 
-    if (m_webSocket->isValid()) {
+    if (!m_deviceSocketPtr.isNull() && m_deviceSocketPtr->isValid()) {
         // Send heartbeat via websocket
-        m_webSocket->sendMessage(request.toJson());
+        m_deviceSocketPtr->sendMessage(request.toJson());
     } else {
         // Send heartbeat via POST API
         QNetworkReply* reply = m_api->postDeviceHeartbeat(m_appID, request.toJson());
@@ -302,9 +286,6 @@ void VsDevice::sendHeartbeat()
 void VsDevice::reconnect()
 {
     stopPinger();
-    if (m_webSocket != nullptr && m_webSocket->isValid()) {
-        m_webSocket->closeSocket();
-    }
     if (!m_jackTrip.isNull()) {
         m_jackTrip->stop();
         m_jackTrip.reset();
@@ -423,6 +404,17 @@ JackTrip* VsDevice::initJackTrip(
 // startJackTrip starts the current jacktrip process if applicable
 void VsDevice::startJackTrip()
 {
+    // setup websocket listener
+    m_deviceSocketPtr.reset(
+        new VsWebSocket(QUrl(QStringLiteral("wss://%1/api/devices/%2/heartbeat")
+                                 .arg(m_api->getApiHost(), m_appID)),
+                        m_auth->accessToken(), m_apiPrefix, m_apiSecret));
+    connect(m_deviceSocketPtr.get(), &VsWebSocket::textMessageReceived, this,
+            &VsDevice::onTextMessageReceived);
+    connect(m_deviceSocketPtr.get(), &VsWebSocket::disconnected, this,
+            &VsDevice::restartDeviceSocket);
+    m_deviceSocketPtr->openSocket();
+
     if (!m_jackTrip.isNull()) {
 #ifdef WAIRTOHUB                      // WAIR
         m_jackTrip->startProcess(0);  // for WAIR compatibility, ID in jack client name
@@ -437,8 +429,8 @@ void VsDevice::stopJackTrip()
 {
     QMutexLocker stopLock(&m_stopMutex);
     if (!m_jackTrip.isNull()) {
-        if (m_webSocket != nullptr && m_webSocket->isValid()) {
-            m_webSocket->closeSocket();
+        if (!m_deviceSocketPtr.isNull()) {
+            m_deviceSocketPtr->closeSocket();
         }
         setServerId("");
         m_jackTrip->stop();
@@ -604,6 +596,15 @@ void VsDevice::onTextMessageReceived(const QString& message)
     }
 
     reconcileAgentConfig(newState);
+}
+
+void VsDevice::restartDeviceSocket()
+{
+    if (m_deviceAgentConfig[QStringLiteral("serverId")].toString() != "") {
+        if (!m_deviceSocketPtr.isNull()) {
+            m_deviceSocketPtr->openSocket();
+        }
+    }
 }
 
 // registerJTAsDevice creates the emulated device belonging to the current user

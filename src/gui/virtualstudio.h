@@ -268,7 +268,6 @@ class VirtualStudio : public QObject
 
     VsQuickView m_view;
     VsServerInfo m_currentStudio;
-    QScopedPointer<JackTrip> m_jackTrip;
     QSharedPointer<QJackTrip> m_standardWindow;
     QScopedPointer<QNetworkAccessManager> m_networkAccessManager;
     QScopedPointer<VsAuth> m_auth;

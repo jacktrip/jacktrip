@@ -839,6 +839,28 @@ void VirtualStudio::completeConnection()
 
         m_connectionState = QStringLiteral("Connecting...");
         emit connectionStateChanged();
+        m_devicePtr->setServerId(m_currentStudio.id());
+        connect(m_devicePtr.get(), &VsDevice::updateNetworkStats, this,
+                &VirtualStudio::updatedStats);
+        connect(m_devicePtr.get(), &VsDevice::updatedCaptureVolumeFromServer,
+                m_audioConfigPtr.get(), &VsAudio::setInputVolume);
+        connect(m_devicePtr.get(), &VsDevice::updatedCaptureMuteFromServer,
+                m_audioConfigPtr.get(), &VsAudio::setInputMuted);
+        connect(m_devicePtr.get(), &VsDevice::updatedPlaybackVolumeFromServer,
+                m_audioConfigPtr.get(), &VsAudio::setOutputVolume);
+        connect(m_devicePtr.get(), &VsDevice::updatedMonitorVolume,
+                m_audioConfigPtr.get(), &VsAudio::setMonitorVolume);
+        connect(m_audioConfigPtr.get(), &VsAudio::updatedInputVolume, m_devicePtr.get(),
+                &VsDevice::updateCaptureVolume);
+        connect(m_audioConfigPtr.get(), &VsAudio::updatedInputMuted, m_devicePtr.get(),
+                &VsDevice::updateCaptureMute);
+        connect(m_audioConfigPtr.get(), &VsAudio::updatedOutputVolume, m_devicePtr.get(),
+                &VsDevice::updatePlaybackVolume);
+        connect(m_audioConfigPtr.get(), &VsAudio::updatedMonitorVolume, m_devicePtr.get(),
+                &VsDevice::updateMonitorVolume);
+        connect(m_audioConfigPtr.get(), &VsAudio::highLatencyFlagChanged,
+                m_devicePtr.get(), &VsDevice::updateHighLatencyFlag);
+
         m_devicePtr->startJackTrip();
         m_devicePtr->startPinger(&m_currentStudio);
 
@@ -1058,6 +1080,11 @@ void VirtualStudio::handleDeeplinkRequest(const QUrl& link)
 
 void VirtualStudio::exit()
 {
+    // if multiple close events are received, emit the signalExit to force-quit the app
+    if (m_isExiting) {
+        emit signalExit();
+    }
+
     // triggering isExitingChanged will force any WebEngine things to close properly
     m_isExiting = true;
     emit isExitingChanged();
@@ -1214,8 +1241,6 @@ void VirtualStudio::processError(const QString& errorMessage)
 void VirtualStudio::receivedConnectionFromPeer()
 {
     // Connect via API
-    m_devicePtr->setServerId(m_currentStudio.id());
-
     m_connectionState = QStringLiteral("Connected");
     emit connectionStateChanged();
     std::cout << "Received connection" << std::endl;

@@ -100,6 +100,7 @@ class VsDevice : public QObject
    private slots:
     void terminateJackTrip();
     void onTextMessageReceived(const QString& message);
+    void restartDeviceSocket();
     void sendLevels();
 
    private:
@@ -119,7 +120,7 @@ class VsDevice : public QObject
     QString m_apiSecret;
     QMutex m_stopMutex;
     QJsonObject m_deviceAgentConfig;
-    VsWebSocket* m_webSocket = NULL;
+    QScopedPointer<VsWebSocket> m_deviceSocketPtr;
     QScopedPointer<JackTrip> m_jackTrip;
     QRandomGenerator m_randomizer;
     float m_captureVolume  = 1.0;

@@ -65,6 +65,11 @@ Rectangle {
         return texts;
     }
 
+    MouseArea {
+        anchors.fill: parent
+        propagateComposedEvents: false
+    }
+
     RowLayout {
         id: layout
         anchors.fill: parent
