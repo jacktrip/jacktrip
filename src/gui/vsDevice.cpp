@@ -38,7 +38,7 @@
 #include "vsDevice.h"
 
 // Constructor
-VsDevice::VsDevice(QSharedPointer<VsAuth> auth, QSharedPointer<VsApi> api,
+VsDevice::VsDevice(QSharedPointer<VsAuth>& auth, QSharedPointer<VsApi>& api,
                    QObject* parent)
     : QObject(parent), m_auth(auth), m_api(api), m_sendVolumeTimer(this)
 {
@@ -389,7 +389,7 @@ JackTrip* VsDevice::initJackTrip(
 }
 
 // startJackTrip starts the current jacktrip process if applicable
-void VsDevice::startJackTrip(QString serverId)
+void VsDevice::startJackTrip(const QString& serverId)
 {
     setServerId(serverId);
 

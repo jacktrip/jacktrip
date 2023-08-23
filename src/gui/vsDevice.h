@@ -60,7 +60,7 @@ class VsDevice : public QObject
 
    public:
     // Constructor
-    explicit VsDevice(QSharedPointer<VsAuth> auth, QSharedPointer<VsApi> api,
+    explicit VsDevice(QSharedPointer<VsAuth>& auth, QSharedPointer<VsApi>& api,
                       QObject* parent = nullptr);
     virtual ~VsDevice();
 
@@ -75,7 +75,7 @@ class VsDevice : public QObject
                            int baseInputChannel, int numChannelsIn, int baseOutputChannel,
                            int numChannelsOut, int inputMixMode, int bufferSize,
                            int bufferStrategy, VsServerInfo* studioInfo);
-    void startJackTrip(QString serverId);
+    void startJackTrip(const QString& serverId);
     void stopJackTrip();
     void reconcileAgentConfig(QJsonDocument newState);
 
