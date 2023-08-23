@@ -60,7 +60,8 @@ class VsDevice : public QObject
 
    public:
     // Constructor
-    explicit VsDevice(QSharedPointer<VsAuth> auth, QSharedPointer<VsApi> api, QObject* parent = nullptr);
+    explicit VsDevice(QSharedPointer<VsAuth> auth, QSharedPointer<VsApi> api,
+                      QObject* parent = nullptr);
     virtual ~VsDevice();
 
     // Public functions

@@ -38,7 +38,8 @@
 #include "vsDevice.h"
 
 // Constructor
-VsDevice::VsDevice(QSharedPointer<VsAuth> auth, QSharedPointer<VsApi> api, QObject* parent)
+VsDevice::VsDevice(QSharedPointer<VsAuth> auth, QSharedPointer<VsApi> api,
+                   QObject* parent)
     : QObject(parent), m_auth(auth), m_api(api), m_sendVolumeTimer(this)
 {
     QSettings settings;
