@@ -99,16 +99,6 @@ VsAudio::VsAudio(QObject* parent)
 {
     loadSettings();
 
-#ifdef RT_AUDIO
-    m_backend = AudioBackendType::RTAUDIO;
-#elif defined(USE_WEAK_JACK)
-    // Check if Jack is available
-    if (have_libjack() != 0) {
-        // TODO: Handle this more gracefully, even if it's an unlikely scenario
-        qFatal("JACK not found and not built with RtAudio support.");
-    }
-#endif  // USE_WEAK_JACK
-
     QJsonObject element;
     element.insert(QString::fromStdString("label"), QString::fromStdString("Mono"));
     element.insert(QString::fromStdString("value"),
@@ -256,8 +246,6 @@ void VsAudio::setBufferStrategy(int bufStrategy)
 
 void VsAudio::setNumInputChannels(int numChannels)
 {
-    if (m_backend != AudioBackendType::RTAUDIO)
-        return;
     if (numChannels == m_numInputChannels)
         return;
     m_numInputChannels = numChannels;
@@ -266,8 +254,6 @@ void VsAudio::setNumInputChannels(int numChannels)
 
 void VsAudio::setNumOutputChannels(int numChannels)
 {
-    if (m_backend != AudioBackendType::RTAUDIO)
-        return;
     if (numChannels == m_numOutputChannels)
         return;
     m_numOutputChannels = numChannels;
@@ -276,8 +262,6 @@ void VsAudio::setNumOutputChannels(int numChannels)
 
 void VsAudio::setBaseInputChannel(int baseChannel)
 {
-    if (m_backend != AudioBackendType::RTAUDIO)
-        return;
     if (baseChannel == m_baseInputChannel)
         return;
     m_baseInputChannel = baseChannel;
@@ -287,8 +271,6 @@ void VsAudio::setBaseInputChannel(int baseChannel)
 
 void VsAudio::setBaseOutputChannel(int baseChannel)
 {
-    if (m_backend != AudioBackendType::RTAUDIO)
-        return;
     if (baseChannel == m_baseOutputChannel)
         return;
     m_baseOutputChannel = baseChannel;
@@ -298,8 +280,6 @@ void VsAudio::setBaseOutputChannel(int baseChannel)
 
 void VsAudio::setInputMixMode(const int mode)
 {
-    if (m_backend != AudioBackendType::RTAUDIO)
-        return;
     if (mode == m_inputMixMode)
         return;
     m_inputMixMode = mode;
@@ -452,22 +432,38 @@ void VsAudio::loadSettings()
     // note: we should always reset input muted to false; otherwise, bad things
     setInputMuted(false);
     // setInputMuted(settings.value(QStringLiteral("InMuted"), false).toBool());
-    AudioBackendType audioBackend = m_backend;
+
+    // load audio backend
+    AudioBackendType audioBackend;
     if constexpr (isBackendAvailable<AudioInterfaceMode::ALL>()) {
-        audioBackend = (settings.value(QStringLiteral("Backend"), 0).toInt() == 1)
-                           ? AudioBackendType::RTAUDIO
-                           : AudioBackendType::JACK;
+        audioBackend =
+            (settings.value(QStringLiteral("Backend"), AudioBackendType::RTAUDIO).toInt()
+             == 1)
+                ? AudioBackendType::RTAUDIO
+                : AudioBackendType::JACK;
     } else if constexpr (isBackendAvailable<AudioInterfaceMode::RTAUDIO>()) {
         audioBackend = AudioBackendType::RTAUDIO;
     } else {
         audioBackend = AudioBackendType::JACK;
     }
+#ifdef USE_WEAK_JACK
+    // Check if Jack is available
+    if (have_libjack() != 0) {
+#ifdef RT_AUDIO
+        audioBackend = AudioBackendType::RTAUDIO;
+#else
+        // TODO: Handle this more gracefully, even if it's an unlikely scenario
+        qFatal("JACK not found and not built with RtAudio support.");
+#endif  // RT_AUDIO
+    }
+#endif  // USE_WEAK_JACK
     if (audioBackend != m_backend) {
         setAudioBackend(audioBackend == AudioBackendType::RTAUDIO
                             ? QStringLiteral("RtAudio")
                             : QStringLiteral("JACK"));
     }
 
+    // load input and output devices
     QString inputDevice  = settings.value(QStringLiteral("InputDevice"), "").toString();
     QString outputDevice = settings.value(QStringLiteral("OutputDevice"), "").toString();
     if (inputDevice == QStringLiteral("(default)")) {
@@ -575,10 +571,11 @@ void VsAudio::updatedInputVuMeasurements(const float* valuesInDecibels, int numC
 #ifdef RT_AUDIO
     // For certain specific cases, copy the first channel's value into the second
     // channel's value
-    if ((m_inputMixMode == static_cast<int>(AudioInterface::MONO)
-         && m_numInputChannels == 1)
-        || (m_inputMixMode == static_cast<int>(AudioInterface::MIXTOMONO)
-            && m_numInputChannels == 2)) {
+    if (getUseRtAudio()
+        && ((m_inputMixMode == static_cast<int>(AudioInterface::MONO)
+             && m_numInputChannels == 1)
+            || (m_inputMixMode == static_cast<int>(AudioInterface::MIXTOMONO)
+                && m_numInputChannels == 2))) {
         m_inputMeterLevels[1] = m_inputMeterLevels[0];
     }
 #endif
@@ -828,19 +825,20 @@ AudioInterface* VsAudio::newAudioInterface(JackTrip* jackTripPtr)
 
 AudioInterface* VsAudio::newJackAudioInterface([[maybe_unused]] JackTrip* jackTripPtr)
 {
-    AudioInterface* ifPtr = nullptr;
+    static const int numJackChannels = 2;
+    AudioInterface* ifPtr            = nullptr;
 #ifndef NO_JACK
     if constexpr (isBackendAvailable<AudioInterfaceMode::ALL>()
                   || isBackendAvailable<AudioInterfaceMode::JACK>()) {
         QVarLengthArray<int> inputChans;
         QVarLengthArray<int> outputChans;
-        inputChans.resize(getNumInputChannels());
-        outputChans.resize(getNumOutputChannels());
+        inputChans.resize(numJackChannels);
+        outputChans.resize(numJackChannels);
 
-        for (int i = 0; i < getNumInputChannels(); i++) {
+        for (int i = 0; i < numJackChannels; i++) {
             inputChans[i] = 1 + i;
         }
-        for (int i = 0; i < getNumOutputChannels(); i++) {
+        for (int i = 0; i < numJackChannels; i++) {
             outputChans[i] = 1 + i;
         }
 

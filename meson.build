@@ -36,6 +36,14 @@ if get_option('buildtype') == 'release'
 	c_defines += ['-DNDEBUG']
 endif
 
+git_tags_cmd = run_command('git', 'describe', '--tags', check: false)
+git_hash_cmd = run_command('git', 'rev-parse', '--short', 'HEAD', check: false)
+if git_tags_cmd.returncode() == 0 and git_hash_cmd.returncode() == 0
+	git_tags = git_tags_cmd.stdout().strip()
+	git_hash = git_hash_cmd.stdout().strip()
+	defines += ['-DJACKTRIP_BUILD_INFO=' + git_tags + '-' + git_hash]
+endif
+
 src = [	'src/DataProtocol.cpp',
 	'src/JackTrip.cpp',
 	'src/ProcessPlugin.cpp',
