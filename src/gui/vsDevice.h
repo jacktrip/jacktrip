@@ -60,7 +60,7 @@ class VsDevice : public QObject
 
    public:
     // Constructor
-    explicit VsDevice(VsAuth* auth, VsApi* api, QObject* parent = nullptr);
+    explicit VsDevice(QSharedPointer<VsAuth> auth, QSharedPointer<VsApi> api, QObject* parent = nullptr);
     virtual ~VsDevice();
 
     // Public functions
@@ -109,9 +109,9 @@ class VsDevice : public QObject
     int selectBindPort();
     QString randomString(int stringLength);
 
-    VsAuth* m_auth     = nullptr;
-    VsApi* m_api       = nullptr;
-    VsPinger* m_pinger = NULL;
+    QSharedPointer<VsAuth> m_auth;
+    QSharedPointer<VsApi> m_api;
+    QScopedPointer<VsPinger> m_pinger;
 
     QString m_appID;
     QString m_appUUID;

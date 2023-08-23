@@ -1103,7 +1103,7 @@ void VirtualStudio::slotAuthSucceeded()
     m_vsModeActive = true;
 
     // initialize new VsDevice and wire up signals/slots before registering app
-    m_devicePtr.reset(new VsDevice(m_auth.data(), m_api.data()));
+    m_devicePtr.reset(new VsDevice(m_auth, m_api));
     connect(m_devicePtr.get(), &VsDevice::updateNetworkStats, this,
             &VirtualStudio::updatedStats);
     connect(m_devicePtr.get(), &VsDevice::updatedCaptureVolumeFromServer,

@@ -38,7 +38,7 @@
 #include "vsDevice.h"
 
 // Constructor
-VsDevice::VsDevice(VsAuth* auth, VsApi* api, QObject* parent)
+VsDevice::VsDevice(QSharedPointer<VsAuth> auth, QSharedPointer<VsApi> api, QObject* parent)
     : QObject(parent), m_auth(auth), m_api(api), m_sendVolumeTimer(this)
 {
     QSettings settings;
@@ -126,9 +126,6 @@ VsDevice::VsDevice(VsAuth* auth, VsApi* api, QObject* parent)
 VsDevice::~VsDevice()
 {
     m_sendVolumeTimer.stop();
-    if (!m_deviceSocketPtr.isNull()) {
-        m_deviceSocketPtr->closeSocket();
-    }
     stopJackTrip();
     stopPinger();
 }
@@ -232,7 +229,7 @@ void VsDevice::sendHeartbeat()
     };
 
     // Add stats to heartbeat body
-    if (m_pinger != nullptr) {
+    if (!m_pinger.isNull()) {
         VsPinger::PingStat stats = m_pinger->getPingStats();
 
         // API server expects RTTs to be in int64 nanoseconds, so we must convert
@@ -467,16 +464,16 @@ VsPinger* VsDevice::startPinger(VsServerInfo* studioInfo)
     QString host = studioInfo->sessionId();
     host.append(QString::fromStdString(".jacktrip.cloud"));
 
-    m_pinger = new VsPinger(QString::fromStdString("wss"), host,
-                            QString::fromStdString("/ping"));
-
-    return m_pinger;
+    m_pinger.reset(
+        new VsPinger(QString::fromStdString("wss"), host,
+                     QString::fromStdString("/ping")));
+    return m_pinger.get();
 }
 
 // stopPinger stops the Virtual Studio pinger
 void VsDevice::stopPinger()
 {
-    if (m_pinger != nullptr) {
+    if (!m_pinger.isNull()) {
         m_pinger->stop();
         m_pinger->unsetToken();
     }
@@ -557,7 +554,7 @@ void VsDevice::onTextMessageReceived(const QString& message)
     // We have a heartbeat from which we can read the studio auth token
     // Use it to set up and start the pinger connection
     QString token = newState["authToken"].toString();
-    if (m_pinger != nullptr && !m_pinger->active()) {
+    if (!m_pinger.isNull() && !m_pinger->active()) {
         m_pinger->setToken(token);
         m_pinger->start();
     }
