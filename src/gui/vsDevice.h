@@ -74,7 +74,7 @@ class VsDevice : public QObject
                            int baseInputChannel, int numChannelsIn, int baseOutputChannel,
                            int numChannelsOut, int inputMixMode, int bufferSize,
                            int bufferStrategy, VsServerInfo* studioInfo);
-    void startJackTrip();
+    void startJackTrip(QString serverId);
     void stopJackTrip();
     void reconcileAgentConfig(QJsonDocument newState);
 

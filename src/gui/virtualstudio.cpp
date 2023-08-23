@@ -839,29 +839,7 @@ void VirtualStudio::completeConnection()
 
         m_connectionState = QStringLiteral("Connecting...");
         emit connectionStateChanged();
-        m_devicePtr->setServerId(m_currentStudio.id());
-        connect(m_devicePtr.get(), &VsDevice::updateNetworkStats, this,
-                &VirtualStudio::updatedStats);
-        connect(m_devicePtr.get(), &VsDevice::updatedCaptureVolumeFromServer,
-                m_audioConfigPtr.get(), &VsAudio::setInputVolume);
-        connect(m_devicePtr.get(), &VsDevice::updatedCaptureMuteFromServer,
-                m_audioConfigPtr.get(), &VsAudio::setInputMuted);
-        connect(m_devicePtr.get(), &VsDevice::updatedPlaybackVolumeFromServer,
-                m_audioConfigPtr.get(), &VsAudio::setOutputVolume);
-        connect(m_devicePtr.get(), &VsDevice::updatedMonitorVolume,
-                m_audioConfigPtr.get(), &VsAudio::setMonitorVolume);
-        connect(m_audioConfigPtr.get(), &VsAudio::updatedInputVolume, m_devicePtr.get(),
-                &VsDevice::updateCaptureVolume);
-        connect(m_audioConfigPtr.get(), &VsAudio::updatedInputMuted, m_devicePtr.get(),
-                &VsDevice::updateCaptureMute);
-        connect(m_audioConfigPtr.get(), &VsAudio::updatedOutputVolume, m_devicePtr.get(),
-                &VsDevice::updatePlaybackVolume);
-        connect(m_audioConfigPtr.get(), &VsAudio::updatedMonitorVolume, m_devicePtr.get(),
-                &VsDevice::updateMonitorVolume);
-        connect(m_audioConfigPtr.get(), &VsAudio::highLatencyFlagChanged,
-                m_devicePtr.get(), &VsDevice::updateHighLatencyFlag);
-
-        m_devicePtr->startJackTrip();
+        m_devicePtr->startJackTrip(m_currentStudio.id());
         m_devicePtr->startPinger(&m_currentStudio);
 
         // update device error messages and warnings based on latest results
@@ -918,7 +896,6 @@ void VirtualStudio::disconnect()
     if (m_jackTripRunning) {
         m_devicePtr->stopPinger();
         m_devicePtr->stopJackTrip();
-        m_devicePtr->disconnect();
         // persist any volume level or device changes
         m_audioConfigPtr->saveSettings();
     } else {

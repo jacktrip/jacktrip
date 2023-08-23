@@ -402,8 +402,10 @@ JackTrip* VsDevice::initJackTrip(
 }
 
 // startJackTrip starts the current jacktrip process if applicable
-void VsDevice::startJackTrip()
+void VsDevice::startJackTrip(QString serverId)
 {
+    setServerId(serverId);
+
     // setup websocket listener
     m_deviceSocketPtr.reset(
         new VsWebSocket(QUrl(QStringLiteral("wss://%1/api/devices/%2/heartbeat")
