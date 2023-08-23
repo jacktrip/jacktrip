@@ -435,6 +435,7 @@ void VsDevice::startJackTrip()
 // stopJackTrip stops the current jacktrip process if applicable
 void VsDevice::stopJackTrip()
 {
+    QMutexLocker stopLock(&m_stopMutex);
     if (!m_jackTrip.isNull()) {
         if (m_webSocket != nullptr && m_webSocket->isValid()) {
             m_webSocket->closeSocket();

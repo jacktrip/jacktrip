@@ -38,6 +38,7 @@
 #ifndef VSDEVICE_H
 #define VSDEVICE_H
 
+#include <QMutex>
 #include <QObject>
 #include <QString>
 #include <QTimer>
@@ -116,6 +117,7 @@ class VsDevice : public QObject
     QString m_token;
     QString m_apiPrefix;
     QString m_apiSecret;
+    QMutex m_stopMutex;
     QJsonObject m_deviceAgentConfig;
     VsWebSocket* m_webSocket = NULL;
     QScopedPointer<JackTrip> m_jackTrip;
