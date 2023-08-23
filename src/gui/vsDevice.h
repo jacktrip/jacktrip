@@ -38,6 +38,7 @@
 #ifndef VSDEVICE_H
 #define VSDEVICE_H
 
+#include <QMutex>
 #include <QObject>
 #include <QString>
 #include <QTimer>
@@ -59,7 +60,8 @@ class VsDevice : public QObject
 
    public:
     // Constructor
-    explicit VsDevice(VsAuth* auth, VsApi* api, QObject* parent = nullptr);
+    explicit VsDevice(QSharedPointer<VsAuth>& auth, QSharedPointer<VsApi>& api,
+                      QObject* parent = nullptr);
     virtual ~VsDevice();
 
     // Public functions
@@ -73,7 +75,7 @@ class VsDevice : public QObject
                            int baseInputChannel, int numChannelsIn, int baseOutputChannel,
                            int numChannelsOut, int inputMixMode, int bufferSize,
                            int bufferStrategy, VsServerInfo* studioInfo);
-    void startJackTrip();
+    void startJackTrip(const QString& serverId);
     void stopJackTrip();
     void reconcileAgentConfig(QJsonDocument newState);
 
@@ -99,6 +101,7 @@ class VsDevice : public QObject
    private slots:
     void terminateJackTrip();
     void onTextMessageReceived(const QString& message);
+    void restartDeviceSocket();
     void sendLevels();
 
    private:
@@ -107,17 +110,18 @@ class VsDevice : public QObject
     int selectBindPort();
     QString randomString(int stringLength);
 
-    VsAuth* m_auth     = nullptr;
-    VsApi* m_api       = nullptr;
-    VsPinger* m_pinger = NULL;
+    QSharedPointer<VsAuth> m_auth;
+    QSharedPointer<VsApi> m_api;
+    QScopedPointer<VsPinger> m_pinger;
 
     QString m_appID;
     QString m_appUUID;
     QString m_token;
     QString m_apiPrefix;
     QString m_apiSecret;
+    QMutex m_stopMutex;
     QJsonObject m_deviceAgentConfig;
-    VsWebSocket* m_webSocket = NULL;
+    QScopedPointer<VsWebSocket> m_deviceSocketPtr;
     QScopedPointer<JackTrip> m_jackTrip;
     QRandomGenerator m_randomizer;
     float m_captureVolume  = 1.0;

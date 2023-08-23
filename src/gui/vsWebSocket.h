@@ -62,6 +62,7 @@ class VsWebSocket : public QObject
 
    signals:
     void textMessageReceived(const QString& message);
+    void disconnected();
 
    private slots:
     void onConnected();

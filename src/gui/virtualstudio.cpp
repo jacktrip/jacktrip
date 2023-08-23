@@ -839,7 +839,7 @@ void VirtualStudio::completeConnection()
 
         m_connectionState = QStringLiteral("Connecting...");
         emit connectionStateChanged();
-        m_devicePtr->startJackTrip();
+        m_devicePtr->startJackTrip(m_currentStudio.id());
         m_devicePtr->startPinger(&m_currentStudio);
 
         // update device error messages and warnings based on latest results
@@ -896,7 +896,6 @@ void VirtualStudio::disconnect()
     if (m_jackTripRunning) {
         m_devicePtr->stopPinger();
         m_devicePtr->stopJackTrip();
-        m_devicePtr->disconnect();
         // persist any volume level or device changes
         m_audioConfigPtr->saveSettings();
     } else {
@@ -1058,6 +1057,11 @@ void VirtualStudio::handleDeeplinkRequest(const QUrl& link)
 
 void VirtualStudio::exit()
 {
+    // if multiple close events are received, emit the signalExit to force-quit the app
+    if (m_isExiting) {
+        emit signalExit();
+    }
+
     // triggering isExitingChanged will force any WebEngine things to close properly
     m_isExiting = true;
     emit isExitingChanged();
@@ -1099,7 +1103,7 @@ void VirtualStudio::slotAuthSucceeded()
     m_vsModeActive = true;
 
     // initialize new VsDevice and wire up signals/slots before registering app
-    m_devicePtr.reset(new VsDevice(m_auth.data(), m_api.data()));
+    m_devicePtr.reset(new VsDevice(m_auth, m_api));
     connect(m_devicePtr.get(), &VsDevice::updateNetworkStats, this,
             &VirtualStudio::updatedStats);
     connect(m_devicePtr.get(), &VsDevice::updatedCaptureVolumeFromServer,
@@ -1214,8 +1218,6 @@ void VirtualStudio::processError(const QString& errorMessage)
 void VirtualStudio::receivedConnectionFromPeer()
 {
     // Connect via API
-    m_devicePtr->setServerId(m_currentStudio.id());
-
     m_connectionState = QStringLiteral("Connected");
     emit connectionStateChanged();
     std::cout << "Received connection" << std::endl;
