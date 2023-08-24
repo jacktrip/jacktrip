@@ -240,6 +240,7 @@ class VirtualStudio : public QObject
     void slotAuthSucceeded();
     void receivedConnectionFromPeer();
     void handleWebsocketMessage(const QString& msg);
+    void restartStudioSocket();
     void launchBrowser(const QUrl& url);
     void updatedStats(const QJsonObject& stats);
     void processError(const QString& errorMessage);
