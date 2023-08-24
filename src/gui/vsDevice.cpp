@@ -245,7 +245,8 @@ void VsDevice::setServerId(QString serverId)
 void VsDevice::sendLevels()
 {
     // Add latest volume and mute values to heartbeat body
-    QJsonObject json = {{QLatin1String("captureVolume"),
+    QJsonObject json = {{QLatin1String("version"), QLatin1String(gVersion)},
+                        {QLatin1String("captureVolume"),
                          (int)(m_audioConfigPtr->getInputVolume() * 100.0)},
                         {QLatin1String("captureMute"), m_audioConfigPtr->getInputMuted()},
                         {QLatin1String("playbackVolume"),
