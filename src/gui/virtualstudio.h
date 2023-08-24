@@ -52,6 +52,7 @@
 #include <QWebChannel>
 #include <QWebSocketServer>
 
+#include "qjacktrip.h"
 #include "vsConstants.h"
 #include "vsQuickView.h"
 #include "vsServerInfo.h"
@@ -61,7 +62,6 @@
 #endif
 
 class JackTrip;
-class QJackTrip;
 class VsAudio;
 class VsApi;
 class VsAuth;
@@ -127,7 +127,6 @@ class VirtualStudio : public QObject
     void setStandardWindow(QSharedPointer<QJackTrip> window);
     void show();
     void raiseToTop();
-    bool vsModeActive();
 
     int webChannelPort();
     bool showFirstRun();
@@ -294,12 +293,12 @@ class VirtualStudio : public QObject
     QString m_userId;
     QString m_apiHost               = PROD_API_HOST;
     ReconnectState m_reconnectState = ReconnectState::NOT_RECONNECTING;
+    QJackTrip::uiModeT m_uiMode     = QJackTrip::UNSET;
 
     bool m_firstRefresh           = true;
     bool m_jackTripRunning        = false;
     bool m_showFirstRun           = false;
     bool m_checkSsl               = true;
-    bool m_vsModeActive           = false;
     bool m_refreshInProgress      = false;
     bool m_onConnectedScreen      = false;
     bool m_isExiting              = false;

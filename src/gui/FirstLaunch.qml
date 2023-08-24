@@ -66,7 +66,7 @@ Item {
         }
     }
     Text {
-        text: "• Connect to Virtual Studios<br>• Broadcast on JackTrip Radio<br>• Apply FX with Soundscapes"
+        text: "• Seamless Audio &amp; Video<br>• Recording &amp; Livestreaming<br>• No Servers Required"
         textFormat: Text.StyledText
         font.family: "Poppins"
         font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
