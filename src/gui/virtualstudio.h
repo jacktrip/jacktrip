@@ -274,7 +274,7 @@ class VirtualStudio : public QObject
     QSharedPointer<VsApi> m_api;
     QScopedPointer<VsDevice> m_devicePtr;
     QScopedPointer<VsWebSocket> m_studioSocketPtr;
-    QScopedPointer<VsAudio> m_audioConfigPtr;
+    QSharedPointer<VsAudio> m_audioConfigPtr;
     QVector<VsServerInfoPointer> m_servers;
     QVector<VsServerInfo*> m_serverModel;  //< qml doesn't like smart pointers
     QScopedPointer<QWebSocketServer> m_webChannelServer;
