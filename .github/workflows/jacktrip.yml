@@ -374,7 +374,7 @@ jobs:
             QT_PATH="c:\qt\qt-${{ matrix.qt-version }}-${{ matrix.qt-type }}"
             echo "$QT_PATH\bin" >> $GITHUB_PATH
             echo "QT_PATH=$QT_PATH" >> $GITHUB_ENV
-            echo "PKG_CONFIG_PATH=$QT_PATH\lib\pkgconfig" >> $GITHUB_ENV
+            echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH;$QT_PATH/lib/pkgconfig;$GITHUB_WORKSPACE/win" >> $GITHUB_ENV
             echo "CMAKE_PREFIX_PATH=$QT_PATH" >> $GITHUB_ENV
           else
             QT_PATH="/opt/qt-${{ matrix.qt-version }}-${{ matrix.qt-type }}"

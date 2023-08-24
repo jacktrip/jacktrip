@@ -99,6 +99,18 @@ VsAudio::VsAudio(QObject* parent)
 {
     loadSettings();
 
+    if (isBackendAvailable<AudioInterfaceMode::RTAUDIO>()) {
+        if (!jackIsAvailable()) {
+            m_audioBackendComboModel = {"RtAudio"};
+        }
+    } else {
+        if (!jackIsAvailable()) {
+            // shouldn't happen
+            m_audioBackendComboModel = {};
+        }
+        m_audioBackendComboModel = {"JACK"};
+    }
+
     QJsonObject element;
     element.insert(QString::fromStdString("label"), QString::fromStdString("Mono"));
     element.insert(QString::fromStdString("value"),
@@ -182,6 +194,20 @@ bool VsAudio::backendAvailable() const
     }
 }
 
+bool VsAudio::jackIsAvailable() const
+{
+    if constexpr (isBackendAvailable<AudioInterfaceMode::JACK>()) {
+#ifdef USE_WEAK_JACK
+        // Check if Jack is available
+        return (have_libjack() == 0);
+#else
+        return true;
+#endif
+    } else {
+        return false;
+    }
+}
+
 void VsAudio::setAudioReady(bool ready)
 {
     if (ready == m_audioReady)
@@ -202,9 +228,8 @@ void VsAudio::setScanningDevices(bool b)
     emit signalScanningDevicesChanged();
 }
 
-void VsAudio::setAudioBackend([[maybe_unused]] const QString& backend)
+void VsAudio::setAudioBackend(const QString& backend)
 {
-#ifdef RT_AUDIO
     bool useRtAudio = (backend == QStringLiteral("RtAudio"));
     if (useRtAudio) {
         if (getUseRtAudio())
@@ -217,7 +242,6 @@ void VsAudio::setAudioBackend([[maybe_unused]] const QString& backend)
         m_backend = AudioBackendType::JACK;
     }
     emit audioBackendChanged(useRtAudio);
-#endif
 }
 
 void VsAudio::setFeedbackDetectionEnabled(bool enabled)
@@ -766,33 +790,43 @@ AudioInterface* VsAudio::newAudioInterface(JackTrip* jackTripPtr)
     AudioInterface* ifPtr = nullptr;
 
     // Create AudioInterface Client Object
-    if (m_backend == VsAudio::AudioBackendType::JACK) {
-        if constexpr (isBackendAvailable<AudioInterfaceMode::ALL>()
-                      || isBackendAvailable<AudioInterfaceMode::JACK>()) {
+    if (isBackendAvailable<AudioInterfaceMode::ALL>() && jackIsAvailable()) {
+        // all backends area available
+        if (m_backend == VsAudio::AudioBackendType::JACK) {
+            qDebug() << "Using JACK backend";
             ifPtr = newJackAudioInterface(jackTripPtr);
         } else {
-            if constexpr (!isBackendAvailable<AudioInterfaceMode::RTAUDIO>()) {
-                throw std::runtime_error(
-                    "JackTrip was compiled without RtAudio and can't find JACK. "
-                    "In order to use JackTrip, you'll need to install JACK or "
-                    "rebuild with RtAudio support.");
-                std::exit(1);
-            }
-#ifdef RT_AUDIO
+            qDebug() << "Using RtAudio backend";
             ifPtr = newRtAudioInterface(jackTripPtr);
-#endif
         }
-    } else if (m_backend == VsAudio::AudioBackendType::RTAUDIO) {
-        if constexpr (!isBackendAvailable<AudioInterfaceMode::RTAUDIO>()) {
-            throw std::runtime_error(
-                "JackTrip was compiled without RtAudio and can't find JACK. "
-                "In order to use JackTrip, you'll need to install JACK or "
-                "rebuild with RtAudio support.");
-            std::exit(1);
+    } else if (isBackendAvailable<AudioInterfaceMode::RTAUDIO>()) {
+        // only RtAudio backend is available
+        if (m_backend != VsAudio::AudioBackendType::RTAUDIO) {
+            // A different backend was requested
+            qDebug()
+                << "Switching audio backend to RtAudio since nothing else is available";
+            setAudioBackend(QStringLiteral("RtAudio"));
+        } else {
+            qDebug() << "Using RtAudio backend";
         }
-#ifdef RT_AUDIO
         ifPtr = newRtAudioInterface(jackTripPtr);
-#endif
+    } else if (m_backend == VsAudio::AudioBackendType::JACK && jackIsAvailable()) {
+        // only Jack backend is available
+        if (m_backend != VsAudio::AudioBackendType::JACK) {
+            // A different backend was requested
+            qDebug() << "Switching audio backend to Jack since nothing else is available";
+            setAudioBackend(QStringLiteral("JACK"));
+        } else {
+            qDebug() << "Using JACK backend";
+        }
+        ifPtr = newJackAudioInterface(jackTripPtr);
+    } else {
+        // no backends are available!
+        throw std::runtime_error(
+            "JackTrip was compiled without RtAudio and can't find JACK. "
+            "In order to use JackTrip, you'll need to install JACK or "
+            "rebuild with RtAudio support.");
+        std::exit(1);
     }
 
     if (ifPtr == nullptr)
@@ -951,11 +985,12 @@ void VsAudioWorker::openAudioInterface()
     m_audioInterfacePtr->initPlugins(false);
     m_audioInterfacePtr->startProcess();
 
-#ifndef NO_JACK
     if (m_parentPtr->m_backend == VsAudio::AudioBackendType::JACK) {
+        // this crashes on windows
+#ifndef _WIN32
         m_audioInterfacePtr->connectDefaultPorts();
-    }
 #endif
+    }
 
     m_parentPtr->updateDeviceMessages(*m_audioInterfacePtr);
     m_parentPtr->setAudioReady(true);

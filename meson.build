@@ -98,7 +98,11 @@ subdir('linux')
 
 jack_dep = dependency('jack', required: get_option('jack'))
 if not jack_dep.found()
+	if get_option('weakjack') == true
+		error('unable to find jack and weakjack requested')
+	endif
 	defines += '-DNO_JACK'
+	c_defines += '-DNO_JACK'
 else
 	src += 	['src/JackAudioInterface.cpp',
 		'src/JMess.cpp',
@@ -109,7 +113,7 @@ else
 		src += 'externals/weakjack/weak_libjack.c'
 		defines += '-DUSE_WEAK_JACK'
 		c_defines += '-DUSE_WEAK_JACK'
-		deps += jack_dep.partial_dependency(includes: true)
+		deps += jack_dep.partial_dependency(compile_args: true, includes: true)
 		deps += compiler.find_library('dl', required : false)
 	else
 		deps += jack_dep

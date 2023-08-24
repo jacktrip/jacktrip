@@ -119,6 +119,8 @@ class VirtualStudio : public QObject
                    windowStateUpdated)
     Q_PROPERTY(QString apiHost READ apiHost WRITE setApiHost NOTIFY apiHostChanged)
     Q_PROPERTY(bool vsFtux READ vsFtux CONSTANT)
+    Q_PROPERTY(
+        QStringList updateChannelComboModel READ getUpdateChannelComboModel CONSTANT)
 
    public:
     explicit VirtualStudio(bool firstRun = false, QObject* parent = nullptr);
@@ -175,6 +177,10 @@ class VirtualStudio : public QObject
     void setApiHost(QString host);
     bool vsFtux();
     bool isExiting();
+    const QStringList& getUpdateChannelComboModel() const
+    {
+        return m_updateChannelOptions;
+    }
 
    public slots:
     void toStandard();
