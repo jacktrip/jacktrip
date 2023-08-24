@@ -136,7 +136,8 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
         emit updatedNetworkOutage(m_networkOutage);
     });
 
-    if (vsFtux() || hasRefreshToken()) {
+    if ((m_uiMode == QJackTrip::UNSET && vsFtux())
+        || (m_uiMode == QJackTrip::VIRTUAL_STUDIO)) {
         m_windowState = QStringLiteral("login");
     }
 
@@ -190,7 +191,8 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     connect(&m_view, &VsQuickView::windowClose, this, &VirtualStudio::exit,
             Qt::QueuedConnection);
 
-    if (vsFtux() || hasRefreshToken()) {
+    if ((m_uiMode == QJackTrip::UNSET && vsFtux())
+        || (m_uiMode == QJackTrip::VIRTUAL_STUDIO)) {
         login();
     }
 }
@@ -226,11 +228,6 @@ void VirtualStudio::raiseToTop()
 {
     m_view.show();             // Restore from systray
     m_view.requestActivate();  // Raise to top
-}
-
-bool VirtualStudio::vsModeActive()
-{
-    return m_vsModeActive;
 }
 
 int VirtualStudio::webChannelPort()
@@ -622,16 +619,17 @@ void VirtualStudio::joinStudio()
 
 void VirtualStudio::toStandard()
 {
-    if (!m_standardWindow.isNull()) {
-        m_view.hide();
-        m_standardWindow->show();
-        m_vsModeActive = false;
-    }
+    if (m_standardWindow.isNull())
+        qDebug() << "Unable to switch modes: standard window is missing!";
 
-    m_webChannelServer->close();
+    m_view.hide();
+    m_standardWindow->show();
 
     QSettings settings;
-    settings.setValue(QStringLiteral("UiMode"), QJackTrip::STANDARD);
+    m_uiMode = QJackTrip::STANDARD;
+    settings.setValue(QStringLiteral("UiMode"), m_uiMode);
+
+    m_webChannelServer->close();
     m_refreshTimer.stop();
     m_heartbeatTimer.stop();
 
@@ -643,6 +641,13 @@ void VirtualStudio::toStandard()
 
 void VirtualStudio::toVirtualStudio()
 {
+    QSettings settings;
+    m_uiMode = QJackTrip::VIRTUAL_STUDIO;
+    settings.setValue(QStringLiteral("UiMode"), m_uiMode);
+
+    if (m_windowState == "start") {
+        setWindowState(QStringLiteral("login"));
+    }
     if (m_windowState == "login") {
         login();
     }
@@ -712,6 +717,8 @@ void VirtualStudio::refreshStudios(int index, bool signalRefresh)
 void VirtualStudio::loadSettings()
 {
     QSettings settings;
+    m_uiMode = static_cast<QJackTrip::uiModeT>(
+        settings.value(QStringLiteral("UiMode"), QJackTrip::UNSET).toInt());
     setUpdateChannel(
         settings.value(QStringLiteral("UpdateChannel"), "stable").toString().toLower());
 
@@ -1025,6 +1032,19 @@ void VirtualStudio::handleDeeplinkRequest(const QUrl& link)
     setStudioToJoin(link);
     raiseToTop();
 
+    // Switch to virtual studio mode, if necessary
+    // Note that this doesn't change the startup preference
+    if (m_uiMode != QJackTrip::VIRTUAL_STUDIO) {
+        m_standardWindow->hide();
+        m_view.show();
+        if (m_windowState == "start") {
+            setWindowState(QStringLiteral("login"));
+        }
+        if (m_windowState == "login") {
+            login();
+        }
+    }
+
     // special case if on settings screen
     if (m_windowState == "settings") {
         if (showDeviceSetup()) {
@@ -1095,12 +1115,10 @@ void VirtualStudio::slotAuthSucceeded()
     emit hasRefreshTokenChanged();
 
     QSettings settings;
-    settings.setValue(QStringLiteral("UiMode"), QJackTrip::VIRTUAL_STUDIO);
     settings.beginGroup(QStringLiteral("VirtualStudio"));
     settings.setValue(QStringLiteral("RefreshToken"), m_refreshToken);
     settings.setValue(QStringLiteral("UserId"), m_userId);
     settings.endGroup();
-    m_vsModeActive = true;
 
     // initialize new VsDevice and wire up signals/slots before registering app
     m_devicePtr.reset(new VsDevice(m_auth, m_api, m_audioConfigPtr));

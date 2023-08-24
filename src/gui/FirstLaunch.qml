@@ -66,7 +66,7 @@ Item {
         }
     }
     Text {
-        text: "• Connect to Virtual Studios<br>• Broadcast on JackTrip Radio<br>• Apply FX with Soundscapes"
+        text: "• Seamless Audio &amp; Video<br>• Recording &amp; Livestreaming<br>• No Servers Required"
         textFormat: Text.StyledText
         font.family: "Poppins"
         font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
@@ -81,7 +81,7 @@ Item {
     Image {
         source: "JTVS.png"
         x: parent.width / 2 - (265 * virtualstudio.uiScale); y: 420 * virtualstudio.uiScale
-        width: 234 * virtualstudio.uiScale; height: 201.48 * virtualstudio.uiScale;
+        width: 234 * virtualstudio.uiScale; height: 196 * virtualstudio.uiScale;
     }
 
     Button {
