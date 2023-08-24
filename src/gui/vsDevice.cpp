@@ -37,6 +37,8 @@
 
 #include "vsDevice.h"
 
+#include <QEventLoop>
+
 // Constructor
 VsDevice::VsDevice(QSharedPointer<VsAuth>& auth, QSharedPointer<VsApi>& api,
                    QSharedPointer<VsAudio>& audio, QObject* parent)
@@ -53,6 +55,10 @@ VsDevice::VsDevice(QSharedPointer<VsAuth>& auth, QSharedPointer<VsApi>& api,
     m_appUUID   = settings.value(QStringLiteral("AppUUID"), "").toString();
     m_appID     = settings.value(QStringLiteral("AppID"), "").toString();
     settings.endGroup();
+
+    if (!m_appID.isEmpty()) {
+        std::cout << "Device ID: " << m_appID.toStdString() << std::endl;
+    }
 
     m_sendVolumeTimer.setSingleShot(true);
     connect(&m_sendVolumeTimer, &QTimer::timeout, this, &VsDevice::sendLevels);
@@ -123,33 +129,32 @@ void VsDevice::registerApp()
 // removeApp deletes the emulated device
 void VsDevice::removeApp()
 {
-    if (m_appID == "") {
+    if (m_appID.isEmpty()) {
         return;
     }
 
     QNetworkReply* reply = m_api->deleteDevice(m_appID);
-    connect(reply, &QNetworkReply::finished, this, [=]() {
-        if (reply->error() != QNetworkReply::NoError) {
-            std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
-            reply->deleteLater();
-            return;
-        } else {
-            m_appID.clear();
-            m_appUUID.clear();
-            m_apiPrefix.clear();
-            m_apiSecret.clear();
+    QEventLoop loop;
+    connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+    loop.exec();
 
-            QSettings settings;
-            settings.beginGroup(QStringLiteral("VirtualStudio"));
-            settings.remove(QStringLiteral("AppID"));
-            settings.remove(QStringLiteral("AppUUID"));
-            settings.remove(QStringLiteral("ApiPrefix"));
-            settings.remove(QStringLiteral("ApiSecret"));
-            settings.endGroup();
-        }
+    if (reply->error() != QNetworkReply::NoError) {
+        std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
+    } else {
+        m_appID.clear();
+        m_appUUID.clear();
+        m_apiPrefix.clear();
+        m_apiSecret.clear();
 
-        reply->deleteLater();
-    });
+        QSettings settings;
+        settings.beginGroup(QStringLiteral("VirtualStudio"));
+        settings.remove(QStringLiteral("AppID"));
+        settings.remove(QStringLiteral("AppUUID"));
+        settings.remove(QStringLiteral("ApiPrefix"));
+        settings.remove(QStringLiteral("ApiSecret"));
+        settings.endGroup();
+    }
+    reply->deleteLater();
 }
 
 // sendHeartbeat is reponsible for sending liveness heartbeats to the API
@@ -244,6 +249,9 @@ void VsDevice::setServerId(QString serverId)
 
 void VsDevice::sendLevels()
 {
+    if (m_appID.isEmpty()) {
+        return;
+    }
     // Add latest volume and mute values to heartbeat body
     QJsonObject json = {{QLatin1String("version"), QLatin1String(gVersion)},
                         {QLatin1String("captureVolume"),
@@ -260,8 +268,6 @@ void VsDevice::sendLevels()
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
-            reply->deleteLater();
-            return;
         }
         reply->deleteLater();
     });
@@ -549,6 +555,7 @@ void VsDevice::registerJTAsDevice()
             settings.setValue(QStringLiteral("AppID"), m_appID);
             settings.endGroup();
 
+            std::cout << "Device ID: " << m_appID.toStdString() << std::endl;
             sendHeartbeat();
         }
 
