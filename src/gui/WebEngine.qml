@@ -47,9 +47,10 @@ Item {
         `
     }
 
-    Item {
+    Rectangle {
         id: web
         anchors.fill: parent
+        color: backgroundColour
 
         property string accessToken: auth.isAuthenticated && Boolean(auth.accessToken) ? auth.accessToken : ""
         property string studioId: virtualstudio.currentStudio.id
