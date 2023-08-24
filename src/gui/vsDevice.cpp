@@ -65,6 +65,7 @@ VsDevice::VsDevice(QSharedPointer<VsAuth>& auth, QSharedPointer<VsApi>& api,
 
     // Set server levels to stored versions
     QJsonObject json = {
+        {QLatin1String("version"), QLatin1String(gVersion)},
         {QLatin1String("captureVolume"), (int)(m_captureVolume * 100.0)},
         {QLatin1String("captureMute"), m_captureMute},
         {QLatin1String("playbackVolume"), (int)(m_playbackVolume * 100.0)},
