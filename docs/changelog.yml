@@ -1,25 +1,20 @@
-- Version: "2.0.0-beta2"
-  Date: 2023-08-22
-  Description:
-  - (added) VS feedback survey request after leaving studios
-  - (added) VS indicators for high latency audio interfaces
-  - (added) VS audio buttons in toolbar now collapse/expand settings
-  - (added) VS support for refreshing devices while connected to studio
-  - (updated) Improved user experience when using the RtAudio backend
-  - (fixed) Crashes when audio interfaces don't support buffer size
-  - (fixed) Crashes when audio interfaces are unplugged while active
-  - (fixed) VS Settings will now revert back when Cancel is selected
-  - (fixed) Bugs with Virtual Studio deep links and connections stats
-- Version: "2.0.0-beta1"
-  Date: 2023-08-04
+- Version: "2.0.0"
+  Date: 2023-08-28
   Description:
   - (added) VS Mode integrated video and other UI updates
-  - (added) VS Mode improved ASIO device warnings for Windows
+  - (added) VS support for refreshing devices while connected to studio
+  - (added) VS feedback survey request after leaving studios
+  - (added) VS Mode improved warnings for high latency audio devices
   - (added) VS Mode improved getting started recommendations
   - (updated) official builds now use Qt 6 and RtAudio 6
   - (updated) official Windows builds now use schannel and MSVC
   - (updated) Simple-FFT dependency copied into source tree
+  - (updated) Improved user experience when using the RtAudio backend
+  - (fixed) Crashes when audio interfaces don't support buffer size
+  - (fixed) Crashes when audio interfaces are unplugged while active
   - (fixed) Blacklisting Steinberg Generic ASIO driver due to crashes
+  - (fixed) Bugs with Virtual Studio deep links and connections stats
+  - (fixed) VS Settings will now revert back when Cancel is selected
   - (fixed) VS Mode device levels no longer reset on first registration
 - Version: "1.10.1"
   Date: 2023-08-03

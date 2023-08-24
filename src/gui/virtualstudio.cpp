@@ -1103,27 +1103,17 @@ void VirtualStudio::slotAuthSucceeded()
     m_vsModeActive = true;
 
     // initialize new VsDevice and wire up signals/slots before registering app
-    m_devicePtr.reset(new VsDevice(m_auth, m_api));
+    m_devicePtr.reset(new VsDevice(m_auth, m_api, m_audioConfigPtr));
     connect(m_devicePtr.get(), &VsDevice::updateNetworkStats, this,
             &VirtualStudio::updatedStats);
-    connect(m_devicePtr.get(), &VsDevice::updatedCaptureVolumeFromServer,
-            m_audioConfigPtr.get(), &VsAudio::setInputVolume);
-    connect(m_devicePtr.get(), &VsDevice::updatedCaptureMuteFromServer,
-            m_audioConfigPtr.get(), &VsAudio::setInputMuted);
-    connect(m_devicePtr.get(), &VsDevice::updatedPlaybackVolumeFromServer,
-            m_audioConfigPtr.get(), &VsAudio::setOutputVolume);
-    connect(m_devicePtr.get(), &VsDevice::updatedMonitorVolume, m_audioConfigPtr.get(),
-            &VsAudio::setMonitorVolume);
     connect(m_audioConfigPtr.get(), &VsAudio::updatedInputVolume, m_devicePtr.get(),
-            &VsDevice::updateCaptureVolume);
+            &VsDevice::syncDeviceSettings);
     connect(m_audioConfigPtr.get(), &VsAudio::updatedInputMuted, m_devicePtr.get(),
-            &VsDevice::updateCaptureMute);
+            &VsDevice::syncDeviceSettings);
     connect(m_audioConfigPtr.get(), &VsAudio::updatedOutputVolume, m_devicePtr.get(),
-            &VsDevice::updatePlaybackVolume);
+            &VsDevice::syncDeviceSettings);
     connect(m_audioConfigPtr.get(), &VsAudio::updatedMonitorVolume, m_devicePtr.get(),
-            &VsDevice::updateMonitorVolume);
-    connect(m_audioConfigPtr.get(), &VsAudio::highLatencyFlagChanged, m_devicePtr.get(),
-            &VsDevice::updateHighLatencyFlag);
+            &VsDevice::syncDeviceSettings);
 
     m_devicePtr->registerApp();
 

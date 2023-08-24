@@ -39,8 +39,12 @@
 
 // Constructor
 VsDevice::VsDevice(QSharedPointer<VsAuth>& auth, QSharedPointer<VsApi>& api,
-                   QObject* parent)
-    : QObject(parent), m_auth(auth), m_api(api), m_sendVolumeTimer(this)
+                   QSharedPointer<VsAudio>& audio, QObject* parent)
+    : QObject(parent)
+    , m_auth(auth)
+    , m_api(api)
+    , m_audioConfigPtr(audio)
+    , m_sendVolumeTimer(this)
 {
     QSettings settings;
     settings.beginGroup(QStringLiteral("VirtualStudio"));
@@ -49,80 +53,12 @@ VsDevice::VsDevice(QSharedPointer<VsAuth>& auth, QSharedPointer<VsApi>& api,
     m_appUUID   = settings.value(QStringLiteral("AppUUID"), "").toString();
     m_appID     = settings.value(QStringLiteral("AppID"), "").toString();
     settings.endGroup();
-    settings.beginGroup(QStringLiteral("Audio"));
-    m_captureVolume =
-        (float)settings.value(QStringLiteral("InMultiplier"), 1.0).toDouble();
-    m_captureMute = settings.value(QStringLiteral("InMuted"), false).toBool();
-    m_playbackVolume =
-        (float)settings.value(QStringLiteral("OutMultiplier"), 1.0).toDouble();
-    m_playbackMute = settings.value(QStringLiteral("OutMuted"), false).toBool();
-    m_monitorVolume =
-        (float)settings.value(QStringLiteral("MonMultiplier"), 0).toDouble();
-    settings.endGroup();
 
     m_sendVolumeTimer.setSingleShot(true);
     connect(&m_sendVolumeTimer, &QTimer::timeout, this, &VsDevice::sendLevels);
 
     // Set server levels to stored versions
-    QJsonObject json = {
-        {QLatin1String("version"), QLatin1String(gVersion)},
-        {QLatin1String("captureVolume"), (int)(m_captureVolume * 100.0)},
-        {QLatin1String("captureMute"), m_captureMute},
-        {QLatin1String("playbackVolume"), (int)(m_playbackVolume * 100.0)},
-        {QLatin1String("playbackMute"), m_playbackMute},
-        {QLatin1String("monitorVolume"), (int)(m_monitorVolume * 100.0)}};
-    QJsonDocument request = QJsonDocument(json);
-
-    QNetworkReply* reply = m_api->updateDevice(m_appID, request.toJson());
-    connect(reply, &QNetworkReply::finished, this, [=]() {
-        // Got error
-        if (reply->error() != QNetworkReply::NoError) {
-            QVariant statusCode =
-                reply->attribute(QNetworkRequest::HttpStatusCodeAttribute);
-            if (!statusCode.isValid()) {
-                std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
-                reply->deleteLater();
-                return;
-            }
-        } else {
-            QByteArray response       = reply->readAll();
-            QJsonDocument deviceState = QJsonDocument::fromJson(response);
-
-            // capture (input) volume
-            m_captureVolume =
-                (float)(deviceState.object()[QStringLiteral("captureVolume")].toDouble()
-                        / 100.0);
-            m_captureMute = deviceState.object()[QStringLiteral("captureMute")].toBool();
-            emit updatedCaptureVolumeFromServer(m_captureVolume);
-            emit updatedCaptureMuteFromServer(m_captureMute);
-
-            // playback (output) volume
-            m_playbackVolume =
-                (float)(deviceState.object()[QStringLiteral("playbackVolume")].toDouble()
-                        / 100.0);
-            m_playbackMute =
-                deviceState.object()[QStringLiteral("playbackMute")].toBool();
-            emit updatedPlaybackVolumeFromServer(m_playbackVolume);
-            emit updatedPlaybackMuteFromServer(m_playbackMute);
-
-            // monitor volume
-            m_monitorVolume =
-                (float)(deviceState.object()[QStringLiteral("monitorVolume")].toDouble()
-                        / 100.0);
-            emit updatedMonitorVolume(m_monitorVolume);
-        }
-
-        QSettings settings;
-        settings.beginGroup(QStringLiteral("Audio"));
-        settings.setValue(QStringLiteral("InMultiplier"), m_captureVolume);
-        settings.setValue(QStringLiteral("InMuted"), m_captureMute);
-        settings.setValue(QStringLiteral("OutMultiplier"), m_playbackVolume);
-        settings.setValue(QStringLiteral("OutMuted"), m_playbackMute);
-        settings.setValue(QStringLiteral("MonMultiplier"), m_monitorVolume);
-        settings.endGroup();
-
-        reply->deleteLater();
-    });
+    sendLevels();
 }
 
 VsDevice::~VsDevice()
@@ -244,7 +180,8 @@ void VsDevice::sendHeartbeat()
         json.insert(QLatin1String("max_rtt"), (qint64)(stats.maxRtt * ns_per_ms));
         json.insert(QLatin1String("avg_rtt"), (qint64)(stats.avgRtt * ns_per_ms));
         json.insert(QLatin1String("stddev_rtt"), (qint64)(stats.stdDevRtt * ns_per_ms));
-        json.insert(QLatin1String("high_latency"), m_highLatencyFlag);
+        json.insert(QLatin1String("high_latency"),
+                    m_audioConfigPtr->getHighLatencyFlag());
 
         // For the internal application UI, ms will suffice. No conversion needed
         QJsonObject pingStats = {};
@@ -255,7 +192,8 @@ void VsDevice::sendHeartbeat()
         pingStats.insert(QLatin1String("avgRtt"), ((int)(10 * stats.avgRtt)) / 10.0);
         pingStats.insert(QLatin1String("stdDevRtt"),
                          ((int)(10 * stats.stdDevRtt)) / 10.0);
-        pingStats.insert(QLatin1String("highLatency"), m_highLatencyFlag);
+        pingStats.insert(QLatin1String("highLatency"),
+                         m_audioConfigPtr->getHighLatencyFlag());
         emit updateNetworkStats(pingStats);
     }
 
@@ -307,12 +245,16 @@ void VsDevice::setServerId(QString serverId)
 void VsDevice::sendLevels()
 {
     // Add latest volume and mute values to heartbeat body
-    QJsonObject json = {
-        {QLatin1String("captureVolume"), (int)(m_captureVolume * 100.0)},
-        {QLatin1String("captureMute"), m_captureMute},
-        {QLatin1String("playbackVolume"), (int)(m_playbackVolume * 100.0)},
-        {QLatin1String("playbackMute"), m_playbackMute},
-        {QLatin1String("monitorVolume"), (int)(m_monitorVolume * 100.0)}};
+    QJsonObject json = {{QLatin1String("version"), QLatin1String(gVersion)},
+                        {QLatin1String("captureVolume"),
+                         (int)(m_audioConfigPtr->getInputVolume() * 100.0)},
+                        {QLatin1String("captureMute"), m_audioConfigPtr->getInputMuted()},
+                        {QLatin1String("playbackVolume"),
+                         (int)(m_audioConfigPtr->getOutputVolume() * 100.0)},
+                        {QLatin1String("playbackMute"), false},
+                        {QLatin1String("monitorVolume"),
+                         (int)(m_audioConfigPtr->getMonitorVolume() * 100.0)}};
+
     QJsonDocument request = QJsonDocument(json);
     QNetworkReply* reply  = m_api->updateDevice(m_appID, request.toJson());
     connect(reply, &QNetworkReply::finished, this, [=]() {
@@ -320,16 +262,6 @@ void VsDevice::sendLevels()
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
             reply->deleteLater();
             return;
-        } else {
-            // update settings object with new levels
-            QSettings settings;
-            settings.beginGroup(QStringLiteral("Audio"));
-            settings.setValue(QStringLiteral("InMultiplier"), m_captureVolume);
-            settings.setValue(QStringLiteral("InMuted"), m_captureMute);
-            settings.setValue(QStringLiteral("OutMultiplier"), m_playbackVolume);
-            settings.setValue(QStringLiteral("OutMuted"), m_playbackMute);
-            settings.setValue(QStringLiteral("MonMultiplier"), m_monitorVolume);
-            settings.endGroup();
         }
         reply->deleteLater();
     });
@@ -469,60 +401,10 @@ void VsDevice::stopPinger()
     }
 }
 
-// updateCaptureVolume sets VsDevice's capture (input) volume to the provided float
-void VsDevice::updateCaptureVolume(float multiplier)
+// syncDeviceSettings updates volume/mute controls against the API
+void VsDevice::syncDeviceSettings()
 {
-    if (multiplier == m_captureVolume) {
-        return;
-    }
-    m_captureVolume = multiplier;
     m_sendVolumeTimer.start(100);
-}
-
-// updateCaptureMute sets VsDevice's capture (input) mute to the provided boolean
-void VsDevice::updateCaptureMute(bool muted)
-{
-    if (muted == m_captureMute) {
-        return;
-    }
-    m_captureMute = muted;
-    m_sendVolumeTimer.start(100);
-}
-
-// updatePlaybackVolume sets VsDevice's playback (output) volume to the provided float
-void VsDevice::updatePlaybackVolume(float multiplier)
-{
-    if (multiplier == m_playbackVolume) {
-        return;
-    }
-    m_playbackVolume = multiplier;
-    m_sendVolumeTimer.start(100);
-}
-
-// updatePlaybackMute sets VsDevice's playback (output) mute to the provided boolean
-void VsDevice::updatePlaybackMute(bool muted)
-{
-    if (muted == m_playbackMute) {
-        return;
-    }
-    m_playbackMute = muted;
-    m_sendVolumeTimer.start(100);
-}
-
-// updateMonitorVolume sets VsDevice's monitor to the provided float
-void VsDevice::updateMonitorVolume(float multiplier)
-{
-    if (multiplier == m_monitorVolume) {
-        return;
-    }
-    m_monitorVolume = multiplier;
-    m_sendVolumeTimer.start(100);
-}
-
-// updateHighLatencyFlag sets VsDevice's high latency flag to the provided boolean
-void VsDevice::updateHighLatencyFlag(bool highLatency)
-{
-    m_highLatencyFlag = highLatency;
 }
 
 // terminateJackTrip is a slot intended to be triggered on jacktrip process signals
@@ -540,6 +422,7 @@ void VsDevice::terminateJackTrip()
 void VsDevice::onTextMessageReceived(const QString& message)
 {
     QJsonDocument newState = QJsonDocument::fromJson(message.toUtf8());
+    QJsonObject newObj     = newState.object();
 
     // We have a heartbeat from which we can read the studio auth token
     // Use it to set up and start the pinger connection
@@ -550,39 +433,17 @@ void VsDevice::onTextMessageReceived(const QString& message)
     }
 
     // capture (input) volume
-    bool newMute    = newState["captureMute"].toBool();
-    float newVolume = (float)(newState["captureVolume"].toDouble() / 100.0);
-
-    if (newVolume != m_captureVolume) {
-        m_captureVolume = newVolume;
-        emit updatedCaptureVolumeFromServer(m_captureVolume);
-    }
-
-    if (newMute != m_captureMute) {
-        m_captureMute = newMute;
-        emit updatedCaptureMuteFromServer(m_captureMute);
-    }
+    m_audioConfigPtr->setInputVolume(
+        (float)(newObj[QStringLiteral("captureVolume")].toDouble() / 100.0));
+    m_audioConfigPtr->setInputMuted(newObj[QStringLiteral("captureMute")].toBool());
 
     // playback (output) volume
-    newMute   = newState["playbackMute"].toBool();
-    newVolume = (float)(newState["playbackVolume"].toDouble() / 100.0);
-
-    if (newVolume != m_playbackVolume) {
-        m_playbackVolume = newVolume;
-        emit updatedPlaybackVolumeFromServer(m_playbackVolume);
-    }
-
-    if (newMute != m_playbackMute) {
-        m_playbackMute = newMute;
-        emit updatedPlaybackMuteFromServer(m_playbackMute);
-    }
+    m_audioConfigPtr->setOutputVolume(
+        (float)(newObj[QStringLiteral("playbackVolume")].toDouble() / 100.0));
 
     // monitor volume
-    newVolume = (float)(newState["monitorVolume"].toDouble() / 100.0);
-    if (newVolume != m_monitorVolume) {
-        m_monitorVolume = newVolume;
-        emit updatedMonitorVolume(m_monitorVolume);
-    }
+    m_audioConfigPtr->setMonitorVolume(
+        (float)(newObj[QStringLiteral("monitorVolume")].toDouble() / 100.0));
 
     reconcileAgentConfig(newState);
 }
@@ -668,24 +529,20 @@ void VsDevice::registerJTAsDevice()
             QJsonObject newObject  = response.object();
 
             m_appID = newObject[QStringLiteral("id")].toString();
+
             // capture (input) volume
-            m_captureVolume =
-                (float)(newObject[QStringLiteral("captureVolume")].toDouble() / 100.0);
-            m_captureMute = newObject[QStringLiteral("captureMute")].toBool();
-            emit updatedCaptureVolumeFromServer(m_captureVolume);
-            emit updatedCaptureMuteFromServer(m_captureMute);
+            m_audioConfigPtr->setInputVolume(
+                (float)(newObject[QStringLiteral("captureVolume")].toDouble() / 100.0));
+            m_audioConfigPtr->setInputMuted(
+                newObject[QStringLiteral("captureMute")].toBool());
 
             // playback (output) volume
-            m_playbackVolume =
-                (float)(newObject[QStringLiteral("playbackVolume")].toDouble() / 100.0);
-            m_playbackMute = newObject[QStringLiteral("playbackMute")].toBool();
-            emit updatedPlaybackVolumeFromServer(m_playbackVolume);
-            emit updatedPlaybackMuteFromServer(m_playbackMute);
+            m_audioConfigPtr->setOutputVolume(
+                (float)(newObject[QStringLiteral("playbackVolume")].toDouble() / 100.0));
 
             // monitor volume
-            m_monitorVolume =
-                (float)(newObject[QStringLiteral("monitorVolume")].toDouble() / 100.0);
-            emit updatedMonitorVolume(m_monitorVolume);
+            m_audioConfigPtr->setMonitorVolume(
+                (float)(newObject[QStringLiteral("monitorVolume")].toDouble() / 100.0));
 
             QSettings settings;
             settings.beginGroup(QStringLiteral("VirtualStudio"));

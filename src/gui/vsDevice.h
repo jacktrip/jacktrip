@@ -48,6 +48,7 @@
 #include "../JackTrip.h"
 #include "../jacktrip_globals.h"
 #include "vsApi.h"
+#include "vsAudio.h"
 #include "vsAuth.h"
 #include "vsConstants.h"
 #include "vsPinger.h"
@@ -61,7 +62,7 @@ class VsDevice : public QObject
    public:
     // Constructor
     explicit VsDevice(QSharedPointer<VsAuth>& auth, QSharedPointer<VsApi>& api,
-                      QObject* parent = nullptr);
+                      QSharedPointer<VsAudio>& audio, QObject* parent = nullptr);
     virtual ~VsDevice();
 
     // Public functions
@@ -84,19 +85,9 @@ class VsDevice : public QObject
 
    signals:
     void updateNetworkStats(QJsonObject stats);
-    void updatedCaptureVolumeFromServer(float multiplier);
-    void updatedCaptureMuteFromServer(bool muted);
-    void updatedPlaybackVolumeFromServer(float multiplier);
-    void updatedPlaybackMuteFromServer(bool muted);
-    void updatedMonitorVolume(float multiplier);
 
    public slots:
-    void updateCaptureVolume(float multiplier);
-    void updateCaptureMute(bool muted);
-    void updatePlaybackVolume(float multiplier);
-    void updatePlaybackMute(bool muted);
-    void updateMonitorVolume(float multiplier);
-    void updateHighLatencyFlag(bool highLatency);
+    void syncDeviceSettings();
 
    private slots:
     void terminateJackTrip();
@@ -112,6 +103,7 @@ class VsDevice : public QObject
 
     QSharedPointer<VsAuth> m_auth;
     QSharedPointer<VsApi> m_api;
+    QSharedPointer<VsAudio> m_audioConfigPtr;
     QScopedPointer<VsPinger> m_pinger;
 
     QString m_appID;
@@ -124,11 +116,6 @@ class VsDevice : public QObject
     QScopedPointer<VsWebSocket> m_deviceSocketPtr;
     QScopedPointer<JackTrip> m_jackTrip;
     QRandomGenerator m_randomizer;
-    float m_captureVolume  = 1.0;
-    bool m_captureMute     = false;
-    float m_playbackVolume = 1.0;
-    bool m_playbackMute    = false;
-    float m_monitorVolume  = 0;
     QTimer m_sendVolumeTimer;
     bool m_highLatencyFlag = false;
 };
