@@ -478,6 +478,7 @@ jobs:
           if [[ "${{ matrix.build-system }}" == meson ]]; then 
             DESKTOP_FILE_PATH=$BUILD_PATH/linux/org.jacktrip.JackTrip.desktop
           fi
+          echo "DESKTOP_FILE_PATH=$DESKTOP_FILE_PATH" >> $GITHUB_ENV
           desktop-file-validate $DESKTOP_FILE_PATH
       - name: set signing secrets for macOS
         if: runner.os == 'macOS' && (matrix.bundle-path || matrix.installer-path) && needs.check-secrets.outputs.should_run == 'true'
@@ -568,7 +569,7 @@ jobs:
             if [[ "${{ matrix.name }}" == "Linux-x64-meson-gcc-shared-bundled_rtaudio" ]]; then
               cp $GITHUB_WORKSPACE/linux/icons/jacktrip.svg $BUILD_PATH/org.jacktrip.JackTrip.svg
               cp $GITHUB_WORKSPACE/linux/icons/jacktrip_48x48.png $BUILD_PATH/org.jacktrip.JackTrip.png
-              zip -j $ZIPFILE $BUILD_PATH/org.jacktrip.JackTrip.desktop $BUILD_PATH/org.jacktrip.JackTrip.svg $BUILD_PATH/org.jacktrip.JackTrip.png $GITHUB_WORKSPACE/linux/README.md
+              zip -j $ZIPFILE $DESKTOP_FILE_PATH $BUILD_PATH/jacktrip.1.gz $BUILD_PATH/org.jacktrip.JackTrip.svg $BUILD_PATH/org.jacktrip.JackTrip.png $GITHUB_WORKSPACE/linux/README.md
             fi
             cd $GITHUB_WORKSPACE # we need to be in the root project directory for adding licenses
             zip -r $ZIPFILE LICENSE.md LICENSES

@@ -27,6 +27,13 @@ desktop-file-install --dir=$HOME/.local/share/applications org.jacktrip.JackTrip
 update-desktop-database $HOME/.local/share/applications
 ```
 
+To install the manual page for JackTrip:
+
+```
+sudo mkdir -p /usr/local/share/man/man1
+sudo cp jacktrip.1.gz /usr/local/share/man/man1
+```
+
 When using jacktrip with the JACK Audio Connection Kit (or Pipewire), ensure that your user account has permission to schedule realtime processes.
 `ulimit -r` should return a value greater than 40.
 
