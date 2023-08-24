@@ -82,26 +82,10 @@ Rectangle {
                 anchors.fill: parent
                 spacing: 2
 
-                Button {
+                Item {
                     Layout.preferredHeight: 20
                     Layout.preferredWidth: 40
                     Layout.alignment: Qt.AlignHCenter
-
-                    id: expandButton
-                    background: Rectangle {
-                        radius: 4 * virtualstudio.uiScale
-                        color: expandButton.down ? browserButtonPressedColour : (expandButton.hovered ? browserButtonHoverColour : browserButtonColour)
-                    }
-                    onClicked: virtualstudio.collapseDeviceControls = !showMinified
-
-                    AppIcon {
-                        id: expandIcon
-                        anchors { verticalCenter: parent.verticalCenter; horizontalCenter: parent.horizontalCenter }
-                        width: 20 * virtualstudio.uiScale
-                        height: 20 * virtualstudio.uiScale
-                        icon.source: showMinified ? "expand_less.svg" : "expand_more.svg"
-                        onClicked: virtualstudio.collapseDeviceControls = !showMinified
-                    }
                 }
 
                 Item {

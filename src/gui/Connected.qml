@@ -87,8 +87,9 @@ Item {
     Connections {
         target: virtualstudio
 
+        // self-managed servers do not support minified controls so keep it full size
         function onCollapseDeviceControlsChanged(collapseDeviceControls) {
-            deviceControlsGroup.showMinified = collapseDeviceControls;
+            deviceControlsGroup.showMinified = virtualstudio.currentStudio.isManaged && collapseDeviceControls;
         }
     }
 }
