@@ -284,14 +284,22 @@ jacktrip = executable('jacktrip', src, qres_files, ui_files, moc_files, include_
 help2man = find_program('help2man', required: false)
 if (host_machine.system() == 'linux')
 	if help2man.found()
+		gzip = find_program('gzip', required: false)
 		help2man_opts = [
 			'--no-info',
 			'--section=1']
-		custom_target('jacktrip.1',
+		manfile = custom_target('jacktrip.1',
 			output: 'jacktrip.1',
 			command: [help2man, help2man_opts, '--output=@OUTPUT@', jacktrip],
-			install: true,
+			install: not gzip.found(),
 			install_dir: get_option('mandir') / 'man1')
+		if gzip.found()
+			custom_target('jacktrip.1.gz',
+				output: 'jacktrip.1.gz',
+				command: [gzip, '-k', manfile],
+				install: true,
+				install_dir: get_option('mandir') / 'man1')
+		endif
 	endif
 endif
 
