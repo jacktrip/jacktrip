@@ -102,7 +102,9 @@ void VsWebSocket::closeSocket()
 void VsWebSocket::onError(QAbstractSocket::SocketError error)
 {
     // RemoteHostClosedError may be expected due to finite connection durations
-    if (error != QAbstractSocket::RemoteHostClosedError) {
+    // ConnectionRefusedError may be expected if the server-side endpoint is closed
+    if (error != QAbstractSocket::RemoteHostClosedError
+        && error != QAbstractSocket::ConnectionRefusedError) {
         qDebug() << "Websocket error:" << error;
     }
     if (!m_webSocket.isNull()) {

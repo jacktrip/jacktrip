@@ -930,6 +930,12 @@ void VirtualStudio::disconnect()
     // cleanup
     m_currentStudio.setId("");
     emit currentStudioChanged();
+
+    if (!m_studioSocketPtr.isNull()) {
+        m_studioSocketPtr->closeSocket();
+    }
+    m_studioSocketPtr->disconnect();
+    m_studioSocketPtr.reset();
 }
 
 void VirtualStudio::manageStudio(const QString& studioId, bool start)
