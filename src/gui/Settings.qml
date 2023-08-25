@@ -51,6 +51,14 @@ Item {
         return idx;
     }
 
+    function getCurrentAudioBackendIndex () {
+        let idx = audio.audioBackendComboModel.findIndex(elem => elem === audio.audioBackend);
+        if (idx < 0) {
+            idx = 0;
+        }
+        return idx;
+    }
+
     Rectangle {
         id: audioSettingsView
         width: 0.8 * parent.width
@@ -89,8 +97,6 @@ Item {
             width: header.width
             height: header.height
 
-            property bool isUsingRtAudio: audio.audioBackend == "RtAudio"
-
             Label {
                 id: pageTitle
                 text: "Settings"
@@ -109,7 +115,7 @@ Item {
                 anchors.verticalCenter: pageTitle.verticalCenter;
                 anchors.right: headerContent.right;
                 anchors.rightMargin: 16 * virtualstudio.uiScale;
-                visible: parent.isUsingRtAudio && settingsGroupView == "Audio"
+                visible: audio.audioBackend == "RtAudio" && settingsGroupView == "Audio"
                 enabled: audio.audioReady && !audio.scanningDevices
             }
 
@@ -409,7 +415,7 @@ Item {
             id: updateChannelCombo
             x: 234 * virtualstudio.uiScale; y: modeButton.y + (48 * virtualstudio.uiScale)
             width: parent.width - x - (16 * virtualstudio.uiScale); height: 36 * virtualstudio.uiScale
-            model: updateChannelComboModel
+            model: virtualstudio.updateChannelComboModel
             currentIndex: virtualstudio.updateChannel == "stable" ? 0 : 1
             onActivated: { virtualstudio.updateChannel = currentIndex == 0 ? "stable": "edge" }
             font.family: "Poppins"
@@ -427,8 +433,9 @@ Item {
 
         ComboBox {
             id: backendCombo
-            model: backendComboModel
-            currentIndex: audio.audioBackend == "JACK" ? 0 : 1
+            model: audio.audioBackendComboModel
+            enabled: audio.audioBackendComboModel.length > 1
+            currentIndex: getCurrentAudioBackendIndex()
             onActivated: {
                 audio.audioBackend = currentText
                 audio.restartAudio();
@@ -750,6 +757,18 @@ Item {
                 anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
                 color: Boolean(audio.devicesError) ? disabledButtonTextColour : textColour
             }
+        }
+    }
+
+    Connections {
+        target: audio
+        // anything that sets currentIndex to the value of a function needs
+        // to be manually updated whenever there is a change to any vars it uses
+        function onBufferSizeChanged() {
+            bufferCombo.currentIndex = getCurrentBufferSizeIndex();
+        }
+        function onAudioBackendChanged() {
+            backendCombo.currentIndex = getCurrentAudioBackendIndex();
         }
     }
 }

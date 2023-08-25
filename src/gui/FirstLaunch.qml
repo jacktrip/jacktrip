@@ -81,7 +81,7 @@ Item {
     Image {
         source: "JTVS.png"
         x: parent.width / 2 - (265 * virtualstudio.uiScale); y: 420 * virtualstudio.uiScale
-        width: 234 * virtualstudio.uiScale; height: 196 * virtualstudio.uiScale;
+        width: 234 * virtualstudio.uiScale; height: 195 * virtualstudio.uiScale;
     }
 
     Button {

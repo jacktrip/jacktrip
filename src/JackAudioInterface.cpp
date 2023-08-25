@@ -123,6 +123,8 @@ void JackAudioInterface::setupClient()
     /// verbose message, check how to desable them.
     {
         QMutexLocker locker(&sJackMutex);
+        // TODO: this needs a timeout because it will hang indefinitely
+        // if the Jack server is not running
 //#ifndef WAIR // WAIR
 //        mClient = jack_client_open (client_name, options, &status, server_name);
 //#else

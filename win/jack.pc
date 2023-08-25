@@ -1,0 +1,11 @@
+prefix=/c/Program\ Files/JACK2
+exec_prefix=/c/Program\ Files/JACK2
+libdir=/c/Program\ Files/JACK2/lib
+includedir=/c/Program\ Files/JACK2/include
+server_libs=-L/c/Program\ Files/JACK2/lib -ljackserver64
+
+Name: jack
+Description: the Jack Audio Connection Kit: a low-latency synchronous callback-based media server
+Version: 1.9.19
+Libs: -L/c/Program\ Files/JACK2/lib -ljack64
+Cflags: -I/c/Program\ Files/JACK2/include

@@ -145,9 +145,6 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     qmlRegisterType<VsServerInfo>("org.jacktrip.jacktrip", 1, 0, "VsServerInfo");
 
     // setup QML view
-    m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("updateChannelComboModel"),
-        QVariant::fromValue(m_updateChannelOptions));
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("virtualstudio"),
                                                        this);
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("auth"),
@@ -157,10 +154,6 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_view.engine()->rootContext()->setContextProperty(
         QStringLiteral("permissions"),
         QVariant::fromValue(&m_audioConfigPtr->getPermissions()));
-    m_view.engine()->rootContext()->setContextProperty(
-        QStringLiteral("backendComboModel"),
-        QVariant::fromValue(QStringList()
-                            << QStringLiteral("JACK") << QStringLiteral("RtAudio")));
     m_view.setSource(QUrl(QStringLiteral("qrc:/vs/vs.qml")));
     m_view.setMinimumSize(QSize(800, 640));
     // m_view.setMaximumSize(QSize(696, 577));

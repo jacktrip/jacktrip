@@ -230,6 +230,7 @@ Rectangle {
                 anchors.top: outputChannelsLabel.bottom
                 anchors.topMargin: 4 * virtualstudio.uiScale
                 model: audio.outputChannelsComboModel
+                enabled: audio.outputChannelsComboModel.length > 1
                 currentIndex: getCurrentOutputChannelsIndex()
                 delegate: ItemDelegate {
                     required property var modelData
@@ -423,6 +424,7 @@ Rectangle {
                 anchors.top: inputChannelsLabel.bottom
                 anchors.topMargin: 4 * virtualstudio.uiScale
                 model: audio.inputChannelsComboModel
+                enabled: audio.inputChannelsComboModel.length > 1
                 currentIndex: getCurrentInputChannelsIndex()
                 delegate: ItemDelegate {
                     required property var modelData
@@ -475,6 +477,7 @@ Rectangle {
                 anchors.top: inputMixModeLabel.bottom
                 anchors.topMargin: 4 * virtualstudio.uiScale
                 model: audio.inputMixModeComboModel
+                enabled: audio.inputMixModeComboModel.length > 1
                 currentIndex: getCurrentMixModeIndex()
                 delegate: ItemDelegate {
                     required property var modelData
@@ -514,7 +517,7 @@ Rectangle {
                 anchors.topMargin: 8 * virtualstudio.uiScale
                 textFormat: Text.RichText
                 wrapMode: Text.WordWrap
-                text: "Choose up to 2 channels"
+                text: audio.inputChannelsComboModel.length > 1 ? "Choose up to 2 channels" : "Only 1 channel available"
                 font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
                 color: textColour
             }
