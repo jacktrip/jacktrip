@@ -107,8 +107,9 @@ VsAudio::VsAudio(QObject* parent)
         if (!jackIsAvailable()) {
             // shouldn't happen
             m_audioBackendComboModel = {};
+        } else {
+            m_audioBackendComboModel = {"JACK"};
         }
-        m_audioBackendComboModel = {"JACK"};
     }
 
     QJsonObject element;
