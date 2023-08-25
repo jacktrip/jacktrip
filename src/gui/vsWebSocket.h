@@ -67,8 +67,6 @@ class VsWebSocket : public QObject
     void disconnected();
 
    private slots:
-    void onTextMessageReceived(const QString& message);
-    void onDisconnected();
     void onError(QAbstractSocket::SocketError error);
     void onSslErrors(const QList<QSslError>& errors);
 

@@ -51,7 +51,7 @@ VsWebSocket::VsWebSocket(const QUrl& url, QString token, QString apiPrefix,
 {
     m_webSocket.reset(new QWebSocket());
     connect(m_webSocket.get(), &QWebSocket::disconnected, this,
-            &VsWebSocket::onDisconnected);
+            &VsWebSocket::disconnected);
     connect(m_webSocket.get(),
             QOverload<const QList<QSslError>&>::of(&QWebSocket::sslErrors), this,
             &VsWebSocket::onSslErrors);
@@ -59,7 +59,7 @@ VsWebSocket::VsWebSocket(const QUrl& url, QString token, QString apiPrefix,
             QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::error), this,
             &VsWebSocket::onError);
     connect(m_webSocket.get(), &QWebSocket::textMessageReceived, this,
-            &VsWebSocket::onTextMessageReceived);
+            &VsWebSocket::textMessageReceived);
 }
 
 VsWebSocket::~VsWebSocket()
@@ -101,16 +101,6 @@ void VsWebSocket::closeSocket()
         && m_webSocket->state() != QAbstractSocket::UnconnectedState) {
         m_webSocket->abort();
     }
-}
-
-void VsWebSocket::onTextMessageReceived(const QString& message)
-{
-    emit textMessageReceived(message);
-}
-
-void VsWebSocket::onDisconnected()
-{
-    emit disconnected();
 }
 
 void VsWebSocket::onError(QAbstractSocket::SocketError error)
