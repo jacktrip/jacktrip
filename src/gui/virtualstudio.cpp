@@ -933,9 +933,9 @@ void VirtualStudio::disconnect()
 
     if (!m_studioSocketPtr.isNull()) {
         m_studioSocketPtr->closeSocket();
+        m_studioSocketPtr->disconnect();
+        m_studioSocketPtr.reset();
     }
-    m_studioSocketPtr->disconnect();
-    m_studioSocketPtr.reset();
 }
 
 void VirtualStudio::manageStudio(const QString& studioId, bool start)
