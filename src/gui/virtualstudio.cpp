@@ -769,9 +769,9 @@ void VirtualStudio::connectToStudio(VsServerInfo& studio)
                  .arg(m_api->getApiHost(), m_currentStudio.id(), m_auth->accessToken())),
         m_auth->accessToken(), QString(), QString()));
     connect(m_studioSocketPtr.get(), &VsWebSocket::textMessageReceived, this,
-            [&](QString message) {
-                handleWebsocketMessage(message);
-            });
+            &VirtualStudio::handleWebsocketMessage);
+    connect(m_studioSocketPtr.get(), &VsWebSocket::disconnected, this,
+            &VirtualStudio::restartStudioSocket);
     m_studioSocketPtr->openSocket();
 
     // Check if we have an address for our server
@@ -930,6 +930,12 @@ void VirtualStudio::disconnect()
     // cleanup
     m_currentStudio.setId("");
     emit currentStudioChanged();
+
+    if (!m_studioSocketPtr.isNull()) {
+        m_studioSocketPtr->closeSocket();
+        m_studioSocketPtr->disconnect();
+        m_studioSocketPtr.reset();
+    }
 }
 
 void VirtualStudio::manageStudio(const QString& studioId, bool start)
@@ -1262,6 +1268,15 @@ void VirtualStudio::handleWebsocketMessage(const QString& msg)
     }
 
     emit currentStudioChanged();
+}
+
+void VirtualStudio::restartStudioSocket()
+{
+    if (m_onConnectedScreen) {
+        if (!m_studioSocketPtr.isNull()) {
+            m_studioSocketPtr->openSocket();
+        }
+    }
 }
 
 void VirtualStudio::launchBrowser(const QUrl& url)
