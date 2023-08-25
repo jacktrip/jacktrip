@@ -287,15 +287,26 @@ void RtAudioInterface::setup(bool verbose)
     // be accessible
 
 #if RTAUDIO_VERSION_MAJOR < 6
+    // function pointers used before v6, and lambda conversion to function
+    // pointers does not support capture
+    RtAudioErrorCallback errorFunc = [](RtAudioError::Type type,
+                                        const std::string& errorText) {
+        errorCallback(type, errorText, nullptr);
+    };
     try {
         mRtAudio->openStream(&out_params, &in_params, RTAUDIO_FLOAT32, sampleRate,
                              &bufferFrames, &RtAudioInterface::wrapperRtAudioCallback,
-                             this, &options, &RtAudioInterface::errorCallback);
+                             this, &options, errorFunc);
     } catch (RtAudioError& e) {
         errorText = e.getMessage();
     }
 #else
-    mRtAudio->setErrorCallback(&RtAudioInterface::errorCallback);
+    // we need a wrapper since RtAudio doesn't support void* arguments
+    RtAudioErrorCallback errorFunc = [this](RtAudioErrorType type,
+                                            const std::string& errorText) {
+        errorCallback(type, errorText, this);
+    };
+    mRtAudio->setErrorCallback(errorFunc);
     if (RTAUDIO_NO_ERROR
         != mRtAudio->openStream(&out_params, &in_params, RTAUDIO_FLOAT32, sampleRate,
                                 &bufferFrames, &RtAudioInterface::wrapperRtAudioCallback,
@@ -470,17 +481,25 @@ int RtAudioInterface::wrapperRtAudioCallback(void* outputBuffer, void* inputBuff
 
 //*******************************************************************************
 void RtAudioInterface::errorCallback(RtAudioErrorType errorType,
-                                     const std::string& errorText)
+                                     const std::string& errorText, void* arg)
 {
-    std::cerr << "RtAudioInterface error: " << errorText << '\n' << std::endl;
 #if RTAUDIO_VERSION_MAJOR < 6
-    if (errorType != RtAudioError::WARNING && errorType != RtAudioError::DEBUG_WARNING) {
+    if (errorType == RtAudioError::WARNING || errorType == RtAudioError::DEBUG_WARNING)
+        return;
 #else
-    if (errorType != RTAUDIO_WARNING) {
+    if (errorType == RTAUDIO_WARNING)
+        return;
 #endif
-        // TODO: this static is ugly, but currently required to cleanly shutdown jacktrip
-        JackTrip::sAudioStopped = true;
+    std::string errorMsg = "RtAudio Error";
+    if (!errorText.empty()) {
+        errorMsg += ": ";
+        errorMsg += errorText;
     }
+    if (arg != nullptr) {
+        static_cast<RtAudioInterface*>(arg)->mErrorMsg = errorMsg;
+    }
+    std::cerr << errorMsg << std::endl;
+    JackTrip::sAudioStopped = true;
 }
 
 //*******************************************************************************

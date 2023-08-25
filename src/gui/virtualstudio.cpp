@@ -1198,6 +1198,10 @@ void VirtualStudio::connectionFinished()
 
 void VirtualStudio::processError(const QString& errorMessage)
 {
+    static const QString RtAudioErrorMsg = QStringLiteral("RtAudio Error");
+    static const QString JackAudioErrorMsg =
+        QStringLiteral("The Jack server was shut down");
+
     const bool shouldSwitchToRtAudio =
         (errorMessage == QLatin1String("Maybe the JACK server is not running?"));
 
@@ -1210,6 +1214,26 @@ void VirtualStudio::processError(const QString& errorMessage)
         // Report the other end quitting as a regular occurance rather than an error.
         msgBox.setText("The Studio has been stopped.");
         msgBox.setWindowTitle(QStringLiteral("Disconnected"));
+    } else if (errorMessage.startsWith(RtAudioErrorMsg)) {
+        if (errorMessage.length() > RtAudioErrorMsg.length() + 2) {
+            const QString details(errorMessage.sliced(RtAudioErrorMsg.length() + 2));
+            if (details.startsWith(
+                    QStringLiteral("RtApiCore: the stream device was disconnected"))) {
+                msgBox.setText(QStringLiteral("Your audio interface was disconnected."));
+            } else {
+                msgBox.setText(details);
+            }
+        } else {
+            msgBox.setText(errorMessage);
+        }
+        msgBox.setWindowTitle(QStringLiteral("Audio Interface Error"));
+    } else if (errorMessage.startsWith(JackAudioErrorMsg)) {
+        if (errorMessage.length() > JackAudioErrorMsg.length() + 2) {
+            msgBox.setText(errorMessage.sliced(JackAudioErrorMsg.length() + 2));
+        } else {
+            msgBox.setText(QStringLiteral("The JACK Audio Server was stopped."));
+        }
+        msgBox.setWindowTitle(QStringLiteral("Jack Audio Error"));
     } else {
         msgBox.setText(QStringLiteral("Error: ").append(errorMessage));
         msgBox.setWindowTitle(QStringLiteral("Doh!"));

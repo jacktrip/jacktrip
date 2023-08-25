@@ -1178,8 +1178,8 @@ void JackTrip::tcpTimerTick()
 void JackTrip::stop(const QString& errorMessage)
 {
     // Take a snapshot of sAudioStopped
-    bool serverStopped = sAudioStopped;
-    mStopped           = true;
+    bool audioStopped = sAudioStopped;
+    mStopped          = true;
     // Make sure we're only run once
     if (mHasShutdown) {
         return;
@@ -1199,6 +1199,14 @@ void JackTrip::stop(const QString& errorMessage)
         mDataProtocolReceiver->wait();
     }
 
+    // check for errors from audio interface
+    QString audioErrorMsg;
+    if (mAudioInterface != nullptr && !mAudioInterface->getDevicesErrorMsg().empty()) {
+        audioErrorMsg = QString::fromStdString(mAudioInterface->getDevicesErrorMsg());
+    } else if (audioStopped) {
+        audioErrorMsg = QStringLiteral("Your audio interface has stopped!");
+    }
+
     // Stop the audio processes
     // mAudioInterface->stopProcess();
     closeAudio();
@@ -1207,8 +1215,8 @@ void JackTrip::stop(const QString& errorMessage)
     cout << gPrintSeparator << endl;
 
     // Emit the jack stopped signal
-    if (serverStopped) {
-        emit signalError(QStringLiteral("The Jack Server was shut down!"));
+    if (!audioErrorMsg.isEmpty()) {
+        emit signalError(audioErrorMsg);
     } else if (errorMessage.isEmpty()) {
         emit signalProcessesStopped();
     } else {

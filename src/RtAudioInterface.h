@@ -127,7 +127,8 @@ class RtAudioInterface : public AudioInterface
     static int wrapperRtAudioCallback(void* outputBuffer, void* inputBuffer,
                                       unsigned int nFrames, double streamTime,
                                       RtAudioStreamStatus status, void* userData);
-    static void errorCallback(RtAudioErrorType type, const std::string& errorText);
+    static void errorCallback(RtAudioErrorType type, const std::string& errorText,
+                              void* arg = nullptr);
 
     // retrieves info about an audio device by search for its name
     // updates device and returns true if found
