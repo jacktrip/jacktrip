@@ -157,6 +157,7 @@ jobs:
             build-system: qmake
             qt-version: '5.15.10'
             qt-type: 'dynamic'
+            macosx-deployment-target: 10.13
             xcode-directory: /Applications/Xcode_14.0.1.app # uses SDK macOS 12.3 which is latest supported by qt5
 
           - name: macOS-x64-meson-clang-shared-bundled_rtaudio
@@ -176,6 +177,7 @@ jobs:
             qt-version: '6.2.5'
             qt-type: 'dynamic'
             macosx-architectures: 'x86_64;arm64'
+            macosx-deployment-target: 10.14
             xcode-directory: /Applications/Xcode_14.2.app
 
           - name: Windows-x64-meson-msvc-static
@@ -463,7 +465,13 @@ jobs:
           fi
           if [[ -n "${{ matrix.macosx-architectures }}" ]]; then
             # TODO: for now, just assume that we want universal if it is not empty
-            CONFIG_STRING="--native-file macos/meson_native_universal.ini $CONFIG_STRING"
+            if [[ -n "${{ matrix.macosx-deployment-target }}" ]]; then
+              CONFIG_STRING="--native-file macos/meson_native_universal_${{ matrix.macosx-deployment-target }}.ini $CONFIG_STRING"
+            else
+              CONFIG_STRING="--native-file macos/meson_native_universal.ini $CONFIG_STRING"
+            fi
+          elif [[ -n "${{ matrix.macosx-deployment-target }}" ]]; then
+            CONFIG_STRING="--native-file macos/meson_native_minversion_${{ matrix.macosx-deployment-target }}.ini $CONFIG_STRING"
           fi
           if [[ "${{ runner.os }}" == 'Windows' && "${{ matrix.qt-type }}" == "static" ]]; then
             CONFIG_STRING="-Db_vscrt=mt $CONFIG_STRING"
