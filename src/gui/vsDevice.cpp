@@ -209,7 +209,12 @@ void VsDevice::sendHeartbeat()
         m_deviceSocketPtr->sendMessage(request.toJson());
     } else {
         if (enabled()) {
-            qDebug() << "Heartbeat not sent";
+            if (m_deviceSocketPtr.isNull()) {
+                qDebug() << "Heartbeat not sent";
+            } else {
+                qDebug() << "Heartbeat not sent; trying to reopen socket";
+                m_deviceSocketPtr->openSocket();
+            }
         }
     }
 }
@@ -231,18 +236,18 @@ bool VsDevice::hasTerminated()
 // setServerId updates the emulated device with the provided serverId
 void VsDevice::setServerId(QString serverId)
 {
+    m_deviceAgentConfig.insert("serverId", serverId);
+    m_deviceAgentConfig.insert("enabled", !serverId.isEmpty());
     QJsonObject json = {
         {QLatin1String("serverId"), serverId},
+        {QLatin1String("enabled"), !serverId.isEmpty()},
     };
     QJsonDocument request = QJsonDocument(json);
     QNetworkReply* reply  = m_api->updateDevice(m_appID, request.toJson());
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
-            reply->deleteLater();
-            return;
         }
-        m_deviceAgentConfig.insert("serverId", serverId);
         reply->deleteLater();
     });
 }
@@ -416,9 +421,7 @@ void VsDevice::syncDeviceSettings()
 // terminateJackTrip is a slot intended to be triggered on jacktrip process signals
 void VsDevice::terminateJackTrip()
 {
-    if (!enabled()) {
-        setServerId("");
-    }
+    setServerId("");
     if (!m_jackTrip.isNull()) {
         m_jackTrip.reset();
     }

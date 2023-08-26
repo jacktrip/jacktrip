@@ -99,6 +99,7 @@ void VsWebSocket::closeSocket()
 {
     if (!m_webSocket.isNull()
         && m_webSocket->state() != QAbstractSocket::UnconnectedState) {
+        qDebug() << "Closing websocket:" << QUrl(m_url).toString(QUrl::RemoveQuery);
         m_webSocket->abort();
     }
 }
@@ -107,9 +108,8 @@ void VsWebSocket::onError(QAbstractSocket::SocketError error)
 {
     // RemoteHostClosedError may be expected due to finite connection durations
     // ConnectionRefusedError may be expected if the server-side endpoint is closed
-    if (error != QAbstractSocket::RemoteHostClosedError
-        && error != QAbstractSocket::ConnectionRefusedError) {
-        qDebug() << "Websocket error:" << error;
+    if (error != QAbstractSocket::RemoteHostClosedError) {
+        qDebug() << "Websocket error: " << error;
     }
     if (!m_webSocket.isNull()) {
         m_webSocket->abort();
@@ -119,7 +119,7 @@ void VsWebSocket::onError(QAbstractSocket::SocketError error)
 void VsWebSocket::onSslErrors(const QList<QSslError>& errors)
 {
     for (int i = 0; i < errors.size(); ++i) {
-        qDebug() << "SSL error:" << errors.at(i);
+        qDebug() << "SSL error: " << errors.at(i);
     }
     if (!m_webSocket.isNull()) {
         m_webSocket->abort();

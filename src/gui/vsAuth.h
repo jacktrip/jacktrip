@@ -101,6 +101,7 @@ class VsAuth : public QObject
     void deviceCodeExpired();
 
    private slots:
+    void handleRefreshSucceeded(QString accessToken);
     void handleAuthSucceeded(QString userId, QString accessToken);
     void handleAuthFailed();
     void initializedCodeFlow(QString code, QString verificationUrl);
