@@ -70,8 +70,7 @@ VsDevice::VsDevice(QSharedPointer<VsAuth>& auth, QSharedPointer<VsApi>& api,
 VsDevice::~VsDevice()
 {
     m_sendVolumeTimer.stop();
-    stopJackTrip();
-    stopPinger();
+    stopJackTrip(false);
 }
 
 // registerApp idempotently registers an emulated device belonging to the current user
@@ -219,22 +218,13 @@ void VsDevice::sendHeartbeat()
     }
 }
 
-void VsDevice::reconnect()
-{
-    stopPinger();
-    if (!m_jackTrip.isNull()) {
-        m_jackTrip->stop();
-        m_jackTrip.reset();
-    }
-}
-
 bool VsDevice::hasTerminated()
 {
     return m_jackTrip.isNull();
 }
 
-// setServerId updates the emulated device with the provided serverId
-void VsDevice::setServerId(QString serverId)
+// updateState updates the emulated device with the provided state
+void VsDevice::updateState(const QString& serverId)
 {
     m_deviceAgentConfig.insert("serverId", serverId);
     m_deviceAgentConfig.insert("enabled", !serverId.isEmpty());
@@ -325,17 +315,18 @@ JackTrip* VsDevice::initJackTrip(
     m_jackTrip->setPeerHandshakePort(studioInfo->port());
 
     QObject::connect(m_jackTrip.data(), &JackTrip::signalProcessesStopped, this,
-                     &VsDevice::terminateJackTrip, Qt::QueuedConnection);
+                     &VsDevice::handleJackTripError, Qt::QueuedConnection);
     QObject::connect(m_jackTrip.data(), &JackTrip::signalError, this,
-                     &VsDevice::terminateJackTrip, Qt::QueuedConnection);
+                     &VsDevice::handleJackTripError, Qt::QueuedConnection);
 
     return m_jackTrip.data();
 }
 
 // startJackTrip starts the current jacktrip process if applicable
-void VsDevice::startJackTrip(const QString& serverId)
+void VsDevice::startJackTrip(const VsServerInfo& studioInfo)
 {
-    setServerId(serverId);
+    m_stopping = false;
+    updateState(studioInfo.id());
 
     // setup websocket listener
     m_deviceSocketPtr.reset(
@@ -355,17 +346,38 @@ void VsDevice::startJackTrip(const QString& serverId)
         m_jackTrip->startProcess();
 #endif  // endwhere
     }
+
+    // intialize the pinger used to generate network latency statistics for
+    // Virtual Studio
+    QString host = studioInfo.sessionId();
+    host.append(QString::fromStdString(".jacktrip.cloud"));
+    m_pinger.reset(new VsPinger(QString::fromStdString("wss"), host,
+                                QString::fromStdString("/ping")));
 }
 
 // stopJackTrip stops the current jacktrip process if applicable
-void VsDevice::stopJackTrip()
+void VsDevice::stopJackTrip(bool enabled)
 {
+    // check if another process has already initiated
     QMutexLocker stopLock(&m_stopMutex);
+    if (m_stopping)
+        return;
+    m_stopping = true;
+
+    // only clear state if we are not reconnecting
+    if (!enabled)
+        updateState("");
+
+    // stop the Virtual Studio pinger
+    if (!m_pinger.isNull()) {
+        m_pinger->stop();
+        m_pinger->unsetToken();
+    }
+
     if (!m_jackTrip.isNull()) {
         if (!m_deviceSocketPtr.isNull()) {
             m_deviceSocketPtr->closeSocket();
         }
-        setServerId("");
         m_jackTrip->stop();
         m_jackTrip.reset();
     }
@@ -384,31 +396,9 @@ void VsDevice::reconcileAgentConfig(QJsonDocument newState)
         // if currently enabled but new config is not enabled, disconnect immediately
         if (enabled() && it.key() == "enabled" && !it.value().toBool()
             && !m_jackTrip.isNull()) {
-            stopJackTrip();
+            stopJackTrip(false);
         }
         m_deviceAgentConfig.insert(it.key(), it.value());
-    }
-}
-
-// initPinger intializes the pinger used to generate network latency statistics for
-// Virtual Studio
-VsPinger* VsDevice::startPinger(VsServerInfo* studioInfo)
-{
-    QString id   = studioInfo->id();
-    QString host = studioInfo->sessionId();
-    host.append(QString::fromStdString(".jacktrip.cloud"));
-
-    m_pinger.reset(new VsPinger(QString::fromStdString("wss"), host,
-                                QString::fromStdString("/ping")));
-    return m_pinger.get();
-}
-
-// stopPinger stops the Virtual Studio pinger
-void VsDevice::stopPinger()
-{
-    if (!m_pinger.isNull()) {
-        m_pinger->stop();
-        m_pinger->unsetToken();
     }
 }
 
@@ -418,13 +408,10 @@ void VsDevice::syncDeviceSettings()
     m_sendVolumeTimer.start(100);
 }
 
-// terminateJackTrip is a slot intended to be triggered on jacktrip process signals
-void VsDevice::terminateJackTrip()
+// handleJackTripError is a slot intended to be triggered on jacktrip process signals
+void VsDevice::handleJackTripError()
 {
-    setServerId("");
-    if (!m_jackTrip.isNull()) {
-        m_jackTrip.reset();
-    }
+    stopJackTrip(false);
 }
 
 // onTextMessageReceived is a slot intended to be triggered by new incoming WSS messages

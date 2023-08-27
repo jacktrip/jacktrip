@@ -69,19 +69,14 @@ class VsDevice : public QObject
     void registerApp();
     void removeApp();
     void sendHeartbeat();
-    void reconnect();
     bool hasTerminated();
-    void setServerId(QString studioID);
     JackTrip* initJackTrip(bool useRtAudio, std::string input, std::string output,
                            int baseInputChannel, int numChannelsIn, int baseOutputChannel,
                            int numChannelsOut, int inputMixMode, int bufferSize,
                            int bufferStrategy, VsServerInfo* studioInfo);
-    void startJackTrip(const QString& serverId);
-    void stopJackTrip();
+    void startJackTrip(const VsServerInfo& studioInfo);
+    void stopJackTrip(bool enabled);
     void reconcileAgentConfig(QJsonDocument newState);
-
-    VsPinger* startPinger(VsServerInfo* studioInfo);
-    void stopPinger();
 
    signals:
     void updateNetworkStats(QJsonObject stats);
@@ -90,12 +85,13 @@ class VsDevice : public QObject
     void syncDeviceSettings();
 
    private slots:
-    void terminateJackTrip();
+    void handleJackTripError();
     void onTextMessageReceived(const QString& message);
     void restartDeviceSocket();
     void sendLevels();
 
    private:
+    void updateState(const QString& serverId);
     void registerJTAsDevice();
     bool enabled();
     int selectBindPort();
@@ -118,6 +114,7 @@ class VsDevice : public QObject
     QRandomGenerator m_randomizer;
     QTimer m_sendVolumeTimer;
     bool m_highLatencyFlag = false;
+    bool m_stopping        = false;
 };
 
 #endif  // VSDEVICE_H

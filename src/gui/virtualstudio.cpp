@@ -839,8 +839,7 @@ void VirtualStudio::completeConnection()
 
         m_connectionState = QStringLiteral("Connecting...");
         emit connectionStateChanged();
-        m_devicePtr->startJackTrip(m_currentStudio.id());
-        m_devicePtr->startPinger(&m_currentStudio);
+        m_devicePtr->startJackTrip(m_currentStudio);
 
         // update device error messages and warnings based on latest results
         // this is necessary because we may have never loaded audio settings,
@@ -884,7 +883,8 @@ void VirtualStudio::triggerReconnect(bool refresh)
     m_connectionState = QStringLiteral("Reconnecting...");
     emit connectionStateChanged();
 
-    m_devicePtr->reconnect();
+    // keep device enabled while stopping jacktrip
+    m_devicePtr->stopJackTrip(true);
 }
 
 void VirtualStudio::disconnect()
@@ -894,8 +894,7 @@ void VirtualStudio::disconnect()
     setConnectedErrorMsg("");
 
     if (m_jackTripRunning) {
-        m_devicePtr->stopPinger();
-        m_devicePtr->stopJackTrip();
+        m_devicePtr->stopJackTrip(false);
         // persist any volume level or device changes
         m_audioConfigPtr->saveSettings();
     } else {
