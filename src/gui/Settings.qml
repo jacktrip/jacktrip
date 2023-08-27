@@ -689,7 +689,15 @@ Item {
                 border.width: 1
                 border.color: testModeButton.down ? buttonPressedStroke : (testModeButton.hovered ? buttonHoverStroke : buttonStroke)
             }
-            onClicked: { virtualstudio.testMode = !virtualstudio.testMode; }
+            onClicked: {
+                virtualstudio.testMode = !virtualstudio.testMode;
+
+                // behave like "Cancel" and switch back to browse mode
+                audio.stopAudio();
+                virtualstudio.windowState = "browse";
+                virtualstudio.loadSettings();
+                audio.validateDevices();
+            }
             anchors.horizontalCenter: parent.horizontalCenter
             y: logoutButton.y + (48 * virtualstudio.uiScale)
             width: 260 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale

@@ -496,6 +496,7 @@ void VirtualStudio::setTestMode(bool test)
         m_devicePtr->disconnect();
         m_devicePtr.reset();
     }
+    m_webChannelServer->close();
 
     m_testMode = test;
 
@@ -511,9 +512,7 @@ void VirtualStudio::setTestMode(bool test)
     settings.remove(QStringLiteral("UserId"));
     settings.endGroup();
 
-    // stop timers, clear data, etc.
-    m_refreshTimer.stop();
-    m_heartbeatTimer.stop();
+    // clear user data
     m_userMetadata = QJsonObject();
     m_userId.clear();
 
