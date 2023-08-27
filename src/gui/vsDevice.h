@@ -75,7 +75,7 @@ class VsDevice : public QObject
                            int numChannelsOut, int inputMixMode, int bufferSize,
                            int bufferStrategy, VsServerInfo* studioInfo);
     void startJackTrip(const VsServerInfo& studioInfo);
-    void stopJackTrip(bool enabled);
+    void stopJackTrip(bool isReconnecting = false);
     void reconcileAgentConfig(QJsonDocument newState);
 
    signals:

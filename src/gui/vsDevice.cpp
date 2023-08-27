@@ -356,7 +356,7 @@ void VsDevice::startJackTrip(const VsServerInfo& studioInfo)
 }
 
 // stopJackTrip stops the current jacktrip process if applicable
-void VsDevice::stopJackTrip(bool enabled)
+void VsDevice::stopJackTrip(bool isReconnecting)
 {
     // check if another process has already initiated
     QMutexLocker stopLock(&m_stopMutex);
@@ -365,7 +365,7 @@ void VsDevice::stopJackTrip(bool enabled)
     m_stopping = true;
 
     // only clear state if we are not reconnecting
-    if (!enabled)
+    if (!isReconnecting)
         updateState("");
 
     // stop the Virtual Studio pinger
