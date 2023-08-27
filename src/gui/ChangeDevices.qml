@@ -203,7 +203,7 @@ Rectangle {
                 anchors.rightMargin: 8 * virtualstudio.uiScale
                 anchors.top: outputChannelsLabel.bottom
                 anchors.topMargin: 4 * virtualstudio.uiScale
-                enabled: virtualstudio.connectionState == "Connected"
+                enabled: audio.outputChannelsComboModel.length > 1 && virtualstudio.connectionState == "Connected"
                 model: audio.outputChannelsComboModel
                 currentIndex: (() => {
                     let idx = audio.outputChannelsComboModel.findIndex(elem => elem.baseChannel === audio.baseOutputChannel
@@ -340,7 +340,7 @@ Rectangle {
                 anchors.rightMargin: 8 * virtualstudio.uiScale
                 anchors.top: inputChannelsLabel.bottom
                 anchors.topMargin: 4 * virtualstudio.uiScale
-                enabled: virtualstudio.connectionState == "Connected"
+                enabled: audio.inputChannelsComboModel.length > 1 && virtualstudio.connectionState == "Connected"
                 model: audio.inputChannelsComboModel
                 currentIndex: (() => {
                     let idx = audio.inputChannelsComboModel.findIndex(elem => elem.baseChannel === audio.baseInputChannel
@@ -399,7 +399,7 @@ Rectangle {
                 anchors.rightMargin: 8 * virtualstudio.uiScale
                 anchors.top: inputMixModeLabel.bottom
                 anchors.topMargin: 4 * virtualstudio.uiScale
-                enabled: virtualstudio.connectionState == "Connected"
+                enabled: audio.inputMixModeComboModel.length > 1 && virtualstudio.connectionState == "Connected"
                 model: audio.inputMixModeComboModel
                 currentIndex: (() => {
                     let idx = audio.inputMixModeComboModel.findIndex(elem => elem.value === audio.inputMixMode);
@@ -445,7 +445,7 @@ Rectangle {
                 anchors.topMargin: 8 * virtualstudio.uiScale
                 textFormat: Text.RichText
                 wrapMode: Text.WordWrap
-                text: "Choose up to 2 channels"
+                text: audio.inputChannelsComboModel.length > 1 ? "Choose up to 2 channels" : "Only 1 channel available"
                 font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
                 color: textColour
             }
