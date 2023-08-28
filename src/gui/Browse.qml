@@ -1,5 +1,5 @@
-import QtQuick 2.12
-import QtQuick.Controls 2.12
+import QtQuick
+import QtQuick.Controls
 
 Item {
     width: parent.width; height: parent.height
@@ -71,24 +71,24 @@ Item {
         spacing: 16 * virtualstudio.uiScale
         header: footer
         footer: footer
-        model: serverModel
+        model: virtualstudio.serverModel
         clip: true
         boundsBehavior: Flickable.StopAtBounds
         delegate: Studio {
             x: 16 * virtualstudio.uiScale
             width: studioListView.width - (2 * x)
-            serverLocation: virtualstudio.regions[location] ? "in " + virtualstudio.regions[location].label : ""
-            flagImage: bannerURL ? bannerURL : flag
-            studioName: name
-            publicStudio: isPublic
-            admin: isAdmin
-            available: canConnect
+            serverLocation: virtualstudio.regions[modelData.location] ? "in " + virtualstudio.regions[modelData.location].label : ""
+            flagImage: modelData.bannerURL ? modelData.bannerURL : modelData.flag
+            studioName: modelData.name
+            publicStudio: modelData.isPublic
+            admin: modelData.isAdmin
+            available: modelData.canConnect
             connected: false
-            studioId: id ? id : ""
-            inviteKeyString: inviteKey ? inviteKey : ""
+            studioId: modelData.id ? modelData.id : ""
+            inviteKeyString: modelData.inviteKey ? modelData.inviteKey : ""
         }
 
-        section {property: "type"; criteria: ViewSection.FullString; delegate: SectionHeading {} }
+        section { property: "modelData.type"; criteria: ViewSection.FullString; delegate: SectionHeading {} }
 
         // Show sectionHeading if there are no Studios in list
         SectionHeading {
@@ -206,7 +206,7 @@ Item {
         MouseArea {
             z: -1
             anchors.fill: parent
-            onWheel: {
+            onWheel: function (wheel) {
                 // trackpad
                 studioListView.contentY -= wheel.pixelDelta.y;
                 // mouse wheel
@@ -219,7 +219,7 @@ Item {
             // Customize scroll properties on different platforms
             if (Qt.platform.os == "linux" || Qt.platform.os == "osx" ||
                 Qt.platform.os == "unix" || Qt.platform.os == "windows") {
-                var scrollBar = Qt.createQmlObject('import QtQuick.Controls 2.12; ScrollBar{}',
+                var scrollBar = Qt.createQmlObject('import QtQuick.Controls; ScrollBar{}',
                                                    studioListView,
                                                    "dynamicSnippet1");
                 scrollBar.policy = ScrollBar.AlwaysOn;
@@ -287,12 +287,7 @@ Item {
                 border.width: 1
                 border.color: settingsButton.down ? buttonPressedStroke : (settingsButton.hovered ? buttonHoverStroke : buttonStroke)
             }
-            Timer {
-                id: restartAudioTimer
-                interval: 805; running: false; repeat: false
-                onTriggered: virtualstudio.audioActivated = true;
-            }
-            onClicked: { virtualstudio.windowState = "settings"; restartAudioTimer.restart(); }
+            onClicked: { virtualstudio.windowState = "settings"; audio.startAudio(); }
             display: AbstractButton.TextBesideIcon
             font {
                 family: "Poppins";
@@ -305,6 +300,9 @@ Item {
             x: parent.width - ((119 + extraSettingsButtonWidth) * virtualstudio.uiScale)
             width: (buttonWidth + extraSettingsButtonWidth) * virtualstudio.uiScale; height: buttonHeight * virtualstudio.uiScale
         }
+    }
+
+    FeedbackSurvey {
     }
 
     Connections {

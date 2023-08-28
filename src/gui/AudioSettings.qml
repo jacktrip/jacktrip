@@ -1,6 +1,5 @@
-import QtQuick 2.12
-import QtQuick.Controls 2.12
-import QtGraphicalEffects 1.12
+import QtQuick
+import QtQuick.Controls
 
 Rectangle {
     width: parent.width
@@ -20,7 +19,6 @@ Rectangle {
     property int buttonHeight: 25
 
     property string backgroundColour: virtualstudio.darkMode ? "#272525" : "#FAFBFB"
-    property real imageLightnessValue: virtualstudio.darkMode ? 0.8 : 0.2
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
     property string buttonColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
     property string buttonHoverColour: virtualstudio.darkMode ? "#5B5858" : "#D3D4D4"
@@ -28,11 +26,6 @@ Rectangle {
     property string buttonStroke: virtualstudio.darkMode ? "#80827D7D" : "#40979797"
     property string buttonHoverStroke: virtualstudio.darkMode ? "#7B7777" : "#BABCBC"
     property string buttonPressedStroke: virtualstudio.darkMode ? "#827D7D" : "#BABCBC"
-    property string sliderColour: virtualstudio.darkMode ? "#BABCBC" :  "#EAECEC"
-    property string sliderPressedColour: virtualstudio.darkMode ? "#ACAFAF" : "#DEE0E0"
-    property string sliderTrackColour: virtualstudio.darkMode ? "#5B5858" : "light gray"
-    property string sliderActiveTrackColour: virtualstudio.darkMode ? "light gray" : "black"
-    property string warningTextColour: "#DB0A0A"
     property string linkText: virtualstudio.darkMode ? "#8B8D8D" : "#272525"
     property string toolTipBackgroundColour: virtualstudio.darkMode ? "#323232" : "#F3F3F3"
     property string toolTipTextColour: textColour
@@ -40,37 +33,59 @@ Rectangle {
     property string errorFlagColour: "#DB0A0A"
     property string disabledButtonTextColour: virtualstudio.darkMode ? "#827D7D" : "#BABCBC"
 
-    property bool isUsingJack: virtualstudio.audioBackend == "JACK"
-    property bool isUsingRtAudio: virtualstudio.audioBackend == "RtAudio"
-    property bool hasNoBackend: !isUsingJack && !isUsingRtAudio && !virtualstudio.backendAvailable;
-
     function getCurrentInputDeviceIndex () {
-        if (virtualstudio.inputDevice === "") {
-            return virtualstudio.inputComboModel.findIndex(elem => elem.type === "element");
+        if (audio.inputDevice === "") {
+            return audio.inputComboModel.findIndex(elem => elem.type === "element");
         }
 
-        let idx = virtualstudio.inputComboModel.findIndex(elem => elem.type === "element" && elem.text === virtualstudio.inputDevice);
+        let idx = audio.inputComboModel.findIndex(elem => elem.type === "element" && elem.text === audio.inputDevice);
         if (idx < 0) {
-            idx = virtualstudio.inputComboModel.findIndex(elem => elem.type === "element");
+            idx = audio.inputComboModel.findIndex(elem => elem.type === "element");
         }
         return idx;
     }
 
     function getCurrentOutputDeviceIndex() {
-        if (virtualstudio.outputDevice === "") {
-            return virtualstudio.outputComboModel.findIndex(elem => elem.type === "element");
+        if (audio.outputDevice === "") {
+            return audio.outputComboModel.findIndex(elem => elem.type === "element");
         }
 
-        let idx = virtualstudio.outputComboModel.findIndex(elem => elem.type === "element" && elem.text === virtualstudio.outputDevice);
+        let idx = audio.outputComboModel.findIndex(elem => elem.type === "element" && elem.text === audio.outputDevice);
         if (idx < 0) {
-            idx = virtualstudio.outputComboModel.findIndex(elem => elem.type === "element");
+            idx = audio.outputComboModel.findIndex(elem => elem.type === "element");
+        }
+        return idx;
+    }
+
+    function getCurrentInputChannelsIndex() {
+        let idx = audio.inputChannelsComboModel.findIndex(elem => elem.baseChannel === audio.baseInputChannel
+            && elem.numChannels === audio.numInputChannels);
+        if (idx < 0) {
+            idx = 0;
+        }
+        return idx;
+    }
+
+    function getCurrentOutputChannelsIndex() {
+        let idx = audio.outputChannelsComboModel.findIndex(elem => elem.baseChannel === audio.baseOutputChannel
+            && elem.numChannels === audio.numOutputChannels);
+        if (idx < 0) {
+            idx = 0;
+        }
+        return idx;
+    }
+
+    function getCurrentMixModeIndex() {
+        let idx = audio.inputMixModeComboModel.findIndex(elem => elem.value === audio.inputMixMode);
+        if (idx < 0) {
+            idx = 0;
         }
         return idx;
     }
 
     Loader {
         anchors.fill: parent
-        sourceComponent: isUsingRtAudio ? usingRtAudio : (isUsingJack ? usingJACK : noBackend)
+        sourceComponent: audio.audioBackend == "JACK" ? usingJACK : ((!audio.deviceModelsInitialized || audio.scanningDevices) ? scanningDevices : usingRtAudio);
     }
 
     Component {
@@ -100,75 +115,22 @@ Rectangle {
                 color: textColour
             }
 
-            Image {
+            InfoTooltip {
                 id: outputHelpIcon
                 anchors.left: outputLabel.right
                 anchors.bottom: outputLabel.top
                 anchors.bottomMargin: -8 * virtualstudio.uiScale
-                source: "help.svg"
-                sourceSize: Qt.size(12 * virtualstudio.uiScale, 12 * virtualstudio.uiScale)
-                fillMode: Image.PreserveAspectFit
-                smooth: true
-
-                property bool showToolTip: false
-
-                MouseArea {
-                    id: outputMouseArea
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    onEntered: outputHelpIcon.showToolTip = true
-                    onExited: outputHelpIcon.showToolTip = false
-                }
-
-                ToolTip {
-                    visible: outputHelpIcon.showToolTip
-                    contentItem: Rectangle {
-                        color: toolTipBackgroundColour
-                        radius: 3
-                        anchors.fill: parent
-                        anchors.bottomMargin: bottomToolTipMargin * virtualstudio.uiScale
-                        anchors.rightMargin: rightToolTipMargin * virtualstudio.uiScale
-                        layer.enabled: true
-                        border.width: 1
-                        border.color: buttonStroke
-
-                        Text {
-                            anchors.centerIn: parent
-                            font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale}
-                            text: qsTr("How you'll hear the studio audio")
-                            color: toolTipTextColour
-                        }
-                    }
-                    background: Rectangle {
-                        color: "transparent"
-                    }
-                }
+                size: 16 * virtualstudio.uiScale
+                content: qsTr("How you'll hear the studio audio")
             }
 
-            Colorize {
-                anchors.fill: outputHelpIcon
-                source: outputHelpIcon
-                hue: 0
-                saturation: 0
-                lightness: imageLightnessValue
-            }
-
-            Image {
+            AppIcon {
                 id: headphonesIcon
                 anchors.left: outputLabel.left
                 anchors.verticalCenter: outputDeviceMeters.verticalCenter
-                source: "headphones.svg"
-                sourceSize: Qt.size(28 * virtualstudio.uiScale, 28 * virtualstudio.uiScale)
-                fillMode: Image.PreserveAspectFit
-                smooth: true
-            }
-
-            Colorize {
-                anchors.fill: headphonesIcon
-                source: headphonesIcon
-                hue: 0
-                saturation: 0
-                lightness: imageLightnessValue
+                width: 28 * virtualstudio.uiScale
+                height: 28 * virtualstudio.uiScale
+                icon.source: "headphones.svg"
             }
 
             ComboBox {
@@ -177,7 +139,7 @@ Rectangle {
                 anchors.verticalCenter: outputLabel.verticalCenter
                 anchors.rightMargin: rightMargin * virtualstudio.uiScale
                 width: parent.width - leftSpacer.width - rightMargin * virtualstudio.uiScale
-                model: virtualstudio.outputComboModel
+                model: audio.outputComboModel
                 currentIndex: getCurrentOutputDeviceIndex()
                 delegate: ItemDelegate {
                     required property var modelData
@@ -198,15 +160,16 @@ Rectangle {
                             if (modelData.type == "element") {
                                 outputCombo.currentIndex = index
                                 outputCombo.popup.close()
-                                virtualstudio.outputDevice = modelData.text
+                                audio.outputDevice = modelData.text
                                 if (modelData.category === "Low-Latency (ASIO)") {
                                     let inputComboIdx = inputCombo.model.findIndex(it => it.category === "Low-Latency (ASIO)" && it.text === modelData.text);
                                     if (inputComboIdx !== null && inputComboIdx !== undefined) {
                                         inputCombo.currentIndex = inputComboIdx;
-                                        virtualstudio.inputDevice = modelData.text
+                                        audio.inputDevice = modelData.text
                                     }
                                 }
-                                virtualstudio.restartAudio()
+                                audio.validateDevices()
+                                audio.restartAudio()
                             }
                         }
                     }
@@ -228,89 +191,23 @@ Rectangle {
                 anchors.top: outputCombo.bottom
                 anchors.topMargin: 16 * virtualstudio.uiScale
                 height: 24 * virtualstudio.uiScale
-                model: virtualstudio.outputMeterLevels
-                clipped: virtualstudio.outputClipped
-                enabled: virtualstudio.audioReady && !Boolean(virtualstudio.devicesError)
+                model: audio.outputMeterLevels
+                clipped: audio.outputClipped
+                enabled: audio.audioReady && !Boolean(audio.devicesError)
             }
 
-            Slider {
+            VolumeSlider {
                 id: outputSlider
-                from: 0.0
-                value: audioInterface ? audioInterface.outputVolume : 0.5
-                onMoved: { audioInterface.outputVolume = value }
-                to: 1.0
-                padding: 0
-                anchors.left: outputQuieterIcon.right
-                anchors.leftMargin: 8 * virtualstudio.uiScale
-                anchors.right: outputLouderIcon.left
-                anchors.rightMargin: 8 * virtualstudio.uiScale
-                anchors.top: outputDeviceMeters.bottom
-                anchors.topMargin: 16 * virtualstudio.uiScale
-
-                background: Rectangle {
-                    x: outputSlider.leftPadding
-                    y: outputSlider.topPadding + outputSlider.availableHeight / 2 - height / 2
-                    implicitWidth: parent.width
-                    implicitHeight: 6
-                    width: outputSlider.availableWidth
-                    height: implicitHeight
-                    radius: 4
-                    color: sliderTrackColour
-
-                    Rectangle {
-                        width: outputSlider.visualPosition * parent.width
-                        height: parent.height
-                        color: sliderActiveTrackColour
-                        radius: 4
-                    }
-                }
-
-                handle: Rectangle {
-                    x: outputSlider.leftPadding + outputSlider.visualPosition * (outputSlider.availableWidth - width)
-                    y: outputSlider.topPadding + outputSlider.availableHeight / 2 - height / 2
-                    implicitWidth: 26 * virtualstudio.uiScale
-                    implicitHeight: 26 * virtualstudio.uiScale
-                    radius: 13 * virtualstudio.uiScale
-                    color: outputSlider.pressed ? sliderPressedColour : sliderColour
-                    border.color: buttonStroke
-                }
-            }
-
-            Image {
-                id: outputQuieterIcon
                 anchors.left: outputCombo.left
-                anchors.verticalCenter: outputSlider.verticalCenter
-                source: "quiet.svg"
-                sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
-                fillMode: Image.PreserveAspectFit
-                smooth: true
-            }
-
-            Colorize {
-                anchors.fill: outputQuieterIcon
-                source: outputQuieterIcon
-                hue: 0
-                saturation: 0
-                lightness: imageLightnessValue
-            }
-
-            Image {
-                id: outputLouderIcon
                 anchors.right: parent.right
                 anchors.rightMargin: rightMargin * virtualstudio.uiScale
-                anchors.verticalCenter: outputSlider.verticalCenter
-                source: "loud.svg"
-                sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
-                fillMode: Image.PreserveAspectFit
-                smooth: true
-            }
-
-            Colorize {
-                anchors.fill: outputLouderIcon
-                source: outputLouderIcon
-                hue: 0
-                saturation: 0
-                lightness: imageLightnessValue
+                anchors.top: outputDeviceMeters.bottom
+                anchors.topMargin: 16 * virtualstudio.uiScale
+                height: 30 * virtualstudio.uiScale
+                labelText: "Studio"
+                tooltipText: "How loudly you hear other participants"
+                showLabel: false
+                sliderEnabled: true
             }
 
             Text {
@@ -332,15 +229,9 @@ Rectangle {
                 anchors.rightMargin: 8 * virtualstudio.uiScale
                 anchors.top: outputChannelsLabel.bottom
                 anchors.topMargin: 4 * virtualstudio.uiScale
-                model: virtualstudio.outputChannelsComboModel
-                currentIndex: (() => {
-                    let idx = virtualstudio.outputChannelsComboModel.findIndex(elem => elem.baseChannel === virtualstudio.baseOutputChannel
-                        && elem.numChannels === virtualstudio.numOutputChannels);
-                    if (idx < 0) {
-                        idx = 0;
-                    }
-                    return idx;
-                })()
+                model: audio.outputChannelsComboModel
+                enabled: audio.outputChannelsComboModel.length > 1
+                currentIndex: getCurrentOutputChannelsIndex()
                 delegate: ItemDelegate {
                     required property var modelData
                     required property int index
@@ -354,9 +245,10 @@ Rectangle {
                         onClicked: {
                             outputChannelsCombo.currentIndex = index
                             outputChannelsCombo.popup.close()
-                            virtualstudio.baseOutputChannel = modelData.baseChannel
-                            virtualstudio.numOutputChannels = modelData.numChannels
-                            virtualstudio.validateDevicesState()
+                            audio.baseOutputChannel = modelData.baseChannel
+                            audio.numOutputChannels = modelData.numChannels
+                            audio.validateDevices()
+                            audio.restartAudio()
                         }
                     }
                 }
@@ -378,7 +270,7 @@ Rectangle {
                     border.width: 1
                     border.color: testOutputAudioButton.down || testOutputAudioButton.hovered ? buttonPressedStroke : (testOutputAudioButton.hovered ? buttonHoverStroke : buttonStroke)
                 }
-                onClicked: { virtualstudio.playOutputAudio() }
+                onClicked: { audio.playOutputAudio() }
                 anchors.right: parent.right
                 anchors.rightMargin: rightMargin * virtualstudio.uiScale
                 anchors.verticalCenter: outputChannelsCombo.verticalCenter
@@ -409,80 +301,27 @@ Rectangle {
                 color: textColour
             }
 
-            Image {
+            InfoTooltip {
                 id: inputHelpIcon
                 anchors.left: inputLabel.right
                 anchors.bottom: inputLabel.top
                 anchors.bottomMargin: -8 * virtualstudio.uiScale
-                source: "help.svg"
-                sourceSize: Qt.size(12 * virtualstudio.uiScale, 12 * virtualstudio.uiScale)
-                fillMode: Image.PreserveAspectFit
-                smooth: true
-
-                property bool showToolTip: false
-
-                MouseArea {
-                    id: inputMouseArea
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    onEntered: inputHelpIcon.showToolTip = true
-                    onExited: inputHelpIcon.showToolTip = false
-                }
-
-                ToolTip {
-                    visible: inputHelpIcon.showToolTip
-                    contentItem: Rectangle {
-                        color: toolTipBackgroundColour
-                        radius: 3
-                        anchors.fill: parent
-                        anchors.bottomMargin: bottomToolTipMargin * virtualstudio.uiScale
-                        anchors.rightMargin: rightToolTipMargin * virtualstudio.uiScale
-                        layer.enabled: true
-                        border.width: 1
-                        border.color: buttonStroke
-
-                        Text {
-                            anchors.centerIn: parent
-                            font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale}
-                            text: qsTr("Audio sent to the studio (microphone, instrument, mixer, etc.)")
-                            color: toolTipTextColour
-                        }
-                    }
-                    background: Rectangle {
-                        color: "transparent"
-                    }
-                }
+                size: 16 * virtualstudio.uiScale
+                content: qsTr("Audio sent to the studio (microphone, instrument, mixer, etc.)")
             }
 
-            Colorize {
-                anchors.fill: inputHelpIcon
-                source: inputHelpIcon
-                hue: 0
-                saturation: 0
-                lightness: imageLightnessValue
-            }
-
-            Image {
+            AppIcon {
                 id: microphoneIcon
                 anchors.left: outputLabel.left
                 anchors.verticalCenter: inputDeviceMeters.verticalCenter
-                source: "mic.svg"
-                sourceSize: Qt.size(32 * virtualstudio.uiScale, 32 * virtualstudio.uiScale)
-                fillMode: Image.PreserveAspectFit
-                smooth: true
-            }
-
-            Colorize {
-                anchors.fill: microphoneIcon
-                source: microphoneIcon
-                hue: 0
-                saturation: 0
-                lightness: imageLightnessValue
+                width: 32 * virtualstudio.uiScale
+                height: 32 * virtualstudio.uiScale
+                icon.source: "mic.svg"
             }
 
             ComboBox {
                 id: inputCombo
-                model: virtualstudio.inputComboModel
+                model: audio.inputComboModel
                 currentIndex: getCurrentInputDeviceIndex()
                 anchors.left: outputCombo.left
                 anchors.right: outputCombo.right
@@ -506,15 +345,16 @@ Rectangle {
                             if (modelData.type == "element") {
                                 inputCombo.currentIndex = index
                                 inputCombo.popup.close()
-                                virtualstudio.inputDevice = modelData.text
+                                audio.inputDevice = modelData.text
                                 if (modelData.category === "Low-Latency (ASIO)") {
                                     let outputComboIdx = outputCombo.model.findIndex(it => it.category === "Low-Latency (ASIO)" && it.text === modelData.text);
                                     if (outputComboIdx !== null && outputComboIdx !== undefined) {
                                         outputCombo.currentIndex = outputComboIdx;
-                                        virtualstudio.outputDevice = modelData.text
+                                        audio.outputDevice = modelData.text
                                     }
                                 }
-                                virtualstudio.restartAudio()
+                                audio.validateDevices()
+                                audio.restartAudio()
                             }
                         }
                     }
@@ -536,89 +376,23 @@ Rectangle {
                 anchors.top: inputCombo.bottom
                 anchors.topMargin: 16 * virtualstudio.uiScale
                 height: 24 * virtualstudio.uiScale
-                model: virtualstudio.inputMeterLevels
-                clipped: virtualstudio.inputClipped
-                enabled: virtualstudio.audioReady && !Boolean(virtualstudio.devicesError)
+                model: audio.inputMeterLevels
+                clipped: audio.inputClipped
+                enabled: audio.audioReady && !Boolean(audio.devicesError)
             }
 
-            Slider {
+            VolumeSlider {
                 id: inputSlider
-                from: 0.0
-                value: audioInterface ? audioInterface.inputVolume : 0.5
-                onMoved: { audioInterface.inputVolume = value }
-                to: 1.0
-                padding: 0
-                anchors.left: inputQuieterIcon.right
-                anchors.leftMargin: 8 * virtualstudio.uiScale
-                anchors.right: inputLouderIcon.left
-                anchors.rightMargin: 8 * virtualstudio.uiScale
-                anchors.top: inputDeviceMeters.bottom
-                anchors.topMargin: 16 * virtualstudio.uiScale
-
-                background: Rectangle {
-                    x: inputSlider.leftPadding
-                    y: inputSlider.topPadding + inputSlider.availableHeight / 2 - height / 2
-                    implicitWidth: parent.width
-                    implicitHeight: 6
-                    width: inputSlider.availableWidth
-                    height: implicitHeight
-                    radius: 4
-                    color: sliderTrackColour
-
-                    Rectangle {
-                        width: inputSlider.visualPosition * parent.width
-                        height: parent.height
-                        color: sliderActiveTrackColour
-                        radius: 4
-                    }
-                }
-
-                handle: Rectangle {
-                    x: inputSlider.leftPadding + inputSlider.visualPosition * (inputSlider.availableWidth - width)
-                    y: inputSlider.topPadding + inputSlider.availableHeight / 2 - height / 2
-                    implicitWidth: 26 * virtualstudio.uiScale
-                    implicitHeight: 26 * virtualstudio.uiScale
-                    radius: 13 * virtualstudio.uiScale
-                    color: inputSlider.pressed ? sliderPressedColour : sliderColour
-                    border.color: buttonStroke
-                }
-            }
-
-            Image {
-                id: inputQuieterIcon
                 anchors.left: inputDeviceMeters.left
-                anchors.verticalCenter: inputSlider.verticalCenter
-                source: "quiet.svg"
-                sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
-                fillMode: Image.PreserveAspectFit
-                smooth: true
-            }
-
-            Colorize {
-                anchors.fill: inputQuieterIcon
-                source: inputQuieterIcon
-                hue: 0
-                saturation: 0
-                lightness: imageLightnessValue
-            }
-
-            Image {
-                id: inputLouderIcon
                 anchors.right: parent.right
                 anchors.rightMargin: rightMargin * virtualstudio.uiScale
-                anchors.verticalCenter: inputSlider.verticalCenter
-                source: "loud.svg"
-                sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
-                fillMode: Image.PreserveAspectFit
-                smooth: true
-            }
-
-            Colorize {
-                anchors.fill: inputLouderIcon
-                source: inputLouderIcon
-                hue: 0
-                saturation: 0
-                lightness: imageLightnessValue
+                anchors.top: inputDeviceMeters.bottom
+                anchors.topMargin: 16 * virtualstudio.uiScale
+                height: 30 * virtualstudio.uiScale
+                labelText: "Send"
+                tooltipText: "How loudly other participants hear you"
+                showLabel: false
+                sliderEnabled: true
             }
 
             Button {
@@ -649,15 +423,9 @@ Rectangle {
                 anchors.rightMargin: 8 * virtualstudio.uiScale
                 anchors.top: inputChannelsLabel.bottom
                 anchors.topMargin: 4 * virtualstudio.uiScale
-                model: virtualstudio.inputChannelsComboModel
-                currentIndex: (() => {
-                    let idx = virtualstudio.inputChannelsComboModel.findIndex(elem => elem.baseChannel === virtualstudio.baseInputChannel
-                        && elem.numChannels === virtualstudio.numInputChannels);
-                    if (idx < 0) {
-                        idx = 0;
-                    }
-                    return idx;
-                })()
+                model: audio.inputChannelsComboModel
+                enabled: audio.inputChannelsComboModel.length > 1
+                currentIndex: getCurrentInputChannelsIndex()
                 delegate: ItemDelegate {
                     required property var modelData
                     required property int index
@@ -671,9 +439,10 @@ Rectangle {
                         onClicked: {
                             inputChannelsCombo.currentIndex = index
                             inputChannelsCombo.popup.close()
-                            virtualstudio.baseInputChannel = modelData.baseChannel
-                            virtualstudio.numInputChannels = modelData.numChannels
-                            virtualstudio.validateDevicesState()
+                            audio.baseInputChannel = modelData.baseChannel
+                            audio.numInputChannels = modelData.numChannels
+                            audio.validateDevices()
+                            audio.restartAudio()
                         }
                     }
                 }
@@ -707,14 +476,9 @@ Rectangle {
                 anchors.rightMargin: 8 * virtualstudio.uiScale
                 anchors.top: inputMixModeLabel.bottom
                 anchors.topMargin: 4 * virtualstudio.uiScale
-                model: virtualstudio.inputMixModeComboModel
-                currentIndex: (() => {
-                    let idx = virtualstudio.inputMixModeComboModel.findIndex(elem => elem.value === virtualstudio.inputMixMode);
-                    if (idx < 0) {
-                        idx = 0;
-                    }
-                    return idx;
-                })()
+                model: audio.inputMixModeComboModel
+                enabled: audio.inputMixModeComboModel.length > 1
+                currentIndex: getCurrentMixModeIndex()
                 delegate: ItemDelegate {
                     required property var modelData
                     required property int index
@@ -728,8 +492,9 @@ Rectangle {
                         onClicked: {
                             inputMixModeCombo.currentIndex = index
                             inputMixModeCombo.popup.close()
-                            virtualstudio.inputMixMode = virtualstudio.inputMixModeComboModel[index].value
-                            virtualstudio.validateDevicesState()
+                            audio.inputMixMode = audio.inputMixModeComboModel[index].value
+                            audio.validateDevices();
+                            audio.restartAudio()
                         }
                     }
                 }
@@ -752,7 +517,7 @@ Rectangle {
                 anchors.topMargin: 8 * virtualstudio.uiScale
                 textFormat: Text.RichText
                 wrapMode: Text.WordWrap
-                text: "Choose up to 2 channels"
+                text: audio.inputChannelsComboModel.length > 1 ? "Choose up to 2 channels" : "Only 1 channel available"
                 font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
                 color: textColour
             }
@@ -767,11 +532,11 @@ Rectangle {
                 textFormat: Text.RichText
                 wrapMode: Text.WordWrap
                 text: (() => {
-                    if (virtualstudio.inputMixMode === 2) {
+                    if (audio.inputMixMode === 2) {
                         return "Treat the channels as Left and Right signals, coming through each speaker separately.";
-                    } else if (virtualstudio.inputMixMode === 3) {
+                    } else if (audio.inputMixMode === 3) {
                         return "Combine the channels into one central channel coming through both speakers.";
-                    } else if (virtualstudio.inputMixMode === 1) {
+                    } else if (audio.inputMixMode === 1) {
                         return "Send a single channel of audio";
                     } else {
                         return "";
@@ -781,28 +546,31 @@ Rectangle {
                 color: textColour
             }
 
-            Text {
-                id: warningOrErrorMessage
-                anchors.left: inputLabel.left
-                anchors.right: parent.right
-                anchors.rightMargin: 16 * virtualstudio.uiScale
-                anchors.top: inputMixModeHelpMessage.bottom
-                anchors.topMargin: 8 * virtualstudio.uiScale
-                anchors.bottomMargin: 8 * virtualstudio.uiScale
-                textFormat: Text.RichText
-                text: (virtualstudio.devicesError || virtualstudio.devicesWarning)
-                    + ((virtualstudio.devicesErrorHelpUrl || virtualstudio.devicesWarningHelpUrl)
-                        ? `&nbsp;<a style="color: ${linkText};" href=${virtualstudio.devicesErrorHelpUrl || virtualstudio.devicesWarningHelpUrl}>Learn More.</a>`
-                        : ""
-                    )
-                onLinkActivated: link => {
-                    virtualstudio.openLink(link)
+            Connections {
+                target: audio
+                // anything that sets currentIndex to the value of a function needs
+                // to be manually updated whenever there is a change to any vars it uses
+                function onInputDeviceChanged() {
+                    inputCombo.currentIndex = getCurrentInputDeviceIndex();
                 }
-                horizontalAlignment: Text.AlignHLeft
-                wrapMode: Text.WordWrap
-                color: warningTextColour
-                font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-                visible: Boolean(virtualstudio.devicesError) || Boolean(virtualstudio.devicesWarning);
+                function onOutputDeviceChanged() {
+                    outputCombo.currentIndex = getCurrentOutputDeviceIndex();
+                }
+                function onNumInputChannelsChanged() {
+                    inputChannelsCombo.currentIndex = getCurrentInputChannelsIndex();
+                }
+                function onBaseInputChannelChanged() {
+                    inputChannelsCombo.currentIndex = getCurrentInputChannelsIndex();
+                }
+                function onNumOutputChannelsChanged() {
+                    outputChannelsCombo.currentIndex = getCurrentOutputChannelsIndex();
+                }
+                function onBaseOutputChannelChanged() {
+                    outputChannelsCombo.currentIndex = getCurrentOutputChannelsIndex();
+                }
+                function onInputMixModeChanged() {
+                    inputMixModeCombo.currentIndex = getCurrentMixModeIndex();
+                }
             }
         }
     }
@@ -840,22 +608,13 @@ Rectangle {
                 color: textColour
             }
 
-            Image {
+            AppIcon {
                 id: jackHeadphonesIcon
                 anchors.left: jackOutputLabel.left
                 anchors.verticalCenter: jackOutputVolumeSlider.verticalCenter
-                source: "headphones.svg"
-                sourceSize: Qt.size(28 * virtualstudio.uiScale, 28 * virtualstudio.uiScale)
-                fillMode: Image.PreserveAspectFit
-                smooth: true
-            }
-
-            Colorize {
-                anchors.fill: jackHeadphonesIcon
-                source: jackHeadphonesIcon
-                hue: 0
-                saturation: 0
-                lightness: imageLightnessValue
+                width: 28 * virtualstudio.uiScale
+                height: 28 * virtualstudio.uiScale
+                icon.source: "headphones.svg"
             }
 
             Meter {
@@ -865,9 +624,9 @@ Rectangle {
                 anchors.rightMargin: rightMargin * virtualstudio.uiScale
                 anchors.verticalCenter: jackOutputLabel.verticalCenter
                 height: 24 * virtualstudio.uiScale
-                model: virtualstudio.outputMeterLevels
-                clipped: virtualstudio.outputClipped
-                enabled: virtualstudio.audioReady && !Boolean(virtualstudio.devicesError)
+                model: audio.outputMeterLevels
+                clipped: audio.outputClipped
+                enabled: audio.audioReady && !Boolean(audio.devicesError)
             }
 
             Button {
@@ -878,7 +637,7 @@ Rectangle {
                     border.width: 1
                     border.color: jackTestOutputAudioButton.down ? buttonPressedStroke : (jackTestOutputAudioButton.hovered ? buttonHoverStroke : buttonStroke)
                 }
-                onClicked: { virtualstudio.playOutputAudio() }
+                onClicked: { audio.playOutputAudio() }
                 anchors.right: parent.right
                 anchors.rightMargin: rightMargin * virtualstudio.uiScale
                 anchors.verticalCenter: jackOutputVolumeSlider.verticalCenter
@@ -891,84 +650,18 @@ Rectangle {
                 }
             }
 
-            Slider {
+            VolumeSlider {
                 id: jackOutputVolumeSlider
-                from: 0.0
-                value: audioInterface ? audioInterface.outputVolume : 0.5
-                onMoved: { audioInterface.outputVolume = value }
-                to: 1.0
-                padding: 0
-                anchors.left: jackOutputQuieterButton.right
-                anchors.leftMargin: 8 * virtualstudio.uiScale
-                anchors.right: jackOutputLouderIcon.left
-                anchors.rightMargin: 8 * virtualstudio.uiScale
-                anchors.top: jackOutputMeters.bottom
-                anchors.topMargin: 16 * virtualstudio.uiScale
-
-                background: Rectangle {
-                    x: jackOutputVolumeSlider.leftPadding
-                    y: jackOutputVolumeSlider.topPadding + jackOutputVolumeSlider.availableHeight / 2 - height / 2
-                    implicitWidth: parent.width
-                    implicitHeight: 6
-                    width: jackOutputVolumeSlider.availableWidth
-                    height: implicitHeight
-                    radius: 4
-                    color: sliderTrackColour
-
-                    Rectangle {
-                        width: jackOutputVolumeSlider.visualPosition * parent.width
-                        height: parent.height
-                        color: sliderActiveTrackColour
-                        radius: 4
-                    }
-                }
-
-                handle: Rectangle {
-                    x: jackOutputVolumeSlider.leftPadding + jackOutputVolumeSlider.visualPosition * (jackOutputVolumeSlider.availableWidth - width)
-                    y: jackOutputVolumeSlider.topPadding + jackOutputVolumeSlider.availableHeight / 2 - height / 2
-                    implicitWidth: 26 * virtualstudio.uiScale
-                    implicitHeight: 26 * virtualstudio.uiScale
-                    radius: 13 * virtualstudio.uiScale
-                    color: jackOutputVolumeSlider.pressed ? sliderPressedColour : sliderColour
-                    border.color: buttonStroke
-                }
-            }
-
-            Image {
-                id: jackOutputQuieterButton
                 anchors.left: jackOutputMeters.left
-                anchors.verticalCenter: jackOutputVolumeSlider.verticalCenter
-                source: "quiet.svg"
-                sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
-                fillMode: Image.PreserveAspectFit
-                smooth: true
-            }
-
-            Colorize {
-                anchors.fill: jackOutputQuieterButton
-                source: jackOutputQuieterButton
-                hue: 0
-                saturation: 0
-                lightness: imageLightnessValue
-            }
-
-            Image {
-                id: jackOutputLouderIcon
                 anchors.right: jackTestOutputAudioButton.left
                 anchors.rightMargin: rightMargin * virtualstudio.uiScale
-                anchors.verticalCenter: jackOutputVolumeSlider.verticalCenter
-                source: "loud.svg"
-                sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
-                fillMode: Image.PreserveAspectFit
-                smooth: true
-            }
-
-            Colorize {
-                anchors.fill: jackOutputLouderIcon
-                source: jackOutputLouderIcon
-                hue: 0
-                saturation: 0
-                lightness: imageLightnessValue
+                anchors.top: jackOutputMeters.bottom
+                anchors.topMargin: 16 * virtualstudio.uiScale
+                height: 30 * virtualstudio.uiScale
+                labelText: "Studio"
+                tooltipText: "How loudly you hear other participants"
+                showLabel: false
+                sliderEnabled: true
             }
 
             Text {
@@ -983,22 +676,13 @@ Rectangle {
                 color: textColour
             }
 
-            Image {
+            AppIcon {
                 id: jackMicrophoneIcon
                 anchors.left: jackInputLabel.left
                 anchors.verticalCenter: jackInputVolumeSlider.verticalCenter
-                source: "mic.svg"
-                sourceSize: Qt.size(32 * virtualstudio.uiScale, 32 * virtualstudio.uiScale)
-                fillMode: Image.PreserveAspectFit
-                smooth: true
-            }
-
-            Colorize {
-                anchors.fill: jackMicrophoneIcon
-                source: jackMicrophoneIcon
-                hue: 0
-                saturation: 0
-                lightness: imageLightnessValue
+                width: 32 * virtualstudio.uiScale
+                height: 32 * virtualstudio.uiScale
+                icon.source: "mic.svg"
             }
 
             Meter {
@@ -1008,89 +692,23 @@ Rectangle {
                 anchors.rightMargin: rightMargin * virtualstudio.uiScale
                 anchors.verticalCenter: jackInputLabel.verticalCenter
                 height: 24 * virtualstudio.uiScale
-                model: virtualstudio.inputMeterLevels
-                clipped: virtualstudio.inputClipped
-                enabled: virtualstudio.audioReady && !Boolean(virtualstudio.devicesError)
+                model: audio.inputMeterLevels
+                clipped: audio.inputClipped
+                enabled: audio.audioReady && !Boolean(audio.devicesError)
             }
 
-            Slider {
+            VolumeSlider {
                 id: jackInputVolumeSlider
-                from: 0.0
-                value: audioInterface ? audioInterface.inputVolume : 0.5
-                onMoved: { audioInterface.inputVolume = value }
-                to: 1.0
-                padding: 0
-                anchors.left: jackInputQuieterButton.right
-                anchors.leftMargin: 8 * virtualstudio.uiScale
-                anchors.right: jackInputLouderIcon.left
-                anchors.rightMargin: 8 * virtualstudio.uiScale
-                anchors.top: jackInputMeters.bottom
-                anchors.topMargin: 16 * virtualstudio.uiScale
-
-                background: Rectangle {
-                    x: jackInputVolumeSlider.leftPadding
-                    y: jackInputVolumeSlider.topPadding + jackInputVolumeSlider.availableHeight / 2 - height / 2
-                    implicitWidth: parent.width
-                    implicitHeight: 6
-                    width: jackInputVolumeSlider.availableWidth
-                    height: implicitHeight
-                    radius: 4
-                    color: sliderTrackColour
-
-                    Rectangle {
-                        width: jackInputVolumeSlider.visualPosition * parent.width
-                        height: parent.height
-                        color: sliderActiveTrackColour
-                        radius: 4
-                    }
-                }
-
-                handle: Rectangle {
-                    x: jackInputVolumeSlider.leftPadding + jackInputVolumeSlider.visualPosition * (jackInputVolumeSlider.availableWidth - width)
-                    y: jackInputVolumeSlider.topPadding + jackInputVolumeSlider.availableHeight / 2 - height / 2
-                    implicitWidth: 26 * virtualstudio.uiScale
-                    implicitHeight: 26 * virtualstudio.uiScale
-                    radius: 13 * virtualstudio.uiScale
-                    color: jackInputVolumeSlider.pressed ? sliderPressedColour : sliderColour
-                    border.color: buttonStroke
-                }
-            }
-
-            Image {
-                id: jackInputQuieterButton
                 anchors.left: jackInputMeters.left
-                anchors.verticalCenter: jackInputVolumeSlider.verticalCenter
-                source: "quiet.svg"
-                sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
-                fillMode: Image.PreserveAspectFit
-                smooth: true
-            }
-
-            Colorize {
-                anchors.fill: jackInputQuieterButton
-                source: jackInputQuieterButton
-                hue: 0
-                saturation: 0
-                lightness: imageLightnessValue
-            }
-
-            Image {
-                id: jackInputLouderIcon
                 anchors.right: parent.right
                 anchors.rightMargin: rightMargin * virtualstudio.uiScale
-                anchors.verticalCenter: jackInputVolumeSlider.verticalCenter
-                source: "loud.svg"
-                sourceSize: Qt.size(16 * virtualstudio.uiScale, 16 * virtualstudio.uiScale)
-                fillMode: Image.PreserveAspectFit
-                smooth: true
-            }
-
-            Colorize {
-                anchors.fill: jackInputLouderIcon
-                source: jackInputLouderIcon
-                hue: 0
-                saturation: 0
-                lightness: imageLightnessValue
+                anchors.top: jackInputMeters.bottom
+                anchors.topMargin: 16 * virtualstudio.uiScale
+                height: 30 * virtualstudio.uiScale
+                labelText: "Send"
+                tooltipText: "How loudly other participants hear you"
+                showLabel: false
+                sliderEnabled: true
             }
 
             Button {
@@ -1120,6 +738,29 @@ Rectangle {
                 x: 0; y: 0
                 width: parent.width - (16 * virtualstudio.uiScale)
                 text: "JackTrip has been compiled without an audio backend. Please rebuild with the rtaudio flag or without the nojack flag."
+                font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+                wrapMode: Text.WordWrap
+                color: textColour
+            }
+        }
+    }
+
+    Component {
+        id: scanningDevices
+
+        Item {
+            anchors.top: parent.top
+            anchors.topMargin: 24 * virtualstudio.uiScale
+            anchors.bottom: parent.bottom
+            anchors.left: parent.left
+            anchors.leftMargin: leftMargin * virtualstudio.uiScale
+            anchors.right: parent.right
+
+            Text {
+                id: scanningDevicesLabel
+                x: 0; y: 0
+                width: parent.width - (16 * virtualstudio.uiScale)
+                text: "Scanning audio devices..."
                 font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
                 wrapMode: Text.WordWrap
                 color: textColour

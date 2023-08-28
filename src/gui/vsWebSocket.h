@@ -40,6 +40,7 @@
 
 #include <QList>
 #include <QObject>
+#include <QScopedPointer>
 #include <QSslError>
 #include <QString>
 #include <QUrl>
@@ -53,6 +54,7 @@ class VsWebSocket : public QObject
     // Constructor
     explicit VsWebSocket(const QUrl& url, QString token, QString apiPrefix,
                          QString apiSecret, QObject* parent = nullptr);
+    virtual ~VsWebSocket();
 
     // Public functions
     void openSocket();
@@ -62,18 +64,15 @@ class VsWebSocket : public QObject
 
    signals:
     void textMessageReceived(const QString& message);
+    void disconnected();
 
    private slots:
-    void onConnected();
-    void onClosed();
     void onError(QAbstractSocket::SocketError error);
     void onSslErrors(const QList<QSslError>& errors);
 
    private:
-    QWebSocket m_webSocket;
+    QScopedPointer<QWebSocket> m_webSocket;
     QUrl m_url;
-    bool m_connected = false;
-    bool m_error     = false;
     QString m_token;
     QString m_apiPrefix;
     QString m_apiSecret;

@@ -77,7 +77,7 @@ AudioInterface::AudioInterface(QVarLengthArray<int> InputChans,
 #ifndef WAIR
     // cc
     // Initialize and assign memory for ProcessPlugins Buffers
-    int monitorChans = std::min(mInputChans.size(), mOutputChans.size());
+    int monitorChans = int(std::min<size_t>(mInputChans.size(), mOutputChans.size()));
     mInProcessBuffer.resize(mInputChans.size());
     mOutProcessBuffer.resize(mOutputChans.size());
     mMonProcessBuffer.resize(monitorChans);
@@ -97,7 +97,7 @@ AudioInterface::AudioInterface(QVarLengthArray<int> InputChans,
     int oCnt =
         (mOutputChans.size() > mNumNetRevChans) ? mOutputChans.size() : mNumNetRevChans;
     int aCnt = (mNumNetRevChans) ? mInputChans.size() : 0;
-    int mCnt = std::min(iCnt, oCnt);
+    int mCnt = std::min<int>(iCnt, oCnt);
     for (int i = 0; i < iCnt; i++) {
         mInProcessBuffer[i] = NULL;
     }
@@ -154,12 +154,15 @@ AudioInterface::~AudioInterface()
     }
 #endif  // endwhere
     for (auto* i : qAsConst(mProcessPluginsFromNetwork)) {
+        i->disconnect();
         delete i;
     }
     for (auto* i : qAsConst(mProcessPluginsToNetwork)) {
+        i->disconnect();
         delete i;
     }
     for (auto* i : qAsConst(mProcessPluginsToMonitor)) {
+        i->disconnect();
         delete i;
     }
     for (int i = 0; i < mInBufCopy.size(); i++) {
@@ -172,8 +175,8 @@ void AudioInterface::setup(bool /*verbose*/)
 {
     int nChansIn  = mInputChans.size();
     int nChansOut = mOutputChans.size();
-    int nChansMon =
-        std::min(nChansIn, nChansOut);  // Note: Should be 2 when mixing stereo-to-mono
+    int nChansMon = std::min<int>(
+        nChansIn, nChansOut);  // Note: Should be 2 when mixing stereo-to-mono
     inputMixModeT inputMixMode = mInputMixMode;
     if (inputMixMode == MIXTOMONO) {
         nChansIn = 1;
@@ -184,8 +187,8 @@ void AudioInterface::setup(bool /*verbose*/)
     // Allocate buffer memory to read and write
     mSizeInBytesPerChannel = getSizeInBytesPerChannel();
 
-    int size_audio_input  = mSizeInBytesPerChannel * nChansIn;
-    int size_audio_output = mSizeInBytesPerChannel * nChansOut;
+    int size_audio_input  = int(mSizeInBytesPerChannel * nChansIn);
+    int size_audio_output = int(mSizeInBytesPerChannel * nChansOut);
 #ifdef WAIR               // WAIR
     if (mNumNetRevChans)  // else don't change sizes
     {
@@ -272,8 +275,8 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
 {
     int nChansIn  = mInputChans.size();
     int nChansOut = mOutputChans.size();
-    int nChansMon =
-        std::min(nChansIn, nChansOut);  // Note: Should be 2 when mixing stereo-to-mono
+    int nChansMon = std::min<int>(
+        nChansIn, nChansOut);  // Note: Should be 2 when mixing stereo-to-mono
     inputMixModeT inputMixMode = mInputMixMode;
     if (inputMixMode == MIXTOMONO) {
         nChansIn = 1;
@@ -656,16 +659,17 @@ void AudioInterface::fromSampleToBitConversion(
     switch (targetBitResolution) {
     case BIT8:
         // 8bit integer between -128 to 127
-        tmp_sample =
-            std::max(-127.0, std::min(127.0, std::round((*input) * 127.0)));  // 2^7 = 128
+        tmp_sample = std::max<double>(
+            -127.0, std::min<double>(127.0, std::round((*input) * 127.0)));  // 2^7 = 128
         tmp_8 = static_cast<int8_t>(tmp_sample);
         std::memcpy(output, &tmp_8, 1);  // 8bits = 1 bytes
         break;
     case BIT16:
         // 16bit integer between -32768 to 32767
         // original scaling: tmp_sample = floor( (*input) * 32768.0 ); // 2^15 = 32768.0
-        tmp_sample = std::max(
-            -32767.0, std::min(32767.0, std::round((*input) * 32767.0)));  // 2^15 = 32768
+        tmp_sample = std::max<double>(
+            -32767.0,
+            std::min<double>(32767.0, std::round((*input) * 32767.0)));  // 2^15 = 32768
         tmp_16 = static_cast<int16_t>(tmp_sample);
         std::memcpy(
             output, &tmp_16,
@@ -692,7 +696,7 @@ void AudioInterface::fromSampleToBitConversion(
     case BIT32:
         tmp_sample = *input;
         // not necessary yet:
-        // tmp_sample = std::max(-1.0, std::min(1.0, tmp_sample));
+        // tmp_sample = std::max<double>(-1.0, std::min<double>(1.0, tmp_sample));
         std::memcpy(output, &tmp_sample, 4);  // 32bit = 4 bytes
         break;
     }
@@ -740,7 +744,7 @@ void AudioInterface::fromBitToSampleConversion(
 //*******************************************************************************
 void AudioInterface::appendProcessPluginToNetwork(ProcessPlugin* plugin)
 {
-    if (not plugin) {
+    if (!plugin) {
         return;
     }
 
@@ -766,7 +770,7 @@ void AudioInterface::appendProcessPluginToNetwork(ProcessPlugin* plugin)
 
 void AudioInterface::appendProcessPluginFromNetwork(ProcessPlugin* plugin)
 {
-    if (not plugin) {
+    if (!plugin) {
         return;
     }
 
@@ -788,13 +792,13 @@ void AudioInterface::appendProcessPluginFromNetwork(ProcessPlugin* plugin)
 
 void AudioInterface::appendProcessPluginToMonitor(ProcessPlugin* plugin)
 {
-    if (not plugin) {
+    if (!plugin) {
         return;
     }
     int nChansIn  = mInputChans.size();
     int nChansOut = mOutputChans.size();
-    int nChansMon =
-        std::min(nChansIn, nChansOut);  // Note: Should be 2 when mixing stereo-to-mono
+    int nChansMon = std::min<int>(
+        nChansIn, nChansOut);  // Note: Should be 2 when mixing stereo-to-mono
     inputMixModeT inputMixMode = mInputMixMode;
     if (inputMixMode == MIXTOMONO) {
         nChansIn = 1;
@@ -829,8 +833,8 @@ void AudioInterface::initPlugins(bool verbose)
 {
     int nChansIn  = mInputChans.size();
     int nChansOut = mOutputChans.size();
-    int nChansMon =
-        std::min(nChansIn, nChansOut);  // Note: Should be 2 when mixing stereo-to-mono
+    int nChansMon = std::min<int>(
+        nChansIn, nChansOut);  // Note: Should be 2 when mixing stereo-to-mono
     inputMixModeT inputMixMode = mInputMixMode;
     if (inputMixMode == MIXTOMONO) {
         nChansIn = 1;
@@ -933,24 +937,28 @@ int AudioInterface::getSampleRateFromType(samplingRateT rate_type)
 void AudioInterface::setDevicesWarningMsg(warningMessageT msg)
 {
     switch (msg) {
-    case DEVICE_WARN_LATENCY:
+    case DEVICE_WARN_BUFFER_LATENCY:
         mWarningMsg =
-            "The selected Input and Output devices are Non-ASIO and may cause high "
-            "latency or audio delay. Installing ASIO drivers and using ASIO Input and "
-            "Output devices will lower audio delays for a 'same room experience'.";
-#ifdef _WIN32
-        mWarningHelpUrl = "https://help.jacktrip.org/hc/en-us/articles/4409919243155";
-#else
-        mWarningHelpUrl = "";
-#endif
+            "The buffer size setting for your audio device will cause high latency "
+            "or audio delay. Use an audio device that supports small buffer sizes "
+            "to reduce audio delays.";
+        mWarningHelpUrl  = "";
+        mHighLatencyFlag = true;
+        break;
+    case DEVICE_WARN_ASIO_LATENCY:
+        mWarningMsg =
+            "You audio device drivers may cause high latency or audio delay. Install "
+            "and use ASIO drivers provided by your device's manufacturer to reduce "
+            "audio delays.";
+        mWarningHelpUrl  = "https://help.jacktrip.org/hc/en-us/articles/4409919243155";
+        mHighLatencyFlag = true;
         break;
     default:
-        mWarningMsg     = "";
-        mWarningHelpUrl = "";
+        mWarningMsg      = "";
+        mWarningHelpUrl  = "";
+        mHighLatencyFlag = false;
         break;
     }
-
-    return;
 }
 
 //*******************************************************************************
@@ -965,7 +973,7 @@ void AudioInterface::setDevicesErrorMsg(errorMessageT msg)
 #ifdef _WIN32
         mErrorHelpUrl = "https://help.jacktrip.org/hc/en-us/articles/4409919243155";
 #else
-        mErrorHelpUrl   = "";
+        mErrorHelpUrl = "";
 #endif
         break;
     case DEVICE_ERR_NO_INPUTS:
@@ -992,29 +1000,4 @@ void AudioInterface::setDevicesErrorMsg(errorMessageT msg)
         mErrorHelpUrl = "";
         break;
     }
-    return;
-}
-
-//*******************************************************************************
-std::string AudioInterface::getDevicesWarningMsg()
-{
-    return mWarningMsg;
-}
-
-//*******************************************************************************
-std::string AudioInterface::getDevicesErrorMsg()
-{
-    return mErrorMsg;
-}
-
-//*******************************************************************************
-std::string AudioInterface::getDevicesWarningHelpUrl()
-{
-    return mWarningHelpUrl;
-}
-
-//*******************************************************************************
-std::string AudioInterface::getDevicesErrorHelpUrl()
-{
-    return mErrorHelpUrl;
 }

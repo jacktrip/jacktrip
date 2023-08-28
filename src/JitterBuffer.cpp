@@ -79,7 +79,7 @@ JitterBuffer::JitterBuffer(int buf_samples, int qlen, int sample_rate, int strat
     mOverflowDecTolerance  = 100 * mMaxLatency;
     mWritePosition         = mMaxLatency;
     mStatUnit              = mSlotSize;
-    mLevelDownRate         = std::min(256, mFPP) / (5.0 * sample_rate) * mSlotSize;
+    mLevelDownRate         = std::min<int>(256, mFPP) / (5.0 * sample_rate) * mSlotSize;
     mOverflowDropStep      = mMaxLatency / 2;
     mLevelCur              = mMaxLatency;
     mLevel                 = mLevelCur;
@@ -113,7 +113,7 @@ JitterBuffer::JitterBuffer(int buf_samples, int qlen, int sample_rate, int strat
     }
     mAutoQRate      = mSlotSize * 0.5;
     mAutoQRateMin   = mSlotSize * 0.0005;
-    mAutoQRateDecay = 1.0 - std::min(mFPP * 1.2e-6, 0.0005);
+    mAutoQRateDecay = 1.0 - std::min<double>(mFPP * 1.2e-6, 0.0005);
 }
 
 //*******************************************************************************
@@ -155,10 +155,10 @@ bool JitterBuffer::insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int l
         mBufDecOverflow += delta;
         mLevelCur = mMaxLatency;
     } else if (0 > available
-               && mLevelCur < std::max(mInSlotSize + mMinLevelThreshold,
-                                       mMaxLatency - mUnderrunIncTolerance
-                                           - 2 * mSlotSize * lastCorrFactor())) {
-        delta = -std::min(-available, mSlotSize);
+               && mLevelCur < std::max<double>(mInSlotSize + mMinLevelThreshold,
+                                               mMaxLatency - mUnderrunIncTolerance
+                                                   - 2 * mSlotSize * lastCorrFactor())) {
+        delta = -std::min<int32_t>(-available, mSlotSize);
         mBufIncUnderrun += -delta;
     } else if (mLevelCur
                < mMaxLatency - mCorrIncTolerance - 6 * mSlotSize * lastCorrFactor()) {
@@ -176,7 +176,7 @@ bool JitterBuffer::insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int l
     }
 
     int wpos = mWritePosition % mTotalSize;
-    int n    = std::min(mTotalSize - wpos, len);
+    int n    = std::min<int>(mTotalSize - wpos, len);
     std::memcpy(mRingBuffer + wpos, ptrToSlot, n);
     if (n < len) {
         // cout << "split write: " << len << "-" << n << endl;
@@ -199,7 +199,7 @@ void JitterBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
     mReadsNew += len;
     int32_t available = mWritePosition - mReadPosition;
     if (available < mLevelCur) {
-        mLevelCur = std::max((double)available, mLevelCur - mLevelDownRate);
+        mLevelCur = std::max<double>((double)available, mLevelCur - mLevelDownRate);
     } else {
         mLevelCur = available;
     }
@@ -231,7 +231,7 @@ void JitterBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
 
     int read_len = qBound(0, available, len);
     int rpos     = mReadPosition % mTotalSize;
-    int n        = std::min(mTotalSize - rpos, read_len);
+    int n        = std::min<int>(mTotalSize - rpos, read_len);
     std::memcpy(ptrToReadSlot, mRingBuffer + rpos, n);
     if (n < read_len) {
         // cout << "split read: " << read_len << "-" << n << endl;
@@ -280,7 +280,7 @@ void JitterBuffer::readBroadcastSlot(int8_t* ptrToReadSlot)
     int read_len      = qBound(0, available, len);
     if (len == mSlotSize) {
         int rpos = mBroadcastPosition % mTotalSize;
-        int n    = std::min(mTotalSize - rpos, read_len);
+        int n    = std::min<int>(mTotalSize - rpos, read_len);
         std::memcpy(ptrToReadSlot, mRingBuffer + rpos, n);
         if (n < read_len) {
             // cout << "split read: " << read_len << "-" << n << endl;
@@ -314,7 +314,8 @@ void JitterBuffer::processPacketLoss(int lostLen)
     mSkewRaw -= lostLen;
 
     int32_t available = mWritePosition - mReadPosition;
-    int delta = std::min(available + mInSlotSize + lostLen - mMaxLatency, lostLen);
+    int delta =
+        std::min<int32_t>(available + mInSlotSize + lostLen - mMaxLatency, lostLen);
     if (0 < delta) {
         lostLen -= delta;
         mBufDecPktLoss += delta;
@@ -327,7 +328,7 @@ void JitterBuffer::processPacketLoss(int lostLen)
                        && mLevelCur > mMaxLatency
                                           - mOverflowDecTolerance
                                                 * (1.1 - lastCorrFactor())))) {
-        delta = std::min(lostLen, mSlotSize);
+        delta = std::min<int>(lostLen, mSlotSize);
         lostLen -= delta;
         mBufDecPktLoss += delta;
         mLevelCur -= delta;
@@ -336,16 +337,16 @@ void JitterBuffer::processPacketLoss(int lostLen)
     }
     if (lostLen >= mTotalSize) {
         std::memset(mRingBuffer, 0, mTotalSize);
-        mUnderruns += std::max(0, lostLen - std::max(0, -available));
+        mUnderruns += std::max<int>(0, lostLen - std::max<int>(0, -available));
     } else if (0 < lostLen) {
         int wpos = mWritePosition % mTotalSize;
-        int n    = std::min(mTotalSize - wpos, lostLen);
+        int n    = std::min<int>(mTotalSize - wpos, lostLen);
         std::memset(mRingBuffer + wpos, 0, n);
         if (n < lostLen) {
             // cout << "split write: " << lostLen << "-" << n << endl;
             std::memset(mRingBuffer, 0, lostLen - n);
         }
-        mUnderruns += std::max(0, lostLen - std::max(0, -available));
+        mUnderruns += std::max<int>(0, lostLen - std::max<int>(0, -available));
     }
     mWritePosition += lostLen;
 }

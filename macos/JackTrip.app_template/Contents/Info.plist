@@ -60,6 +60,8 @@
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright © 2020 Juan-Pablo Caceres, Chris Chafe, Aaron Wyatt, et al. All rights reserved.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>This app requires microphone access to allow the jack server to capture audio.</string>
+	<string>JackTrip requires microphone access to capture audio.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>JackTrip requires camera access to capture video.</string>
 </dict>
 </plist>

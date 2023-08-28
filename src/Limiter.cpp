@@ -111,7 +111,7 @@ void Limiter::init(int samplingRate, int bufferSize)
 //*******************************************************************************
 void Limiter::compute(int nframes, float** inputs, float** outputs)
 {
-    if (not inited) {
+    if (!inited) {
         std::cerr << "*** Limiter " << this << ": init never called! Doing it now.\n";
         init(0, 0);
     }

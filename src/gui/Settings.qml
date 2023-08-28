@@ -1,6 +1,5 @@
-import QtQuick 2.12
-import QtQuick.Controls 2.12
-import QtGraphicalEffects 1.12
+import QtQuick
+import QtQuick.Controls
 
 Item {
     width: parent.width; height: parent.height
@@ -34,6 +33,8 @@ Item {
     property string sliderTrackColour: virtualstudio.darkMode ? "#5B5858" : "light gray"
     property string sliderActiveTrackColour: virtualstudio.darkMode ? "light gray" : "black"
     property string warningTextColour: "#DB0A0A"
+    property string checkboxStroke: "#0062cc"
+    property string checkboxPressedStroke: "#007AFF"
     property string linkText: virtualstudio.darkMode ? "#8B8D8D" : "#272525"
 
     property string errorFlagColour: "#DB0A0A"
@@ -41,32 +42,20 @@ Item {
 
     property string settingsGroupView: "Audio"
 
-    property int inputCurrIndex: getCurrentInputDeviceIndex()
-    property int outputCurrIndex: getCurrentOutputDeviceIndex()
-
-    function getCurrentInputDeviceIndex () {
-        if (virtualstudio.inputDevice === "") {
-            return virtualstudio.inputComboModel.findIndex(elem => elem.type === "element");
-        }
-
-        let idx = virtualstudio.inputComboModel.findIndex(elem => elem.type === "element" && elem.text === virtualstudio.inputDevice);
+    function getCurrentBufferSizeIndex () {
+        let bufferSize = audio.bufferSize;
+        let idx = audio.bufferSizeComboModel.findIndex(elem => parseInt(elem) === bufferSize);
         if (idx < 0) {
-            idx = virtualstudio.inputComboModel.findIndex(elem => elem.type === "element");
+            idx = 0;
         }
-
         return idx;
     }
 
-    function getCurrentOutputDeviceIndex() {
-        if (virtualstudio.outputDevice === "") {
-            return virtualstudio.outputComboModel.findIndex(elem => elem.type === "element");
-        }
-
-        let idx = virtualstudio.outputComboModel.findIndex(elem => elem.type === "element" && elem.text === virtualstudio.outputDevice);
+    function getCurrentAudioBackendIndex () {
+        let idx = audio.audioBackendComboModel.findIndex(elem => elem === audio.audioBackend);
         if (idx < 0) {
-            idx = virtualstudio.outputComboModel.findIndex(elem => elem.type === "element");
+            idx = 0;
         }
-
         return idx;
     }
 
@@ -78,8 +67,17 @@ Item {
         y: header.height
         visible: settingsGroupView == "Audio"
 
-        AudioSettings{
+        AudioSettings {
             id: audioSettings
+        }
+
+        DeviceWarning {
+            id: deviceWarning
+            anchors.left: parent.left
+            anchors.leftMargin: 168 * virtualstudio.uiScale
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: 48 * virtualstudio.uiScale
+            visible: Boolean(audio.devicesError) || Boolean(audio.devicesWarning)
         }
     }
 
@@ -98,9 +96,6 @@ Item {
             id: headerContent
             width: header.width
             height: header.height
-            x: 16 * virtualstudio.uiScale; y: 32 * virtualstudio.uiScale
-
-            property bool isUsingRtAudio: virtualstudio.audioBackend == "RtAudio"
 
             Label {
                 id: pageTitle
@@ -115,41 +110,25 @@ Item {
                 color: textColour
             }
 
-            Button {
+            DeviceRefreshButton {
                 id: refreshButton
-                text: "Refresh Devices"
                 anchors.verticalCenter: pageTitle.verticalCenter;
                 anchors.right: headerContent.right;
                 anchors.rightMargin: 16 * virtualstudio.uiScale;
-
-                palette.buttonText: textColour
-                background: Rectangle {
-                    radius: 6 * virtualstudio.uiScale
-                    color: refreshButton.down ? buttonPressedColour : (refreshButton.hovered ? buttonHoverColour : buttonColour)
-                    border.width: 1
-                    border.color: refreshButton.down ? buttonPressedStroke : (refreshButton.hovered ? buttonHoverStroke : buttonStroke)
-                }
-                icon {
-                    source: "refresh.svg";
-                    color: textColour;
-                }
-                display: AbstractButton.TextBesideIcon
-                onClicked: {
-                    virtualstudio.refreshDevices();
-                    inputCurrIndex = getCurrentInputDeviceIndex();
-                    outputCurrIndex = getCurrentOutputDeviceIndex();
-                }
-                width: 144 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
-                font {
-                    family: "Poppins"
-                    pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale
-                }
-                visible: parent.isUsingRtAudio && settingsGroupView == "Audio"
+                visible: audio.audioBackend == "RtAudio" && settingsGroupView == "Audio"
+                enabled: audio.audioReady && !audio.scanningDevices
             }
 
+            Text {
+                text: "Restarting Audio"
+                anchors.verticalCenter: pageTitle.verticalCenter;
+                anchors.right: refreshButton.left;
+                anchors.rightMargin: 16 * virtualstudio.uiScale;
+                font { family: "Poppins"; pixelSize: fontExtraSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                color: textColour
+                visible: !audio.audioReady
+            }
         }
-
-
     }
 
     Drawer {
@@ -168,7 +147,9 @@ Item {
 
         ButtonGroup {
             buttons: viewControls.children
-            onClicked: { settingsGroupView = button.text }
+            onClicked: function(button) {
+                settingsGroupView = button.text
+            }
         }
 
         Column {
@@ -187,7 +168,7 @@ Item {
                     Label {
                         id: audioButtonText
                         text: audioBtn.text
-                        width: Boolean(virtualstudio.devicesError) ? parent.width - 16 * virtualstudio.uiScale : parent.width
+                        width: Boolean(audio.devicesError) ? parent.width - 16 * virtualstudio.uiScale : parent.width
                         font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
@@ -203,7 +184,7 @@ Item {
                         height: 8 * virtualstudio.uiScale
                         color: errorFlagColour
                         radius: 4 * virtualstudio.uiScale
-                        visible: Boolean(virtualstudio.devicesError)
+                        visible: Boolean(audio.devicesError)
                     }
                 }
                 background: Rectangle {
@@ -317,7 +298,7 @@ Item {
             id: scaleSlider
             x: 234 * virtualstudio.uiScale; y: 100 * virtualstudio.uiScale
             width: backendCombo.width
-            from: 1; to: 2; value: virtualstudio.uiScale
+            from: 1; to: 1.25; value: virtualstudio.uiScale
             onMoved: { virtualstudio.uiScale = value }
 
             background: Rectangle {
@@ -404,10 +385,10 @@ Item {
             }
             onClicked: {
                 // essentially the same here as clicking the cancel button
+                audio.stopAudio();
                 virtualstudio.windowState = "browse";
-                inputCurrIndex = virtualstudio.previousInput;
-                outputCurrIndex = virtualstudio.previousOutput;
-                virtualstudio.revertSettings();
+                virtualstudio.loadSettings();
+                audio.validateDevices();
 
                 // switch mode
                 virtualstudio.toStandard();
@@ -434,7 +415,7 @@ Item {
             id: updateChannelCombo
             x: 234 * virtualstudio.uiScale; y: modeButton.y + (48 * virtualstudio.uiScale)
             width: parent.width - x - (16 * virtualstudio.uiScale); height: 36 * virtualstudio.uiScale
-            model: updateChannelComboModel
+            model: virtualstudio.updateChannelComboModel
             currentIndex: virtualstudio.updateChannel == "stable" ? 0 : 1
             onActivated: { virtualstudio.updateChannel = currentIndex == 0 ? "stable": "edge" }
             font.family: "Poppins"
@@ -452,12 +433,15 @@ Item {
 
         ComboBox {
             id: backendCombo
-            model: backendComboModel
-            currentIndex: virtualstudio.audioBackend == "JACK" ? 0 : 1
-            onActivated: { virtualstudio.audioBackend = currentText }
+            model: audio.audioBackendComboModel
+            enabled: audio.audioBackendComboModel.length > 1
+            currentIndex: getCurrentAudioBackendIndex()
+            onActivated: {
+                audio.audioBackend = currentText
+                audio.restartAudio();
+            }
             x: 234 * virtualstudio.uiScale; y: updateChannelCombo.y + (48 * virtualstudio.uiScale)
             width: updateChannelCombo.width; height: updateChannelCombo.height
-            visible: virtualstudio.selectableBackend
         }
 
         Text {
@@ -466,7 +450,6 @@ Item {
             x: leftMargin * virtualstudio.uiScale
             text: "Audio Backend"
             font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-            visible: virtualstudio.selectableBackend
             color: textColour
         }
 
@@ -474,11 +457,14 @@ Item {
             id: bufferCombo
             x: 234 * virtualstudio.uiScale; y: backendCombo.y + (48 * virtualstudio.uiScale)
             width: backendCombo.width; height: updateChannelCombo.height
-            model: bufferComboModel
-            currentIndex: virtualstudio.bufferSize
-            onActivated: { virtualstudio.bufferSize = currentIndex }
+            model: audio.bufferSizeComboModel
+            currentIndex: getCurrentBufferSizeIndex()
+            onActivated: {
+                audio.bufferSize = parseInt(currentText, 10);
+                audio.restartAudio();
+            }
             font.family: "Poppins"
-            visible: virtualstudio.audioBackend != "JACK"
+            enabled: audio.audioBackend != "JACK"
         }
 
         Text {
@@ -486,7 +472,7 @@ Item {
             x: 48 * virtualstudio.uiScale
             text: "Buffer Size"
             font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-            visible: virtualstudio.audioBackend != "JACK"
+            visible: audio.audioBackend != "JACK"
             color: textColour
         }
 
@@ -494,9 +480,9 @@ Item {
             id: bufferStrategyCombo
             x: updateChannelCombo.x; y: bufferCombo.y + (48 * virtualstudio.uiScale)
             width: updateChannelCombo.width; height: updateChannelCombo.height
-            model: bufferStrategyComboModel
-            currentIndex: virtualstudio.bufferStrategy
-            onActivated: { virtualstudio.bufferStrategy = currentIndex }
+            model: audio.bufferStrategyComboModel
+            currentIndex: audio.bufferStrategy
+            onActivated: { audio.bufferStrategy = currentIndex }
             font.family: "Poppins"
         }
 
@@ -512,13 +498,13 @@ Item {
             id: feedbackDetectionCombo
             x: updateChannelCombo.x; y: bufferStrategyCombo.y + (48 * virtualstudio.uiScale)
             width: updateChannelCombo.width; height: updateChannelCombo.height
-            model: feedbackDetectionComboModel
-            currentIndex: virtualstudio.feedbackDetectionEnabled ? 0 : 1
+            model: audio.feedbackDetectionComboModel
+            currentIndex: audio.feedbackDetectionEnabled ? 0 : 1
             onActivated: {
                 if (currentIndex === 1) {
-                    virtualstudio.feedbackDetectionEnabled = false;
+                    audio.feedbackDetectionEnabled = false;
                 } else {
-                    virtualstudio.feedbackDetectionEnabled = true;
+                    audio.feedbackDetectionEnabled = true;
                 }
             }
             font.family: "Poppins"
@@ -532,6 +518,91 @@ Item {
             color: textColour
         }
 
+        CheckBox {
+            id: showStartupSetup
+            checked: virtualstudio.showDeviceSetup
+            text: qsTr("Show device setup screen before connecting to a studio")
+            x: updateChannelCombo.x; y: feedbackDetectionCombo.y + (48 * virtualstudio.uiScale)
+            onClicked: { virtualstudio.showDeviceSetup = showStartupSetup.checkState == Qt.Checked; }
+            indicator: Rectangle {
+                implicitWidth: 16 * virtualstudio.uiScale
+                implicitHeight: 16 * virtualstudio.uiScale
+                x: showStartupSetup.leftPadding
+                y: parent.height / 2 - height / 2
+                radius: 3 * virtualstudio.uiScale
+                border.color: showStartupSetup.down || showStartupSetup.hovered ? checkboxPressedStroke : checkboxStroke
+
+                Rectangle {
+                    width: 10 * virtualstudio.uiScale
+                    height: 10 * virtualstudio.uiScale
+                    x: 3 * virtualstudio.uiScale
+                    y: 3 * virtualstudio.uiScale
+                    radius: 2 * virtualstudio.uiScale
+                    color: showStartupSetup.down || showStartupSetup.hovered ? checkboxPressedStroke : checkboxStroke
+                    visible: showStartupSetup.checked
+                }
+            }
+            contentItem: Text {
+                text: showStartupSetup.text
+                font.family: "Poppins"
+                font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.verticalCenter
+                leftPadding: showStartupSetup.indicator.width + showStartupSetup.spacing
+                color: textColour
+            }
+        }
+
+        Text {
+            anchors.verticalCenter: showStartupSetup.verticalCenter
+            x: 48 * virtualstudio.uiScale
+            text: "Device Setup"
+            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+        }
+
+        CheckBox {
+            id: showStartupWarnings
+            checked: virtualstudio.showWarnings
+            text: qsTr("Show recommendations on startup again next time")
+            x: updateChannelCombo.x; y: showStartupSetup.y + (48 * virtualstudio.uiScale)
+            onClicked: { virtualstudio.showWarnings = showStartupWarnings.checkState == Qt.Checked; }
+            indicator: Rectangle {
+                implicitWidth: 16 * virtualstudio.uiScale
+                implicitHeight: 16 * virtualstudio.uiScale
+                x: showStartupWarnings.leftPadding
+                y: parent.height / 2 - height / 2
+                radius: 3 * virtualstudio.uiScale
+                border.color: showStartupWarnings.down || showStartupWarnings.hovered ? checkboxPressedStroke : checkboxStroke
+
+                Rectangle {
+                    width: 10 * virtualstudio.uiScale
+                    height: 10 * virtualstudio.uiScale
+                    x: 3 * virtualstudio.uiScale
+                    y: 3 * virtualstudio.uiScale
+                    radius: 2 * virtualstudio.uiScale
+                    color: showStartupWarnings.down || showStartupWarnings.hovered ? checkboxPressedStroke : checkboxStroke
+                    visible: showStartupWarnings.checked
+                }
+            }
+            contentItem: Text {
+                text: showStartupWarnings.text
+                font.family: "Poppins"
+                font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.verticalCenter
+                leftPadding: showStartupWarnings.indicator.width + showStartupWarnings.spacing
+                color: textColour
+            }
+        }
+
+        Text {
+            anchors.verticalCenter: showStartupWarnings.verticalCenter
+            x: 48 * virtualstudio.uiScale
+            text: "Recommendations"
+            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+        }
     }
 
     Rectangle {
@@ -618,7 +689,15 @@ Item {
                 border.width: 1
                 border.color: testModeButton.down ? buttonPressedStroke : (testModeButton.hovered ? buttonHoverStroke : buttonStroke)
             }
-            onClicked: { virtualstudio.testMode = !virtualstudio.testMode; }
+            onClicked: {
+                virtualstudio.testMode = !virtualstudio.testMode;
+
+                // behave like "Cancel" and switch back to browse mode
+                audio.stopAudio();
+                virtualstudio.windowState = "browse";
+                virtualstudio.loadSettings();
+                audio.validateDevices();
+            }
             anchors.horizontalCenter: parent.horizontalCenter
             y: logoutButton.y + (48 * virtualstudio.uiScale)
             width: 260 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
@@ -647,10 +726,10 @@ Item {
                 border.color: cancelButton.down ? buttonPressedStroke : (cancelButton.hovered ? buttonHoverStroke : buttonStroke)
             }
             onClicked: {
+                audio.stopAudio();
                 virtualstudio.windowState = "browse";
-                inputCurrIndex = virtualstudio.previousInput;
-                outputCurrIndex = virtualstudio.previousOutput;
-                virtualstudio.revertSettings()
+                virtualstudio.loadSettings();
+                audio.validateDevices();
             }
             anchors.verticalCenter: parent.verticalCenter
             x: parent.width - (230 * virtualstudio.uiScale)
@@ -665,14 +744,18 @@ Item {
 
         Button {
             id: saveButton
-            enabled: !Boolean(virtualstudio.devicesError)
+            enabled: !Boolean(audio.devicesError)
             background: Rectangle {
                 radius: 6 * virtualstudio.uiScale
                 color: saveButton.down ? buttonPressedColour : (saveButton.hovered ? buttonHoverColour : buttonColour)
                 border.width: 1
                 border.color: saveButton.down ? buttonPressedStroke : (saveButton.hovered ? buttonHoverStroke : buttonStroke)
             }
-            onClicked: { virtualstudio.windowState = "browse"; virtualstudio.applySettings() }
+            onClicked: {
+                audio.stopAudio();
+                virtualstudio.windowState = "browse";
+                virtualstudio.saveSettings();
+            }
             anchors.verticalCenter: parent.verticalCenter
             x: parent.width - (119 * virtualstudio.uiScale)
             width: buttonWidth * virtualstudio.uiScale; height: buttonHeight * virtualstudio.uiScale
@@ -680,8 +763,20 @@ Item {
                 text: "Save"
                 font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
                 anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-                color: Boolean(virtualstudio.devicesError) ? disabledButtonTextColour : textColour
+                color: Boolean(audio.devicesError) ? disabledButtonTextColour : textColour
             }
+        }
+    }
+
+    Connections {
+        target: audio
+        // anything that sets currentIndex to the value of a function needs
+        // to be manually updated whenever there is a change to any vars it uses
+        function onBufferSizeChanged() {
+            bufferCombo.currentIndex = getCurrentBufferSizeIndex();
+        }
+        function onAudioBackendChanged() {
+            backendCombo.currentIndex = getCurrentAudioBackendIndex();
         }
     }
 }

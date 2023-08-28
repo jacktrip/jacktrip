@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 APPNAME="JackTrip"
 BUNDLE_ID="org.jacktrip.jacktrip"
 BUILD_INSTALLER=false
@@ -102,6 +104,13 @@ shift $((OPTIND - 1))
 [ "$#" -gt 0 ] && APPNAME="$1"
 [ "$#" -gt 1 ] && BUNDLE_ID="$2"
 
+DYNAMIC_QT=$(otool -L $BINARY | grep QtCore)
+DYNAMIC_VS=$(otool -L $BINARY | grep QtQml)
+
+if [[ -n "$DYNAMIC_QT" && -n "$QT_PATH" ]]; then
+  export DYLD_FRAMEWORK_PATH=$QT_PATH/lib
+fi
+
 VERSION="$($BINARY -v | awk '/VERSION/{print $NF}')"
 [ -z "$VERSION" ] && { echo "Unable to determine binary version. Quitting."; exit 1; }
 
@@ -121,10 +130,7 @@ cp -Rf ../LICENSES "$APPNAME.app/Contents/Resources/"
 
 [ $PSI = true ] && cp jacktrip_alt.icns "$APPNAME.app/Contents/Resources/jacktrip.icns"
 
-DYNAMIC_QT=$(otool -L $BINARY | grep QtCore)
-DYNAMIC_VS=$(otool -L $BINARY | grep QtQml)
-
-if [ ! -z "$DYNAMIC_QT" ] && [ -z "$DYNAMIC_VS" ]; then
+if [ -n "$DYNAMIC_QT" ] && [ -z "$DYNAMIC_VS" ]; then
     cp "Info_novs.plist" "$APPNAME.app/Contents/Info.plist" 
 fi
 
@@ -132,29 +138,36 @@ sed -i '' "s/%VERSION%/$VERSION/" "$APPNAME.app/Contents/Info.plist"
 sed -i '' "s/%BUNDLENAME%/$APPNAME/" "$APPNAME.app/Contents/Info.plist"
 sed -i '' "s/%BUNDLEID%/$BUNDLE_ID/" "$APPNAME.app/Contents/Info.plist"
 
-if [ ! -z "$DYNAMIC_QT" ]; then
+if [ -n "$DYNAMIC_QT" ]; then
     QT_VERSION="qt$(echo "$DYNAMIC_QT" | sed -E '1!d;s/.*compatibility version ([0-9]+)\.[0-9]+\.[0-9]+.*/\1/g')"
-    echo "Detected a Qt$QT_VERSION binary"
+    echo "Detected a dynamic Qt$QT_VERSION binary"
     DEPLOY_CMD="$(which macdeployqt)"
     if [ -z "$DEPLOY_CMD" ]; then
         # Attempt to find macdeployqt. Try macports location first, then brew.
         if [ -x "/opt/local/libexec/$QT_VERSION/bin/macdeployqt" ]; then
             DEPLOY_CMD="/opt/local/libexec/$QT_VERSION/bin/macdeployqt"
-        elif [ ! -z $(which brew) ] && [ ! -z $(brew --prefix $QT_VERSION) ]; then
+        elif [ -n $(which brew) ] && [ -n $(brew --prefix $QT_VERSION) ]; then
             DEPLOY_CMD="$(brew --prefix $QT_VERSION)/bin/macdeployqt"
         else
             echo "Error: The Qt bin folder needs to be in your PATH for this script to work."
             exit 1
         fi
     fi
-    QMLDIR=""
-    if [ ! -z "$DYNAMIC_VS" ]; then
-        QMLDIR=" -qmldir=../src/gui"
+    DEPLOY_OPTS="-executable=$APPNAME.app/Contents/MacOS/jacktrip -libpath=$QT_PATH/lib"
+    if [ -n "$DYNAMIC_VS" ]; then
+        DEPLOY_OPTS="$DEPLOY_OPTS -qmldir=../src/gui"
     fi
-    if [ ! -z "$CERTIFICATE" ]; then
-        $DEPLOY_CMD "$APPNAME.app"$QMLDIR -codesign="$CERTIFICATE"
-    else
-        $DEPLOY_CMD "$APPNAME.app"$QMLDIR
+    $DEPLOY_CMD "$APPNAME.app" $DEPLOY_OPTS
+
+    if [ -n "$CERTIFICATE" ]; then
+        # manually sign contents since the macdeployqt built-ins do not work (rpath errors)
+        echo "Signing app contents"
+        PATHS="$APPNAME.app/Contents/Frameworks $APPNAME.app/Contents/PlugIns $APPNAME.app/Contents/Resources"
+        find $PATHS -type f | while read fname; do
+            if [[ -f $fname ]]; then
+                codesign -f -s "$CERTIFICATE" --timestamp --entitlements entitlements.plist --options "runtime" "$fname"
+            fi
+        done
     fi
 fi
 
@@ -169,7 +182,10 @@ if [ $PSI = true ]; then
 fi
 
 # Needed for notarization.
-[ ! -z "$CERTIFICATE" ] && codesign -f -s "$CERTIFICATE" --entitlements entitlements.plist --options "runtime" "$APPNAME.app"
+if [ -n "$CERTIFICATE" ]; then
+    echo "Signing $APPNAME.app"
+    codesign -f -s "$CERTIFICATE" --timestamp --entitlements entitlements.plist --options "runtime" "$APPNAME.app"
+fi
 
 # prepare license
 LICENSE_PATH="package/license.txt"
@@ -195,13 +211,14 @@ sed -i '' "s/%VERSION%/$VERSION/" package/JackTrip.pkgproj
 sed -i '' "s/%BUNDLENAME%/$APPNAME/" package/JackTrip.pkgproj
 sed -i '' "s/%BUNDLEID%/$BUNDLE_ID/" package/JackTrip.pkgproj
 
+echo "Building JackTrip.pkg"
 packagesbuild package/JackTrip.pkgproj
 [ $PSI = true ] && mv "package/postinstall.sh.bak" "package/postinstall.sh"
 if pkgutil --check-signature package/build/JackTrip.pkg; then
     echo "Package already signed."
     SIGNED=true
 else
-    if [ ! -z "$PACKAGE_CERT" ]; then
+    if [ -n "$PACKAGE_CERT" ]; then
         echo "Signing package."
         if productsign --sign "$PACKAGE_CERT" package/build/JackTrip.pkg package/build/JackTrip-signed.pkg; then
             mv package/build/JackTrip-signed.pkg package/build/JackTrip.pkg
@@ -223,7 +240,7 @@ if [ $SIGNED = false ]; then
     exit 1
 fi
 
-if [ ! -z "$USERNAME" ] || [ ! -z "$PASSWORD" ] || [ ! -z "$TEAM_ID" ] || [ ! -z "$TEMP_KEYCHAIN" ]; then
+if [ -n "$USERNAME" ] || [ -n "$PASSWORD" ] || [ -n "$TEAM_ID" ] || [ -n "$TEMP_KEYCHAIN" ]; then
     if [ -z "$USERNAME" ] || [ -z "$PASSWORD" ] || [ -z "$TEAM_ID" ]; then
         echo "Error: Missing credentials. Make sure you supply a username, password and team ID."
         exit 1
@@ -231,7 +248,7 @@ if [ ! -z "$USERNAME" ] || [ ! -z "$PASSWORD" ] || [ ! -z "$TEAM_ID" ] || [ ! -z
 fi 
 
 KEYCHAIN=""
-if [ ! -z "$TEMP_KEYCHAIN" ]; then
+if [ -n "$TEMP_KEYCHAIN" ]; then
     echo "Using a temporary keychain"
     [ -e "$TEMP_KEYCHAIN" ] && rm "$TEMP_KEYCHAIN"
     security create-keychain -p "supersecretpassword" "$TEMP_KEYCHAIN"
@@ -244,7 +261,7 @@ elif [ $USE_DEFAULT_KEYCHAIN = true ]; then
     KEYCHAIN=" --keychain \"$DEFAULT_KEYCHAIN\""
 fi
 
-if [ ! -z "$USERNAME" ]; then
+if [ -n "$USERNAME" ]; then
     # We have new credentials. Store them in the keychain so we can use them.
     ARGS="notarytool store-credentials \"$KEY_STORE\" --apple-id \"$USERNAME\" --password \"$PASSWORD\" --team-id \"$TEAM_ID\"$KEYCHAIN"
     echo $ARGS | xargs xcrun
@@ -254,10 +271,10 @@ echo "Sending notarization request"
 ARGS="notarytool submit \"package/build/$APPNAME.pkg\" --keychain-profile \"$KEY_STORE\" --wait$KEYCHAIN"
 echo $ARGS | xargs xcrun
 if [ $? -eq 0 ]; then
-    [ ! -z "$TEMP_KEYCHAIN" ] && security delete-keychain "$TEMP_KEYCHAIN"
+    [ -n "$TEMP_KEYCHAIN" ] && security delete-keychain "$TEMP_KEYCHAIN"
     xcrun stapler staple "package/build/$APPNAME.pkg"
 else
-    [ ! -z "$TEMP_KEYCHAIN" ] && security delete-keychain "$TEMP_KEYCHAIN"
+    [ -n "$TEMP_KEYCHAIN" ] && security delete-keychain "$TEMP_KEYCHAIN"
     echo "Error: Notarization failed"
     exit 1
 fi

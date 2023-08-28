@@ -6,9 +6,11 @@
   </qresource>
   <qresource prefix="vs">
     <file>vs.qml</file>
-    <file>vsftux.qml</file>
     <file>FirstLaunch.qml</file>
     <file>Login.qml</file>
+    <file>Recommendations.qml</file>
+    <file>Permissions.qml</file>
+    <file>ChangeDevices.qml</file>
     <file>Studio.qml</file>
     <file>Browse.qml</file>
     <file>AudioSettings.qml</file>
@@ -19,6 +21,19 @@
     <file>Failed.qml</file>
     <file>Setup.qml</file>
     <file>SectionHeading.qml</file>
+    <file>Footer.qml</file>
+    <file>VolumeSlider.qml</file>
+    <file>DeviceControls.qml</file>
+    <file>DeviceControlsGroup.qml</file>
+    <file>DeviceRefreshButton.qml</file>
+    <file>DeviceWarning.qml</file>
+    <file>InfoTooltip.qml</file>
+    <file>Web.qml</file>
+    <file>WebView.qml</file>
+    <file>WebEngine.qml</file>
+    <file>WebNull.qml</file>
+    <file>FeedbackSurvey.qml</file>
+    <file>AppIcon.qml</file>
     <file>logo.svg</file>
     <file>wedge.svg</file>
     <file>wedge_inactive.svg</file>
@@ -27,18 +42,26 @@
     <file>join.svg</file>
     <file>leave.svg</file>
     <file>manage.svg</file>
+    <file>speed.svg</file>
     <file>share.svg</file>
     <file>start.svg</file>
+    <file>star.svg</file>
     <file>cog.svg</file>
     <file>mic.svg</file>
+    <file>language.svg</file>
     <file>micoff.svg</file>
     <file>help.svg</file>
     <file>quiet.svg</file>
     <file>loud.svg</file>
     <file>refresh.svg</file>
-    <file>ethernet.png</file>
+    <file>ethernet.svg</file>
+    <file>networkCheck.svg</file>
+    <file>externalMic.svg</file>
     <file>check.svg</file>
-    <file>ohno.png</file>
+    <file>warning.svg</file>
+    <file>expand_less.svg</file>
+    <file>expand_more.svg</file>
+    <file>sentiment_very_dissatisfied.svg</file>
     <file>headphones.svg</file>
     <file>Prompt.svg</file>
     <file>network.svg</file>

@@ -158,7 +158,7 @@ class JackTrip : public QObject
         sSigInt = true;
     }
     static bool sSigInt;
-    static bool sJackStopped;
+    static bool sAudioStopped;
 
     /// \brief Starting point for the thread
     /*virtual void run() {
@@ -502,7 +502,7 @@ class JackTrip : public QObject
             return mAudioInterface->getSizeInBytesPerChannel() * mNumNetRevChans;
         else  // not wair
 #endif        // endwhere
-            return mAudioInterface->getSizeInBytesPerChannel() * mNumAudioChansIn;
+            return int(mAudioInterface->getSizeInBytesPerChannel()) * mNumAudioChansIn;
     }
 
     int getTotalAudioOutputPacketSizeInBytes() const
@@ -512,7 +512,36 @@ class JackTrip : public QObject
             return mAudioInterface->getSizeInBytesPerChannel() * mNumNetRevChans;
         else  // not wair
 #endif        // endwhere
-            return mAudioInterface->getSizeInBytesPerChannel() * mNumAudioChansOut;
+            return int(mAudioInterface->getSizeInBytesPerChannel()) * mNumAudioChansOut;
+    }
+    QString getDevicesWarningMsg() const
+    {
+        if (mAudioInterface == nullptr)
+            return QLatin1String("");
+        return QString::fromStdString(mAudioInterface->getDevicesWarningMsg());
+    }
+    QString getDevicesErrorMsg() const
+    {
+        if (mAudioInterface == nullptr)
+            return QLatin1String("");
+        return QString::fromStdString(mAudioInterface->getDevicesErrorMsg());
+    }
+    QString getDevicesWarningHelpUrl() const
+    {
+        if (mAudioInterface == nullptr)
+            return QLatin1String("");
+        return QString::fromStdString(mAudioInterface->getDevicesWarningHelpUrl());
+    }
+    QString getDevicesErrorHelpUrl() const
+    {
+        if (mAudioInterface == nullptr)
+            return QLatin1String("");
+        return QString::fromStdString(mAudioInterface->getDevicesErrorHelpUrl());
+    }
+    bool getHighLatencyFlag() const
+    {
+        return (mAudioInterface == nullptr) ? false
+                                            : mAudioInterface->getHighLatencyFlag();
     }
     //@}
     //------------------------------------------------------------------------------------

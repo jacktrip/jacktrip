@@ -59,50 +59,33 @@ jobs:
       matrix:
         include:
           - name: Linux-x64-qmake-gcc-static
-            release-name: Linux-x64 # specify a separate name for all builds that should be included in releases
             runs-on: ubuntu-20.04
             system-rtaudio: false
             bundled-rtaudio: true # set either system-rtaudio or bundled-rtaudio as true, not both
             nogui: false
-            novs: false
+            novs: true
             weakjack: false
-            # vcpkg-triplet: x64-mingw-static # used when installing rtaudio with vcpkg (Windows)
-            # qt-arch: 'win64_msvc2019_64' # specify when using shared (official) qt libraries (Windows)
-            static-qt-version: 5.15.9 # if set, it will enable static Qt build
-            qt-static-cache-key: 'v36' # required for static qt; update this to force rebuilding static Qt
-            wait-for-static-qt: false # if true, the job will wait for the static qt cache to be available; set to false for the first job on the given platform to build static qt and true for subsequent jobs using static qt for the given platofrm
-            jacktrip-path: jacktrip # needed for binary upload
-            binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
+            # jacktrip-path: jacktrip # needed for binary upload
+            # binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
             # bundle-path: bundle # directory relative to build path; triggers application bundle creation and upload (macOS)
             # installer-path: installer # directory relative to build path; triggers installer creation and upload (macOS, Windows)
             build-system: qmake # qmake, meson, cmake (todo)
             # meson-library-type: shared # shared, static, both
             # static-analysis: true # run clang-tidy static analysis (meson/Linux only)
-            qt-cache-key: 'v02-x86_64'
-            qt-cache-version: '5.15.10'
-            qt-cache-type: 'static'
-            
-          - name: Linux-x64-qmake-gcc-shared-no_rtaudio
-            runs-on: ubuntu-22.04
-            system-rtaudio: false
-            bundled-rtaudio: false
-            nogui: false
-            novs: false
-            weakjack: false
-            # jacktrip-path: jacktrip
-            # binary-path: binary
-            build-system: qmake
+            qt-version: '5.15.10'
+            qt-type: 'static'
 
           - name: Linux-x64-qmake-gcc-shared-bundled_rtaudio
             runs-on: ubuntu-22.04
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
-            novs: false
+            novs: true
             weakjack: false
             # jacktrip-path: jacktrip
             # binary-path: binary
-            build-system: qmake
+            build-system: meson
+            meson-library-type: shared
 
           - name: Linux-x64-qmake-gcc-static-nogui
             release-name: Linux-x64-nogui
@@ -112,29 +95,25 @@ jobs:
             nogui: true
             novs: true
             weakjack: false
-            static-qt-version: 5.15.9
-            qt-static-cache-key: 'v36' # we use the same key as the main Linux build
-            wait-for-static-qt: true
             jacktrip-path: jacktrip
             binary-path: binary
             build-system: qmake
-            qt-cache-key: 'v02-x86_64'
-            qt-cache-version: '6.2.4'
-            qt-cache-type: 'static'
+            qt-version: '5.15.10'
+            qt-type: 'static'
 
           - name: Linux-x64-meson-gcc-shared-bundled_rtaudio
+            release-name: Linux-x64 # specify a separate name for all builds that should be included in releases
             runs-on: ubuntu-22.04
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
-            novs: false
             weakjack: false
-            # jacktrip-path: jacktrip
-            # binary-path: binary
+            jacktrip-path: jacktrip # needed for binary upload
+            binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
             build-system: meson
             meson-library-type: shared
             static-analysis: true
-            
+
           - name: Linux-x64-meson-gcc-shared # meson shared build without rtaudio
             runs-on: ubuntu-22.04
             system-rtaudio: false
@@ -147,6 +126,41 @@ jobs:
             meson-library-type: shared
 
           - name: macOS-x64-qmake-clang-static-bundled_rtaudio
+            runs-on: macos-12
+            system-rtaudio: false
+            bundled-rtaudio: true
+            nogui: false
+            novs: true
+            weakjack: true
+            macosx-deployment-target: 10.13
+            macosx-architectures: 'x86_64 arm64'
+            xcode-directory: /Applications/Xcode_14.0.1.app # uses SDK macOS 12.3 which is latest supported by qt5
+            # jacktrip-path: jacktrip
+            # binary-path: binary
+            # bundle-path: bundle
+            # installer-path: installer
+            build-system: qmake
+            qt-version: '5.15.10'
+            qt-type: 'static'
+
+          - name: macOS-x64-qmake-clang-shared
+            runs-on: macos-12
+            system-rtaudio: true
+            bundled-rtaudio: false
+            nogui: false
+            novs: true
+            weakjack: true
+            # jacktrip-path: jacktrip
+            # binary-path: binary
+            # bundle-path: bundle
+            # installer-path: installer
+            build-system: qmake
+            qt-version: '5.15.10'
+            qt-type: 'dynamic'
+            macosx-deployment-target: 10.13
+            xcode-directory: /Applications/Xcode_14.0.1.app # uses SDK macOS 12.3 which is latest supported by qt5
+
+          - name: macOS-x64-meson-clang-shared-bundled_rtaudio
             release-name: macOS-x64
             runs-on: macos-12
             system-rtaudio: false
@@ -154,53 +168,48 @@ jobs:
             nogui: false
             novs: false
             weakjack: true
-            static-qt-version: 5.15.9
-            macosx-deployment-target: 10.13
-            macosx-architectures: 'x86_64 arm64'
-            xcode-directory: /Applications/Xcode_14.0.1.app # uses SDK macOS 12.3 which is latest supported by qt
-            qt-static-cache-key: 'v12'
             jacktrip-path: jacktrip
             # binary-path: binary # don't upload the binary itself since we upload the bundle
             bundle-path: bundle
             installer-path: installer
-            build-system: qmake
-            qt-cache-key: 'v02-universal'
-            qt-cache-version: '5.15.10'
-            qt-cache-type: 'static'
+            build-system: meson
+            meson-library-type: both
+            qt-version: '6.2.5'
+            qt-type: 'dynamic'
+            macosx-architectures: 'x86_64;arm64'
+            macosx-deployment-target: 10.14
+            xcode-directory: /Applications/Xcode_14.2.app
 
-          - name: macOS-x64-qmake-clang-shared
-            runs-on: macos-12
-            system-rtaudio: true
-            bundled-rtaudio: false
-            nogui: false
-            novs: false
+          - name: Windows-x64-meson-msvc-static
+            runs-on: windows-2019
+            system-rtaudio: false
+            bundled-rtaudio: true
+            nogui: true
+            novs: true
             weakjack: true
-            # jacktrip-path: jacktrip
+            qt-version: '6.2.5'
+            qt-type: 'static'
+            # jacktrip-path: jacktrip.exe
             # binary-path: binary
-            # bundle-path: bundle
-            # installer-path: installer
-            build-system: qmake
-            xcode-directory: /Applications/Xcode_14.0.1.app # uses SDK macOS 12.3 which is latest supported by qt
-            qt-cache-key: 'v02-x86_64'
-            qt-cache-arch: 'x86_64'
-            qt-cache-version: '6.2.4'
-            qt-cache-type: 'static'
+            build-system: meson
+            meson-library-type: static
 
-          - name: macOS-x64-meson-clang-shared-bundled_rtaudio
-            runs-on: macos-12
+          - name: Windows-x64-meson-msvc-qt5
+            #release-name: Windows-x64
+            runs-on: windows-2019
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
-            novs: false
+            novs: true
             weakjack: true
-            # jacktrip-path: jacktrip
+            qt-version: '5.15.10'
+            qt-type: 'dynamic'
+            # jacktrip-path: jacktrip.exe
             # binary-path: binary
-            # bundle-path: bundle
-            # installer-path: installer
             build-system: meson
-            meson-library-type: both
+            meson-library-type: shared
 
-          - name: Windows-x64-qmake-gcc-static-bundled_rtaudio
+          - name: Windows-x64-meson-msvc-qt6
             release-name: Windows-x64
             runs-on: windows-2019
             system-rtaudio: false
@@ -208,78 +217,21 @@ jobs:
             nogui: false
             novs: false
             weakjack: true
-            vcpkg-triplet: x64-mingw-static
-            static-qt-version: 5.15.9
-            qt-static-cache-key: 'v11'
-            jacktrip-path: release/jacktrip.exe
-            binary-path: binary
+            qt-version: '6.2.5'
+            qt-type: 'dynamic'
+            jacktrip-path: jacktrip.exe
             installer-path: installer
-            build-system: qmake
-
-          - name: Windows-x64-qmake-gcc-shared
-            runs-on: windows-2019
-            system-rtaudio: true
-            bundled-rtaudio: false
-            nogui: false
-            novs: false
-            weakjack: true
-            vcpkg-triplet: x64-mingw-dynamic
-            qt-arch: 'win64_mingw81'
-            # jacktrip-path: release/jacktrip.exe
-            # binary-path: binary
-            build-system: qmake
-
-          - name: Windows-x64-meson-msvc-shared
-            runs-on: windows-2019
-            system-rtaudio: true
-            bundled-rtaudio: false
-            nogui: false
-            novs: false
-            weakjack: true
-            vcpkg-triplet: x64-windows
-            qt-arch: 'win64_msvc2019_64'
-            qt-cache-key: 'v02-x86_64'
-            qt-cache-version: '6.2.4'
-            qt-cache-type: 'static'
-            # jacktrip-path: jacktrip.exe
-            # binary-path: binary
+            binary-path: binary
             build-system: meson
             meson-library-type: shared
 
-          - name: Windows-x64-meson-msvc-shared-bundled_rtaudio
-            runs-on: windows-2019
-            system-rtaudio: false
-            bundled-rtaudio: true
-            nogui: false
-            novs: false
-            weakjack: true
-            qt-arch: 'win64_msvc2019_64'
-            qt-cache-key: 'v05-x86_64'
-            qt-cache-version: '5.15.10'
-            qt-cache-type: 'static'
-            vcpkg-triplet: x64-windows
-            # jacktrip-path: jacktrip.exe
-            # binary-path: binary
-            build-system: meson
-            meson-library-type: both
-
     env:
       BUILD_PATH: ${{ github.workspace }}/builddir
-      OPENSSL_FULL_VERSION: '3.1.0'
-      OPENSSL_SRC_PATH: ${{ github.workspace }}/openssl-src
-      OPENSSL_BUILD_PATH: ${{ github.workspace }}/openssl-build
-      QT_VERSION: '5.15.2' # for shared qt installer using install-qt-action
-      QT_SRC_PATH: ${{ github.workspace }}/../qt-static-src
-      QT_STATIC_BUILD_PATH: ${{ github.workspace }}/qt-static # note: don't use '..' here as this is used with the cache action, which doesn't support '.' and '..' in paths
-      QT_STATIC_OPTIONS: '-static -release -optimize-size -no-pch -no-dbus -nomake tools -nomake tests -nomake examples -opensource -confirm-license'
-      QT5_FEATURE_OPTIONS: '-feature-appstore-compliant -no-feature-cups -no-feature-ocsp -no-feature-sqlmodel -no-feature-pdf -no-feature-printer -no-feature-printdialog -no-feature-printpreviewdialog -no-feature-printpreviewwidget'
-      QT5_SKIP_OPTIONS: '-skip qt3d -skip qtactiveqt -skip qtandroidextras -skip qtcharts -skip qtcoap -skip qtdatavis3d -skip qtdoc -skip qtgamepad -skip qtimageformats -skip qtlocation -skip qtlottie -skip qtmqtt -skip qtmultimedia -skip qtopcua -skip qtpurchasing -skip qtquick3d -skip qtquicktimeline -skip qtscxml -skip qtremoteobjects -skip qtscript -skip qtsensors -skip qtserialbus -skip qtserialport -skip qtspeech -skip qttools -skip qttranslations -skip qtvirtualkeyboard -skip qtwebglplugin -skip qtxmlpatterns -skip qtwebengine'
-      QT6_FEATURE_OPTIONS: '-feature-appstore-compliant -no-feature-qtpdf-build -no-feature-qtpdf-quick-build -no-feature-qtpdf-widgets-build'
-      QT6_SKIP_OPTIONS: '-skip qtgrpc -skip qtlanguageserver -skip qtquick3dphysics'
       CLANG_TIDY_NAME: clang-tidy-result
       CLANG_TIDY_PATH: ${{ github.workspace }}/clang-tidy-result
-      VCPKG_COMMIT: '662dbb50e63af15baa2909b7eac5b1b87e86a0aa'
-      
+      QT_DOWNLOAD_BASE_URL: 'https://files.jacktrip.org/contrib/qt'
+      QT_DOWNLOAD_COMMIT: '89aec80'
+
     steps:
       - uses: actions/checkout@v3
         with:
@@ -306,23 +258,6 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.x'
-      - name: Install vcpkg
-        if: runner.os == 'Windows' && matrix.vcpkg-triplet
-        shell: pwsh
-        run: |
-          $vcpkgCommit = "$env:VCPKG_COMMIT"
-          pushd "$env:VCPKG_INSTALLATION_ROOT"
-          git fetch --depth=1 origin $vcpkgCommit
-          git reset --hard $vcpkgCommit
-          ./bootstrap-vcpkg.bat
-          popd
-      - name: cache vcpkg archives on Windows
-        if: runner.os == 'Windows' && matrix.vcpkg-triplet
-        uses: actions/cache@v3
-        with:
-          path: ~/AppData/Local/vcpkg/archives
-          key: ${{ matrix.runs-on }}-${{ matrix.vcpkg-triplet }}-${{ matrix.system-rtaudio }}-${{ steps.set-version.outputs.stamp }}
-          restore-keys: ${{ matrix.runs-on }}-${{ matrix.vcpkg-triplet }}-${{ matrix.system-rtaudio }}
       - name: Select Xcode version
         if: runner.os == 'macOS' && matrix.xcode-directory
         run: sudo xcode-select -s ${{ matrix.xcode-directory }}
@@ -331,13 +266,20 @@ jobs:
         run: |
           sudo chmod a+rwx /opt
           sudo apt-get update
-          sudo apt-get install --yes libjack-dev libclang-dev libclang-12-dev llvm-12-dev ninja-build
-          if [[ -n "${{ matrix.static-qt-version }}" ]]; then 
-            sudo apt-get install --yes libfreetype6-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev libx11-xcb-dev libdrm-dev libglu1-mesa-dev libwayland-dev libwayland-egl1-mesa libgles2-mesa-dev libwayland-server0 libwayland-egl-backend-dev libxcb1-dev libxext-dev libfontconfig1-dev libxrender-dev libxcb-keysyms1-dev libxcb-image0-dev libxcb-shm0-dev libxcb-icccm4-dev '^libxcb.*-dev' libxcb-render-util0-dev libxcomposite-dev libgtk-3-dev
-          else
+          sudo apt-get install --yes build-essential git libclang-dev libdbus-1-dev cmake ninja-build libjack-dev
+          if [[ -z "${{ matrix.qt-version }}" ]]; then
             sudo add-apt-repository universe
             sudo apt-get update
-            sudo apt-get install --yes qtbase5-dev qtbase5-dev-tools qtchooser qt5-qmake qttools5-dev libqt5networkauth5-dev qtdeclarative5-dev libqt5svg5-dev libqt5websockets5-dev qtquickcontrols2-5-dev
+            if [[ "${{ matrix.runs-on }}" == "ubuntu-20.04" ]]; then
+              sudo apt-get install --yes qtbase5-dev qtbase5-dev-tools qtchooser qt5-qmake qttools5-dev qtdeclarative5-dev libqt5svg5-dev libqt5websockets5-dev qtquickcontrols2-5-dev
+            else
+              sudo apt-get install --yes qt6-base-dev qt6-base-dev-tools qmake6 qt6-tools-dev qt6-declarative-dev qt6-webengine-dev qt6-webview-dev qt6-webview-plugins libqt6svg6-dev libqt6websockets6-dev libgl1-mesa-dev
+              sudo qtchooser -install qt6 $(which qmake6)
+              echo "QT_SELECT=qt6" >> $GITHUB_ENV
+            fi
+          fi
+          if [[ "${{ matrix.nogui }}" != true && "${{ matrix.qt-type }}" == "static" ]]; then
+            sudo apt-get install --yes libfreetype6-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev libx11-xcb-dev libdrm-dev libglu1-mesa-dev libwayland-dev libwayland-egl1-mesa libgles2-mesa-dev libwayland-server0 libwayland-egl-backend-dev libxcb1-dev libxext-dev libfontconfig1-dev libxrender-dev libxcb-keysyms1-dev libxcb-image0-dev libxcb-shm0-dev libxcb-icccm4-dev '^libxcb.*-dev' libxcb-render-util0-dev libxcomposite-dev libgtk-3-dev
           fi
           if [[ "${{ matrix.system-rtaudio }}" == true ]]; then 
             sudo apt-get install --yes librtaudio-dev
@@ -366,11 +308,8 @@ jobs:
           tar -xf jack2.tar.gz
           sudo installer -pkg jack2-osx-1.9.16.pkg -target /
           sudo chmod a+rwx /opt
+          sudo spctl --master-disable
           brew install ninja
-          if [[ -z "${{ matrix.static-qt-version }}" ]]; then 
-            brew install qt5
-            brew link qt5 --force
-          fi
           if [[ "${{ matrix.system-rtaudio }}" == true ]]; then 
             brew install rtaudio
             rm -f `brew --prefix rtaudio`/lib/*.dylib # remove the shared library, we want static only
@@ -386,23 +325,7 @@ jobs:
         shell: bash
         run: |
           choco install jack --version=1.9.17 --no-progress
-          if [[ "${{ matrix.build-system }}" == "qmake" && -n "${{ matrix.static-qt-version }}" && -n "${{ matrix.vcpkg-triplet }}" ]]; then 
-            vcpkg install openssl --triplet="${{ matrix.vcpkg-triplet }}"
-          fi
-          if [[ -n "${{ matrix.qt-cache-key }}" ]]; then
-            choco install nasm --no-progress
-            echo "c:\Program Files\NASM" >> $GITHUB_PATH
-          fi
-          if [[ "${{ matrix.system-rtaudio }}" == true && -n "${{ matrix.vcpkg-triplet }}" ]]; then 
-            choco install pkgconfiglite --no-progress
-            # check out version only 5.2.0 of rtaudio library, as 6.0 will take time to migrate to
-            # done by checking out specific commit of vcpkg
-            cd $VCPKG_INSTALLATION_ROOT
-            git fetch origin 8fd0679a9d64251cf634b5f58edc01a42a121097
-            git checkout 8fd0679a9d64251cf634b5f58edc01a42a121097 -- ports/rtaudio
-            vcpkg install rtaudio[asio] --triplet="${{ matrix.vcpkg-triplet }}"
-            echo "PKG_CONFIG_PATH=$VCPKG_INSTALLATION_ROOT\installed\${{ matrix.vcpkg-triplet }}\lib\pkgconfig" >> $GITHUB_ENV
-          fi
+          choco install pkgconfiglite --no-progress
           if [[ "${{ matrix.build-system }}" == "meson" ]]; then
             python -m pip install --upgrade pip
             pip install meson ninja
@@ -410,187 +333,77 @@ jobs:
           fi
       - name: setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
-        if: runner.os == 'Windows' && matrix.build-system == 'meson' # MSVC used only by meson
-      - name: Unix - load Qt from cache
-        id: qt-cache-load-unix
-        if: matrix.qt-cache-version && matrix.qt-cache-type && matrix.qt-cache-key && runner.os != 'Windows'
-        uses: actions/cache@v3
-        with:
-          path: |
-            /opt/qt-${{ matrix.qt-cache-version }}-${{ matrix.qt-cache-type }}
-            /opt/openssl-*
-          key: qt-cache-${{ matrix.qt-cache-version }}-${{ matrix.qt-cache-type }}-${{ runner.os }}-${{ matrix.qt-cache-key }}
-      - name: Unix - build Qt from source
-        if: matrix.qt-cache-version && matrix.qt-cache-type && matrix.qt-cache-key && runner.os != 'Windows' && steps.qt-cache-load-unix.outputs.cache-hit != 'true'
-        env:
-          QT_BUILD_ARCH: ${{ matrix.qt-cache-arch }}
-        run: |
-          mkdir -p /opt/qtbuild
-          cp scripts/qt/* /opt/qtbuild
-          cd /opt/qtbuild
-          if [[ "${{ matrix.qt-cache-type }}" == "dynamic" ]]; then ./qtbuild.sh -dynamic ${{ matrix.qt-cache-version }}; else ./qtbuild.sh ${{ matrix.qt-cache-version }}; fi
-      - name: Windows - load Qt from cache
-        id: qt-cache-load-windows
-        if: matrix.qt-cache-version && matrix.qt-cache-type && matrix.qt-cache-key && runner.os == 'Windows'
-        uses: actions/cache@v3
-        with:
-          path: |
-            c:\qt\qt-${{ matrix.qt-cache-version }}-${{ matrix.qt-cache-type }}
-            c:\qt\openssl-*
-          key: qt-cache-${{ matrix.qt-cache-version }}-${{ matrix.qt-cache-type }}-${{ runner.os }}-${{ matrix.qt-cache-key }}
-      - name: Windows - build Qt from source
-        if: matrix.qt-cache-version && matrix.qt-cache-type && matrix.qt-cache-key && runner.os == 'Windows' && steps.qt-cache-load-windows.outputs.cache-hit != 'true'
-        env:
-          QT_BUILD_ARCH: ${{ matrix.qt-cache-arch }}
-        run: |
-          mkdir C:\qt
-          mkdir C:\qt\build
-          copy scripts\qt\qtbuild.bat c:\qt\build\qtbuild.bat
-          cd c:\qt\build
-          if ( "${{ matrix.qt-cache-type }}" -eq "dynamic" ) { c:\qt\build\qtbuild.bat -dynamic ${{ matrix.qt-cache-version }} } else { c:\qt\build\qtbuild.bat ${{ matrix.qt-cache-version }} }
-      - name: install Qt
-        uses: jurplel/install-qt-action@v3
-        if: runner.os == 'Windows' && !matrix.static-qt-version
-        with:
-          version: ${{ env.QT_VERSION }}
-          arch: ${{ matrix.qt-arch }}
-          cache: true
-          cache-key-prefix: $${{ runner.os }}-QtCache-${{ env.QT_VERSION }}-${{ matrix.build-system }}_${{matrix.qt-cache-key}}
-          modules: 'qtnetworkauth'
-      - name: wait for static Qt build
-        if: matrix.wait-for-static-qt == true
-        shell: bash
-        env: 
-          CACHE_STRING: ${{ runner.os }}-QtStaticCache-${{ matrix.static-qt-version }}_${{ matrix.qt-static-cache-key }} # should match the key in "cache static Qt" step
-        run: |
-          check_cache () {
-            curl -sL -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -H "X-GitHub-Api-Version: 2022-11-28" https://api.github.com/repos/$GITHUB_REPOSITORY/actions/caches | grep $CACHE_STRING >/dev/null
-            return $? # function returns 0 if cache is available
-          } 
-          if ! check_cache; then 
-            echo "Static Qt cache not found for key" $CACHE_STRING 
-            echo "Waiting for static Qt build"
-            while ! check_cache; do 
-              echo -n "."
-              sleep 60
-            done
-            echo "" "Static Qt cache is now available!"
-          fi
-      - name: cache static Qt
-        id: cache-static-qt
-        if: matrix.static-qt-version
-        uses: actions/cache@v3
-        with:
-          path: ${{ env.QT_STATIC_BUILD_PATH }}
-          key: ${{ runner.os }}-QtStaticCache-${{ matrix.static-qt-version }}_${{ matrix.qt-static-cache-key }}
-      - name: download Qt sources
-        if: matrix.static-qt-version && steps.cache-static-qt.outputs.cache-hit != 'true'
+        if: runner.os == 'Windows'
+      - name: Download Qt build
+        if: matrix.qt-version && matrix.qt-type
         shell: bash
         run: |
-          QT_FULL_VERSION=${{ matrix.static-qt-version }}
-          QT_MAJOR_MINOR_VERSION=`echo $QT_FULL_VERSION | cut -d '.' -f1-2`
-          QT_ARCHIVE_BASE_NAME=qt-everywhere-
-          if [[ ! "$QT_FULL_VERSION" < "5.15.3" && "$QT_FULL_VERSION" < "6.0.0" ]]; then QT_ARCHIVE_BASE_NAME=${QT_ARCHIVE_BASE_NAME}opensource-; fi # filename changed to qt-everywhere-opensource-src-<version> in Qt 5.15.3
-          QT_SRC_URL="https://download.qt.io/archive/qt/$QT_MAJOR_MINOR_VERSION/$QT_FULL_VERSION/single/${QT_ARCHIVE_BASE_NAME}src-$QT_FULL_VERSION.tar.xz"
-          echo "Downloading Qt source from $QT_SRC_URL"
-          curl -L $QT_SRC_URL -o qt.tar.xz
-          echo "Unpacking Qt source"
-          tar -xf qt.tar.xz
-          # move qt to a known location
-          mv qt-everywhere* $QT_SRC_PATH
-      - name: build static Qt on Linux
-        if: matrix.static-qt-version && steps.cache-static-qt.outputs.cache-hit != 'true' && matrix.name == 'Linux-x64-qmake-gcc-static'
-        run: |
-          # Note that other static Linux runners should wait for the first static build to finish if cache is not available. 
-          # If that doesn't work for some reason, then the job will fail. This is intentional to prevent two runners
-          # from building and updating the same cache item. If the job fails that happens, re-run if after cache is populated.
-          # Build static openssl
-          OPENSSL_SRC_URL="https://github.com/openssl/openssl/releases/download/openssl-${OPENSSL_FULL_VERSION}/openssl-${OPENSSL_FULL_VERSION}.tar.gz"
-          mkdir $OPENSSL_BUILD_PATH
-          curl -L $OPENSSL_SRC_URL -o openssl.tar.xz
-          tar -xf openssl.tar.xz
-          mv "openssl-$OPENSSL_FULL_VERSION" $OPENSSL_SRC_PATH
-          mkdir tmp
-          cd tmp
-          $OPENSSL_SRC_PATH/Configure --prefix=$OPENSSL_BUILD_PATH threads no-shared no-pic -static
-          make -j4
-          make install
-          cd ..
-          # Build static Qt
-          mkdir $QT_STATIC_BUILD_PATH
-          # extra parameters for building qt on linux
-          QT_STATIC_OPTIONS="$QT_STATIC_OPTIONS $QT5_FEATURE_OPTIONS $QT5_SKIP_OPTIONS"
-          QT_STATIC_OPTIONS="-openssl -openssl-linked -qt-zlib -qt-libpng -qt-libjpeg -system-freetype -fontconfig -qt-pcre -qt-harfbuzz -no-icu -opengl desktop $QT_STATIC_OPTIONS"
-          # configure
-          echo "QT Configure command"
-          echo "\"$QT_SRC_PATH/configure\" -prefix \"$QT_STATIC_BUILD_PATH\" $QT_STATIC_OPTIONS OPENSSL_LIBS=\"$OPENSSL_BUILD_PATH/lib64/libssl.a $OPENSSL_BUILD_PATH/lib64/libcrypto.a\" -I \"$OPENSSL_BUILD_PATH/include\""
-          "$QT_SRC_PATH/configure" -prefix "$QT_STATIC_BUILD_PATH" $QT_STATIC_OPTIONS OPENSSL_LIBS="$OPENSSL_BUILD_PATH/lib64/libssl.a $OPENSSL_BUILD_PATH/lib64/libcrypto.a" -I "$OPENSSL_BUILD_PATH/include"
-          # build
-          echo "building Qt"
-          # we have to use a single process for make here because qt's build system has dependency problems on Linux,
-          # where some processes can try to use libraries while another one is creating them, i.e.
-          # g++: error: /home/runner/work/jacktrip/jacktrip/qtwayland/plugins/wayland-graphics-integration-client/libqt-plugin-wayland-egl.a: No such file or directory
-          make
-          # install
-          echo "installing Qt"
-          make install
-          cp -r $OPENSSL_BUILD_PATH/lib64 $QT_STATIC_BUILD_PATH
-          cp -r $OPENSSL_BUILD_PATH/include/openssl $QT_STATIC_BUILD_PATH/include
-      - name: build static Qt on macOS
-        if: matrix.static-qt-version && steps.cache-static-qt.outputs.cache-hit != 'true' && matrix.name == 'macOS-x64-qmake-clang-static-bundled_rtaudio'
-        run: |
-          mkdir $QT_STATIC_BUILD_PATH
-          # check for explicit osx deployment target
-          QT_STATIC_OPTIONS="$QT_STATIC_OPTIONS $QT5_FEATURE_OPTIONS $QT5_SKIP_OPTIONS"
-          if [[ -n "${{ matrix.macosx-deployment-target }}" ]]; then
-            QT_STATIC_OPTIONS="$QT_STATIC_OPTIONS QMAKE_MACOSX_DEPLOYMENT_TARGET=${{ matrix.macosx-deployment-target }}"
-          fi
-          # this patch force enables the arm64 neon feature for universal binary builds on osx
-          # without it, qt builds fail with undefined symbols due to configure only taking first architecture into account
-          patch -d "$QT_SRC_PATH/qtbase" < "./macos/qt/configure.json.patch"
-          # configure
-          # we can't just append to $QT_STATIC_OPTIONS for this because the space in argument makes things more tricky
-          echo "QT Configure command"
-          echo "\"$QT_SRC_PATH/configure\" -prefix \"$QT_STATIC_BUILD_PATH\" $QT_STATIC_OPTIONS \"QMAKE_APPLE_DEVICE_ARCHS=x86_64 arm64\""
-          "$QT_SRC_PATH/configure" -prefix "$QT_STATIC_BUILD_PATH" $QT_STATIC_OPTIONS "QMAKE_APPLE_DEVICE_ARCHS=x86_64 arm64"
-          # build
-          echo "building Qt"
-          make -j4
-          # install
-          echo "installing Qt"
-          make install
-      - name: build static Qt on Windows
-        if: matrix.static-qt-version && steps.cache-static-qt.outputs.cache-hit != 'true' && matrix.name == 'Windows-x64-qmake-gcc-static-bundled_rtaudio'
-        shell: cmd
-        run: |
-          mkdir %QT_STATIC_BUILD_PATH%
-          call "%QT_SRC_PATH%/configure.bat" -static-runtime -opengl desktop -platform win32-g++ -prefix "%QT_STATIC_BUILD_PATH%" -openssl -openssl-linked -I "%VCPKG_INSTALLATION_ROOT%\installed\%VCPKG_TRIPLET%\include" -L "%VCPKG_INSTALLATION_ROOT%\installed\%VCPKG_TRIPLET%\lib"  OPENSSL_LIBS="-llibssl -llibcrypto -lcrypt32 -lws2_32" %QT_STATIC_OPTIONS% %QT5_FEATURE_OPTIONS% %QT5_SKIP_OPTIONS%
-          echo "building Qt"
-          mingw32-make -j4
-          echo "installing Qt"
-          mingw32-make install
-        env:
-          VCPKG_TRIPLET: ${{ matrix.vcpkg-triplet }}
-      - name: set Qt environment variables # needed to find qmake depending on the way qt was installed
-        shell: bash
-        if: matrix.build-system == 'qmake'
-        run: |
-          if [[ -n "${{ matrix.static-qt-version }}" ]]; then 
-            echo "$QT_STATIC_BUILD_PATH/bin" >> $GITHUB_PATH
-          elif [[ "${{ runner.os }}" == "macOS" ]]; then
-            echo "`brew --prefix qt5`/bin" >> $GITHUB_PATH
+          QT_INSTALL_PATH=/opt
+          if [[ "${{ runner.os }}" == 'Windows' ]]; then
+            QT_INSTALL_PATH=/c/qt
+            QT_DOWNLOAD_OS=win
+            QT_DOWNLOAD_EXT=zip
+          elif [[ "${{ runner.os }}" == 'Linux' ]]; then
+            QT_DOWNLOAD_OS=linux
+            QT_DOWNLOAD_EXT=tar.gz
           else
-            echo "$Qt5_DIR/bin" >> $GITHUB_PATH
+            QT_DOWNLOAD_OS=osx
+            QT_DOWNLOAD_EXT=tar.gz
+          fi
+          if [[ -n "${{ matrix.qt-download-url }}" ]]; then
+            QT_DOWNLOAD_URL="${{ matrix.qt-download-url }}"
+          else
+            if [[ -n "${{ matrix.qt-download-commit }}" ]]; then
+              QT_DOWNLOAD_COMMIT="${{ matrix.qt-download-commit }}"
+            fi
+            QT_DOWNLOAD_URL="$QT_DOWNLOAD_BASE_URL/qt-${{ matrix.qt-version }}-${{ matrix.qt-type }}-$QT_DOWNLOAD_OS-$QT_DOWNLOAD_COMMIT.$QT_DOWNLOAD_EXT"
+          fi
+          mkdir -p $QT_INSTALL_PATH
+          cd $QT_INSTALL_PATH
+          echo "Downloading $QT_DOWNLOAD_URL"
+          curl -L $QT_DOWNLOAD_URL -o qt.$QT_DOWNLOAD_EXT
+          if [[ "${{ runner.os }}" == 'Windows' ]]; then
+            unzip qt.$QT_DOWNLOAD_EXT
+          else
+            tar -xzf qt.$QT_DOWNLOAD_EXT
+          fi
+          rm qt.$QT_DOWNLOAD_EXT
+      - name: Set Qt environment variables # needed to find qmake depending on the way qt was installed
+        shell: bash
+        if: matrix.qt-version && matrix.qt-type
+        run: |
+          if [[ "${{ runner.os }}" == 'Windows' ]]; then
+            QT_PATH="c:\qt\qt-${{ matrix.qt-version }}-${{ matrix.qt-type }}"
+            echo "$QT_PATH\bin" >> $GITHUB_PATH
+            echo "QT_PATH=$QT_PATH" >> $GITHUB_ENV
+            echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH;$QT_PATH/lib/pkgconfig;$GITHUB_WORKSPACE/win" >> $GITHUB_ENV
+            echo "CMAKE_PREFIX_PATH=$QT_PATH" >> $GITHUB_ENV
+          else
+            QT_PATH="/opt/qt-${{ matrix.qt-version }}-${{ matrix.qt-type }}"
+            echo "$QT_PATH/bin" >> $GITHUB_PATH
+            echo "QT_PATH=$QT_PATH" >> $GITHUB_ENV
+            echo "PKG_CONFIG_PATH=$QT_PATH/lib/pkgconfig" >> $GITHUB_ENV
+            echo "CMAKE_PREFIX_PATH=$QT_PATH" >> $GITHUB_ENV
+            if [[ "${{ runner.os }}" == 'macOS' ]]; then
+              echo "DYLD_FRAMEWORK_PATH=$QT_PATH/lib" >> $GITHUB_ENV
+            fi
           fi
       - name: build JackTrip with QMake
         if: matrix.build-system == 'qmake'
         shell: bash
         run: |
           CONFIG_STRING="noclean -j4"
-          if [[ -n "${{ matrix.static-qt-version }}" ]]; then 
-            CONFIG_STRING="static $CONFIG_STRING"
-            export QML_IMPORT_PATH=$QT_STATIC_BUILD_PATH/qml
-            export QML2_IMPORT_PATH=$QT_STATIC_BUILD_PATH/qml
+          if [[ -n "${{ matrix.qt-version }}" ]]; then
+            if [[ "${{ matrix.qt-type }}" == "static" ]]; then
+              CONFIG_STRING="static $CONFIG_STRING"
+            fi
+            if [[ "${{ runner.os }}" == "Windows" ]]; then
+              export QML_IMPORT_PATH="c:\qt\qt-${{ matrix.qt-version }}-${{ matrix.qt-type }}\qml"
+              export QML2_IMPORT_PATH="c:\qt\qt-${{ matrix.qt-version }}-${{ matrix.qt-type }}\qml"
+            else
+              export QML_IMPORT_PATH="/opt/qt-${{ matrix.qt-version }}-${{ matrix.qt-type }}/qml"
+              export QML2_IMPORT_PATH="/opt/qt-${{ matrix.qt-version }}-${{ matrix.qt-type }}/qml"
+            fi
           fi
           if [[ "${{ matrix.system-rtaudio }}" == true ]] || [[ "${{ matrix.bundled-rtaudio }}" == true ]]; then 
             CONFIG_STRING="rtaudio $CONFIG_STRING"
@@ -638,15 +451,33 @@ jobs:
           if [[ "${{ matrix.nogui }}" == true ]]; then 
             CONFIG_STRING="-Dnogui=true $CONFIG_STRING"
           fi
+          if [[ "${{ matrix.novs }}" == true ]]; then 
+            CONFIG_STRING="-Dnovs=true $CONFIG_STRING"
+          fi
+          if [[ "${{ needs.check-secrets.outputs.should_run }}" == "true" ]]; then 
+            CONFIG_STRING="-Dvsftux=true $CONFIG_STRING"
+          fi
           if [[ "${{ matrix.weakjack }}" == true ]]; then 
             CONFIG_STRING="-Dweakjack=true $CONFIG_STRING"
           fi
           if [[ "${{ runner.os }}" == 'Linux' ]]; then
-              CONFIG_STRING="-Dwerror=true $CONFIG_STRING"
+            CONFIG_STRING="-Dwerror=true $CONFIG_STRING"
           fi
-          meson --buildtype release $CONFIG_STRING $BUILD_PATH
-          cd $BUILD_PATH
-          meson compile
+          if [[ -n "${{ matrix.macosx-architectures }}" ]]; then
+            # TODO: for now, just assume that we want universal if it is not empty
+            if [[ -n "${{ matrix.macosx-deployment-target }}" ]]; then
+              CONFIG_STRING="--native-file macos/meson_native_universal_${{ matrix.macosx-deployment-target }}.ini $CONFIG_STRING"
+            else
+              CONFIG_STRING="--native-file macos/meson_native_universal.ini $CONFIG_STRING"
+            fi
+          elif [[ -n "${{ matrix.macosx-deployment-target }}" ]]; then
+            CONFIG_STRING="--native-file macos/meson_native_minversion_${{ matrix.macosx-deployment-target }}.ini $CONFIG_STRING"
+          fi
+          if [[ "${{ runner.os }}" == 'Windows' && "${{ matrix.qt-type }}" == "static" ]]; then
+            CONFIG_STRING="-Db_vscrt=mt $CONFIG_STRING"
+          fi
+          meson setup --buildtype release $CONFIG_STRING $BUILD_PATH
+          meson compile -C $BUILD_PATH -v
       - name: validate desktop file
         if: runner.os == 'Linux' && !matrix.nogui
         shell: bash
@@ -655,6 +486,7 @@ jobs:
           if [[ "${{ matrix.build-system }}" == meson ]]; then 
             DESKTOP_FILE_PATH=$BUILD_PATH/linux/org.jacktrip.JackTrip.desktop
           fi
+          echo "DESKTOP_FILE_PATH=$DESKTOP_FILE_PATH" >> $GITHUB_ENV
           desktop-file-validate $DESKTOP_FILE_PATH
       - name: set signing secrets for macOS
         if: runner.os == 'macOS' && (matrix.bundle-path || matrix.installer-path) && needs.check-secrets.outputs.should_run == 'true'
@@ -673,7 +505,7 @@ jobs:
           # import certificate and provisioning profile from secrets
           echo -n "$APP_SIGNING_CERT_BASE64" | base64 --decode --output $CERTIFICATE_PATH
           echo -n "$INSTALLER_SIGNING_CERT_BASE64" | base64 --decode --output $INSTALLER_CERT_PATH
-          
+
           # create temporary keychain
           security create-keychain -p "$KEYCHAIN_PWD" $KEYCHAIN_PATH
           security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
@@ -684,26 +516,6 @@ jobs:
           security import $CERTIFICATE_PATH -P "$CERT_PASSPHRASE" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
           security import $INSTALLER_CERT_PATH -P "$CERT_PASSPHRASE" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
           security list-keychain -d user -s $KEYCHAIN_PATH
-      - name: compress the binary
-        shell: bash
-        if: matrix.binary-path
-        run: |
-          BINFILE=$BUILD_PATH/${{ matrix.jacktrip-path }}
-          ZIPFILE=$BUILD_PATH/${{ matrix.binary-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-binary.zip
-          mkdir -p $BUILD_PATH/${{ matrix.binary-path }}
-          if [[ "${{ runner.os }}" == "Windows" ]]; then
-            7z a $ZIPFILE -tzip $BINFILE $GITHUB_WORKSPACE/LICENSE.md $GITHUB_WORKSPACE/LICENSES/
-          else
-            strip $BINFILE
-            zip -j $ZIPFILE $BINFILE
-            if [[ "${{ matrix.name }}" == "Linux-x64-qmake-gcc-static" ]]; then
-              cp $GITHUB_WORKSPACE/linux/icons/jacktrip.svg $BUILD_PATH/org.jacktrip.JackTrip.svg
-              cp $GITHUB_WORKSPACE/linux/icons/jacktrip_48x48.png $BUILD_PATH/org.jacktrip.JackTrip.png
-              zip -j $ZIPFILE $BUILD_PATH/org.jacktrip.JackTrip.desktop $BUILD_PATH/org.jacktrip.JackTrip.svg $BUILD_PATH/org.jacktrip.JackTrip.png $GITHUB_WORKSPACE/linux/README.md
-            fi
-            cd $GITHUB_WORKSPACE # we need to be in the root project directory for adding licenses
-            zip -r $ZIPFILE LICENSE.md LICENSES
-          fi
       - name: create app bundle and installer on macOS
         if: runner.os == 'macOS' && (matrix.bundle-path || matrix.installer-path)
         shell: bash
@@ -746,6 +558,30 @@ jobs:
           call "build_installer.bat"
           bash -c "mkdir -p $BUILD_PATH/${{ matrix.installer-path }}"
           bash -c "cp deploy/*.msi $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi"
+          rm -f deploy/*.msi deploy/*.wxs deploy/*.wixobj deploy/*.wixpdb deploy/vc_redist.x64.exe
+      - name: compress the binary
+        shell: bash
+        if: matrix.binary-path
+        run: |
+          BINFILE=$BUILD_PATH/${{ matrix.jacktrip-path }}
+          NAME=JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}
+          ZIPFILE=$BUILD_PATH/${{ matrix.binary-path }}/$NAME-binary.zip
+          mkdir -p $BUILD_PATH/${{ matrix.binary-path }}
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            cd win
+            mv deploy $NAME
+            7z a $ZIPFILE -tzip $NAME
+          else
+            strip $BINFILE
+            zip -j $ZIPFILE $BINFILE
+            if [[ "${{ matrix.name }}" == "Linux-x64-meson-gcc-shared-bundled_rtaudio" ]]; then
+              cp $GITHUB_WORKSPACE/linux/icons/jacktrip.svg $BUILD_PATH/org.jacktrip.JackTrip.svg
+              cp $GITHUB_WORKSPACE/linux/icons/jacktrip_48x48.png $BUILD_PATH/org.jacktrip.JackTrip.png
+              zip -j $ZIPFILE $DESKTOP_FILE_PATH $BUILD_PATH/jacktrip.1.gz $BUILD_PATH/org.jacktrip.JackTrip.svg $BUILD_PATH/org.jacktrip.JackTrip.png $GITHUB_WORKSPACE/linux/README.md
+            fi
+            cd $GITHUB_WORKSPACE # we need to be in the root project directory for adding licenses
+            zip -r $ZIPFILE LICENSE.md LICENSES
+          fi
       - name: upload jacktrip binary
         uses: actions/upload-artifact@v3
         if: matrix.binary-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name))
@@ -805,7 +641,7 @@ jobs:
         include:
           - name: Sign Windows artifacts
             release-name: Windows-x64
-            build-job-name: Windows-x64-qmake-gcc-static-bundled_rtaudio
+            build-job-name: Windows-x64-meson-msvc-qt6
             runs-on: ubuntu-latest
             binary-path: binary
             installer-path: installer
@@ -902,19 +738,19 @@ jobs:
             if: needs.check-secrets.outputs.should_run == 'true'
             platform-name: win
             release-name: Windows-x64
-            build-job-name: Windows-x64-qmake-gcc-static-bundled_rtaudio
+            build-job-name: Windows-x64-meson-msvc-qt6
             runs-on: ubuntu-latest
           - name: Update Mac manifests
             if: needs.check-secrets.outputs.should_run == 'true'
             platform-name: mac
             release-name: macOS-x64
-            build-job-name: macOS-x64-qmake-clang-static-bundled_rtaudio
+            build-job-name: macOS-x64-meson-clang-shared-bundled_rtaudio
             runs-on: ubuntu-latest
           - name: Update Linux manifests
             if: needs.check-secrets.outputs.should_run == 'true'
             platform-name: linux
             release-name: Linux-x64
-            build-job-name: Linux-x64-qmake-gcc-static
+            build-job-name: Linux-x64-meson-gcc-shared-bundled_rtaudio
             runs-on: ubuntu-latest
     permissions:
       contents: "read"
@@ -965,6 +801,8 @@ jobs:
           create_credentials_file: true
       - name: Upload files
         run: |
+          # this feature seems to produce permission denied errors on osx and linux runners (for larger files)
+          gcloud config set storage/parallel_composite_upload_enabled False
           gcloud storage cp ${{ env.DOWNLOAD_PATH }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-${{ steps.set-version.outputs.type }}${{ steps.set-version.outputs.extension }} gs://files.jacktrip.org/app-builds
       - name: Update edge manifests
         id: update-edge

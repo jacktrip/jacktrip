@@ -102,7 +102,7 @@ void Analyzer::init(int samplingRate, int bufferSize)
 //*******************************************************************************
 void Analyzer::compute(int nframes, float** inputs, float** outputs)
 {
-    if (not inited) {
+    if (!inited) {
         std::cerr << "*** Analyzer " << this << ": init never called! Doing it now.\n";
         init(0, 0);
     }
@@ -136,7 +136,7 @@ void Analyzer::onTick()
         return;
     }
 
-    const uint32_t buffers = mCircularBufferPtr->size();
+    const uint32_t buffers = uint32_t(mCircularBufferPtr->size());
     const uint32_t samples = buffers * mBufferSize;
 
     // require at least mFftSize values to process, otherwise return

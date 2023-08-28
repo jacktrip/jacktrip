@@ -1,9 +1,8 @@
 [wrap-file]
-directory = rtaudio-5.2.0
-source_url = https://github.com/thestk/rtaudio/archive/refs/tags/5.2.0.tar.gz
-source_filename = 5.2.0.tar.gz
-source_hash = a8d9c738addffd485c3f0bab14cbba72600267e3113f274398c67829bbb49332
+directory = rtaudio-6.0.1
+source_url = https://github.com/thestk/rtaudio/archive/refs/tags/6.0.1.tar.gz
+source_filename = 6.0.1.tar.gz
+source_hash = 7206c8b6cee43b474f43d64988fefaadfdcfc4264ed38d8de5f5d0e6ddb0a123
 
 [provide]
 dependency_names = rtaudio
-

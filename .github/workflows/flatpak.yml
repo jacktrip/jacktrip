@@ -1,0 +1,37 @@
+on:
+  release:
+    types: [released]
+  push:
+    branches: [dev]
+    paths-ignore:
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - 'documentation/**'
+      - 'scripts/**'
+      - 'README**'
+  pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - 'documentation/**'
+      - 'scripts/**'
+      - 'README**'
+name: Flatpak
+jobs:
+  flatpak:
+    name: "Flatpak"
+    runs-on: ubuntu-latest
+    container:
+      image: bilelmoussaoui/flatpak-github-actions:kde-6.4
+      options: --privileged
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: true
+    - name: Add SHORT_SHA environment variable
+      run: echo "SHORT_SHA=`echo ${GITHUB_SHA::7}`" >> $GITHUB_ENV
+    - uses: flatpak/flatpak-github-actions/flatpak-builder@v6.1
+      with:
+        bundle: JackTrip-${{ env.SHORT_SHA }}.flatpak
+        manifest-path: build-aux/flatpak/org.jacktrip.JackTrip.json
+        cache-key: flatpak-builder-${{ github.sha }}

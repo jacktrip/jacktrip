@@ -38,87 +38,53 @@
 #ifndef VIRTUALSTUDIO_H
 #define VIRTUALSTUDIO_H
 
-#include <QEventLoop>
-#include <QList>
+#include <QJsonObject>
+#include <QMap>
 #include <QMutex>
 #include <QNetworkAccessManager>
 #include <QScopedPointer>
 #include <QSharedPointer>
+#include <QString>
+#include <QStringList>
 #include <QTimer>
+#include <QUrl>
 #include <QVector>
-#include <QtNetworkAuth>
+#include <QWebChannel>
+#include <QWebSocketServer>
 
-#include "../Analyzer.h"
-#include "../JackTrip.h"
-#include "../Meter.h"
-#include "../Monitor.h"
-#include "../Volume.h"
-#include "vsApi.h"
-#include "vsAudioInterface.h"
-#include "vsAuth.h"
+#include "qjacktrip.h"
 #include "vsConstants.h"
-#include "vsDevice.h"
 #include "vsQuickView.h"
 #include "vsServerInfo.h"
-#include "vsUrlHandler.h"
-#include "vsWebSocket.h"
 
 #ifdef __APPLE__
 #include "NoNap.h"
-#include "vsMacPermissions.h"
-#else
-#include "vsPermissions.h"
 #endif
 
-class QJackTrip;
+class JackTrip;
+class VsAudio;
+class VsApi;
+class VsAuth;
+class VsDevice;
+class VsWebSocket;
+
+typedef QSharedPointer<VsServerInfo> VsServerInfoPointer;
 
 class VirtualStudio : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(int webChannelPort READ webChannelPort NOTIFY webChannelPortChanged)
     Q_PROPERTY(bool showFirstRun READ showFirstRun WRITE setShowFirstRun NOTIFY
                    showFirstRunChanged)
     Q_PROPERTY(bool hasRefreshToken READ hasRefreshToken NOTIFY hasRefreshTokenChanged)
     Q_PROPERTY(QString versionString READ versionString CONSTANT)
     Q_PROPERTY(QString logoSection READ logoSection NOTIFY logoSectionChanged)
-    Q_PROPERTY(bool selectableBackend READ selectableBackend CONSTANT)
-    Q_PROPERTY(QString audioBackend READ audioBackend WRITE setAudioBackend NOTIFY
-                   audioBackendChanged)
-    Q_PROPERTY(QString inputDevice READ inputDevice WRITE setInputDevice NOTIFY
-                   inputDeviceChanged)
-    Q_PROPERTY(QString outputDevice READ outputDevice WRITE setOutputDevice NOTIFY
-                   outputDeviceChanged)
-    Q_PROPERTY(int previousInput READ previousInput WRITE setPreviousInput NOTIFY
-                   previousInputChanged)
-    Q_PROPERTY(int previousOutput READ previousOutput WRITE setPreviousOutput NOTIFY
-                   previousOutputChanged)
-#ifdef RT_AUDIO
-    Q_PROPERTY(int baseInputChannel READ baseInputChannel WRITE setBaseInputChannel NOTIFY
-                   baseInputChannelChanged)
-    Q_PROPERTY(int numInputChannels READ numInputChannels WRITE setNumInputChannels NOTIFY
-                   numInputChannelsChanged)
-    Q_PROPERTY(int inputMixMode READ inputMixMode WRITE setInputMixMode NOTIFY
-                   inputMixModeChanged)
-    Q_PROPERTY(int baseOutputChannel READ baseOutputChannel WRITE setBaseOutputChannel
-                   NOTIFY baseOutputChannelChanged)
-    Q_PROPERTY(int numOutputChannels READ numOutputChannels WRITE setNumOutputChannels
-                   NOTIFY numOutputChannelsChanged)
-#endif
-    Q_PROPERTY(QString devicesWarning READ devicesWarning NOTIFY devicesWarningChanged)
-    Q_PROPERTY(QString devicesError READ devicesError NOTIFY devicesErrorChanged)
-    Q_PROPERTY(QString devicesWarningHelpUrl READ devicesWarningHelpUrl NOTIFY
-                   devicesWarningHelpUrlChanged)
-    Q_PROPERTY(QString devicesErrorHelpUrl READ devicesErrorHelpUrl NOTIFY
-                   devicesErrorHelpUrlChanged)
     Q_PROPERTY(
         QString connectedErrorMsg READ connectedErrorMsg NOTIFY connectedErrorMsgChanged)
 
     Q_PROPERTY(
-        int bufferSize READ bufferSize WRITE setBufferSize NOTIFY bufferSizeChanged)
-    Q_PROPERTY(int bufferStrategy READ bufferStrategy WRITE setBufferStrategy NOTIFY
-                   bufferStrategyChanged)
-    Q_PROPERTY(bool feedbackDetectionEnabled READ feedbackDetectionEnabled WRITE
-                   setFeedbackDetectionEnabled NOTIFY feedbackDetectionEnabledChanged)
-    Q_PROPERTY(int currentStudio READ currentStudio NOTIFY currentStudioChanged)
+        QVector<VsServerInfo*> serverModel READ getServerModel NOTIFY serverModelChanged)
+    Q_PROPERTY(VsServerInfo* currentStudio READ currentStudio NOTIFY currentStudioChanged)
     Q_PROPERTY(QUrl studioToJoin READ studioToJoin WRITE setStudioToJoin NOTIFY
                    studioToJoinChanged)
     Q_PROPERTY(QJsonObject regions READ regions NOTIFY regionsChanged)
@@ -138,47 +104,23 @@ class VirtualStudio : public QObject
     Q_PROPERTY(float fontScale READ fontScale CONSTANT)
     Q_PROPERTY(float uiScale READ uiScale WRITE setUiScale NOTIFY uiScaleChanged)
     Q_PROPERTY(bool darkMode READ darkMode WRITE setDarkMode NOTIFY darkModeChanged)
+    Q_PROPERTY(bool collapseDeviceControls READ collapseDeviceControls WRITE
+                   setCollapseDeviceControls NOTIFY collapseDeviceControlsChanged)
     Q_PROPERTY(bool testMode READ testMode WRITE setTestMode NOTIFY testModeChanged)
     Q_PROPERTY(bool showDeviceSetup READ showDeviceSetup WRITE setShowDeviceSetup NOTIFY
                    showDeviceSetupChanged)
     Q_PROPERTY(bool showWarnings READ showWarnings WRITE setShowWarnings NOTIFY
                    showWarningsChanged)
+    Q_PROPERTY(bool isExiting READ isExiting NOTIFY isExitingChanged)
     Q_PROPERTY(bool noUpdater READ noUpdater CONSTANT)
     Q_PROPERTY(bool psiBuild READ psiBuild CONSTANT)
     Q_PROPERTY(QString failedMessage READ failedMessage NOTIFY failedMessageChanged)
-    Q_PROPERTY(
-        float inputVolume READ inputVolume WRITE setInputVolume NOTIFY updatedInputVolume)
-    Q_PROPERTY(float outputVolume READ outputVolume WRITE setOutputVolume NOTIFY
-                   updatedOutputVolume)
-    Q_PROPERTY(float monitorVolume READ monitorVolume WRITE setMonitorVolume NOTIFY
-                   updatedMonitorVolume)
-    Q_PROPERTY(
-        bool inputMuted READ inputMuted WRITE setInputMuted NOTIFY updatedInputMuted)
-    Q_PROPERTY(QVector<float> outputMeterLevels READ outputMeterLevels NOTIFY
-                   updatedOutputMeterLevels)
-    Q_PROPERTY(QVector<float> inputMeterLevels READ inputMeterLevels NOTIFY
-                   updatedInputMeterLevels)
-    Q_PROPERTY(
-        QJsonArray inputComboModel READ inputComboModel NOTIFY inputComboModelChanged)
-    Q_PROPERTY(
-        QJsonArray outputComboModel READ outputComboModel NOTIFY outputComboModelChanged)
-    Q_PROPERTY(QJsonArray inputChannelsComboModel READ inputChannelsComboModel NOTIFY
-                   inputChannelsComboModelChanged)
-    Q_PROPERTY(QJsonArray outputChannelsComboModel READ outputChannelsComboModel NOTIFY
-                   outputChannelsComboModelChanged)
-    Q_PROPERTY(QJsonArray inputMixModeComboModel READ inputMixModeComboModel NOTIFY
-                   inputMixModeComboModelChanged)
-    Q_PROPERTY(bool inputClipped READ inputClipped NOTIFY updatedInputClipped)
-    Q_PROPERTY(bool outputClipped READ outputClipped NOTIFY updatedOutputClipped)
-    Q_PROPERTY(bool audioActivated READ audioActivated WRITE setAudioActivated NOTIFY
-                   audioActivatedChanged)
-    Q_PROPERTY(
-        bool audioReady READ audioReady WRITE setAudioReady NOTIFY audioReadyChanged)
-    Q_PROPERTY(bool backendAvailable READ backendAvailable CONSTANT)
     Q_PROPERTY(QString windowState READ windowState WRITE setWindowState NOTIFY
                    windowStateUpdated)
     Q_PROPERTY(QString apiHost READ apiHost WRITE setApiHost NOTIFY apiHostChanged)
     Q_PROPERTY(bool vsFtux READ vsFtux CONSTANT)
+    Q_PROPERTY(
+        QStringList updateChannelComboModel READ getUpdateChannelComboModel CONSTANT)
 
    public:
     explicit VirtualStudio(bool firstRun = false, QObject* parent = nullptr);
@@ -187,62 +129,21 @@ class VirtualStudio : public QObject
     void setStandardWindow(QSharedPointer<QJackTrip> window);
     void show();
     void raiseToTop();
-    bool vsModeActive();
 
+    int webChannelPort();
     bool showFirstRun();
     void setShowFirstRun(bool show);
     bool hasRefreshToken();
     QString versionString();
     QString logoSection();
-    bool selectableBackend();
-    QString audioBackend();
-    void setAudioBackend(const QString& backend);
-    QString inputDevice();
-    void setInputDevice(const QString& device);
-#ifdef RT_AUDIO
-    int baseInputChannel();
-    void setBaseInputChannel(int baseChannel);
-    int numInputChannels();
-    void setNumInputChannels(int numChannels);
-    void setInputMixMode(int mode);
-    int inputMixMode();
-#endif
-    QString outputDevice();
-    void setOutputDevice(const QString& device);
-#ifdef RT_AUDIO
-    int baseOutputChannel();
-    void setBaseOutputChannel(int baseChannel);
-    int numOutputChannels();
-    void setNumOutputChannels(int numChannels);
-#endif
-    int previousInput();
-    void setPreviousInput(int device);
-    int previousOutput();
-    void setPreviousOutput(int device);
-    QString devicesWarning();
-    QString devicesError();
-    QString devicesWarningHelpUrl();
-    QString devicesErrorHelpUrl();
     QString connectedErrorMsg();
     void setConnectedErrorMsg(const QString& msg);
-    int bufferSize();
-    void setBufferSize(int index);
-    int bufferStrategy();
-    void setBufferStrategy(int index);
-    bool feedbackDetectionEnabled();
-    void setFeedbackDetectionEnabled(bool enabled);
-    int currentStudio();
+    const QVector<VsServerInfo*>& getServerModel() const { return m_serverModel; }
+    VsServerInfo* currentStudio() { return &m_currentStudio; }
     QJsonObject regions();
     QJsonObject userMetadata();
     QString connectionState();
     QJsonObject networkStats();
-    const QVector<float>& inputMeterLevels() const;
-    const QVector<float>& outputMeterLevels() const;
-    const QJsonArray& inputComboModel() const;
-    const QJsonArray& outputComboModel() const;
-    const QJsonArray& inputChannelsComboModel() const;
-    const QJsonArray& outputChannelsComboModel() const;
-    const QJsonArray& inputMixModeComboModel() const;
     QString updateChannel();
     void setUpdateChannel(const QString& channel);
     bool showInactive();
@@ -256,6 +157,8 @@ class VirtualStudio : public QObject
     void setUiScale(float scale);
     bool darkMode();
     void setDarkMode(bool dark);
+    bool collapseDeviceControls();
+    void setCollapseDeviceControls(bool collapseDeviceControls);
     bool testMode();
     void setTestMode(bool test);
     QUrl studioToJoin();
@@ -267,23 +170,17 @@ class VirtualStudio : public QObject
     bool noUpdater();
     bool psiBuild();
     QString failedMessage();
-    float inputVolume();
-    float outputVolume();
-    float monitorVolume();
-    bool inputMuted();
-    bool outputMuted();
-    bool monitorMuted();
-    Q_INVOKABLE void restartAudio();
-    bool audioActivated();
-    bool audioReady();
-    bool inputClipped();
-    bool outputClipped();
     bool networkOutage();
     bool backendAvailable();
     QString windowState();
     QString apiHost();
     void setApiHost(QString host);
     bool vsFtux();
+    bool isExiting();
+    const QStringList& getUpdateChannelComboModel() const
+    {
+        return m_updateChannelOptions;
+    }
 
    public slots:
     void toStandard();
@@ -291,68 +188,33 @@ class VirtualStudio : public QObject
     void login();
     void logout();
     void refreshStudios(int index, bool signalRefresh = false);
-    void refreshDevices();
-    void refreshRtAudioDevices();
-    void validateDevicesState();
-    void validateInputDevicesState();
-    void validateOutputDevicesState();
-    void playOutputAudio();
-    void revertSettings();
-    void applySettings();
-    void connectToStudio(int studioIndex);
-    void completeConnection();
-    void triggerReconnect();
-    void disconnect();
-    void manageStudio(int studioIndex, bool start = false);
-    void launchVideo(int studioIndex);
+    void loadSettings();
+    void saveSettings();
+    void triggerReconnect(bool refresh);
+    void manageStudio(const QString& studioId, bool start = false);
+    void launchVideo(const QString& studioId);
     void createStudio();
     void editProfile();
     void showAbout();
     void openLink(const QString& url);
-    void updatedInputVuMeasurements(const float* valuesInDecibels, int numChannels);
-    void updatedOutputVuMeasurements(const float* valuesInDecibels, int numChannels);
+    void handleDeeplinkRequest(const QUrl& url);
     void udpWaitingTooLong();
-    void setInputVolume(float multiplier);
-    void setOutputVolume(float multiplier);
-    void setMonitorVolume(float multiplier);
-    void setInputMuted(bool muted);
-    void setOutputMuted(bool muted);
-    void setMonitorMuted(bool muted);
-    void setAudioActivated(bool activated);
-    void setAudioReady(bool ready);
-    void detectedFeedbackLoop();
     void setWindowState(QString state);
-    void exit();
+    void joinStudio();
+    void disconnect();
+    void collectFeedbackSurvey(QString serverId, int rating, QString message);
 
    signals:
-    void authSucceeded();
-    void authFailed();
     void failed();
     void connected();
     void disconnected();
     void refreshFinished(int index);
+    void webChannelPortChanged(int webChannelPort);
     void showFirstRunChanged();
     void hasRefreshTokenChanged();
     void logoSectionChanged();
-    void audioBackendChanged(bool useRtAudio, bool shouldRestart = true);
-    void inputDeviceChanged(QString device, bool shouldRestart = true);
-    void baseInputChannelChanged(int baseChannel, bool shouldRestart = true);
-    void numInputChannelsChanged(int numChannels, bool shouldRestart = true);
-    void inputMixModeChanged(int mode, bool shouldRestart = true);
-    void outputDeviceChanged(QString device, bool shouldRestart = true);
-    void baseOutputChannelChanged(int baseChannel, bool shouldRestart = true);
-    void numOutputChannelsChanged(int numChannels, bool shouldRestart = true);
-    void previousInputChanged();
-    void previousOutputChanged();
-    void devicesWarningChanged();
-    void devicesErrorChanged();
-    void devicesWarningHelpUrlChanged();
-    void devicesErrorHelpUrlChanged();
     void connectedErrorMsgChanged();
-    void triggerPlayOutputAudio();
-    void bufferSizeChanged();
-    void bufferStrategyChanged();
-    void feedbackDetectionEnabledChanged();
+    void serverModelChanged();
     void currentStudioChanged();
     void regionsChanged();
     void userMetadataChanged();
@@ -365,220 +227,118 @@ class VirtualStudio : public QObject
     void showDeviceSetupChanged();
     void showWarningsChanged();
     void uiScaleChanged();
+    void collapseDeviceControlsChanged(bool collapseDeviceControls);
     void newScale();
     void darkModeChanged();
     void testModeChanged();
-    void feedbackDetected();
     void signalExit();
     void periodicRefresh();
     void failedMessageChanged();
     void studioToJoinChanged();
-    void updatedInputVolume(float multiplier);
-    void updatedOutputVolume(float multiplier);
-    void updatedMonitorVolume(float multiplier);
-    void updatedInputMuted(bool muted);
-    void updatedOutputMuted(bool muted);
-    void updatedMonitorMuted(bool muted);
-    void updatedInputMeterLevels(const QVector<float>& levels);
-    void updatedOutputMeterLevels(const QVector<float>& levels);
-    void inputComboModelChanged();
-    void outputComboModelChanged();
-    void inputChannelsComboModelChanged();
-    void outputChannelsComboModelChanged();
-    void inputMixModeComboModelChanged();
-    void updatedInputClipped(bool clip);
-    void updatedOutputClipped(bool clip);
     void updatedNetworkOutage(bool outage);
-    void audioActivatedChanged();
-    void audioReadyChanged();
     void windowStateUpdated();
+    void isExitingChanged();
     void apiHostChanged();
+    void feedbackDetected();
+    void openFeedbackSurveyModal(QString serverId);
 
    private slots:
     void slotAuthSucceeded();
-    void slotAuthFailed();
-    void processFinished();
-    void processError(const QString& errorMessage);
     void receivedConnectionFromPeer();
     void handleWebsocketMessage(const QString& msg);
-    void endRetryPeriod();
+    void restartStudioSocket();
     void launchBrowser(const QUrl& url);
-    void joinStudio();
     void updatedStats(const QJsonObject& stats);
-    void startAudio();
-    void updatedDevicesErrorMsg(const QString& msg);
-    void updatedDevicesWarningMsg(const QString& msg);
-    void updatedDevicesErrorHelpUrl(const QString& url);
-    void updatedDevicesWarningHelpUrl(const QString& url);
+    void processError(const QString& errorMessage);
+    void detectedFeedbackLoop();
+    void sendHeartbeat();
+    void connectionFinished();
+    void exit();
 
    private:
-    void sendHeartbeat();
-    void getServerList(bool firstLoad = false, bool signalRefresh = false,
-                       int index = -1);
-    void getUserId();
+    void getServerList(bool signalRefresh = false, int index = -1);
     void getSubscriptions();
     void getRegions();
     void getUserMetadata();
     void stopStudio();
-    void toggleAudio();
-    void resetMeters();
-    void stopAudio();
     bool readyToJoin();
-#ifdef RT_AUDIO
-    QJsonArray formatDeviceList(const QStringList& devices, const QStringList& categories,
-                                const QList<int>& channels);
-#endif
+    void connectToStudio(VsServerInfo& studio);
+    void completeConnection();
 
-    bool m_showFirstRun = false;
-    bool m_checkSsl     = true;
-    bool m_vsModeActive = false;
+   private:
+    enum ReconnectState {
+        NOT_RECONNECTING = 0,
+        RECONNECTING_VALIDATE,
+        RECONNECTING_REFRESH
+    };
+
+    VsQuickView m_view;
+    VsServerInfo m_currentStudio;
+    QSharedPointer<QJackTrip> m_standardWindow;
+    QScopedPointer<QNetworkAccessManager> m_networkAccessManager;
+    QSharedPointer<VsAuth> m_auth;
+    QSharedPointer<VsApi> m_api;
+    QScopedPointer<VsDevice> m_devicePtr;
+    QScopedPointer<VsWebSocket> m_studioSocketPtr;
+    QSharedPointer<VsAudio> m_audioConfigPtr;
+    QVector<VsServerInfoPointer> m_servers;
+    QVector<VsServerInfo*> m_serverModel;  //< qml doesn't like smart pointers
+    QScopedPointer<QWebSocketServer> m_webChannelServer;
+    QScopedPointer<QWebChannel> m_webChannel;
+    QMap<QString, bool> m_subscribedServers;
+    QJsonObject m_regions;
+    QJsonObject m_userMetadata;
+    QJsonObject m_networkStats;
+    QTimer m_startTimer;
+    QTimer m_refreshTimer;
+    QTimer m_heartbeatTimer;
+    QTimer m_networkOutageTimer;
+    QMutex m_refreshMutex;
+    QUrl m_studioToJoin;
     QString m_updateChannel;
     QString m_refreshToken;
     QString m_userId;
-    VsQuickView m_view;
-    QSharedPointer<QJackTrip> m_standardWindow;
-    QScopedPointer<VsAuth> m_auth;
-    QScopedPointer<VsApi> m_api;
-    QScopedPointer<QNetworkAccessManager> m_networkAccessManager;
-
-    QList<QObject*> m_servers;
-    QStringList m_subscribedServers;
-    QJsonObject m_regions;
-    QJsonObject m_userMetadata;
-    QString m_logoSection     = QStringLiteral("Your Studios");
-    bool m_selectableBackend  = true;
-    bool m_useRtAudio         = false;
-    int m_currentStudio       = -1;
-    QString m_connectionState = QStringLiteral("Waiting...");
-    QScopedPointer<JackTrip> m_jackTrip;
-    VsWebSocket* m_studioSocket = NULL;
-    QTimer m_startTimer;
-    QTimer m_retryPeriodTimer;
-    bool m_retryPeriod;
-    bool m_jackTripRunning = false;
-
-    QTimer m_refreshTimer;
-    QMutex m_refreshMutex;
-    bool m_allowRefresh      = true;
-    bool m_refreshInProgress = false;
-
-    QJsonObject m_networkStats;
-
-    QTimer m_heartbeatTimer;
-    VsWebSocket* m_heartbeatWebSocket = NULL;
-    VsDevice* m_device                = NULL;
-
-    bool m_onConnectedScreen = false;
-    bool m_isExiting         = false;
-    bool m_showInactive      = true;
-    bool m_showSelfHosted    = false;
-    bool m_showCreateStudio  = false;
-    bool m_showDeviceSetup   = true;
-    bool m_showWarnings      = true;
-    float m_fontScale        = 1;
-    float m_uiScale;
-    float m_previousUiScale;
-    int m_bufferStrategy            = 0;
-    bool m_feedbackDetectionEnabled = true;
     QString m_apiHost               = PROD_API_HOST;
-    bool m_darkMode                 = false;
-    bool m_testMode                 = false;
-    QString m_failedMessage         = "";
-    QUrl m_studioToJoin;
-    bool m_authenticated  = false;
-    bool m_audioActivated = false;
-    bool m_audioReady     = false;
-    bool m_inputClipped   = false;
-    bool m_outputClipped  = false;
-    bool m_networkOutage  = false;
+    ReconnectState m_reconnectState = ReconnectState::NOT_RECONNECTING;
+    QJackTrip::uiModeT m_uiMode     = QJackTrip::UNSET;
 
-    Analyzer* m_inputAnalyzerPlugin;
-    Analyzer* m_outputAnalyzerPlugin;
-    QVector<float> m_inputMeterLevels;
-    QVector<float> m_outputMeterLevels;
-    QJsonArray m_inputComboModel;
-    QJsonArray m_outputComboModel;
-    QJsonArray m_inputChannelsComboModel;
-    QJsonArray m_outputChannelsComboModel;
-    QJsonArray m_inputMixModeComboModel;
-    Meter* m_inputMeter;
-    Meter* m_outputMeter;
-    Meter* m_inputTestMeter;
-    Volume* m_inputVolumePlugin;
-    Volume* m_outputVolumePlugin;
-    Monitor* m_monitor;
-    QTimer m_inputClipTimer;
-    QTimer m_outputClipTimer;
-    QTimer m_networkOutageTimer;
+    bool m_firstRefresh           = true;
+    bool m_jackTripRunning        = false;
+    bool m_showFirstRun           = false;
+    bool m_checkSsl               = true;
+    bool m_refreshInProgress      = false;
+    bool m_onConnectedScreen      = false;
+    bool m_isExiting              = false;
+    bool m_showInactive           = true;
+    bool m_showSelfHosted         = false;
+    bool m_showCreateStudio       = false;
+    bool m_showDeviceSetup        = true;
+    bool m_showWarnings           = true;
+    bool m_darkMode               = false;
+    bool m_collapseDeviceControls = false;
+    bool m_testMode               = false;
+    bool m_authenticated          = false;
+    bool m_networkOutage          = false;
+    float m_fontScale             = 1;
+    float m_uiScale               = 1;
+    uint32_t m_webChannelPort     = 1;
 
-    QString m_devicesWarningMsg     = QStringLiteral("");
-    QString m_devicesErrorMsg       = QStringLiteral("");
-    QString m_devicesWarningHelpUrl = QStringLiteral("");
-    QString m_devicesErrorHelpUrl   = QStringLiteral("");
-    QString m_windowState           = QStringLiteral("login");
-    QString m_connectedErrorMsg     = QStringLiteral("");
+    QString m_failedMessage            = QStringLiteral("");
+    QString m_windowState              = QStringLiteral("start");
+    QString m_connectedErrorMsg        = QStringLiteral("");
+    QString m_logoSection              = QStringLiteral("Your Studios");
+    QString m_connectionState          = QStringLiteral("Waiting...");
+    QStringList m_updateChannelOptions = {"Stable", "Edge"};
 
-    float m_meterMax = 0.0;
-    float m_meterMin = -64.0;
-
-    float m_inMultiplier  = 1.0;
-    float m_outMultiplier = 1.0;
-    float m_monMultiplier = 1.0;
-    bool m_inMuted        = false;
-    bool m_outMuted       = false;
-    bool m_monMuted       = false;
-
-    QSharedPointer<VsAudioInterface> m_vsAudioInterface;
+#ifdef __APPLE__
+    NoNap m_noNap;
+#endif
 
 #ifdef VS_FTUX
     bool m_vsFtux = true;
 #else
     bool m_vsFtux = false;
 #endif
-
-#ifdef RT_AUDIO
-    QStringList m_inputDeviceList;
-    QStringList m_outputDeviceList;
-    QStringList m_inputDeviceCategories;
-    QStringList m_outputDeviceCategories;
-    QList<int> m_inputDeviceChannels;
-    QList<int> m_outputDeviceChannels;
-    QString m_inputDevice;
-    QString m_outputDevice;
-    quint16 m_bufferSize;
-    QString m_previousInput;
-    QString m_previousOutput;
-    quint16 m_previousBuffer;
-
-    int m_baseInputChannel;
-    int m_numInputChannels;
-    int m_inputMixMode;
-
-    int m_baseOutputChannel;
-    int m_numOutputChannels;
-
-    bool m_previousUseRtAudio = false;
-    inline void delay(int millisecondsWait)
-    {
-        QEventLoop loop;
-        QTimer t;
-        t.connect(&t, &QTimer::timeout, &loop, &QEventLoop::quit);
-        t.start(millisecondsWait);
-        loop.exec();
-    }
-#endif
-    QStringList m_bufferOptions         = {"16", "32", "64", "128", "256", "512", "1024"};
-    QStringList m_bufferStrategyOptions = {"Minimal Latency", "Stable Latency",
-                                           "Loss Concealment (3)",
-                                           "Loss Concealment (4)"};
-    QStringList m_updateChannelOptions  = {"Stable", "Edge"};
-    QStringList m_feedbackDetectionOptions = {"Enabled", "Disabled"};
-
-#ifdef __APPLE__
-    NoNap m_noNap;
-#endif
-
-    QSharedPointer<VsPermissions> m_permissions;
 };
 
 #endif  // VIRTUALSTUDIO_H

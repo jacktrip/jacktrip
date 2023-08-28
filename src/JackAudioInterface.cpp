@@ -88,6 +88,12 @@ void JackAudioInterface::setup(bool verbose)
     setupClient();
     AudioInterface::setup(verbose);
     setProcessCallback();
+    if (highLatencyBufferSize()) {
+        AudioInterface::setDevicesWarningMsg(AudioInterface::DEVICE_WARN_BUFFER_LATENCY);
+    } else {
+        AudioInterface::setDevicesWarningMsg(AudioInterface::DEVICE_WARN_NONE);
+    }
+    AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_NONE);
 }
 
 //*******************************************************************************
@@ -117,6 +123,8 @@ void JackAudioInterface::setupClient()
     /// verbose message, check how to desable them.
     {
         QMutexLocker locker(&sJackMutex);
+        // TODO: this needs a timeout because it will hang indefinitely
+        // if the Jack server is not running
 //#ifndef WAIR // WAIR
 //        mClient = jack_client_open (client_name, options, &status, server_name);
 //#else
@@ -152,7 +160,7 @@ void JackAudioInterface::setupClient()
     }
 
     // Set function to call if Jack shuts down
-    jack_on_info_shutdown(mClient, this->jackShutdown, 0);
+    jack_on_info_shutdown(mClient, this->jackShutdown, this);
 
     // Create input and output channels
     createChannels();
@@ -267,11 +275,18 @@ int JackAudioInterface::stopProcess()
 
 //*******************************************************************************
 void JackAudioInterface::jackShutdown(jack_status_t /*code*/, const char* reason,
-                                      void* /*arg*/)
+                                      void* arg)
 {
-    std::cout << reason << std::endl;
-    JackTrip::sJackStopped = true;
-    std::cout << "The Jack Server was shut down!" << std::endl;
+    std::string errorMsg = "The Jack server was shut down";
+    if (reason != nullptr) {
+        errorMsg += ": ";
+        errorMsg += reason;
+    }
+    if (arg != nullptr) {
+        static_cast<JackAudioInterface*>(arg)->mErrorMsg = errorMsg;
+    }
+    std::cerr << errorMsg << std::endl;
+    JackTrip::sAudioStopped = true;
 }
 
 //*******************************************************************************

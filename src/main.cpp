@@ -37,26 +37,33 @@
 
 #ifndef NO_GUI
 #include <QApplication>
+#if !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <QQuickStyle>
+#endif
 
 #ifndef NO_UPDATER
 #include "dblsqd/feed.h"
 #include "dblsqd/update_dialog.h"
 #endif
 
-#ifndef NO_VS
+#if !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #include <QDebug>
+#include <QDir>
 #include <QFile>
 #include <QQmlEngine>
 #include <QQuickView>
 #include <QSettings>
+#include <QStandardPaths>
 #include <QTextStream>
+// TODO: Add support for QtWebView
+//#include <QtWebView>
+#include <QtWebEngineQuick/qtwebenginequickglobal.h>
 
 #include "JTApplication.h"
 #include "gui/virtualstudio.h"
-#include "gui/vsInit.h"
+#include "gui/vsDeeplink.h"
 #include "gui/vsQmlClipboard.h"
-#include "gui/vsUrlHandler.h"
-#endif
+#endif  // NO_VS && QT_VERSION
 
 #include "gui/qjacktrip.h"
 #else
@@ -78,10 +85,10 @@
 #endif
 
 #ifndef NO_GUI
-#ifndef NO_VS
+#if !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 static QTextStream* ts;
 static QFile outFile;
-#endif  // NO_VS
+#endif  // NO_VS && QT_VERSION
 #endif  // NO_GUI
 
 QCoreApplication* createApplication(int& argc, char* argv[])
@@ -135,7 +142,7 @@ QCoreApplication* createApplication(int& argc, char* argv[])
             std::exit(1);
         }
 #endif
-#if defined(Q_OS_MACOS) && !defined(NO_VS)
+#if defined(Q_OS_MACOS) && !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         // Turn on high DPI support.
 #if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
         JTApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
@@ -175,14 +182,10 @@ void qtMessageHandler([[maybe_unused]] QtMsgType type,
 {
     std::cerr << msg.toStdString() << std::endl;
 #ifndef NO_GUI
-#ifndef NO_VS
+#if !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     // Writes to file in order to debug bundles and executables
-#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
     *ts << msg << Qt::endl;
-#else
-    *ts << msg << endl;
-#endif  // QT_VERSION > 5.14.0
-#endif  // NO_VS
+#endif  // NO_VS && QT_VERSION
 #endif  // NO_GUI
 }
 
@@ -265,6 +268,16 @@ bool isRunFromCmd()
             if (size >= 6 && strncmp(pname + size - 6, "wt.exe", 6) == 0) {
                 return true;
             }
+            // a few extras for msys/cygwin/etc
+            if (size >= 8 && strncmp(pname + size - 8, "bash.exe", 8) == 0) {
+                return true;
+            }
+            if (size >= 6 && strncmp(pname + size - 6, "sh.exe", 6) == 0) {
+                return true;
+            }
+            if (size >= 7 && strncmp(pname + size - 7, "zsh.exe", 7) == 0) {
+                return true;
+            }
         } else {
             CloseHandle(h);
         }
@@ -276,21 +289,30 @@ bool isRunFromCmd()
 
 int main(int argc, char* argv[])
 {
+#ifndef NO_GUI
+#if !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    QtWebEngineQuick::initialize();
+    // TODO: Add support for QtWebView
+    // qputenv("QT_WEBVIEW_PLUGIN", "native");
+    // QtWebView::initialize();
+#endif  // NO_VS && QT_VERSION
+#endif  // NO_GUI
+
     QScopedPointer<QCoreApplication> app(createApplication(argc, argv));
     QScopedPointer<JackTrip> jackTrip;
     QScopedPointer<UdpHubListener> udpHub;
 #ifndef NO_GUI
     QSharedPointer<QJackTrip> window;
+#if !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    QQuickStyle::setStyle("Basic");
+#endif  // QT_VERSION
 
-#ifndef NO_VS
-    QString deeplink;
-    QSharedPointer<VirtualStudio> vs;
-#ifdef _WIN32
-    QScopedPointer<VsInit> vsInit;
-#endif
-#endif
+#if !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    QSharedPointer<VirtualStudio> vsPtr;
+    QScopedPointer<VsDeeplink> vsDeeplinkPtr;
+#endif  // NO_VS && QT_VERSION
 
-#if defined(Q_OS_MACOS) && !defined(NO_VS)
+#if defined(Q_OS_MACOS) && !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     if (qobject_cast<JTApplication*>(app.data())) {
 #else
     if (qobject_cast<QApplication*>(app.data())) {
@@ -320,55 +342,42 @@ int main(int argc, char* argv[])
         cliSettings.reset(new Settings(true));
         cliSettings->parseInput(argc, argv);
 
-#ifndef NO_VS
+#if !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         // Register clipboard Qml type
         qmlRegisterType<VsQmlClipboard>("VS", 1, 0, "Clipboard");
 
-        // Parse command line for deep link
-        deeplink = VsInit::parseDeeplink(app.data());
+        // prepare handler for deeplinks jacktrip://join/<StudioID>
+        vsDeeplinkPtr.reset(new VsDeeplink(app.data()));
+        if (!vsDeeplinkPtr->getDeeplink().isEmpty()) {
+            bool readyForExit = vsDeeplinkPtr->waitForReady();
+            if (readyForExit)
+                return 0;
+        }
 
         // Check if we need to show our first run window.
         QSettings settings;
         int uiMode = settings.value(QStringLiteral("UiMode"), QJackTrip::UNSET).toInt();
-#ifdef _WIN32
-        // Set url scheme in registry
-        VsInit::setUrlScheme();
-        vsInit.reset(new VsInit());
-        vsInit->checkForInstance(deeplink);
-#endif  // _WIN32
-        window.reset(new QJackTrip(cliSettings, !deeplink.isEmpty()));
+        window.reset(new QJackTrip(cliSettings, !vsDeeplinkPtr->getDeeplink().isEmpty()));
 #else
         window.reset(new QJackTrip(cliSettings));
 #endif  // NO_VS
         QObject::connect(window.data(), &QJackTrip::signalExit, app.data(),
                          &QCoreApplication::quit, Qt::QueuedConnection);
-#ifndef NO_VS
-        vs.reset(new VirtualStudio(uiMode == QJackTrip::UNSET));
-        QObject::connect(vs.data(), &VirtualStudio::signalExit, app.data(),
-                         &QCoreApplication::quit, Qt::QueuedConnection);
-#ifdef _WIN32
-        vsInit->setVs(vs);
-#endif
-        vs->setStandardWindow(window);
-        window->setVs(vs);
 
-        VsUrlHandler* m_urlHandler = new VsUrlHandler();
-        QDesktopServices::setUrlHandler(QStringLiteral("jacktrip"), m_urlHandler,
-                                        "handleUrl");
-        QObject::connect(m_urlHandler, &VsUrlHandler::joinUrlClicked, vs.data(),
-                         [&](const QUrl& url) {
-                             if (url.scheme() == QLatin1String("jacktrip")
-                                 && url.host() == QLatin1String("join")) {
-                                 vs->setStudioToJoin(url);
-                             }
-                         });
-        // Open with any command line-passed url
-        QDesktopServices::openUrl(QUrl(deeplink));
+#if !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        vsPtr.reset(new VirtualStudio(uiMode == QJackTrip::UNSET));
+        QObject::connect(vsPtr.data(), &VirtualStudio::signalExit, app.data(),
+                         &QCoreApplication::quit, Qt::QueuedConnection);
+        vsPtr->setStandardWindow(window);
+        window->setVs(vsPtr);
+        QObject::connect(vsDeeplinkPtr.get(), &VsDeeplink::signalDeeplink, vsPtr.get(),
+                         &VirtualStudio::handleDeeplinkRequest, Qt::QueuedConnection);
+        vsDeeplinkPtr->readyForSignals();
 
         if (uiMode == QJackTrip::UNSET) {
-            vs->show();
+            vsPtr->show();
         } else if (uiMode == QJackTrip::VIRTUAL_STUDIO) {
-            vs->show();
+            vsPtr->show();
         } else {
             window->show();
         }
@@ -394,7 +403,8 @@ int main(int argc, char* argv[])
 
 #if !defined(NO_UPDATER) && !defined(__unix__)
 #ifndef PSI
-#if defined(NO_VS)
+#if defined(NO_VS) || QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+
         // This wasn't set up earlier in NO_VS builds. Create it here.
         QSettings settings;
 #endif

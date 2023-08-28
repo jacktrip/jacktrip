@@ -39,10 +39,9 @@
 
 #include "./vsConstants.h"
 
-VsAuth::VsAuth(VsQuickView* view, QNetworkAccessManager* networkAccessManager, VsApi* api)
+VsAuth::VsAuth(QNetworkAccessManager* networkAccessManager, VsApi* api)
     : m_clientId(AUTH_CLIENT_ID), m_authorizationServerHost(AUTH_SERVER_HOST)
 {
-    m_view                 = view;
     m_networkAccessManager = networkAccessManager;
     m_api                  = api;
     m_deviceCodeFlow.reset(new VsDeviceCodeFlow(networkAccessManager));
@@ -55,8 +54,6 @@ VsAuth::VsAuth(VsQuickView* view, QNetworkAccessManager* networkAccessManager, V
             &VsAuth::codeFlowCompleted);
     connect(m_deviceCodeFlow.data(), &VsDeviceCodeFlow::deviceCodeFlowTimedOut, this,
             &VsAuth::codeExpired);
-
-    m_view->engine()->rootContext()->setContextProperty(QStringLiteral("auth"), this);
 
     m_verificationUrl = QStringLiteral("https://auth.jacktrip.org/activate");
 }
@@ -104,12 +101,22 @@ void VsAuth::fetchUserInfo(QString accessToken)
         QJsonDocument userInfo = QJsonDocument::fromJson(response);
         QString userId         = userInfo.object()[QStringLiteral("sub")].toString();
 
+        reply->deleteLater();
+
+        if (userId.isEmpty()) {
+            std::cout << "VsAuth::fetchUserInfo Error: empty userId" << std::endl;
+            handleAuthFailed();  // handle failure
+            emit fetchUserInfoFailed();
+            return;
+        }
+
         handleAuthSucceeded(userId, accessToken);
     });
 }
 
 void VsAuth::refreshAccessToken(QString refreshToken)
 {
+    qDebug() << "Refreshing access token";
     m_authenticationStage = QStringLiteral("refreshing");
     emit updatedAuthenticationStage(m_authenticationStage);
 
@@ -154,8 +161,12 @@ void VsAuth::refreshAccessToken(QString refreshToken)
         QJsonObject object  = data.object();
         QString accessToken = object.value(QLatin1String("access_token")).toString();
         m_api->setAccessToken(accessToken);  // set access token
-        fetchUserInfo(accessToken);          // get user ID from Auth0
         reply->deleteLater();
+        if (m_userId.isEmpty()) {
+            fetchUserInfo(accessToken);  // get user ID from Auth0
+        } else {
+            handleRefreshSucceeded(accessToken);
+        }
     });
 }
 
@@ -177,6 +188,19 @@ void VsAuth::codeFlowCompleted(QString accessToken, QString refreshToken)
 void VsAuth::codeExpired()
 {
     emit deviceCodeExpired();
+}
+
+void VsAuth::handleRefreshSucceeded(QString accessToken)
+{
+    qDebug() << "Successfully refreshed access token";
+
+    m_accessToken            = accessToken;
+    m_authenticationStage    = QStringLiteral("success");
+    m_attemptingRefreshToken = false;
+
+    emit updatedAuthenticationStage(m_authenticationStage);
+    emit updatedVerificationCode(m_verificationCode);
+    emit updatedAttemptingRefreshToken(m_attemptingRefreshToken);
 }
 
 void VsAuth::handleAuthSucceeded(QString userId, QString accessToken)
@@ -238,6 +262,7 @@ void VsAuth::handleAuthFailed()
 
 void VsAuth::cancelAuthenticationFlow()
 {
+    qDebug() << "Canceling authentication flow";
     m_deviceCodeFlow->cancelCodeFlow();
 
     m_userId              = QStringLiteral("");
@@ -257,6 +282,7 @@ void VsAuth::logout()
     if (!m_isAuthenticated) {
         std::cout << "Warning: attempting to logout while not authenticated" << std::endl;
     }
+    qDebug() << "Logging out";
 
     // reset auth state
     m_userId              = QStringLiteral("");

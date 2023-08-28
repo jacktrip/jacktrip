@@ -1,6 +1,6 @@
-import QtQuick 2.12
-import QtQuick.Controls 2.12
-import QtGraphicalEffects 1.12
+import QtQuick
+import QtQuick.Controls
+import Qt5Compat.GraphicalEffects
 import VS 1.0
 
 Rectangle {
@@ -123,6 +123,16 @@ Rectangle {
         layer.effect: OpacityMask {
             maskSource: mask
         }
+
+        AppIcon {
+            id: defaultFlag
+            anchors.fill: parent
+            width: 32 * virtualstudio.uiScale
+            height: 32 * virtualstudio.uiScale
+            icon.source: "language.svg"
+            color: "white"
+            visible: flag.status != Image.Ready
+        }
     }
 
     Rectangle {
@@ -187,8 +197,14 @@ Rectangle {
         }
         visible: !connected
         onClicked: {
-            virtualstudio.windowState = "connected";
-            virtualstudio.connectToStudio(index);
+            virtualstudio.studioToJoin = `jacktrip://join/${studioId}`
+            if (virtualstudio.showDeviceSetup) {
+                virtualstudio.windowState = "setup";
+                audio.startAudio();
+            } else {
+                virtualstudio.windowState = "connected";
+                virtualstudio.joinStudio();
+            }
         }
         Image {
             id: join
@@ -322,9 +338,9 @@ Rectangle {
         }
         onClicked: {
             if (connected) {
-                virtualstudio.launchVideo(-1)
+                virtualstudio.launchVideo(studioId)
             } else {
-                virtualstudio.manageStudio(index);
+                virtualstudio.manageStudio(studioId);
             }
         }
         visible: admin || connected

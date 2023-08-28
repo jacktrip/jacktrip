@@ -44,7 +44,7 @@
 void AudioTester::lookForReturnPulse(QVarLengthArray<sample_t*>& out_buffer,
                                      unsigned int n_frames)
 {
-    if (not enabled) {
+    if (!enabled) {
         std::cerr << "*** AudioTester.h: lookForReturnPulse: NOT ENABLED\n";
         return;
     }
@@ -138,9 +138,9 @@ void AudioTester::lookForReturnPulse(QVarLengthArray<sample_t*>& out_buffer,
                         // measured time is "buffer time" not sample time
                         int64_t curTimeUS = timeMicroSec();  // time since launch in us
                         double timeSinceLastPrintUS = double(curTimeUS - lastPrintTimeUS);
-                        double stdDev =
-                            sqrt(std::max(0.0, (roundTripMeanSquare
-                                                - (roundTripMean * roundTripMean))));
+                        double stdDev               = sqrt(std::max<double>(
+                            0.0,
+                            (roundTripMeanSquare - (roundTripMean * roundTripMean))));
                         if (timeSinceLastPrintUS >= printIntervalSec * 1.0e6) {
                             if (printIntervalSec == 0.0) {
                                 printf("%0.1f (", elapsedSamplesMS);
@@ -175,7 +175,7 @@ void AudioTester::lookForReturnPulse(QVarLengthArray<sample_t*>& out_buffer,
 void AudioTester::writeImpulse(QVarLengthArray<sample_t*>& mInBufCopy,
                                unsigned int n_frames)
 {
-    if (not enabled) {
+    if (!enabled) {
         std::cerr << "*** AudioTester.h: writeImpulse: NOT ENABLED\n";
         return;
     }

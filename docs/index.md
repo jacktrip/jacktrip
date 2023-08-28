@@ -8,6 +8,9 @@ You can use it between any combination of machines e.g., one end using Linux can
 ## Screenshots
 
 
+=== "Virtual Studio"
+
+    ![Virtual Studio](images/jacktrip_virtual_studio.png){width=450}
 
 === "Hubclient // Basic"
 

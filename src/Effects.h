@@ -374,7 +374,7 @@ class Effects
         // args can be integerPresetNumberFrom1 or (all optional, any order):
         // c:compressionRatio, a:attackTimeMS, r:releaseTimeMS, g:makeUpGain
         int returnCode = 0;
-        if (not isalpha(args[0])) {
+        if (!isalpha(args[0])) {
             int presetIndexFrom1 = atoi(args);
             setCompressorPresetIndexFrom1(presetIndexFrom1, inOrOut);
         } else {
@@ -384,7 +384,7 @@ class Effects
             if (gVerboseFlag) {
                 std::cout << "parseCompressorArgs = " << args << std::endl;
             }
-            ulong argLen   = strlen(args);
+            ulong argLen   = ulong(strlen(args));
             char lastParam = '\0';
 
             CompressorPreset newPreset(
@@ -491,7 +491,7 @@ class Effects
         if (c == '-' || c == 0) {
             // happens when no -f argument specified
             returnCode = 2;
-        } else if (not isalpha(c)) {  // backward compatibility why not?, e.g., "-f 0.5"
+        } else if (!isalpha(c)) {  // backward compatibility why not?, e.g., "-f 0.5"
             // -f reverbLevelFloat
             mReverbLevel  = atof(optarg);
             outCompressor = true;
@@ -510,7 +510,7 @@ class Effects
             if (gVerboseFlag) {
                 std::cout << cmd << " argument = " << optarg << std::endl;
             }
-            ulong argLen = strlen(optarg);
+            ulong argLen = ulong(strlen(optarg));
 
             for (ulong i = 0; i < argLen; i++) {
                 if (optarg[i] != ')' && parenLevel > 0) {
@@ -681,7 +681,7 @@ class Effects
                 if (haveWarnings) {
                     std::cout << "Enable DISTORTION WARNINGS in Overflow Limiters\n";
                 }
-                if (not haveIncoming and not haveOutgoing) {
+                if (!haveIncoming && !haveOutgoing) {
                     std::cout << "Set up NO Overflow Limiters\n";
                 }
             }  // gVerboseFlag

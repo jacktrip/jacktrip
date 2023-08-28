@@ -68,6 +68,7 @@ class VsApi : public QObject
 
     QNetworkReply* postDevice(const QByteArray& data);
     QNetworkReply* postDeviceHeartbeat(const QString& deviceId, const QByteArray& data);
+    QNetworkReply* submitServerFeedback(const QString& serverId, const QByteArray& data);
 
     QNetworkReply* updateServer(const QString& serverId, const QByteArray& data);
     QNetworkReply* updateDevice(const QString& deviceId, const QByteArray& data);

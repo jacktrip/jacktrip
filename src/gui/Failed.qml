@@ -1,6 +1,5 @@
-import QtQuick 2.12
-import QtQuick.Controls 2.12
-import QtGraphicalEffects 1.12
+import QtQuick
+import QtQuick.Controls
 
 Item {
     width: parent.width; height: parent.height
@@ -20,23 +19,13 @@ Item {
     property string buttonTextHover: virtualstudio.darkMode ? "#242222" : "#D00A0A"
     property string buttonTextPressed: virtualstudio.darkMode ? "#323030" : "#D00A0A"
 
-    property real imageLightnessValue: virtualstudio.darkMode ? 1.0 : 0.0
-
-    Image {
+    AppIcon {
         id: ohnoImage
-        source: "ohno.png"
-        width: 180
-        height: 180
         y: 60
         anchors.horizontalCenter: parent.horizontalCenter
-    }
-
-    Colorize {
-        anchors.fill: ohnoImage
-        source: ohnoImage
-        hue: 0
-        saturation: 0
-        lightness: imageLightnessValue
+        width: 180
+        height: 180
+        icon.source: "sentiment_very_dissatisfied.svg"
     }
 
     Text {

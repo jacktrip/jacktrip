@@ -76,7 +76,11 @@ class AudioInterface
         UNDEF   ///< Undefined
     };
 
-    enum warningMessageT { DEVICE_WARN_NONE, DEVICE_WARN_LATENCY };
+    enum warningMessageT {
+        DEVICE_WARN_NONE,
+        DEVICE_WARN_BUFFER_LATENCY,
+        DEVICE_WARN_ASIO_LATENCY
+    };
 
     enum errorMessageT {
         DEVICE_ERR_NONE,
@@ -157,13 +161,13 @@ class AudioInterface
      *               -> JackTrip client -> processPlugin from network -> JACK -> audio
      */
     virtual void appendProcessPluginFromNetwork(ProcessPlugin* plugin);
+    /** \brief appendProcessPluginToMonitor():
+     * Appends plugins used for local monitoring
+     */
+    virtual void appendProcessPluginToMonitor(ProcessPlugin* plugin);
     /** \brief initPlugins():
      * Initialize all ProcessPlugin modules.
      * The audio sampling rate (mSampleRate) must be set at this time.
-     */
-    virtual void appendProcessPluginToMonitor(ProcessPlugin* plugin);
-    /** \brief appendProcessPluginFromNetwork():
-     * Appends plugins used for local monitoring
      */
     void initPlugins(bool verbose = true);
     virtual void connectDefaultPorts() = 0;
@@ -251,11 +255,12 @@ class AudioInterface
      * \return Sample Rate in Hz
      */
     static int getSampleRateFromType(samplingRateT rate_type);
-    std::string getDevicesWarningMsg();
-    std::string getDevicesErrorMsg();
-    std::string getDevicesWarningHelpUrl();
-    std::string getDevicesErrorHelpUrl();
-
+    const std::string& getDevicesWarningMsg() const { return mWarningMsg; }
+    const std::string& getDevicesErrorMsg() const { return mErrorMsg; }
+    const std::string& getDevicesWarningHelpUrl() const { return mWarningHelpUrl; }
+    const std::string& getDevicesErrorHelpUrl() const { return mErrorHelpUrl; }
+    bool highLatencyBufferSize() const { return getBufferSizeInSamples() > 256; }
+    bool getHighLatencyFlag() const { return mHighLatencyFlag; }
     //------------------------------------------------------------------
 
    private:
@@ -321,6 +326,7 @@ class AudioInterface
     std::string mErrorMsg;
     std::string mWarningHelpUrl;
     std::string mErrorHelpUrl;
+    bool mHighLatencyFlag;
 };
 
 #endif  // __AUDIOINTERFACE_H__

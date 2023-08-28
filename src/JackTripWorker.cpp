@@ -283,7 +283,7 @@ void JackTripWorker::receivedDataUDP()
     if (JackTrip::NORMAL == PeerNumOutgoingChannels) {
         mJackTrip->setNumInputChannels(PeerNumIncomingChannels);
         mJackTrip->setNumOutputChannels(PeerNumIncomingChannels);
-    } else if (std::numeric_limits<uint8_t>::max() == PeerNumOutgoingChannels) {
+    } else if ((std::numeric_limits<uint8_t>::max)() == PeerNumOutgoingChannels) {
         mJackTrip->setNumInputChannels(PeerNumIncomingChannels);
         mJackTrip->setNumOutputChannels(0);
     } else {

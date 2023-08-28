@@ -20,6 +20,16 @@ if host_machine.system() == 'windows'
 		endif
 		wingetopt = cmake.subproject('wingetopt', options: opt_var)
 		deps += wingetopt.dependency('wingetopt')
+		link_args += 'userenv.lib'
+		link_args += 'Synchronization.lib'
+		link_args += 'Netapi32.lib'
+		link_args += 'Version.lib'
+		link_args += 'Dwrite.lib'
+		link_args += 'Iphlpapi.lib'
+		link_args += 'Secur32.lib'
+		link_args += 'Winhttp.lib'
+		link_args += 'Dnsapi.lib'
+		link_args += 'Iphlpapi.lib'
 	endif
 
 endif

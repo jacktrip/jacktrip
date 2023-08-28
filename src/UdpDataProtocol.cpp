@@ -338,7 +338,7 @@ void UdpDataProtocol::processControlPacket(const char* buf)
 //*******************************************************************************
 int UdpDataProtocol::receivePacket(char* buf, const size_t n)
 {
-    int n_bytes = ::recv(mSocket, buf, n, 0);
+    int n_bytes = ::recv(mSocket, buf, int(n), 0);
     if (n_bytes == mControlPacketSize) {
         processControlPacket(buf);
         return 0;
@@ -366,11 +366,11 @@ functions. DWORD n_bytes; WSABUF buffer; int error; buffer.len = n; buffer.buf =
 #else*/
     int n_bytes;
     if (mIPv6) {
-        n_bytes = ::sendto(mSocket, buf, n, 0, (struct sockaddr*)&mPeerAddr6,
+        n_bytes = ::sendto(mSocket, buf, int(n), 0, (struct sockaddr*)&mPeerAddr6,
                            sizeof(mPeerAddr6));
     } else {
-        n_bytes =
-            ::sendto(mSocket, buf, n, 0, (struct sockaddr*)&mPeerAddr, sizeof(mPeerAddr));
+        n_bytes = ::sendto(mSocket, buf, int(n), 0, (struct sockaddr*)&mPeerAddr,
+                           sizeof(mPeerAddr));
     }
     return n_bytes;
     //#endif
@@ -749,7 +749,7 @@ void UdpDataProtocol::run()
         full_redundant_packet = new int8_t[full_redundant_packet_size];
         std::memset(full_redundant_packet, 0,
                     full_redundant_packet_size); // Initialize to 0
-        while (!mStopped && !JackTrip::sSigInt && !JackTrip::sJackStopped) {
+        while (!mStopped && !JackTrip::sSigInt && !JackTrip::sAudioStopped) {
             sendPacketRedundancy(full_redundant_packet, full_redundant_packet_size,
                                  full_packet_size);
         }
@@ -941,7 +941,7 @@ void UdpDataProtocol::sendPacketRedundancy(int8_t* full_redundant_packet,
     int8_t* src = mAudioPacket;
     if (1 < mChans) {
         // Convert internal interleaved layout to non-interleaved
-        int N       = getAudioPacketSizeInBites() / mChans / mSmplSize;
+        int N       = int(getAudioPacketSizeInBites() / mChans / mSmplSize);
         int8_t* dst = mBuffer.data();
         for (int n = 0; n < N; ++n) {
             for (int c = 0; c < mChans; ++c) {

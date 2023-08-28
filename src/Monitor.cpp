@@ -88,7 +88,7 @@ void Monitor::init(int samplingRate, int bufferSize)
 //*******************************************************************************
 void Monitor::compute(int nframes, float** inputs, float** outputs)
 {
-    if (not inited) {
+    if (!inited) {
         std::cerr << "*** Monitor " << this << ": init never called! Doing it now.\n";
         init(0, 0);
     }

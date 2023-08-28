@@ -69,6 +69,7 @@ class VsServerInfo : public QObject
     enum serverSectionT { YOUR_STUDIOS, SUBSCRIBED_STUDIOS, PUBLIC_STUDIOS };
 
     explicit VsServerInfo(QObject* parent = nullptr);
+    VsServerInfo& operator=(const VsServerInfo& info);
     ~VsServerInfo() override;
 
     serverSectionT section();

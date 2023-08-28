@@ -129,7 +129,7 @@ void RingBuffer::readSlotBlocking(int8_t* ptrToReadSlot)
     while (mFullSlots == 0) {
         // std::cerr << "READ UNDER-RUN BLOCKING before" << endl;
         mBufferIsNotEmpty.wait(&mMutex, 200);
-        if (JackTrip::sJackStopped) {
+        if (JackTrip::sAudioStopped) {
             return;
         }
     }
@@ -190,7 +190,7 @@ void RingBuffer::readSlotNonBlocking(int8_t* ptrToReadSlot)
     QMutexLocker locker(&mMutex);  // lock the mutex
     ++mReadsNew;
     if (mFullSlots < mLevelCur) {
-        mLevelCur = std::max((double)mFullSlots, mLevelCur - mLevelDownRate);
+        mLevelCur = std::max<double>((double)mFullSlots, mLevelCur - mLevelDownRate);
     } else {
         mLevelCur = mFullSlots;
     }

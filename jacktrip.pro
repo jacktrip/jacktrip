@@ -31,12 +31,13 @@ nogui {
   novs {
     DEFINES += NO_VS
   } else {
-    QT += networkauth
     QT += qml
     QT += quick
     QT += quickcontrols2
     QT += svg
     QT += websockets
+    QT += webview
+    QT += webenginequick
     vsftux {
       DEFINES += VS_FTUX
     }
@@ -102,7 +103,7 @@ bundled_rtaudio {
     PKGCONFIG += rtaudio
     win32 {
       # even though we get linker flags from pkg-config, define -lrtaudio again to enforce linking order
-      CONFIG += no_lflags_merge    
+      CONFIG += no_lflags_merge
       LIBS += -lrtaudio -lole32 -lwinmm -lksuser -lmfplat -lmfuuid -lwmcodecdspuuid # -ldsound # -ldsound only needed if rtaudio is built with directsound support
     }
   }
@@ -116,34 +117,34 @@ macx {
     LIBS += -framework Foundation
     CONFIG += objective_c
     !novs {
-      LIBS += -framework AVFoundation
+      LIBS += -framework AVFoundation -framework WebKit
     }
   }
 }
 
 linux-g++ | linux-g++-64 {
-  
+
   FEDORA = $$system(cat /proc/version | grep -o fc)
-  
+
   contains( FEDORA, fc): {
     message(building on fedora)
   }
-  
+
   UBUNTU = $$system(cat /proc/version | grep -o Ubuntu)
-  
+
   contains( UBUNTU, Ubuntu): {
     message(building on  Ubuntu)
-    
+
     # workaround for Qt bug under ubuntu 18.04
     # gcc version 7.3.0 (Ubuntu 7.3.0-16ubuntu3)
     # QMake version 3.1
     # Using Qt version 5.9.5 in /usr/lib/x86_64-linux-gnu
     INCLUDEPATH += /usr/include/x86_64-linux-gnu/c++/7
-    
+
     # sets differences from original fedora version
     DEFINES += __UBUNTU__
   }
-  
+
   QMAKE_CXXFLAGS += -g -O2
 }
 
@@ -261,16 +262,15 @@ HEADERS += src/DataProtocol.h \
                src/gui/vsApi.h \
                src/gui/vsAuth.h \
                src/gui/vsDeviceCodeFlow.h \
-               src/gui/vsInit.h \
+               src/gui/vsDeeplink.h \
                src/gui/vsDevice.h \
-               src/gui/vsAudioInterface.h \
+               src/gui/vsAudio.h \
                src/gui/vsServerInfo.h \
                src/gui/vsQuickView.h \
                src/gui/vsWebSocket.h \
                src/gui/vsPermissions.h \
                src/gui/vsPinger.h \
                src/gui/vsPing.h \
-               src/gui/vsUrlHandler.h \
                src/gui/vsQmlClipboard.h \
                src/JTApplication.h
   }
@@ -331,16 +331,15 @@ SOURCES += src/DataProtocol.cpp \
                src/gui/vsApi.cpp \
                src/gui/vsAuth.cpp \
                src/gui/vsDeviceCodeFlow.cpp \
-               src/gui/vsInit.cpp \
+               src/gui/vsDeeplink.cpp \
                src/gui/vsDevice.cpp \
-               src/gui/vsAudioInterface.cpp \
+               src/gui/vsAudio.cpp \
                src/gui/vsServerInfo.cpp \
                src/gui/vsQuickView.cpp \
                src/gui/vsWebSocket.cpp \
                src/gui/vsPermissions.cpp \
                src/gui/vsPinger.cpp \
-               src/gui/vsPing.cpp \
-               src/gui/vsUrlHandler.cpp
+               src/gui/vsPing.cpp
   }
   !noupdater:!linux-g++:!linux-g++-64 {
     SOURCES += src/dblsqd/feed.cpp \

@@ -77,8 +77,8 @@ void sigint_handler(int sig)
 }
 #endif*/
 
-bool JackTrip::sSigInt      = false;
-bool JackTrip::sJackStopped = false;
+bool JackTrip::sSigInt       = false;
+bool JackTrip::sAudioStopped = false;
 
 //*******************************************************************************
 JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
@@ -153,7 +153,7 @@ JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
     , mUseRtUdpPriority(false)
 {
     createHeader(mPacketHeaderType);
-    sJackStopped = false;
+    sAudioStopped = false;
 }
 
 //*******************************************************************************
@@ -177,13 +177,8 @@ void JackTrip::setupAudio(
 )
 {
     // Check if mAudioInterface has already been created or not
-    if (mAudioInterface
-        != NULL) {  // if it has been created, disconnect it from JACK and delete it
-        cout << "WARNING: JackAudio interface was setup already:" << endl;
-        cout << "It will be erased and setup again." << endl;
-        cout << gPrintSeparator << endl;
-        closeAudio();
-    }
+    if (mAudioInterface != nullptr)
+        return;
 
     // Create AudioInterface Client Object
     if (mAudiointerfaceMode == JackTrip::JACK) {
@@ -560,6 +555,12 @@ void JackTrip::startProcess(
     if (audioInterfaceError != "") {
         stop(audioInterfaceError);
         return;
+    }
+
+    // AudioInterface::setup() can return a different buffer size
+    // if the audio interface doesn't support the one that was requested
+    if (mAudioInterface->getBufferSizeInSamples() != getBufferSizeInSamples()) {
+        setAudioBufferSizeInSamples(mAudioInterface->getBufferSizeInSamples());
     }
 
     // cc redundant with instance creator  createHeader(mPacketHeaderType); next line
@@ -1096,7 +1097,7 @@ void JackTrip::udpTimerTick()
         return;
     }
 
-    if (mStopped || sSigInt || sJackStopped) {
+    if (mStopped || sSigInt || sAudioStopped) {
         // Stop everything.
         mAwaitingUdp = false;
         mUdpSockTemp.close();
@@ -1123,7 +1124,7 @@ void JackTrip::tcpTimerTick()
         return;
     }
 
-    if (mStopped || sSigInt || sJackStopped) {
+    if (mStopped || sSigInt || sAudioStopped) {
         // Stop everything.
         mAwaitingTcp = false;
         mTcpClient.close();
@@ -1143,12 +1144,11 @@ void JackTrip::tcpTimerTick()
     }
 
     // Use randomized exponential backoff to reconnect the TCP client
-    QRandomGenerator randomizer;
     mRetries++;
     // exponential backoff sleep with 6s maximum + jitter
     int newInterval = 2000 * pow(2, mRetries);
     newInterval     = std::min(newInterval, 6000);
-    newInterval += randomizer.bounded(0, 500);
+    newInterval += QRandomGenerator::global()->bounded(0, 500);
     QString now = QDateTime::currentDateTime().toString(Qt::ISODate);
     qDebug() << "Sleep time " << newInterval << " ms at " << now;
     mRetryTimer.setInterval(newInterval);
@@ -1177,9 +1177,9 @@ void JackTrip::tcpTimerTick()
 //*******************************************************************************
 void JackTrip::stop(const QString& errorMessage)
 {
-    // Take a snapshot of sJackStopped
-    bool serverStopped = sJackStopped;
-    mStopped           = true;
+    // Take a snapshot of sAudioStopped
+    bool audioStopped = sAudioStopped;
+    mStopped          = true;
     // Make sure we're only run once
     if (mHasShutdown) {
         return;
@@ -1199,6 +1199,14 @@ void JackTrip::stop(const QString& errorMessage)
         mDataProtocolReceiver->wait();
     }
 
+    // check for errors from audio interface
+    QString audioErrorMsg;
+    if (mAudioInterface != nullptr && !mAudioInterface->getDevicesErrorMsg().empty()) {
+        audioErrorMsg = QString::fromStdString(mAudioInterface->getDevicesErrorMsg());
+    } else if (audioStopped) {
+        audioErrorMsg = QStringLiteral("Your audio interface has stopped!");
+    }
+
     // Stop the audio processes
     // mAudioInterface->stopProcess();
     closeAudio();
@@ -1207,8 +1215,8 @@ void JackTrip::stop(const QString& errorMessage)
     cout << gPrintSeparator << endl;
 
     // Emit the jack stopped signal
-    if (serverStopped) {
-        emit signalError(QStringLiteral("The Jack Server was shut down!"));
+    if (!audioErrorMsg.isEmpty()) {
+        emit signalError(audioErrorMsg);
     } else if (errorMessage.isEmpty()) {
         emit signalProcessesStopped();
     } else {
@@ -1361,12 +1369,11 @@ int JackTrip::clientPingToServerStart()
 #endif
     {
         QMutexLocker lock(&mTimerMutex);
-        QRandomGenerator randomizer;
         mAwaitingTcp = true;
         mElapsedTime = 0;
         mEndTime     = 30000;  // Timeout after 30 seconds.
-        mRetryTimer.setInterval(randomizer.bounded(
-            static_cast<int>(0), static_cast<int>(2000 * pow(2, mRetries))));
+        mRetryTimer.setInterval(
+            QRandomGenerator::global()->bounded(0, int(2000 * pow(2, mRetries))));
         mRetryTimer.setSingleShot(true);
         mRetryTimer.disconnect();
         connect(&mRetryTimer, &QTimer::timeout, this, &JackTrip::tcpTimerTick);
