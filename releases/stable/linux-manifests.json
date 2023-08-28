@@ -2,6 +2,16 @@
   "app_name": "JackTrip",
   "releases": [
     {
+      "version": "2.0.0",
+      "changelog": "Full changelog at https://github.com/jacktrip/jacktrip/releases/tag/v2.0.0",
+      "download": {
+        "date": "2023-08-28T00:00:00Z",
+        "url": "https://files.jacktrip.org/app-builds/JackTrip-v2.0.0-Linux-x64-binary.zip",
+        "downloadSize": "1216331",
+        "sha256": "fa493f9dc9b90df2b899f2caeee488039f4068844df75ae8a129145c37004bf9"
+      }
+    },
+    {
       "version": "1.10.1",
       "changelog": "Full changelog at https://github.com/jacktrip/jacktrip/releases/tag/v1.10.1",
       "download": {
