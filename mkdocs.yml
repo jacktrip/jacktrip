@@ -5,6 +5,7 @@ nav:
   - Home: index.md
   - User Guide:
     - Installation: Install.md
+    - Virtual Studio: VirtualStudio.md
     - Using custom JACK server name: CustomJackServerName.md
   - Developer Guide:
     - QMake Build:
