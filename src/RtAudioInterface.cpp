@@ -573,8 +573,11 @@ int RtAudioInterface::stopProcess()
 bool RtAudioInterface::getDeviceInfoFromName(const std::string& deviceName,
                                              RtAudioDevice& device, bool isInput) const
 {
+    // convert names to QString to gracefully handle invalid
+    // utf8 character sequences, such as "RØDE Microphone"
+    const QString utf8Name(QString::fromStdString(deviceName));
     for (const RtAudioDevice& d : mDevices) {
-        if (deviceName == d.name) {
+        if (utf8Name == QString::fromStdString(d.name)) {
             if ((isInput && d.inputChannels > 0) || (!isInput && d.outputChannels > 0)) {
                 device = d;
                 return true;
