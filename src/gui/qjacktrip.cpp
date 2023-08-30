@@ -1989,14 +1989,18 @@ void QJackTrip::populateDeviceMenu(QComboBox* menu, bool isInput)
     QVector<RtAudioDevice> devices;
     RtAudioInterface::scanDevices(devices);
     for (auto info : devices) {
+        // convert names to QString to gracefully handle invalid
+        // utf8 character sequences, such as "RØDE Microphone"
+        const QString utf8Name(QString::fromStdString(info.name));
+
         // Don't include duplicate entries
-        if (menu->findText(QString::fromStdString(info.name)) != -1) {
+        if (menu->findText(utf8Name) != -1) {
             continue;
         }
         if (isInput && info.inputChannels > 0) {
-            menu->addItem(QString::fromStdString(info.name));
+            menu->addItem(utf8Name);
         } else if (!isInput && info.outputChannels > 0) {
-            menu->addItem(QString::fromStdString(info.name));
+            menu->addItem(utf8Name);
         }
     }
 

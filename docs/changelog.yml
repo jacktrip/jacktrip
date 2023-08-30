@@ -1,3 +1,9 @@
+- Version: "2.0.1"
+  Date: 2023-08-29
+  Description:
+  - (fixed) VS Mode Mix to Mono setting was sending a buzzing noise
+  - (fixed) VS Mode Logout followed by Login was breaking network stats
+  - (fixed) Device names with special characters work again
 - Version: "2.0.0"
   Date: 2023-08-28
   Description:
