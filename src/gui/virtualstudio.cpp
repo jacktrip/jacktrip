@@ -687,9 +687,7 @@ void VirtualStudio::logout()
     settings.remove(QStringLiteral("UserId"));
     settings.endGroup();
 
-    m_refreshTimer.stop();
-    m_heartbeatTimer.stop();
-
+    // clear user data
     m_refreshToken.clear();
     m_userMetadata = QJsonObject();
     m_userId.clear();
