@@ -36,12 +36,20 @@ if get_option('buildtype') == 'release'
 	c_defines += ['-DNDEBUG']
 endif
 
-git_tags_cmd = run_command('git', 'describe', '--tags', check: false)
-git_hash_cmd = run_command('git', 'rev-parse', '--short', 'HEAD', check: false)
-if git_tags_cmd.returncode() == 0 and git_hash_cmd.returncode() == 0
-	git_tags = git_tags_cmd.stdout().strip()
-	git_hash = git_hash_cmd.stdout().strip()
-	defines += ['-DJACKTRIP_BUILD_INFO=' + git_tags + '-' + git_hash]
+build_info = get_option('buildinfo')
+git = find_program('git', required: false)
+if build_info == '' and git.found()
+	git_tags_cmd = run_command(git, 'describe', '--tags', check: false)
+	git_hash_cmd = run_command(git, 'rev-parse', '--short', 'HEAD', check: false)
+	if git_tags_cmd.returncode() == 0 and git_hash_cmd.returncode() == 0
+		git_tags = git_tags_cmd.stdout().strip()
+		git_hash = git_hash_cmd.stdout().strip()
+		build_info = git_tags + '-' + git_hash
+	endif
+endif
+if build_info != ''
+	message('Build info: ' + build_info)
+	defines += ['-DJACKTRIP_BUILD_INFO=' + build_info]
 endif
 
 src = [	'src/DataProtocol.cpp',
@@ -290,6 +298,7 @@ if (host_machine.system() == 'linux')
 	if help2man.found()
 		gzip = find_program('gzip', required: false)
 		help2man_opts = [
+			'--name="high-quality system for audio network performances"',
 			'--no-info',
 			'--section=1']
 		manfile = custom_target('jacktrip.1',

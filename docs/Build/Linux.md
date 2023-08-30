@@ -105,6 +105,8 @@ the following parameters:
 
 * `qtversion`: Choose to build with either Qt5 or Qt6
 
+* `buildinfo`: Additional info used to describe the build
+
 For example:
 ```sh
 $ meson setup -Drtaudio=enabled builddir
