@@ -256,6 +256,7 @@ class VirtualStudio : public QObject
     void exit();
 
    private:
+    void resetState();
     void getServerList(bool signalRefresh = false, int index = -1);
     void getSubscriptions();
     void getRegions();
