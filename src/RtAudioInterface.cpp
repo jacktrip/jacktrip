@@ -274,8 +274,6 @@ void RtAudioInterface::setup(bool verbose)
 
     unsigned int sampleRate   = getSampleRate();           // mSamplingRate;
     unsigned int bufferFrames = getBufferSizeInSamples();  // mBufferSize;
-    mStereoToMonoMixerPtr.reset(new StereoToMono());
-    mStereoToMonoMixerPtr->init(sampleRate, bufferFrames);
 
     if (in_device.api != out_device.api)
         return;
@@ -338,6 +336,11 @@ void RtAudioInterface::setup(bool verbose)
     // This MUST be after buffer size is finalized, so that plugins
     // are initialized with the correct settings
     AudioInterface::setup(verbose);
+
+    // Setup StereoToMonoMixer
+    // This MUST be after RtAudio::openSteram in case bufferFrames changes
+    mStereoToMonoMixerPtr.reset(new StereoToMono());
+    mStereoToMonoMixerPtr->init(sampleRate, bufferFrames);
 }
 
 //*******************************************************************************

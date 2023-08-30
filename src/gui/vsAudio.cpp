@@ -919,6 +919,12 @@ AudioInterface* VsAudio::newRtAudioInterface([[maybe_unused]] JackTrip* jackTrip
 
     // Note: setup might change the number of channels and/or buffer size
     ifPtr->setup(true);
+
+    // TODO: Add check for if base input channel needs to change
+    if (jackTripPtr != nullptr && getNumInputChannels() == 2
+        && getInputMixMode() == AudioInterface::MIXTOMONO)
+        jackTripPtr->setNumInputChannels(1);
+
 #endif  // RT_AUDIO
     return ifPtr;
 }
