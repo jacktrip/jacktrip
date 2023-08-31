@@ -60,8 +60,8 @@ void RtAudioDevice::print() const
 //*******************************************************************************
 void RtAudioDevice::printVerbose() const
 {
-    cout << "Audio Device  [" << this->api << " - " << this->ID << "] : " << this->name
-         << endl;
+    cout << "Audio Device  [" << RtAudio::getApiDisplayName(this->api) << " - "
+         << this->ID << "] : " << this->name << endl;
     cout << "  Output Channels : " << this->outputChannels << endl;
     cout << "  Input Channels  : " << this->inputChannels << endl;
     cout << "  Supported Sampling Rates: ";

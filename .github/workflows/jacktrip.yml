@@ -440,9 +440,11 @@ jobs:
             CONFIG_STRING="-Drtaudio=enabled $CONFIG_STRING"
           fi
           if [[ "${{ matrix.bundled-rtaudio }}" == true ]]; then 
-            CONFIG_STRING="-Drtaudio:jack=disabled -Drtaudio:alsa=disabled -Drtaudio:default_library=static $CONFIG_STRING"
+            CONFIG_STRING="-Drtaudio:jack=disabled -Drtaudio:default_library=static $CONFIG_STRING"
             if [[ "${{ runner.os }}" == 'Windows' ]]; then 
               CONFIG_STRING="-Drtaudio:wasapi=enabled $CONFIG_STRING"
+            elif [[ "${{ runner.os }}" == 'Linux' ]]; then
+              CONFIG_STRING="-Drtaudio:alsa=enabled -Drtaudio:pulse=enabled $CONFIG_STRING"
             fi
           fi
           if [[ "${{ matrix.nojack }}" == true ]]; then 

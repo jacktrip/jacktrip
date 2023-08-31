@@ -308,8 +308,9 @@ if (host_machine.system() == 'linux')
 			install_dir: get_option('mandir') / 'man1')
 		if gzip.found()
 			custom_target('jacktrip.1.gz',
+				input: manfile,
 				output: 'jacktrip.1.gz',
-				command: [gzip, '-k', manfile],
+				command: [gzip, '-k', '-f', '@INPUT@'],
 				install: true,
 				install_dir: get_option('mandir') / 'man1')
 		endif
