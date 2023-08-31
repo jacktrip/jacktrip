@@ -68,7 +68,7 @@ Item {
             anchors.rightMargin: 32 * virtualstudio.uiScale
             anchors.verticalCenter: parent.verticalCenter
         }
-        
+
         Text {
             id: gettingStartedText2
             visible: recommendationScreen === "fiber"
@@ -449,7 +449,7 @@ Item {
 
         Item {
             id: acknowledgedButtonsContainer
-            width: 320
+            width: 320 * virtualstudio.uiScale
 
             anchors.top: acknowledgedSubheader.bottom
             anchors.topMargin: 64 * virtualstudio.uiScale
@@ -492,7 +492,6 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                 }
             }
-
 
             Button {
                 id: acknowledgedNoButton

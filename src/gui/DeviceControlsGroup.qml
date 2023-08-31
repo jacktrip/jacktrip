@@ -8,7 +8,7 @@ Rectangle {
     property string disabledButtonText: "#D3D4D4"
     property string saveButtonText: "#DB0A0A"
     property int minifiedHeight: 36
-    property int fullHeight: 80
+    property int fullHeight: 84
 
     id: deviceControlsGroup
     width: parent.width

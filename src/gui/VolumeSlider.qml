@@ -46,8 +46,8 @@ Item {
             anchors.left: showLabel ? tooltip.right : parent.left
             anchors.leftMargin: showLabel ? 8 * virtualstudio.uiScale : 0
             anchors.verticalCenter: label.verticalCenter
-            width: 16 * virtualstudio.uiScale
-            height: 16 * virtualstudio.uiScale
+            width: 16
+            height: 16
             icon.source: "quiet.svg"
             color: iconColor
         }
@@ -56,8 +56,8 @@ Item {
             id: louderIcon
             anchors.right: parent.right
             anchors.verticalCenter: label.verticalCenter
-            width: 18 * virtualstudio.uiScale
-            height: 18 * virtualstudio.uiScale
+            width: 18
+            height: 18
             icon.source: "loud.svg"
             color: iconColor
         }
@@ -110,8 +110,8 @@ Item {
             handle: Rectangle {
                 x: slider.leftPadding + slider.visualPosition * (slider.availableWidth - width)
                 y: slider.topPadding + slider.availableHeight / 2 - height / 2
-                implicitWidth: 20 * virtualstudio.uiScale
-                implicitHeight: 20 * virtualstudio.uiScale
+                implicitWidth: 18 * virtualstudio.uiScale
+                implicitHeight: 18 * virtualstudio.uiScale
                 radius: implicitWidth / 2
                 color: slider.pressed ? sliderPressedColour : "white"
                 border.width: 3

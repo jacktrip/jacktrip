@@ -68,7 +68,7 @@ Item {
 
     Component {
         id: inputControls
-        
+
         ColumnLayout {
             anchors.fill: parent
             spacing: 2
@@ -127,7 +127,7 @@ Item {
 
                 Item {
                     Layout.fillHeight: true
-                    Layout.preferredWidth: 100
+                    Layout.preferredWidth: 100 * virtualstudio.uiScale
 
                     Loader {
                         id: typeIconIndicator
@@ -163,8 +163,8 @@ Item {
 
                     Meter {
                         anchors.fill: parent
-                        anchors.topMargin: 5 * virtualstudio.uiScale
-                        anchors.rightMargin: 8 * virtualstudio.uiScale
+                        anchors.topMargin: 5
+                        anchors.rightMargin: 8
                         model: isInput ? audio.inputMeterLevels : audio.outputMeterLevels
                         clipped: isInput ? audio.inputClipped : audio.outputClipped
                         enabled: true
