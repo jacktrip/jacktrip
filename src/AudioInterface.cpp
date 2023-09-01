@@ -953,6 +953,13 @@ void AudioInterface::setDevicesWarningMsg(warningMessageT msg)
         mWarningHelpUrl  = "https://help.jacktrip.org/hc/en-us/articles/4409919243155";
         mHighLatencyFlag = true;
         break;
+    case DEVICE_WARN_ALSA_LATENCY:
+        mWarningMsg =
+            "You audio device drivers may cause high latency or audio delay. Use "
+            "JACK backend or Linux ALSA drivers to reduce audio delays.";
+        mWarningHelpUrl  = "";
+        mHighLatencyFlag = true;
+        break;
     default:
         mWarningMsg      = "";
         mWarningHelpUrl  = "";

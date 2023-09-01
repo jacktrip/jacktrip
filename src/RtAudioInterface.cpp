@@ -230,6 +230,13 @@ void RtAudioInterface::setup(bool verbose)
             AudioInterface::setDevicesWarningMsg(AudioInterface::DEVICE_WARN_NONE);
             AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_SAME_ASIO);
         }
+#else
+        if (in_device.api == RtAudio::LINUX_PULSE
+            || in_device.api == RtAudio::LINUX_OSS) {
+            AudioInterface::setDevicesWarningMsg(
+                AudioInterface::DEVICE_WARN_ALSA_LATENCY);
+            AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_NONE);
+        }
 #endif
     } else {
         AudioInterface::setDevicesWarningMsg(AudioInterface::DEVICE_WARN_NONE);

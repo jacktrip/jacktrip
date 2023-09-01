@@ -79,7 +79,8 @@ class AudioInterface
     enum warningMessageT {
         DEVICE_WARN_NONE,
         DEVICE_WARN_BUFFER_LATENCY,
-        DEVICE_WARN_ASIO_LATENCY
+        DEVICE_WARN_ASIO_LATENCY,
+        DEVICE_WARN_ALSA_LATENCY
     };
 
     enum errorMessageT {
