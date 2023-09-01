@@ -1531,6 +1531,10 @@ void VirtualStudio::getServerList(bool signalRefresh, int index)
 
 void VirtualStudio::getSubscriptions()
 {
+    if (m_userId.isEmpty()) {
+        qDebug() << "Invalid user ID";
+        return;
+    }
     QNetworkReply* reply = m_api->getSubscriptions(m_userId);
     connect(reply, &QNetworkReply::finished, this, [&, reply]() {
         if (reply->error() != QNetworkReply::NoError) {
