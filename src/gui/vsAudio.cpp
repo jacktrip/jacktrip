@@ -984,7 +984,6 @@ void VsAudioWorker::openAudioInterface()
     }
 
     if (m_audioInterfacePtr.isNull()) {
-        emit signalError(QStringLiteral("Failed to initialize audio interface"));
         return;
     }
 
@@ -1115,24 +1114,29 @@ void VsAudioWorker::getDeviceList(const QVector<RtAudioDevice>& devices,
             channels.append(devices[n].outputChannels);
         }
 
-#ifdef _WIN32
         switch (devices[n].api) {
         case RtAudio::WINDOWS_ASIO:
             categories.append("Low-Latency (ASIO)");
             break;
         case RtAudio::WINDOWS_WASAPI:
-            categories.append("High-Latency (Non-ASIO)");
+            categories.append("High-Latency (WASAPI)");
             break;
         case RtAudio::WINDOWS_DS:
-            categories.append("High-Latency (Non-ASIO)");
+            categories.append("High-Latency (DirectSound)");
+            break;
+        case RtAudio::LINUX_ALSA:
+            categories.append("Low-Latency (ALSA)");
+            break;
+        case RtAudio::LINUX_PULSE:
+            categories.append("High-Latency (Pulse)");
+            break;
+        case RtAudio::LINUX_OSS:
+            categories.append("High-Latency (OSS)");
             break;
         default:
             categories.append("");
             break;
         }
-#else
-        categories.append("");
-#endif
     }
 }
 
