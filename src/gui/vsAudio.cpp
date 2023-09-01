@@ -990,13 +990,7 @@ void VsAudioWorker::openAudioInterface()
     // initialize plugins and start the audio callback process
     m_audioInterfacePtr->initPlugins(false);
     m_audioInterfacePtr->startProcess();
-
-    if (m_parentPtr->m_backend == VsAudio::AudioBackendType::JACK) {
-        // this crashes on windows
-#ifndef _WIN32
-        m_audioInterfacePtr->connectDefaultPorts();
-#endif
-    }
+    m_audioInterfacePtr->connectDefaultPorts();
 
     m_parentPtr->updateDeviceMessages(*m_audioInterfacePtr);
     m_parentPtr->setAudioReady(true);
