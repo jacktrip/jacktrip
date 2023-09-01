@@ -742,6 +742,18 @@ void AudioInterface::fromBitToSampleConversion(
 }
 
 //*******************************************************************************
+void AudioInterface::setPipewireLatency(unsigned int bufferSize, unsigned int sampleRate)
+{
+    if (bufferSize == 0 || sampleRate == 0)
+        return;
+#if defined(__unix__)
+    char latency_env[40];
+    sprintf(latency_env, "%d/%d", bufferSize, sampleRate);
+    setenv("PIPEWIRE_LATENCY", latency_env, 1);
+#endif
+}
+
+//*******************************************************************************
 void AudioInterface::appendProcessPluginToNetwork(ProcessPlugin* plugin)
 {
     if (!plugin) {

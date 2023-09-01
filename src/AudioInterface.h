@@ -193,6 +193,9 @@ class AudioInterface
         const int8_t* const input, sample_t* output,
         const AudioInterface::audioBitResolutionT sourceBitResolution);
 
+    /** \brief Sets PIPEWIRE_LATENCY environment variable on unix */
+    static void setPipewireLatency(unsigned int bufferSize, unsigned int sampleRate);
+
     //--------------SETTERS---------------------------------------------
     virtual void setInputChannels(QVarLengthArray<int> inputChans)
     {

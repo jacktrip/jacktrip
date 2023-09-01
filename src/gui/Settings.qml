@@ -464,7 +464,6 @@ Item {
                 audio.restartAudio();
             }
             font.family: "Poppins"
-            enabled: audio.audioBackend != "JACK"
         }
 
         Text {
@@ -472,7 +471,6 @@ Item {
             x: 48 * virtualstudio.uiScale
             text: "Buffer Size"
             font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-            visible: audio.audioBackend != "JACK"
             color: textColour
         }
 

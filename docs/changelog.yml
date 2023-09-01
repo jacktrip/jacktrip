@@ -3,6 +3,7 @@
   Description:
   - (added) VS Mode latency categories for Linux audio devices
   - (added) VS Mode audio warnings for high latency Linux devices
+  - (updated) Improved support for Pipewire latency on Linux
   - (fixed) Crash on Windows when using the JACK audio backend
   - (fixed) Include ALSA support for Linux builds using meson
   - (fixed) VS Mode overlapping UI elements with max scaling
