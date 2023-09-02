@@ -1239,8 +1239,6 @@ void VirtualStudio::processError(const QString& errorMessage)
     }
     msgBox.exec();
 
-    if (shouldSwitchToRtAudio)
-        m_audioConfigPtr->setAudioBackend("RtAudio");
     if (m_jackTripRunning)
         connectionFinished();
 }

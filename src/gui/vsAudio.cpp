@@ -236,7 +236,6 @@ void VsAudio::setAudioBackend(const QString& backend)
         if (getUseRtAudio())
             return;
         m_backend = AudioBackendType::RTAUDIO;
-        refreshDevices();
     } else {
         if (!getUseRtAudio())
             return;
@@ -253,7 +252,7 @@ void VsAudio::setFeedbackDetectionEnabled(bool enabled)
     emit feedbackDetectionEnabledChanged();
 }
 
-void VsAudio::setBufferSize([[maybe_unused]] int bufSize)
+void VsAudio::setBufferSize(int bufSize)
 {
     if (m_audioBufferSize == bufSize)
         return;
@@ -790,6 +789,10 @@ AudioInterface* VsAudio::newAudioInterface(JackTrip* jackTripPtr)
 {
     AudioInterface* ifPtr = nullptr;
 
+#if defined(__unix__)
+    AudioInterface::setPipewireLatency(getBufferSize(), m_sampleRate);
+#endif
+
     // Create AudioInterface Client Object
     if (isBackendAvailable<AudioInterfaceMode::ALL>() && jackIsAvailable()) {
         // all backends area available
@@ -860,9 +863,9 @@ AudioInterface* VsAudio::newAudioInterface(JackTrip* jackTripPtr)
 
 AudioInterface* VsAudio::newJackAudioInterface([[maybe_unused]] JackTrip* jackTripPtr)
 {
-    static const int numJackChannels = 2;
-    AudioInterface* ifPtr            = nullptr;
+    AudioInterface* ifPtr = nullptr;
 #ifndef NO_JACK
+    static const int numJackChannels = 2;
     if constexpr (isBackendAvailable<AudioInterfaceMode::ALL>()
                   || isBackendAvailable<AudioInterfaceMode::JACK>()) {
         QVarLengthArray<int> inputChans;
@@ -970,6 +973,7 @@ void VsAudioWorker::openAudioInterface()
                 updateDeviceModels();
             } else {
                 m_parentPtr->setAudioBackend("RtAudio");
+                updateDeviceModels();
             }
         }
 #endif
