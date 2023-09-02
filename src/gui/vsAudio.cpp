@@ -236,7 +236,6 @@ void VsAudio::setAudioBackend(const QString& backend)
         if (getUseRtAudio())
             return;
         m_backend = AudioBackendType::RTAUDIO;
-        refreshDevices();
     } else {
         if (!getUseRtAudio())
             return;
@@ -253,7 +252,7 @@ void VsAudio::setFeedbackDetectionEnabled(bool enabled)
     emit feedbackDetectionEnabledChanged();
 }
 
-void VsAudio::setBufferSize([[maybe_unused]] int bufSize)
+void VsAudio::setBufferSize(int bufSize)
 {
     if (m_audioBufferSize == bufSize)
         return;
@@ -790,6 +789,10 @@ AudioInterface* VsAudio::newAudioInterface(JackTrip* jackTripPtr)
 {
     AudioInterface* ifPtr = nullptr;
 
+#if defined(__unix__)
+    AudioInterface::setPipewireLatency(getBufferSize(), m_sampleRate);
+#endif
+
     // Create AudioInterface Client Object
     if (isBackendAvailable<AudioInterfaceMode::ALL>() && jackIsAvailable()) {
         // all backends area available
@@ -860,9 +863,9 @@ AudioInterface* VsAudio::newAudioInterface(JackTrip* jackTripPtr)
 
 AudioInterface* VsAudio::newJackAudioInterface([[maybe_unused]] JackTrip* jackTripPtr)
 {
-    static const int numJackChannels = 2;
-    AudioInterface* ifPtr            = nullptr;
+    AudioInterface* ifPtr = nullptr;
 #ifndef NO_JACK
+    static const int numJackChannels = 2;
     if constexpr (isBackendAvailable<AudioInterfaceMode::ALL>()
                   || isBackendAvailable<AudioInterfaceMode::JACK>()) {
         QVarLengthArray<int> inputChans;
@@ -970,6 +973,7 @@ void VsAudioWorker::openAudioInterface()
                 updateDeviceModels();
             } else {
                 m_parentPtr->setAudioBackend("RtAudio");
+                updateDeviceModels();
             }
         }
 #endif
@@ -984,20 +988,13 @@ void VsAudioWorker::openAudioInterface()
     }
 
     if (m_audioInterfacePtr.isNull()) {
-        emit signalError(QStringLiteral("Failed to initialize audio interface"));
         return;
     }
 
     // initialize plugins and start the audio callback process
     m_audioInterfacePtr->initPlugins(false);
     m_audioInterfacePtr->startProcess();
-
-    if (m_parentPtr->m_backend == VsAudio::AudioBackendType::JACK) {
-        // this crashes on windows
-#ifndef _WIN32
-        m_audioInterfacePtr->connectDefaultPorts();
-#endif
-    }
+    m_audioInterfacePtr->connectDefaultPorts();
 
     m_parentPtr->updateDeviceMessages(*m_audioInterfacePtr);
     m_parentPtr->setAudioReady(true);
@@ -1115,24 +1112,29 @@ void VsAudioWorker::getDeviceList(const QVector<RtAudioDevice>& devices,
             channels.append(devices[n].outputChannels);
         }
 
-#ifdef _WIN32
         switch (devices[n].api) {
         case RtAudio::WINDOWS_ASIO:
             categories.append("Low-Latency (ASIO)");
             break;
         case RtAudio::WINDOWS_WASAPI:
-            categories.append("High-Latency (Non-ASIO)");
+            categories.append("High-Latency (WASAPI)");
             break;
         case RtAudio::WINDOWS_DS:
-            categories.append("High-Latency (Non-ASIO)");
+            categories.append("High-Latency (DirectSound)");
+            break;
+        case RtAudio::LINUX_ALSA:
+            categories.append("Low-Latency (ALSA)");
+            break;
+        case RtAudio::LINUX_PULSE:
+            categories.append("High-Latency (Pulse)");
+            break;
+        case RtAudio::LINUX_OSS:
+            categories.append("High-Latency (OSS)");
             break;
         default:
             categories.append("");
             break;
         }
-#else
-        categories.append("");
-#endif
     }
 }
 

@@ -60,8 +60,8 @@ void RtAudioDevice::print() const
 //*******************************************************************************
 void RtAudioDevice::printVerbose() const
 {
-    cout << "Audio Device  [" << this->api << " - " << this->ID << "] : " << this->name
-         << endl;
+    cout << "Audio Device  [" << RtAudio::getApiDisplayName(this->api) << " - "
+         << this->ID << "] : " << this->name << endl;
     cout << "  Output Channels : " << this->outputChannels << endl;
     cout << "  Input Channels  : " << this->inputChannels << endl;
     cout << "  Supported Sampling Rates: ";
@@ -229,6 +229,13 @@ void RtAudioInterface::setup(bool verbose)
                    && in_device.ID != out_device.ID) {
             AudioInterface::setDevicesWarningMsg(AudioInterface::DEVICE_WARN_NONE);
             AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_SAME_ASIO);
+        }
+#else
+        if (in_device.api == RtAudio::LINUX_PULSE
+            || in_device.api == RtAudio::LINUX_OSS) {
+            AudioInterface::setDevicesWarningMsg(
+                AudioInterface::DEVICE_WARN_ALSA_LATENCY);
+            AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_NONE);
         }
 #endif
     } else {

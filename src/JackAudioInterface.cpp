@@ -356,7 +356,7 @@ void JackAudioInterface::connectDefaultPorts()
                 break;
             }
         }
-        std::free(ports);
+        jack_free(ports);
     }
 
     // Get physical input (playback) ports
@@ -374,6 +374,6 @@ void JackAudioInterface::connectDefaultPorts()
                 break;
             }
         }
-        std::free(ports);
+        jack_free(ports);
     }
 }

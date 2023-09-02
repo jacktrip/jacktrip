@@ -1125,9 +1125,7 @@ JackTrip* Settings::getConfiguredJackTrip()
 
 #if defined(__unix__)
     if (mChangeDefaultBS or mChangeDefaultSR) {
-        char latency_env[40];
-        sprintf(latency_env, "%d/%d", mAudioBufferSize, mSampleRate);
-        setenv("PIPEWIRE_LATENCY", latency_env, 1);
+        AudioInterface::setPipewireLatency(mAudioBufferSize, mSampleRate);
     }
 #endif
 

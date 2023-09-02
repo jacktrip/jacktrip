@@ -1,3 +1,14 @@
+- Version: "2.0.2"
+  Date: 2023-09-01
+  Description:
+  - (added) VS Mode latency categories for Linux audio devices
+  - (added) VS Mode audio warnings for high latency Linux devices
+  - (updated) Improved support for Pipewire latency on Linux
+  - (fixed) Crash on Windows when using the JACK audio backend
+  - (fixed) Include ALSA support for Linux builds using meson
+  - (fixed) VS Mode overlapping UI elements with max scaling
+  - (fixed) Don't require git to be present for meson builds
+  - (fixed) Linux man page description and meson build errors
 - Version: "2.0.1"
   Date: 2023-08-29
   Description:

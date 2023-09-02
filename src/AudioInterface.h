@@ -79,7 +79,8 @@ class AudioInterface
     enum warningMessageT {
         DEVICE_WARN_NONE,
         DEVICE_WARN_BUFFER_LATENCY,
-        DEVICE_WARN_ASIO_LATENCY
+        DEVICE_WARN_ASIO_LATENCY,
+        DEVICE_WARN_ALSA_LATENCY
     };
 
     enum errorMessageT {
@@ -191,6 +192,9 @@ class AudioInterface
     static void fromBitToSampleConversion(
         const int8_t* const input, sample_t* output,
         const AudioInterface::audioBitResolutionT sourceBitResolution);
+
+    /** \brief Sets PIPEWIRE_LATENCY environment variable on unix */
+    static void setPipewireLatency(unsigned int bufferSize, unsigned int sampleRate);
 
     //--------------SETTERS---------------------------------------------
     virtual void setInputChannels(QVarLengthArray<int> inputChans)

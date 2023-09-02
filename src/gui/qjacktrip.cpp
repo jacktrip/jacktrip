@@ -930,11 +930,11 @@ void QJackTrip::start()
 
 #ifdef RT_AUDIO
             if (m_ui->backendComboBox->currentIndex() == 1) {
+                unsigned int bufferSize = m_ui->bufferSizeComboBox->currentText().toInt();
+                unsigned int sampleRate = m_ui->sampleRateComboBox->currentText().toInt();
                 m_jackTrip->setAudiointerfaceMode(JackTrip::RTAUDIO);
-                m_jackTrip->setSampleRate(
-                    m_ui->sampleRateComboBox->currentText().toInt());
-                m_jackTrip->setAudioBufferSizeInSamples(
-                    m_ui->bufferSizeComboBox->currentText().toInt());
+                m_jackTrip->setSampleRate(sampleRate);
+                m_jackTrip->setAudioBufferSizeInSamples(bufferSize);
                 // we assume that first entry is "(default)"
                 if (m_ui->inputDeviceComboBox->currentIndex() == 0) {
                     m_jackTrip->setInputDevice("");
@@ -948,6 +948,7 @@ void QJackTrip::start()
                     m_jackTrip->setOutputDevice(
                         m_ui->outputDeviceComboBox->currentText().toStdString());
                 }
+                AudioInterface::setPipewireLatency(bufferSize, sampleRate);
             }
 #endif
 

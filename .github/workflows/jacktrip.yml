@@ -75,18 +75,6 @@ jobs:
             qt-version: '5.15.10'
             qt-type: 'static'
 
-          - name: Linux-x64-qmake-gcc-shared-bundled_rtaudio
-            runs-on: ubuntu-22.04
-            system-rtaudio: false
-            bundled-rtaudio: true
-            nogui: false
-            novs: true
-            weakjack: false
-            # jacktrip-path: jacktrip
-            # binary-path: binary
-            build-system: meson
-            meson-library-type: shared
-
           - name: Linux-x64-qmake-gcc-static-nogui
             release-name: Linux-x64-nogui
             runs-on: ubuntu-20.04
@@ -440,9 +428,11 @@ jobs:
             CONFIG_STRING="-Drtaudio=enabled $CONFIG_STRING"
           fi
           if [[ "${{ matrix.bundled-rtaudio }}" == true ]]; then 
-            CONFIG_STRING="-Drtaudio:jack=disabled -Drtaudio:alsa=disabled -Drtaudio:default_library=static $CONFIG_STRING"
+            CONFIG_STRING="-Drtaudio:jack=disabled -Drtaudio:default_library=static $CONFIG_STRING"
             if [[ "${{ runner.os }}" == 'Windows' ]]; then 
               CONFIG_STRING="-Drtaudio:wasapi=enabled $CONFIG_STRING"
+            elif [[ "${{ runner.os }}" == 'Linux' ]]; then
+              CONFIG_STRING="-Drtaudio:alsa=enabled -Drtaudio:pulse=enabled -Drtaudio:werror=false $CONFIG_STRING"
             fi
           fi
           if [[ "${{ matrix.nojack }}" == true ]]; then 

@@ -37,6 +37,8 @@
 
 #include "vsApi.h"
 
+#include "../jacktrip_globals.h"
+
 VsApi::VsApi(QNetworkAccessManager* networkAccessManager)
 {
     m_networkAccessManager = networkAccessManager;
@@ -112,6 +114,8 @@ QNetworkReply* VsApi::deleteDevice(const QString& deviceId)
 QNetworkReply* VsApi::get(const QUrl& url)
 {
     QNetworkRequest request = QNetworkRequest(url);
+    request.setRawHeader(QByteArray("User-Agent"),
+                         QString("JackTrip/%1 (Qt)").arg(gVersion).toUtf8());
     request.setRawHeader(QByteArray("Authorization"),
                          QString("Bearer %1").arg(m_accessToken).toUtf8());
 
@@ -122,6 +126,8 @@ QNetworkReply* VsApi::get(const QUrl& url)
 QNetworkReply* VsApi::post(const QUrl& url, const QByteArray& data)
 {
     QNetworkRequest request = QNetworkRequest(url);
+    request.setRawHeader(QByteArray("User-Agent"),
+                         QString("JackTrip/%1 (Qt)").arg(gVersion).toUtf8());
     request.setRawHeader(QByteArray("Authorization"),
                          QString("Bearer %1").arg(m_accessToken).toUtf8());
     request.setRawHeader(QByteArray("Content-Type"),
@@ -134,6 +140,8 @@ QNetworkReply* VsApi::post(const QUrl& url, const QByteArray& data)
 QNetworkReply* VsApi::put(const QUrl& url, const QByteArray& data)
 {
     QNetworkRequest request = QNetworkRequest(url);
+    request.setRawHeader(QByteArray("User-Agent"),
+                         QString("JackTrip/%1 (Qt)").arg(gVersion).toUtf8());
     request.setRawHeader(QByteArray("Authorization"),
                          QString("Bearer %1").arg(m_accessToken).toUtf8());
     request.setRawHeader(QByteArray("Content-Type"),
@@ -145,6 +153,8 @@ QNetworkReply* VsApi::put(const QUrl& url, const QByteArray& data)
 QNetworkReply* VsApi::deleteResource(const QUrl& url)
 {
     QNetworkRequest request = QNetworkRequest(url);
+    request.setRawHeader(QByteArray("User-Agent"),
+                         QString("JackTrip/%1 (Qt)").arg(gVersion).toUtf8());
     request.setRawHeader(QByteArray("Authorization"),
                          QString("Bearer %1").arg(m_accessToken).toUtf8());
 

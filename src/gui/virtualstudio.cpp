@@ -496,7 +496,6 @@ void VirtualStudio::setTestMode(bool test)
         m_devicePtr->disconnect();
         m_devicePtr.reset();
     }
-    m_webChannelServer->close();
 
     m_testMode = test;
 
@@ -511,6 +510,9 @@ void VirtualStudio::setTestMode(bool test)
     settings.remove(QStringLiteral("RefreshToken"));
     settings.remove(QStringLiteral("UserId"));
     settings.endGroup();
+
+    // stop timers, clear data, etc.
+    resetState();
 
     // clear user data
     m_userMetadata = QJsonObject();
@@ -621,9 +623,10 @@ void VirtualStudio::toStandard()
     m_uiMode = QJackTrip::STANDARD;
     settings.setValue(QStringLiteral("UiMode"), m_uiMode);
 
-    m_webChannelServer->close();
-    m_refreshTimer.stop();
-    m_heartbeatTimer.stop();
+    // stop timers, clear data, etc.
+    resetState();
+    setWindowState(QStringLiteral("start"));
+    m_auth->logout();
 
     if (m_showFirstRun) {
         m_showFirstRun = false;
@@ -663,8 +666,6 @@ void VirtualStudio::logout()
         m_devicePtr.reset();
     }
 
-    m_webChannelServer->close();
-
     QUrl logoutURL = QUrl("https://auth.jacktrip.org/v2/logout");
     QUrlQuery query;
     query.addQueryItem(QStringLiteral("client_id"), AUTH_CLIENT_ID);
@@ -686,6 +687,9 @@ void VirtualStudio::logout()
     settings.remove(QStringLiteral("RefreshToken"));
     settings.remove(QStringLiteral("UserId"));
     settings.endGroup();
+
+    // stop timers, clear data, etc.
+    resetState();
 
     // clear user data
     m_refreshToken.clear();
@@ -1081,10 +1085,9 @@ void VirtualStudio::exit()
     m_isExiting = true;
     emit isExitingChanged();
 
-    m_startTimer.stop();
-    m_refreshTimer.stop();
-    m_heartbeatTimer.stop();
-    m_networkOutageTimer.stop();
+    // stop timers, clear data, etc.
+    resetState();
+
     if (m_onConnectedScreen) {
         // manually disconnect on self-managed studios
         if (!m_currentStudio.id().isEmpty() && !m_currentStudio.isManaged()) {
@@ -1236,8 +1239,6 @@ void VirtualStudio::processError(const QString& errorMessage)
     }
     msgBox.exec();
 
-    if (shouldSwitchToRtAudio)
-        m_audioConfigPtr->setAudioBackend("RtAudio");
     if (m_jackTripRunning)
         connectionFinished();
 }
@@ -1329,6 +1330,16 @@ void VirtualStudio::sendHeartbeat()
         && m_connectionState != "Preparing audio...") {
         m_devicePtr->sendHeartbeat();
     }
+}
+
+void VirtualStudio::resetState()
+{
+    m_webChannelServer->close();
+    m_refreshTimer.stop();
+    m_heartbeatTimer.stop();
+    m_startTimer.stop();
+    m_networkOutageTimer.stop();
+    m_firstRefresh = true;
 }
 
 void VirtualStudio::getServerList(bool signalRefresh, int index)
@@ -1518,6 +1529,10 @@ void VirtualStudio::getServerList(bool signalRefresh, int index)
 
 void VirtualStudio::getSubscriptions()
 {
+    if (m_userId.isEmpty()) {
+        qDebug() << "Invalid user ID";
+        return;
+    }
     QNetworkReply* reply = m_api->getSubscriptions(m_userId);
     connect(reply, &QNetworkReply::finished, this, [&, reply]() {
         if (reply->error() != QNetworkReply::NoError) {

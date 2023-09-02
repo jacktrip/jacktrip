@@ -55,9 +55,15 @@ VsWebSocket::VsWebSocket(const QUrl& url, QString token, QString apiPrefix,
     connect(m_webSocket.get(),
             QOverload<const QList<QSslError>&>::of(&QWebSocket::sslErrors), this,
             &VsWebSocket::onSslErrors);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+    connect(m_webSocket.get(),
+            QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::errorOccurred), this,
+            &VsWebSocket::onError);
+#else
     connect(m_webSocket.get(),
             QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::error), this,
             &VsWebSocket::onError);
+#endif
     connect(m_webSocket.get(), &QWebSocket::textMessageReceived, this,
             &VsWebSocket::textMessageReceived);
 }

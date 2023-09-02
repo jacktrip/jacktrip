@@ -742,6 +742,18 @@ void AudioInterface::fromBitToSampleConversion(
 }
 
 //*******************************************************************************
+void AudioInterface::setPipewireLatency(unsigned int bufferSize, unsigned int sampleRate)
+{
+    if (bufferSize == 0 || sampleRate == 0)
+        return;
+#if defined(__unix__)
+    char latency_env[40];
+    sprintf(latency_env, "%d/%d", bufferSize, sampleRate);
+    setenv("PIPEWIRE_LATENCY", latency_env, 1);
+#endif
+}
+
+//*******************************************************************************
 void AudioInterface::appendProcessPluginToNetwork(ProcessPlugin* plugin)
 {
     if (!plugin) {
@@ -951,6 +963,13 @@ void AudioInterface::setDevicesWarningMsg(warningMessageT msg)
             "and use ASIO drivers provided by your device's manufacturer to reduce "
             "audio delays.";
         mWarningHelpUrl  = "https://help.jacktrip.org/hc/en-us/articles/4409919243155";
+        mHighLatencyFlag = true;
+        break;
+    case DEVICE_WARN_ALSA_LATENCY:
+        mWarningMsg =
+            "You audio device drivers may cause high latency or audio delay. Use "
+            "JACK backend or Linux ALSA drivers to reduce audio delays.";
+        mWarningHelpUrl  = "";
         mHighLatencyFlag = true;
         break;
     default:

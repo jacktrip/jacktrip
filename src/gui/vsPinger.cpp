@@ -58,8 +58,14 @@ VsPinger::VsPinger(QString scheme, QString host, QString path)
     connect(&mSocket, &QWebSocket::binaryMessageReceived, this,
             &VsPinger::onReceivePingMessage);
     connect(&mSocket, &QWebSocket::connected, this, &VsPinger::onConnected);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+    connect(&mSocket,
+            QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::errorOccurred), this,
+            &VsPinger::onError);
+#else
     connect(&mSocket, QOverload<QAbstractSocket::SocketError>::of(&QWebSocket::error),
             this, &VsPinger::onError);
+#endif
     connect(&mTimer, &QTimer::timeout, this, &VsPinger::onPingTimer);
 }
 
