@@ -1015,6 +1015,11 @@ void VirtualStudio::openLink(const QString& link)
 
 void VirtualStudio::handleDeeplinkRequest(const QUrl& link)
 {
+    // always raise to top screen
+    if (link.scheme() == QLatin1String("jacktrip")) {
+        raiseToTop();
+    }
+
     // check link is valid
     if (link.scheme() != QLatin1String("jacktrip")
         || link.host() != QLatin1String("join")) {
@@ -1030,7 +1035,6 @@ void VirtualStudio::handleDeeplinkRequest(const QUrl& link)
 
     qDebug() << "Handling deeplink to " << link;
     setStudioToJoin(link);
-    raiseToTop();
 
     // Switch to virtual studio mode, if necessary
     // Note that this doesn't change the startup preference
