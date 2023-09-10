@@ -220,7 +220,8 @@ void VirtualStudio::show()
 void VirtualStudio::raiseToTop()
 {
     m_view.show();             // Restore from systray
-    m_view.requestActivate();  // Raise to top
+    m_view.raise();            // raise to top
+    m_view.requestActivate();  // focus on window
 }
 
 int VirtualStudio::webChannelPort()
@@ -1014,6 +1015,11 @@ void VirtualStudio::openLink(const QString& link)
 
 void VirtualStudio::handleDeeplinkRequest(const QUrl& link)
 {
+    // always raise to top screen
+    if (link.scheme() == QLatin1String("jacktrip")) {
+        raiseToTop();
+    }
+
     // check link is valid
     if (link.scheme() != QLatin1String("jacktrip")
         || link.host() != QLatin1String("join")) {
@@ -1029,7 +1035,6 @@ void VirtualStudio::handleDeeplinkRequest(const QUrl& link)
 
     qDebug() << "Handling deeplink to " << link;
     setStudioToJoin(link);
-    raiseToTop();
 
     // Switch to virtual studio mode, if necessary
     // Note that this doesn't change the startup preference
