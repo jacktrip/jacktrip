@@ -1023,17 +1023,17 @@ void VirtualStudio::handleDeeplinkRequest(const QUrl& link)
     // check link is valid
     if (link.scheme() != QLatin1String("jacktrip")
         || link.host() != QLatin1String("join")) {
-        qDebug() << "Ignoring invalid deeplink to " << link;
+        qDebug() << "Ignoring invalid deeplink to" << link;
         return;
     }
 
     // check if already connected (ignore)
     if (m_windowState == "connected" || m_windowState == "change_devices") {
-        qDebug() << "Already connected; ignoring deeplink to " << link;
+        qDebug() << "Already connected; ignoring deeplink to" << link;
         return;
     }
 
-    qDebug() << "Handling deeplink to " << link;
+    qDebug() << "Handling deeplink to" << link;
     setStudioToJoin(link);
 
     // Switch to virtual studio mode, if necessary
@@ -1105,6 +1105,8 @@ void VirtualStudio::exit()
 
 void VirtualStudio::slotAuthSucceeded()
 {
+    qDebug() << "VirtualStudio::slotAuthSucceeded";
+
     // Determine which API host to use
     m_apiHost = PROD_API_HOST;
     if (m_testMode) {
@@ -1138,13 +1140,17 @@ void VirtualStudio::slotAuthSucceeded()
 
     m_devicePtr->registerApp();
 
-    if (!m_webChannelServer->listen(QHostAddress::LocalHost)) {
-        // shouldn't happen
-        std::cout << "ERROR: Failed to start server!" << std::endl;
+    if (std::getenv("JACKTRIP_DISABLE_WEBCHANNEL") != nullptr) {
+        qDebug() << "Disabling support for QWebChannel";
+    } else {
+        if (!m_webChannelServer->listen(QHostAddress::LocalHost)) {
+            // shouldn't happen
+            std::cout << "ERROR: Failed to start server!" << std::endl;
+        }
+        m_webChannelPort = m_webChannelServer->serverPort();
+        emit webChannelPortChanged(m_webChannelPort);
+        std::cout << "QWebChannel listening on port: " << m_webChannelPort << std::endl;
     }
-    m_webChannelPort = m_webChannelServer->serverPort();
-    emit webChannelPortChanged(m_webChannelPort);
-    std::cout << "QWebChannel listening on port: " << m_webChannelPort << std::endl;
 
     getRegions();
     getUserMetadata();
@@ -1349,10 +1355,12 @@ void VirtualStudio::resetState()
 
 void VirtualStudio::getServerList(bool signalRefresh, int index)
 {
+    qDebug() << "VirtualStudio::getServerList";
     QMutexLocker refreshLock(&m_refreshMutex);
     if (m_refreshInProgress)
         return;
     m_refreshInProgress = true;
+    qDebug() << "VirtualStudio::getServerList got mutex";
 
     // Get the serverId of the server at the top of our screen if we know it
     QString topServerId;
@@ -1364,6 +1372,7 @@ void VirtualStudio::getServerList(bool signalRefresh, int index)
     QNetworkReply* reply = m_api->getServers();
     connect(
         reply, &QNetworkReply::finished, this, [&, reply, topServerId, signalRefresh]() {
+            qDebug() << "VirtualStudio::getServerList got reply";
             if (reply->error() != QNetworkReply::NoError) {
                 if (signalRefresh) {
                     emit refreshFinished(index);
@@ -1500,6 +1509,7 @@ void VirtualStudio::getServerList(bool signalRefresh, int index)
             }
 
             QMutexLocker getServersLock(&m_refreshMutex);
+            qDebug() << "VirtualStudio::getServerList updating servers";
             m_servers.clear();
             m_servers.append(yourServers);
             m_servers.append(subServers);
@@ -1529,11 +1539,15 @@ void VirtualStudio::getServerList(bool signalRefresh, int index)
             if (signalRefresh) {
                 emit refreshFinished(index);
             }
+
+            qDebug() << "VirtualStudio::getServerList done";
         });
+    qDebug() << "VirtualStudio::getServerList sent request";
 }
 
 void VirtualStudio::getSubscriptions()
 {
+    qDebug() << "VirtualStudio::getSubscriptions";
     if (m_userId.isEmpty()) {
         qDebug() << "Invalid user ID";
         return;
@@ -1565,6 +1579,7 @@ void VirtualStudio::getSubscriptions()
 
 void VirtualStudio::getRegions()
 {
+    qDebug() << "VirtualStudio::getRegions";
     QNetworkReply* reply = m_api->getRegions(m_userId);
     connect(reply, &QNetworkReply::finished, this, [&, reply]() {
         if (reply->error() != QNetworkReply::NoError) {
@@ -1581,6 +1596,7 @@ void VirtualStudio::getRegions()
 
 void VirtualStudio::getUserMetadata()
 {
+    qDebug() << "VirtualStudio::getUserMetadata";
     QNetworkReply* reply = m_api->getUser(m_userId);
     connect(reply, &QNetworkReply::finished, this, [&, reply]() {
         if (reply->error() != QNetworkReply::NoError) {

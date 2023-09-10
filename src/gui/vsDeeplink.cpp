@@ -48,6 +48,11 @@
 
 VsDeeplink::VsDeeplink(QCoreApplication* app) : m_deeplink(parseDeeplink(app))
 {
+    if (std::getenv("JACKTRIP_DISABLE_DEEPLINKS") != nullptr) {
+        qDebug() << "Disabling support for deeplinks";
+        m_isReady = true;
+        return;
+    }
     setUrlScheme();
     checkForInstance();
     QDesktopServices::setUrlHandler(QStringLiteral("jacktrip"), this, "handleUrl");
@@ -61,6 +66,7 @@ VsDeeplink::~VsDeeplink()
 bool VsDeeplink::waitForReady()
 {
     while (!m_isReady) {
+        qDebug() << "VsDeeplink::waitForReady()";
         QTimer timer;
         timer.setTimerType(Qt::CoarseTimer);
         timer.setSingleShot(true);
@@ -71,11 +77,13 @@ bool VsDeeplink::waitForReady()
         timer.start(100);  // wait for 100ms
         loop.exec();
     }
+    qDebug() << "Exiting VsDeeplink::waitForReady()";
     return m_readyToExit;
 }
 
 void VsDeeplink::readyForSignals()
 {
+    qDebug() << "VsDeeplink::readyForSignals()";
     m_readyForSignals = true;
     if (!m_deeplink.isEmpty()) {
         emit signalDeeplink(m_deeplink);
@@ -94,6 +102,7 @@ void VsDeeplink::handleUrl(const QUrl& url)
 
 void VsDeeplink::checkForInstance()
 {
+    qDebug() << "VsDeeplink::checkForInstance()";
     // Create socket
     m_instanceCheckSocket.reset(new QLocalSocket(this));
     QObject::connect(m_instanceCheckSocket.data(), &QLocalSocket::connected, this,
@@ -108,13 +117,16 @@ void VsDeeplink::checkForInstance()
     QObject::connect(m_instanceCheckSocket.data(), errorFunc, this,
                      &VsDeeplink::connectionFailed);
     // Check for existing instance
+    qDebug() << "VsDeeplink: connecting to server";
     m_instanceCheckSocket->connectToServer("jacktripExists");
 }
 
 void VsDeeplink::connectionReceived()
 {
     // another jacktrip instance is running
+    qDebug() << "VsDeeplink::connectionReceived";
     if (!m_deeplink.isEmpty()) {
+        qDebug() << "VsDeeplink: sending deeplink";
         // pass deeplink to existing instance before quitting
         QString deeplinkStr   = m_deeplink.toString();
         QByteArray baDeeplink = deeplinkStr.toLocal8Bit();
@@ -132,6 +144,7 @@ void VsDeeplink::connectionReceived()
         m_readyToExit = true;
     }
 
+    qDebug() << "VsDeeplink: calling flush and disconnect";
     m_instanceCheckSocket->flush();
     m_instanceCheckSocket->disconnectFromServer();  // remove next
 
@@ -142,6 +155,7 @@ void VsDeeplink::connectionReceived()
 
 void VsDeeplink::connectionFailed(QLocalSocket::LocalSocketError socketError)
 {
+    qDebug() << "VsDeeplink::connectionFailed";
     switch (socketError) {
     case QLocalSocket::ServerNotFoundError:
     case QLocalSocket::SocketTimeoutError:
@@ -167,6 +181,7 @@ void VsDeeplink::connectionFailed(QLocalSocket::LocalSocketError socketError)
 
 void VsDeeplink::handleDeeplinkRequest()
 {
+    qDebug() << "VsDeeplink::handleDeeplinkRequest";
     while (m_instanceServer->hasPendingConnections()) {
         // Receive URL from 2nd instance
         QLocalSocket* connectedSocket = m_instanceServer->nextPendingConnection();
@@ -197,6 +212,7 @@ void VsDeeplink::handleDeeplinkRequest()
 
 QUrl VsDeeplink::parseDeeplink(QCoreApplication* app)
 {
+    qDebug() << "VsDeeplink::parseDeeplink";
     // Parse command line for deep link
     QCommandLineParser parser;
     QCommandLineOption deeplinkOption(QStringList() << QStringLiteral("deeplink"));
@@ -213,6 +229,7 @@ QUrl VsDeeplink::parseDeeplink(QCoreApplication* app)
 void VsDeeplink::setUrlScheme()
 {
 #ifdef _WIN32
+    qDebug() << "VsDeeplink::setUrlScheme";
     // Set url scheme in registry
     QString path = QDir::toNativeSeparators(qApp->applicationFilePath());
 

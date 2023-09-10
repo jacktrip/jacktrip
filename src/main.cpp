@@ -365,6 +365,7 @@ int main(int argc, char* argv[])
                          &QCoreApplication::quit, Qt::QueuedConnection);
 
 #if !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        qDebug() << "Initializing deeplinks";
         vsPtr.reset(new VirtualStudio(uiMode == QJackTrip::UNSET));
         QObject::connect(vsPtr.data(), &VirtualStudio::signalExit, app.data(),
                          &QCoreApplication::quit, Qt::QueuedConnection);
@@ -373,6 +374,7 @@ int main(int argc, char* argv[])
         QObject::connect(vsDeeplinkPtr.get(), &VsDeeplink::signalDeeplink, vsPtr.get(),
                          &VirtualStudio::handleDeeplinkRequest, Qt::QueuedConnection);
         vsDeeplinkPtr->readyForSignals();
+        qDebug() << "Done initializing deeplinks";
 
         if (uiMode == QJackTrip::UNSET) {
             vsPtr->show();
@@ -381,6 +383,7 @@ int main(int argc, char* argv[])
         } else {
             window->show();
         }
+        qDebug() << "Done showing windows";
 
         // Log to file
         QString logPath(
@@ -402,6 +405,7 @@ int main(int argc, char* argv[])
 #endif  // NO_VS
 
 #if !defined(NO_UPDATER) && !defined(__unix__)
+        qDebug() << "Checking for updates";
 #ifndef PSI
 #if defined(NO_VS) || QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 
@@ -428,6 +432,7 @@ int main(int argc, char* argv[])
             dblsqd::UpdateDialog* updateDialog = new dblsqd::UpdateDialog(feed);
             updateDialog->setIcon(":/qjacktrip/icon.png");
         }
+        qDebug() << "Done checking for updates";
 #endif  // NO_UPDATER
     } else {
 #endif  // NO_GUI
@@ -495,5 +500,7 @@ int main(int argc, char* argv[])
     }
 #endif  // NO_GUI
 
+    qDebug() << "Entering app->exec()";
     return app->exec();
+    qDebug() << "Exiting main()";
 }
