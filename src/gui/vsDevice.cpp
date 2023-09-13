@@ -120,6 +120,9 @@ void VsDevice::registerApp()
         settings.setValue(QStringLiteral("ApiPrefix"), m_apiPrefix);
         settings.setValue(QStringLiteral("ApiSecret"), m_apiSecret);
         settings.endGroup();
+        if (!m_appID.isEmpty()) {
+            updateState("");
+        }
 
         reply->deleteLater();
     });
