@@ -65,14 +65,14 @@ Item {
             url: `https://${virtualstudio.apiHost}/studios/${studioId}/live?accessToken=${accessToken}`
 
             // useful for debugging
-            // onJavaScriptConsoleMessage: function(level, message, lineNumber, sourceID) {
-            //     console.log(level, message, lineNumber, sourceID);
-            // }
+            onJavaScriptConsoleMessage: function(level, message, lineNumber, sourceID) {
+                console.log(level, message, lineNumber, sourceID);
+            }
 
             // useful for debugging
-            // onLoadingChanged: function(loadRequest) {
-            //     console.log("onLoadingChanged", loadRequest.errorCode, loadRequest.errorDomain, loadRequest.errorString, loadRequest.status, loadRequest.url);
-            // }
+            onLoadingChanged: function(loadRequest) {
+                console.log("onLoadingChanged", loadRequest.errorCode, loadRequest.errorDomain, loadRequest.errorString, loadRequest.status, loadRequest.url);
+            }
 
             onContextMenuRequested: function(request) {
                 // this disables the default context menu: https://doc.qt.io/qt-6.2/qml-qtwebengine-contextmenurequest.html#accepted-prop
