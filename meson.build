@@ -208,7 +208,7 @@ else
 			defines += '-DVS_FTUX'
 		endif
 
-		deps += dependency('qt6', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Quick', 'QuickControls2', 'Qml', 'Svg', 'WebSockets', 'WebEngineCore', 'WebEngineQuick', 'WebChannel'], include_type: 'system')
+		deps += dependency('qt6', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Core5Compat', 'Quick', 'QuickControls2', 'Qml', 'ShaderTools', 'Svg', 'WebSockets', 'WebEngineCore', 'WebEngineQuick', 'WebChannel'], include_type: 'system')
 		qres = ['src/gui/qjacktrip.qrc']
 	endif
 

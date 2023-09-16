@@ -152,6 +152,16 @@ QCoreApplication* createApplication(int& argc, char* argv[])
         QGuiApplication::setHighDpiScaleFactorRoundingPolicy(
             Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
 #endif  // QT_VERSION
+
+        // Enables resource sharing between the OpenGL contexts
+        QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
+
+        // Initialize webengine
+        QtWebEngineQuick::initialize();
+        // TODO: Add support for QtWebView
+        // qputenv("QT_WEBVIEW_PLUGIN", "native");
+        // QtWebView::initialize();
+
         return new JTApplication(argc, argv);
 #else
         // Turn on high DPI support.
@@ -289,15 +299,6 @@ bool isRunFromCmd()
 
 int main(int argc, char* argv[])
 {
-#ifndef NO_GUI
-#if !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    QtWebEngineQuick::initialize();
-    // TODO: Add support for QtWebView
-    // qputenv("QT_WEBVIEW_PLUGIN", "native");
-    // QtWebView::initialize();
-#endif  // NO_VS && QT_VERSION
-#endif  // NO_GUI
-
     QScopedPointer<QCoreApplication> app(createApplication(argc, argv));
     QScopedPointer<JackTrip> jackTrip;
     QScopedPointer<UdpHubListener> udpHub;
