@@ -1,5 +1,5 @@
 - Version: "2.0.3"
-  Date: 2023-09-15
+  Date: 2023-09-18
   Description:
   - (updated) VS Mode video improvements on Windows
   - (fixed) VS Mode ensure that the app is disconnected at startup
