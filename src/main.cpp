@@ -54,6 +54,7 @@
 #include <QQuickView>
 #include <QSettings>
 #include <QStandardPaths>
+#include <QSGRendererInterface>
 #include <QTextStream>
 // TODO: Add support for QtWebView
 //#include <QtWebView>
@@ -153,9 +154,6 @@ QCoreApplication* createApplication(int& argc, char* argv[])
             Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
 #endif  // QT_VERSION
 
-        // Enables resource sharing between the OpenGL contexts
-        QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
-
         // Initialize webengine
         QtWebEngineQuick::initialize();
         // TODO: Add support for QtWebView
@@ -178,6 +176,23 @@ QCoreApplication* createApplication(int& argc, char* argv[])
             Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
 #endif  // NO_VS
 #endif  // QT_VERSION
+
+#if !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        // Enables resource sharing between the OpenGL contexts
+        QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
+        //QCoreApplication::setAttribute(Qt::AA_UseDesktopOpenGL);
+        //QCoreApplication::setAttribute(Qt::AA_UseOpenGLES);
+
+        //QQuickWindow::setGraphicsApi(QSGRendererInterface::Direct3D11);
+        //QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
+
+        // Initialize webengine
+        QtWebEngineQuick::initialize();
+        // TODO: Add support for QtWebView
+        // qputenv("QT_WEBVIEW_PLUGIN", "native");
+        // QtWebView::initialize();
+#endif
+
         return new QApplication(argc, argv);
 #endif  // Q_OS_MACOS
 #endif  // NO_GUI
