@@ -365,16 +365,26 @@ int main(int argc, char* argv[])
                          &QCoreApplication::quit, Qt::QueuedConnection);
 
 #if !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-        qDebug() << "Initializing deeplinks";
-        vsPtr.reset(new VirtualStudio(uiMode == QJackTrip::UNSET));
-        QObject::connect(vsPtr.data(), &VirtualStudio::signalExit, app.data(),
-                         &QCoreApplication::quit, Qt::QueuedConnection);
-        vsPtr->setStandardWindow(window);
-        window->setVs(vsPtr);
-        QObject::connect(vsDeeplinkPtr.get(), &VsDeeplink::signalDeeplink, vsPtr.get(),
-                         &VirtualStudio::handleDeeplinkRequest, Qt::QueuedConnection);
-        vsDeeplinkPtr->readyForSignals();
-        qDebug() << "Done initializing deeplinks";
+        try {
+            qDebug() << "Initializing deeplinks";
+            qDebug() << "Creating VirtualStudio";
+            vsPtr.reset(new VirtualStudio(uiMode == QJackTrip::UNSET));
+            qDebug() << "DONE Creating VirtualStudio";
+            QObject::connect(vsPtr.data(), &VirtualStudio::signalExit, app.data(),
+                             &QCoreApplication::quit, Qt::QueuedConnection);
+            qDebug() << "Setting standard window";
+            vsPtr->setStandardWindow(window);
+            qDebug() << "Setting vsPtr";
+            window->setVs(vsPtr);
+            qDebug() << "Connecting deeplink handler";
+            QObject::connect(vsDeeplinkPtr.get(), &VsDeeplink::signalDeeplink,
+                             vsPtr.get(), &VirtualStudio::handleDeeplinkRequest,
+                             Qt::QueuedConnection);
+            vsDeeplinkPtr->readyForSignals();
+            qDebug() << "Done initializing deeplinks";
+        } catch (std::exception& e) {
+            std::cerr << "main() caught exception: " << e.what() << std::endl;
+        }
 
         if (uiMode == QJackTrip::UNSET) {
             vsPtr->show();

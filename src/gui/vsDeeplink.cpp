@@ -86,9 +86,11 @@ void VsDeeplink::readyForSignals()
     qDebug() << "VsDeeplink::readyForSignals()";
     m_readyForSignals = true;
     if (!m_deeplink.isEmpty()) {
+        qDebug() << "VsDeeplink::readyForSignals() emitting signal";
         emit signalDeeplink(m_deeplink);
         m_deeplink.clear();
     }
+    qDebug() << "DONE VsDeeplink::readyForSignals()";
 }
 
 void VsDeeplink::handleUrl(const QUrl& url)

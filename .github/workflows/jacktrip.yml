@@ -218,7 +218,7 @@ jobs:
       CLANG_TIDY_NAME: clang-tidy-result
       CLANG_TIDY_PATH: ${{ github.workspace }}/clang-tidy-result
       QT_DOWNLOAD_BASE_URL: 'https://files.jacktrip.org/contrib/qt'
-      QT_DOWNLOAD_COMMIT: '6a3ad3e'
+      QT_DOWNLOAD_COMMIT: 'fd65d81'
 
     steps:
       - uses: actions/checkout@v3

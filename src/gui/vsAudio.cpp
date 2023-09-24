@@ -97,6 +97,7 @@ VsAudio::VsAudio(QObject* parent)
     , m_inputMixModeComboModel(QJsonArray::fromStringList(QStringList(QLatin1String(""))))
     , m_audioWorkerPtr(new VsAudioWorker(this))
 {
+    qDebug() << "VsAudio constructor";
     loadSettings();
 
     if (isBackendAvailable<AudioInterfaceMode::RTAUDIO>()) {
@@ -133,6 +134,8 @@ VsAudio::VsAudio(QObject* parent)
     m_outputChannelsComboModel = QJsonArray();
     m_outputChannelsComboModel.push_back(element);
 
+    qDebug() << "VsAudio constructor - initializing timers";
+
     // Initialize timers needed for clip indicators
     m_inputClipTimer.setTimerType(Qt::CoarseTimer);
     m_inputClipTimer.setSingleShot(true);
@@ -153,11 +156,15 @@ VsAudio::VsAudio(QObject* parent)
         }
     });
 
+    qDebug() << "VsAudio constructor - initializing worker thread";
+
     // move audio worker to its own thread
     m_workerThread.reset(new QThread);
     m_workerThread->setObjectName("VsAudioWorker");
     m_workerThread->start();
     m_audioWorkerPtr->moveToThread(m_workerThread.get());
+
+    qDebug() << "VsAudio constructor - making connections";
 
     // connect worker signals to slots
     connect(this, &VsAudio::signalStartAudio, m_audioWorkerPtr.get(),
@@ -181,8 +188,10 @@ VsAudio::VsAudio(QObject* parent)
         m_permissionsPtr->getMicPermission();
     }
 #else
+    qDebug() << "VsAudio constructor - resetting permissions";
     m_permissionsPtr.reset(new VsPermissions());
 #endif
+    qDebug() << "DONE VsAudio constructor";
 }
 
 bool VsAudio::backendAvailable() const
@@ -448,6 +457,7 @@ void VsAudio::validateDevices(bool block)
 
 void VsAudio::loadSettings()
 {
+    qDebug() << "VsAudio::loadSettings()";
     QSettings settings;
     settings.beginGroup(QStringLiteral("Audio"));
     setInputVolume(settings.value(QStringLiteral("InMultiplier"), 1).toFloat());
@@ -470,6 +480,8 @@ void VsAudio::loadSettings()
     } else {
         audioBackend = AudioBackendType::JACK;
     }
+
+    qDebug() << "VsAudio::loadSettings() - checking for weakjack";
 #ifdef USE_WEAK_JACK
     // Check if Jack is available
     if (have_libjack() != 0) {
@@ -481,12 +493,15 @@ void VsAudio::loadSettings()
 #endif  // RT_AUDIO
     }
 #endif  // USE_WEAK_JACK
+    qDebug() << "VsAudio::loadSettings() - DONE checking for weakjack";
+
     if (audioBackend != m_backend) {
         setAudioBackend(audioBackend == AudioBackendType::RTAUDIO
                             ? QStringLiteral("RtAudio")
                             : QStringLiteral("JACK"));
     }
 
+    qDebug() << "VsAudio::loadSettings() - setting devices";
     // load input and output devices
     QString inputDevice  = settings.value(QStringLiteral("InputDevice"), "").toString();
     QString outputDevice = settings.value(QStringLiteral("OutputDevice"), "").toString();
@@ -499,6 +514,7 @@ void VsAudio::loadSettings()
     setInputDevice(inputDevice);
     setOutputDevice(outputDevice);
 
+    qDebug() << "VsAudio::loadSettings() - setting channels";
     // use default base channel 0, if the setting does not exist
     setBaseInputChannel(settings.value(QStringLiteral("BaseInputChannel"), 0).toInt());
     setBaseOutputChannel(settings.value(QStringLiteral("BaseOutputChannel"), 0).toInt());
@@ -531,11 +547,13 @@ void VsAudio::loadSettings()
             settings.value(QStringLiteral("NumOutputChannels"), 2).toInt());
     }
 
+    qDebug() << "VsAudio::loadSettings() - other settings";
     setBufferSize(settings.value(QStringLiteral("BufferSize"), 128).toInt());
     setBufferStrategy(settings.value(QStringLiteral("BufferStrategy"), 2).toInt());
     setFeedbackDetectionEnabled(
         settings.value(QStringLiteral("FeedbackDetectionEnabled"), true).toBool());
     settings.endGroup();
+    qDebug() << "DONE VsAudio::loadSettings()";
 }
 
 void VsAudio::saveSettings()

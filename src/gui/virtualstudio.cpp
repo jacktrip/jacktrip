@@ -79,17 +79,21 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
           new VsAudio(this))  // this needs to be constructed before loadSettings()
     , m_showFirstRun(firstRun)
 {
+    qDebug() << "VirtualStudio constructor";
     // load or initialize persisted settings
     loadSettings();
 
+    qDebug() << "VirtualStudio constructor - image hack";
     // TODO: remove me; this is a hack for this bug
     // https://bugreports.qt.io/browse/QTBUG-55199
     QSvgGenerator svgImageHack;
 
+    qDebug() << "VirtualStudio constructor - resetting m_networkAccessManager";
     // use a singleton QNetworkAccessManager
     m_networkAccessManager.reset(new QNetworkAccessManager);
 
     // instantiate API
+    qDebug() << "VirtualStudio constructor - resetting API";
     m_api.reset(new VsApi(m_networkAccessManager.data()));
     m_api->setApiHost(PROD_API_HOST);
     if (m_testMode) {
@@ -97,6 +101,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     }
 
     // instantiate auth
+    qDebug() << "VirtualStudio constructor - resetting Auth";
     m_auth.reset(new VsAuth(m_networkAccessManager.data(), m_api.data()));
     connect(m_auth.data(), &VsAuth::authSucceeded, this,
             &VirtualStudio::slotAuthSucceeded);
@@ -110,15 +115,22 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
         m_auth->authenticate(QStringLiteral(""));  // retry without using refresh token
     });
 
-    m_webChannelServer.reset(new QWebSocketServer(
-        QStringLiteral("Qt6 Virtual Studio Server"), QWebSocketServer::NonSecureMode));
-    connect(m_webChannelServer.data(), &QWebSocketServer::newConnection, this, [=]() {
-        m_webChannel->connectTo(
-            new WebSocketTransport(m_webChannelServer->nextPendingConnection()));
-    });
+    if (std::getenv("JACKTRIP_DISABLE_WEBCHANNEL") != nullptr) {
+        qDebug() << "Disabling support for QWebChannel";
+    } else {
+        qDebug() << "VirtualStudio constructor - resetting websocket server";
+        m_webChannelServer.reset(
+            new QWebSocketServer(QStringLiteral("Qt6 Virtual Studio Server"),
+                                 QWebSocketServer::NonSecureMode));
+        connect(m_webChannelServer.data(), &QWebSocketServer::newConnection, this, [=]() {
+            m_webChannel->connectTo(
+                new WebSocketTransport(m_webChannelServer->nextPendingConnection()));
+        });
 
-    m_webChannel.reset(new QWebChannel());
-    m_webChannel->registerObject(QStringLiteral("virtualstudio"), this);
+        m_webChannel.reset(new QWebChannel());
+        m_webChannel->registerObject(QStringLiteral("virtualstudio"), this);
+        qDebug() << "VirtualStudio constructor - DONE resetting websocket server";
+    }
 
     // Load our font for our qml interface
     QFontDatabase::addApplicationFont(QStringLiteral(":/vs/Poppins-Regular.ttf"));
@@ -127,6 +139,7 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     // Set our font scaling to convert points to pixels
     m_fontScale = float(4.0 / 3.0);
 
+    qDebug() << "VirtualStudio constructor - network outage timer";
     // Initialize timer needed for network outage indicator
     m_networkOutageTimer.setTimerType(Qt::CoarseTimer);
     m_networkOutageTimer.setSingleShot(true);
@@ -136,14 +149,17 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
         emit updatedNetworkOutage(m_networkOutage);
     });
 
+    qDebug() << "VirtualStudio constructor - window state";
     if ((m_uiMode == QJackTrip::UNSET && vsFtux())
         || (m_uiMode == QJackTrip::VIRTUAL_STUDIO)) {
         m_windowState = QStringLiteral("login");
     }
 
+    qDebug() << "VirtualStudio constructor - QML registrations";
     // register QML types
     qmlRegisterType<VsServerInfo>("org.jacktrip.jacktrip", 1, 0, "VsServerInfo");
 
+    qDebug() << "VirtualStudio constructor - QML context properties";
     // setup QML view
     m_view.engine()->rootContext()->setContextProperty(QStringLiteral("virtualstudio"),
                                                        this);
@@ -154,12 +170,15 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_view.engine()->rootContext()->setContextProperty(
         QStringLiteral("permissions"),
         QVariant::fromValue(&m_audioConfigPtr->getPermissions()));
+
+    qDebug() << "VirtualStudio constructor - QML source";
     m_view.setSource(QUrl(QStringLiteral("qrc:/vs/vs.qml")));
     m_view.setMinimumSize(QSize(800, 640));
     // m_view.setMaximumSize(QSize(696, 577));
     m_view.setResizeMode(QQuickView::SizeRootObjectToView);
     m_view.resize(800 * m_uiScale, 640 * m_uiScale);
 
+    qDebug() << "VirtualStudio constructor - connections";
     // Connect our timers
     connect(&m_refreshTimer, &QTimer::timeout, this, [&]() {
         emit periodicRefresh();
@@ -186,8 +205,10 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
 
     if ((m_uiMode == QJackTrip::UNSET && vsFtux())
         || (m_uiMode == QJackTrip::VIRTUAL_STUDIO)) {
+        qDebug() << "VirtualStudio constructor - logging in";
         login();
     }
+    qDebug() << "DONE VirtualStudio constructor";
 }
 
 void VirtualStudio::setStandardWindow(QSharedPointer<QJackTrip> window)
@@ -711,12 +732,14 @@ void VirtualStudio::refreshStudios(int index, bool signalRefresh)
 
 void VirtualStudio::loadSettings()
 {
+    qDebug() << "VirtualStudio::loadSettings()";
     QSettings settings;
     m_uiMode = static_cast<QJackTrip::uiModeT>(
         settings.value(QStringLiteral("UiMode"), QJackTrip::UNSET).toInt());
     setUpdateChannel(
         settings.value(QStringLiteral("UpdateChannel"), "stable").toString().toLower());
 
+    qDebug() << "VirtualStudio::loadSettings() begin VirtualStudio group";
     settings.beginGroup(QStringLiteral("VirtualStudio"));
     m_refreshToken   = settings.value(QStringLiteral("RefreshToken"), "").toString();
     m_userId         = settings.value(QStringLiteral("UserId"), "").toString();
@@ -733,6 +756,7 @@ void VirtualStudio::loadSettings()
     settings.endGroup();
 
     m_audioConfigPtr->loadSettings();
+    qDebug() << "DONE VirtualStudio::loadSettings()";
 }
 
 void VirtualStudio::saveSettings()
@@ -1140,9 +1164,7 @@ void VirtualStudio::slotAuthSucceeded()
 
     m_devicePtr->registerApp();
 
-    if (std::getenv("JACKTRIP_DISABLE_WEBCHANNEL") != nullptr) {
-        qDebug() << "Disabling support for QWebChannel";
-    } else {
+    if (std::getenv("JACKTRIP_DISABLE_WEBCHANNEL") == nullptr) {
         if (!m_webChannelServer->listen(QHostAddress::LocalHost)) {
             // shouldn't happen
             std::cout << "ERROR: Failed to start server!" << std::endl;
@@ -1345,7 +1367,8 @@ void VirtualStudio::sendHeartbeat()
 
 void VirtualStudio::resetState()
 {
-    m_webChannelServer->close();
+    if (!m_webChannelServer.isNull())
+        m_webChannelServer->close();
     m_refreshTimer.stop();
     m_heartbeatTimer.stop();
     m_startTimer.stop();
