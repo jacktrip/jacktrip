@@ -20,6 +20,7 @@ Rectangle {
             PropertyChanges { target: setupScreen; x: window.width }
             PropertyChanges { target: browseScreen; x: window.width }
             PropertyChanges { target: settingsScreen; x: window.width }
+            PropertyChanges { target: createStudioScreen; x: window.width }
             PropertyChanges { target: connectedScreen; x: window.width }
             PropertyChanges { target: changeDevicesScreen; x: 2*window.width }
             PropertyChanges { target: failedScreen; x: window.width }
@@ -34,6 +35,7 @@ Rectangle {
             PropertyChanges { target: setupScreen; x: window.width }
             PropertyChanges { target: browseScreen; x: window.width }
             PropertyChanges { target: settingsScreen; x: window.width }
+            PropertyChanges { target: createStudioScreen; x: window.width }
             PropertyChanges { target: connectedScreen; x: window.width }
             PropertyChanges { target: changeDevicesScreen; x: 2*window.width }
             PropertyChanges { target: failedScreen; x: window.width }
@@ -48,6 +50,7 @@ Rectangle {
             PropertyChanges { target: setupScreen; x: window.width }
             PropertyChanges { target: browseScreen; x: window.width }
             PropertyChanges { target: settingsScreen; x: window.width }
+            PropertyChanges { target: createStudioScreen; x: window.width }
             PropertyChanges { target: connectedScreen; x: window.width }
             PropertyChanges { target: changeDevicesScreen; x: 2*window.width }
             PropertyChanges { target: failedScreen; x: window.width }
@@ -62,6 +65,7 @@ Rectangle {
             PropertyChanges { target: setupScreen; x: window.width }
             PropertyChanges { target: browseScreen; x: window.width }
             PropertyChanges { target: settingsScreen; x: window.width }
+            PropertyChanges { target: createStudioScreen; x: window.width }
             PropertyChanges { target: connectedScreen; x: window.width }
             PropertyChanges { target: changeDevicesScreen; x: 2*window.width }
             PropertyChanges { target: failedScreen; x: window.width }
@@ -76,6 +80,7 @@ Rectangle {
             PropertyChanges { target: setupScreen; x: 0 }
             PropertyChanges { target: browseScreen; x: -browseScreen.width }
             PropertyChanges { target: settingsScreen; x: window.width }
+            PropertyChanges { target: createStudioScreen; x: window.width }
             PropertyChanges { target: connectedScreen; x: window.width }
             PropertyChanges { target: changeDevicesScreen; x: 2*window.width }
             PropertyChanges { target: failedScreen; x: window.width }
@@ -90,6 +95,7 @@ Rectangle {
             PropertyChanges { target: setupScreen; x: window.width }
             PropertyChanges { target: browseScreen; x: 0 }
             PropertyChanges { target: settingsScreen; x: window.width }
+            PropertyChanges { target: createStudioScreen; x: window.width }
             PropertyChanges { target: connectedScreen; x: window.width }
             PropertyChanges { target: changeDevicesScreen; x: 2*window.width }
             PropertyChanges { target: failedScreen; x: window.width }
@@ -104,8 +110,24 @@ Rectangle {
             PropertyChanges { target: setupScreen; x: window.width }
             PropertyChanges { target: browseScreen; x: -browseScreen.width }
             PropertyChanges { target: settingsScreen; x: 0 }
+            PropertyChanges { target: createStudioScreen; x: window.width }
             PropertyChanges { target: connectedScreen; x: window.width }
             PropertyChanges { target: changeDevicesScreen; x: 2*window.width }
+            PropertyChanges { target: failedScreen; x: window.width }
+        },
+
+        State {
+            name: "create_studio"
+            PropertyChanges { target: loginScreen; x: -loginScreen.width }
+            PropertyChanges { target: startScreen; x: -startScreen.width }
+            PropertyChanges { target: recommendationsScreen; x: -recommendationsScreen.width }
+            PropertyChanges { target: permissionsScreen; x: -permissionsScreen.width }
+            PropertyChanges { target: setupScreen; x: window.width }
+            PropertyChanges { target: browseScreen; x: -browseScreen.width }
+            PropertyChanges { target: settingsScreen; x: window.width }
+            PropertyChanges { target: createStudioScreen; x: 0 }
+            PropertyChanges { target: connectedScreen; x: window.width }
+            PropertyChanges { target: changeDevicesScreen; x: window.width }
             PropertyChanges { target: failedScreen; x: window.width }
         },
 
@@ -118,6 +140,7 @@ Rectangle {
             PropertyChanges { target: setupScreen; x: 0 }
             PropertyChanges { target: browseScreen; x: -browseScreen.width }
             PropertyChanges { target: settingsScreen; x: window.width }
+            PropertyChanges { target: createStudioScreen; x: -createStudioScreen.width }
             PropertyChanges { target: connectedScreen; x: 0 }
             PropertyChanges { target: changeDevicesScreen; x: window.width }
             PropertyChanges { target: failedScreen; x: window.width }
@@ -132,6 +155,7 @@ Rectangle {
             PropertyChanges { target: setupScreen; x: 0 }
             PropertyChanges { target: browseScreen; x: -browseScreen.width }
             PropertyChanges { target: settingsScreen; x: window.width }
+            PropertyChanges { target: createStudioScreen; x: -createStudioScreen.width }
             PropertyChanges { target: connectedScreen; x: 0 }
             PropertyChanges { target: changeDevicesScreen; x: 0 }
             PropertyChanges { target: failedScreen; x: window.width }
@@ -146,6 +170,7 @@ Rectangle {
             PropertyChanges { target: setupScreen; x: -setupScreen.width }
             PropertyChanges { target: browseScreen; x: -browseScreen.width }
             PropertyChanges { target: settingsScreen; x: window.width }
+            PropertyChanges { target: createStudioScreen; x: window.width }
             PropertyChanges { target: connectedScreen; x: window.width }
             PropertyChanges { target: changeDevicesScreen; x: 2*window.width }
             PropertyChanges { target: failedScreen; x: 0 }
@@ -192,6 +217,10 @@ Rectangle {
         id: changeDevicesScreen
     }
 
+    CreateStudio {
+        id: createStudioScreen
+    }
+
     Failed {
         id: failedScreen
     }
@@ -211,6 +240,8 @@ Rectangle {
             browseScreen.x = 0
         } else if (virtualstudio.windowState === "settings") {
             settingsScreen.x = 0
+        } else if (virtualstudio.windowState === "create_studio") {
+            createStudioScreen.x = 0
         } else if (virtualstudio.windowState === "connected") {
             connectedScreen.x = 0
         } else if (virtualstudio.windowState === "change_devices") {
@@ -235,6 +266,8 @@ Rectangle {
             browseScreen.x = 0
         } else if (virtualstudio.windowState === "settings") {
             settingsScreen.x = 0
+        } else if (virtualstudio.windowState === "create_studio") {
+            createStudioScreen.x = 0
         } else if (virtualstudio.windowState === "connected") {
             connectedScreen.x = 0
         } else if (virtualstudio.windowState === "change_devices") {

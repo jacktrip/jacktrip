@@ -18,6 +18,7 @@
     <file>Meter.qml</file>
     <file>MeterBars.qml</file>
     <file>Connected.qml</file>
+    <file>CreateStudio.qml</file>
     <file>Failed.qml</file>
     <file>Setup.qml</file>
     <file>SectionHeading.qml</file>

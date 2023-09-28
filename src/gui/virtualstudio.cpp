@@ -991,8 +991,7 @@ void VirtualStudio::launchVideo(const QString& studioId)
 
 void VirtualStudio::createStudio()
 {
-    QUrl url = QUrl(QStringLiteral("https://%1/studios/create").arg(m_api->getApiHost()));
-    QDesktopServices::openUrl(url);
+    setWindowState(QStringLiteral("create_studio"));
 }
 
 void VirtualStudio::editProfile()
@@ -1060,6 +1059,13 @@ void VirtualStudio::handleDeeplinkRequest(const QUrl& link)
             m_audioConfigPtr->stopAudio(true);
             joinStudio();
         }
+        return;
+    }
+
+    // special case if on create_studio screen
+    if (m_windowState == "create_studio") {
+        refreshStudios(0, true);
+        setWindowState("connected");
         return;
     }
 
