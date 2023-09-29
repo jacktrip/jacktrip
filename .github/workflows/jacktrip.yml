@@ -297,6 +297,7 @@ jobs:
           sudo installer -pkg jack2-osx-1.9.16.pkg -target /
           sudo chmod a+rwx /opt
           sudo spctl --master-disable
+          brew update
           brew install ninja
           if [[ "${{ matrix.system-rtaudio }}" == true ]]; then 
             brew install rtaudio
