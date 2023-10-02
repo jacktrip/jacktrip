@@ -37,7 +37,7 @@ Rectangle {
                 id: backButton
                 anchors.centerIn: parent
                 width: 180 * virtualstudio.uiScale
-                height: 40 * virtualstudio.uiScale
+                height: 36 * virtualstudio.uiScale
                 background: Rectangle {
                     radius: 8 * virtualstudio.uiScale
                     color: backButton.down ? browserButtonPressedColour : (backButton.hovered ? browserButtonHoverColour : browserButtonColour)

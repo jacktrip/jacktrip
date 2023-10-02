@@ -8,7 +8,7 @@ Item {
     width: parent.width; height: parent.height
     clip: true
 
-    property int fontSmall: 10
+    property int fontMedium: 12
     property string browserButtonColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
     property string browserButtonHoverColour: virtualstudio.darkMode ? "#5B5858" : "#D3D4D4"
     property string browserButtonPressedColour: virtualstudio.darkMode ? "#524F4F" : "#DEE0E0"
@@ -81,7 +81,7 @@ Item {
         id: footer
         anchors.bottom: parent.bottom
         width: parent.width
-        height: 36
+        height: 48
         color: backgroundColour
 
         RowLayout {
@@ -96,7 +96,7 @@ Item {
                     id: backButton
                     anchors.centerIn: parent
                     width: 180 * virtualstudio.uiScale
-                    height: 24
+                    height: 36 * virtualstudio.uiScale
                     background: Rectangle {
                         radius: 8 * virtualstudio.uiScale
                         color: backButton.down ? browserButtonPressedColour : (backButton.hovered ? browserButtonHoverColour : browserButtonColour)
@@ -105,7 +105,7 @@ Item {
 
                     Text {
                         text: "Back to Studios"
-                        font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale}
+                        font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale}
                         anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
                         color: textColour
                     }
