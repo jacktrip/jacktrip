@@ -1065,7 +1065,12 @@ void VirtualStudio::handleDeeplinkRequest(const QUrl& link)
     // special case if on create_studio screen
     if (m_windowState == "create_studio") {
         refreshStudios(0, true);
-        setWindowState("connected");
+        if (showDeviceSetup()) {
+            setWindowState("setup");
+            m_audioConfigPtr->startAudio();
+        } else {
+            setWindowState("connected");
+        }
         return;
     }
 
