@@ -205,7 +205,7 @@ jobs:
             nogui: false
             novs: false
             weakjack: true
-            qt-version: '6.2.5'
+            qt-version: '6.5.2'
             qt-type: 'dynamic'
             jacktrip-path: jacktrip.exe
             installer-path: installer
@@ -218,7 +218,7 @@ jobs:
       CLANG_TIDY_NAME: clang-tidy-result
       CLANG_TIDY_PATH: ${{ github.workspace }}/clang-tidy-result
       QT_DOWNLOAD_BASE_URL: 'https://files.jacktrip.org/contrib/qt'
-      QT_DOWNLOAD_COMMIT: '89aec80'
+      QT_DOWNLOAD_COMMIT: '150bc20'
 
     steps:
       - uses: actions/checkout@v3
@@ -261,7 +261,7 @@ jobs:
             if [[ "${{ matrix.runs-on }}" == "ubuntu-20.04" ]]; then
               sudo apt-get install --yes qtbase5-dev qtbase5-dev-tools qtchooser qt5-qmake qttools5-dev qtdeclarative5-dev libqt5svg5-dev libqt5websockets5-dev qtquickcontrols2-5-dev
             else
-              sudo apt-get install --yes qt6-base-dev qt6-base-dev-tools qmake6 qt6-tools-dev qt6-declarative-dev qt6-webengine-dev qt6-webview-dev qt6-webview-plugins libqt6svg6-dev libqt6websockets6-dev libgl1-mesa-dev
+              sudo apt-get install --yes qt6-base-dev qt6-base-dev-tools qmake6 qt6-tools-dev qt6-declarative-dev qt6-webengine-dev qt6-webview-dev qt6-webview-plugins libqt6svg6-dev libqt6websockets6-dev libgl1-mesa-dev libqt6core5compat6-dev libqt6shadertools6-dev
               sudo qtchooser -install qt6 $(which qmake6)
               echo "QT_SELECT=qt6" >> $GITHUB_ENV
             fi
@@ -297,6 +297,7 @@ jobs:
           sudo installer -pkg jack2-osx-1.9.16.pkg -target /
           sudo chmod a+rwx /opt
           sudo spctl --master-disable
+          brew update
           brew install ninja
           if [[ "${{ matrix.system-rtaudio }}" == true ]]; then 
             brew install rtaudio
