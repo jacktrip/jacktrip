@@ -116,6 +116,7 @@ class Settings : public QObject
     QString getCredsFile() { return mCredsFile; }
     QString getUsername() { return mUsername; }
     QString getPassword() { return mPassword; }
+    const QString& getDeeplink() const { return mDeeplink; }
 
    private:
     void disableEcho(bool disabled);
@@ -189,6 +190,7 @@ class Settings : public QObject
     QString mCredsFile;
     QString mUsername;
     QString mPassword;
+    QString mDeeplink;
 
     QSharedPointer<AudioTester> mAudioTester;
 };

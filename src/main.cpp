@@ -96,7 +96,8 @@ QCoreApplication* createApplication(int& argc, char* argv[])
     // Check for some specific, GUI related command line options.
     bool forceGui = false;
     for (int i = 1; i < argc; i++) {
-        if (strncmp(argv[i], "--gui", 5) == 0 || strncmp(argv[i], "--deeplink", 10) == 0) {
+        if (strncmp(argv[i], "--gui", 5) == 0 || strncmp(argv[i], "--deeplink", 10) == 0
+            || strncmp(argv[i], "jacktrip://", 11) == 0) {
             forceGui = true;
         } else if (strncmp(argv[i], "--test-gui", 10) == 0) {
             // Command line option to test if the binary has been built with GUI support.
@@ -347,7 +348,7 @@ int main(int argc, char* argv[])
         qmlRegisterType<VsQmlClipboard>("VS", 1, 0, "Clipboard");
 
         // prepare handler for deeplinks jacktrip://join/<StudioID>
-        vsDeeplinkPtr.reset(new VsDeeplink(app.data()));
+        vsDeeplinkPtr.reset(new VsDeeplink(cliSettings->getDeeplink()));
         if (!vsDeeplinkPtr->getDeeplink().isEmpty()) {
             bool readyForExit = vsDeeplinkPtr->waitForReady();
             if (readyForExit)

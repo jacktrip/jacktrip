@@ -37,7 +37,7 @@
 
 #include "vsDeeplink.h"
 
-#include <QCommandLineParser>
+#include <QCoreApplication>
 #include <QDebug>
 #include <QDesktopServices>
 #include <QDir>
@@ -46,7 +46,7 @@
 #include <QSettings>
 #include <QTimer>
 
-VsDeeplink::VsDeeplink(QCoreApplication* app) : m_deeplink(parseDeeplink(app))
+VsDeeplink::VsDeeplink(const QString& deeplink) : m_deeplink(deeplink)
 {
     setUrlScheme();
     checkForInstance();
@@ -192,21 +192,6 @@ void VsDeeplink::handleDeeplinkRequest()
         QByteArray in(connectedSocket->readAll());
         QString urlString(in);
         handleUrl(urlString);
-    }
-}
-
-QUrl VsDeeplink::parseDeeplink(QCoreApplication* app)
-{
-    // Parse command line for deep link
-    QCommandLineParser parser;
-    QCommandLineOption deeplinkOption(QStringList() << QStringLiteral("deeplink"));
-    deeplinkOption.setValueName(QStringLiteral("deeplink"));
-    parser.addOption(deeplinkOption);
-    parser.parse(app->arguments());
-    if (parser.isSet(deeplinkOption)) {
-        return QUrl(parser.value(deeplinkOption));
-    } else {
-        return QUrl("");
     }
 }
 
