@@ -96,9 +96,9 @@ QCoreApplication* createApplication(int& argc, char* argv[])
     // Check for some specific, GUI related command line options.
     bool forceGui = false;
     for (int i = 1; i < argc; i++) {
-        if (strcmp(argv[i], "--gui") == 0) {
+        if (strncmp(argv[i], "--gui", 5) == 0 || strncmp(argv[i], "--deeplink", 10) == 0) {
             forceGui = true;
-        } else if (strcmp(argv[i], "--test-gui") == 0) {
+        } else if (strncmp(argv[i], "--test-gui", 10) == 0) {
             // Command line option to test if the binary has been built with GUI support.
             // Exits immediately. Exits with an error if GUI support has not been built
             // in.
