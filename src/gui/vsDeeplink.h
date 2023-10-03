@@ -38,10 +38,10 @@
 #ifndef __VSDEEPLINK_H__
 #define __VSDEEPLINK_H__
 
-#include <QCoreApplication>
 #include <QLocalServer>
 #include <QLocalSocket>
 #include <QScopedPointer>
+#include <QString>
 #include <QUrl>
 
 class VsDeeplink : public QObject
@@ -50,7 +50,7 @@ class VsDeeplink : public QObject
 
    public:
     // construct with an instance of the application, to parse command line args
-    VsDeeplink(QCoreApplication* app);
+    VsDeeplink(const QString& deeplink);
 
     // virtual destructor since it inherits from QObject
     // this is used to unregister url handler
@@ -94,9 +94,6 @@ class VsDeeplink : public QObject
     void handleDeeplinkRequest();
 
    private:
-    // return string from parsing a deep link request
-    static QUrl parseDeeplink(QCoreApplication* app);
-
     // sets url scheme for windows machines; does nothing on other platforms
     static void setUrlScheme();
 
