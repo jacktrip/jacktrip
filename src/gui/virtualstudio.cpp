@@ -1105,6 +1105,9 @@ void VirtualStudio::exit()
 
 void VirtualStudio::slotAuthSucceeded()
 {
+    // Make sure window is on top (instead of browser, during first auth)
+    raiseToTop();
+
     // Determine which API host to use
     m_apiHost = PROD_API_HOST;
     if (m_testMode) {
