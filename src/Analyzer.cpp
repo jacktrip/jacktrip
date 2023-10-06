@@ -165,7 +165,17 @@ void Analyzer::onTick()
 
     // check for audio feedback loops
     bool detectedFeedback = checkForAudioFeedback();
+
+    // use mDetectionHistory to aggregate number of consecutive feedback triggers to help
+    // with false positives
     if (detectedFeedback) {
+        mDetectionHistory++;
+    } else {
+        if (mDetectionHistory > 0) {
+            mDetectionHistory--;
+        }
+    }
+    if (mDetectionHistory > 1) {
         emit signalFeedbackDetected();
     }
 }
@@ -207,19 +217,8 @@ void Analyzer::updateSpectraDifferentials()
 //*******************************************************************************
 bool Analyzer::checkForAudioFeedback()
 {
-    if (!testSpectralPeakAboveThreshold()) {
-        return false;
-    }
-
-    if (!testSpectralPeakAbnormallyHigh()) {
-        return false;
-    }
-
-    if (!testSpectralPeakGrowing()) {
-        return false;
-    }
-
-    return true;
+    return testSpectralPeakAboveThreshold() && testSpectralPeakAbnormallyHigh()
+           && testSpectralPeakGrowing();
 }
 
 //*******************************************************************************
