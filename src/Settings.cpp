@@ -99,6 +99,7 @@ enum JTLongOptIDS {
     OPT_AUDIOINPUTDEVICE,
     OPT_AUDIOOUTPUTDEVICE,
     OPT_GUI,
+    OPT_CLASSIC_GUI,
     OPT_DEEPLINK
 };
 
@@ -207,7 +208,8 @@ void Settings::parseInput(int argc, char** argv)
         {"help", no_argument, NULL, 'h'},  // Print Help
         {"examine-audio-delay", required_argument, NULL,
          'x'},  // test mode - measure audio round-trip latency statistics
-        {"gui", no_argument, NULL, OPT_GUI},  // Force GUI mode
+        {"gui", no_argument, NULL, OPT_GUI},                  // Force GUI mode
+        {"classic-gui", no_argument, NULL, OPT_CLASSIC_GUI},  // Force Classic Mode GUI
         {"deeplink", optional_argument, NULL,
          OPT_DEEPLINK},  // Deeplink URL (should be in the form jacktrip://...)
         {NULL, 0, NULL, 0}};
@@ -683,6 +685,9 @@ void Settings::parseInput(int argc, char** argv)
         // main. Included here so that we don't get an unrecognized option error.
         case OPT_GUI:
             break;
+        case OPT_CLASSIC_GUI:
+            mGuiForceClassicMode = true;
+            break;
         case OPT_DEEPLINK:
             if (optarg == NULL && optind < argc && argv[optind][0] != '-') {
                 optarg = argv[optind++];
@@ -958,6 +963,7 @@ void Settings::printUsage()
     cout << endl;
     cout << "ARGUMENTS FOR THE GUI:" << endl;
     cout << " --gui                                    Force JackTrip to run with the GUI. If not using VirtualStudio mode, command line switches in the required arguments, optional arguments (except -l, -j, -L, --appendthreadid), audio patching, and authentication sections will be honoured, and default settings will be used where arguments aren't supplied. Options from other sections will be ignored (and the last used settings will be loaded), except for -V, and the --version and --help switches which will override this." << endl;
+    cout << " --classic-gui                            Force JackTrip to run with the Classic Mode GUI." << endl;
     cout << " --deeplink                               Handle a deeplink URL in the format jacktrip://join/<studio_id> by connecting as a hub client" << endl;
     cout << endl;
     cout << "HELP ARGUMENTS: " << endl;

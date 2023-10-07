@@ -84,6 +84,7 @@ class Settings : public QObject
     bool getLoopBack() { return mLoopBack; }
     bool isHubServer() { return mJackTripMode == JackTrip::SERVERPINGSERVER; }
     bool guiIgnoresArguments() { return mGuiIgnoresArguments; }
+    bool guiForceClassicMode() { return mGuiForceClassicMode; }
     bool isModeSet() { return mModeSet; }
 
     JackTrip::jacktripModeT getJackTripMode() { return mJackTripMode; }
@@ -124,6 +125,7 @@ class Settings : public QObject
 
     bool mGuiEnabled          = false;
     bool mGuiIgnoresArguments = false;
+    bool mGuiForceClassicMode = false;
 
     JackTrip::jacktripModeT mJackTripMode =
         JackTrip::SERVER;  ///< JackTrip::jacktripModeT
