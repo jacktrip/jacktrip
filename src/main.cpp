@@ -398,6 +398,7 @@ int main(int argc, char* argv[])
         QObject::connect(vsPtr.data(), &VirtualStudio::signalExit, app.data(),
                          &QCoreApplication::quit, Qt::QueuedConnection);
         vsPtr->setStandardWindow(window);
+        vsPtr->setCLISettings(cliSettings);
         window->setVs(vsPtr);
         QObject::connect(vsDeeplinkPtr.get(), &VsDeeplink::signalDeeplink, vsPtr.get(),
                          &VirtualStudio::handleDeeplinkRequest, Qt::QueuedConnection);

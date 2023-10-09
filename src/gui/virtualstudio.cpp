@@ -198,6 +198,11 @@ void VirtualStudio::setStandardWindow(QSharedPointer<QJackTrip> window)
     m_standardWindow = window;
 }
 
+void VirtualStudio::setCLISettings(QSharedPointer<Settings> settings)
+{
+    m_cliSettings = settings;
+}
+
 void VirtualStudio::show()
 {
     if (m_checkSsl) {
@@ -854,6 +859,7 @@ void VirtualStudio::completeConnection()
             processError("Could not bind port");
             return;
         }
+        jackTrip->setIOStatTimeout(m_cliSettings->getIOStatTimeout());
 
         // this passes ownership to JackTrip
         jackTrip->setAudioInterface(m_audioConfigPtr->newAudioInterface(jackTrip));
