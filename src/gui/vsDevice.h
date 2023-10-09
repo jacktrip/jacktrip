@@ -77,6 +77,8 @@ class VsDevice : public QObject
     void startJackTrip(const VsServerInfo& studioInfo);
     void stopJackTrip(bool isReconnecting = false);
     void reconcileAgentConfig(QJsonDocument newState);
+    void setNetworkOutage(bool outage = true) { m_networkOutage = outage; }
+    bool getNetworkOutage() const { return m_networkOutage; }
 
    signals:
     void updateNetworkStats(QJsonObject stats);
@@ -113,8 +115,8 @@ class VsDevice : public QObject
     QScopedPointer<JackTrip> m_jackTrip;
     QRandomGenerator m_randomizer;
     QTimer m_sendVolumeTimer;
-    bool m_highLatencyFlag = false;
-    bool m_stopping        = false;
+    bool m_networkOutage = false;
+    bool m_stopping      = false;
 };
 
 #endif  // VSDEVICE_H

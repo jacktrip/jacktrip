@@ -189,6 +189,7 @@ void VsDevice::sendHeartbeat()
         json.insert(QLatin1String("stddev_rtt"), (qint64)(stats.stdDevRtt * ns_per_ms));
         json.insert(QLatin1String("high_latency"),
                     m_audioConfigPtr->getHighLatencyFlag());
+        json.insert(QLatin1String("network_outage"), m_networkOutage);
 
         // For the internal application UI, ms will suffice. No conversion needed
         QJsonObject pingStats = {};
@@ -328,7 +329,8 @@ JackTrip* VsDevice::initJackTrip(
 // startJackTrip starts the current jacktrip process if applicable
 void VsDevice::startJackTrip(const VsServerInfo& studioInfo)
 {
-    m_stopping = false;
+    m_stopping      = false;
+    m_networkOutage = false;
     updateState(studioInfo.id());
 
     // setup websocket listener
