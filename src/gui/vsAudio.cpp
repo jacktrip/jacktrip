@@ -154,10 +154,10 @@ VsAudio::VsAudio(QObject* parent)
     });
 
     // move audio worker to its own thread
-    m_workerThread.reset(new QThread);
-    m_workerThread->setObjectName("VsAudioWorker");
-    m_workerThread->start();
-    m_audioWorkerPtr->moveToThread(m_workerThread.get());
+    m_workerThreadPtr = new QThread;
+    m_workerThreadPtr->setObjectName("VsAudioWorker");
+    m_workerThreadPtr->start();
+    m_audioWorkerPtr->moveToThread(m_workerThreadPtr);
 
     // connect worker signals to slots
     connect(this, &VsAudio::signalStartAudio, m_audioWorkerPtr.get(),
@@ -183,6 +183,15 @@ VsAudio::VsAudio(QObject* parent)
 #else
     m_permissionsPtr.reset(new VsPermissions());
 #endif
+}
+
+VsAudio::~VsAudio()
+{
+    if (m_workerThreadPtr == nullptr)
+        return;
+    m_workerThreadPtr->quit();
+    WaitForSignal(m_workerThreadPtr, &QThread::finished);
+    m_workerThreadPtr->deleteLater();
 }
 
 bool VsAudio::backendAvailable() const

@@ -87,17 +87,20 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     QSvgGenerator svgImageHack;
 
     // use a singleton QNetworkAccessManager
-    m_networkAccessManager.reset(new QNetworkAccessManager);
+    // WARNING: using a raw pointer and intentionally leaking this because
+    // it crashes at shutdown if you try to destruct it directly or try
+    // calling QObject::deleteLater()
+    m_networkAccessManagerPtr = new QNetworkAccessManager;
 
     // instantiate API
-    m_api.reset(new VsApi(m_networkAccessManager.data()));
+    m_api.reset(new VsApi(m_networkAccessManagerPtr));
     m_api->setApiHost(PROD_API_HOST);
     if (m_testMode) {
         m_api->setApiHost(TEST_API_HOST);
     }
 
     // instantiate auth
-    m_auth.reset(new VsAuth(m_networkAccessManager.data(), m_api.data()));
+    m_auth.reset(new VsAuth(m_networkAccessManagerPtr, m_api.data()));
     connect(m_auth.data(), &VsAuth::authSucceeded, this,
             &VirtualStudio::slotAuthSucceeded);
     connect(m_auth.data(), &VsAuth::refreshTokenFailed, this, [=]() {
@@ -214,11 +217,37 @@ void VirtualStudio::show()
         }
         m_checkSsl = false;
     }
-    m_view.show();
+
+    while (m_view.status() == QQuickView::Loading) {
+        // I don't think there is any need to load network data, but just in case
+        // See https://doc.qt.io/qt-6/qquickview.html#Status-enum
+        qDebug() << "JackTrip is still loading the QML view";
+        QThread::sleep(1);
+    }
+
+    if (m_view.status() != QQuickView::Ready) {
+        QMessageBox msgBox;
+        msgBox.setText(
+            "JackTrip detected that some modules required for the "
+            "Virtual Studio mode are missing on your system. "
+            "Click \"OK\" to proceed to classic mode.\n\n"
+            "Details: JackTrip failed to load the QML view. "
+            "This is likely caused by missing QML plugins. "
+            "Please consult help.jacktrip.org for possible solutions.");
+        msgBox.setWindowTitle(QStringLiteral("JackTrip Is Missing QML Modules"));
+        connect(&msgBox, &QMessageBox::finished, this, &VirtualStudio::toStandard,
+                Qt::QueuedConnection);
+        msgBox.exec();
+        return;
+    }
+
+    raiseToTop();
 }
 
 void VirtualStudio::raiseToTop()
 {
+    if (m_view.status() != QQuickView::Ready)
+        return;
     m_view.show();             // Restore from systray
     m_view.raise();            // raise to top
     m_view.requestActivate();  // focus on window
@@ -1014,11 +1043,6 @@ void VirtualStudio::openLink(const QString& link)
 
 void VirtualStudio::handleDeeplinkRequest(const QUrl& link)
 {
-    // always raise to top screen
-    if (link.scheme() == QLatin1String("jacktrip")) {
-        raiseToTop();
-    }
-
     // check link is valid
     if (link.scheme() != QLatin1String("jacktrip")
         || link.host() != QLatin1String("join")) {
@@ -1034,12 +1058,12 @@ void VirtualStudio::handleDeeplinkRequest(const QUrl& link)
 
     qDebug() << "Handling deeplink to " << link;
     setStudioToJoin(link);
+    raiseToTop();
 
     // Switch to virtual studio mode, if necessary
     // Note that this doesn't change the startup preference
     if (m_uiMode != QJackTrip::VIRTUAL_STUDIO) {
         m_standardWindow->hide();
-        m_view.show();
         if (m_windowState == "start") {
             setWindowState(QStringLiteral("login"));
         }
@@ -1644,4 +1668,6 @@ void VirtualStudio::detectedFeedbackLoop()
 VirtualStudio::~VirtualStudio()
 {
     QDesktopServices::unsetUrlHandler("jacktrip");
+    // stop the audio worker thread before destructing other things
+    m_audioConfigPtr.reset();
 }

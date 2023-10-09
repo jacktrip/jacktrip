@@ -13,7 +13,7 @@ dnf install -y qt6-qtbase qt6-qtbase-common qt6-qtbase-gui qt6-qtsvg qt6-qtwebso
 For Debian or Ubuntu:
 
 ```
-apt install -y libqt6core6 libqt6gui6 libqt6network6 libqt6widgets6 libqt6qml6 libqt6qmlcore6 libqt6quick6 libqt6quickcontrols2-6 libqt6svg6  libqt6webchannel6 libqt6webengine6-data libqt6webenginecore6 libqt6webenginecore6-bin libqt6webenginequick6 libqt6websockets6 libqt6shadertools6 qt6-qpa-plugins qml6-module-qtquick-controls qml6-module-qtqml-workerscript qml6-module-qtquick-templates qml6-module-qtquick-layouts qml6-module-qt5compat-graphicaleffects qml6-module-qtwebchannel qml6-module-qtwebengine
+apt install -y libqt6core6 libqt6gui6 libqt6network6 libqt6widgets6 libqt6qml6 libqt6qmlcore6 libqt6quick6 libqt6quickcontrols2-6 libqt6svg6  libqt6webchannel6 libqt6webengine6-data libqt6webenginecore6 libqt6webenginecore6-bin libqt6webenginequick6 libqt6websockets6 libqt6shadertools6 qt6-qpa-plugins qml6-module-qtquick-controls qml6-module-qtqml-workerscript qml6-module-qtquick-templates qml6-module-qtquick-layouts qml6-module-qt5compat-graphicaleffects qml6-module-qtwebchannel qml6-module-qtwebengine qml6-module-qtquick-window
 ```
 
 To install JackTrip as a Linux desktop application:

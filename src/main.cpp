@@ -98,6 +98,7 @@ QCoreApplication* createApplication(int& argc, char* argv[])
     bool forceGui = false;
     for (int i = 1; i < argc; i++) {
         if (strncmp(argv[i], "--gui", 5) == 0 || strncmp(argv[i], "--deeplink", 10) == 0
+            || strncmp(argv[i], "--classic-gui", 13) == 0
             || strncmp(argv[i], "jacktrip://", 11) == 0) {
             forceGui = true;
         } else if (strncmp(argv[i], "--test-gui", 10) == 0) {
@@ -371,9 +372,20 @@ int main(int argc, char* argv[])
                 return 0;
         }
 
-        // Check if we need to show our first run window.
+        // Check which mode we are running in
         QSettings settings;
-        int uiMode = settings.value(QStringLiteral("UiMode"), QJackTrip::UNSET).toInt();
+        int uiMode = QJackTrip::UNSET;
+        if (!vsDeeplinkPtr->getDeeplink().isEmpty()) {
+            uiMode = QJackTrip::VIRTUAL_STUDIO;
+        } else if (cliSettings->guiForceClassicMode()) {
+            uiMode = QJackTrip::STANDARD;
+            // force settings change; otherwise, virtual studio
+            // window will still be displayed
+            settings.setValue(QStringLiteral("UiMode"), uiMode);
+        } else {
+            uiMode = settings.value(QStringLiteral("UiMode"), QJackTrip::UNSET).toInt();
+        }
+
         window.reset(new QJackTrip(cliSettings, !vsDeeplinkPtr->getDeeplink().isEmpty()));
 #else
         window.reset(new QJackTrip(cliSettings));
