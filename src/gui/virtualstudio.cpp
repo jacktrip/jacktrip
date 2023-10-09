@@ -228,10 +228,14 @@ void VirtualStudio::show()
     if (m_view.status() != QQuickView::Ready) {
         QMessageBox msgBox;
         msgBox.setText(
-            "JackTrip failed to load the QML view. "
-            "This is likely caused by missing QML plugins.");
-        msgBox.setWindowTitle(QStringLiteral("JackTrip QML Error"));
-        connect(&msgBox, &QMessageBox::finished, this, &VirtualStudio::exit,
+            "JackTrip detected that some modules required for the "
+            "Virtual Studio mode are missing on your system. "
+            "Click \"OK\" to proceed to classic mode.\n\n"
+            "Details: JackTrip failed to load the QML view. "
+            "This is likely caused by missing QML plugins. "
+            "Please consult help.jacktrip.org for possible solutions.");
+        msgBox.setWindowTitle(QStringLiteral("JackTrip Is Missing QML Modules"));
+        connect(&msgBox, &QMessageBox::finished, this, &VirtualStudio::toStandard,
                 Qt::QueuedConnection);
         msgBox.exec();
         return;
