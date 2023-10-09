@@ -107,6 +107,7 @@ class Settings : public QObject
     bool getConnectDefaultAudioPorts() { return mConnectDefaultAudioPorts; }
     int getBufferStrategy() { return mBufferStrategy; }
     int getBroadCastQueue() { return mBroadcastQueue; }
+    int getIOStatTimeout() { return mIOStatTimeout; }
     bool getUseRtUdpPriority() { return mUseRtUdpPriority; }
     unsigned int getHubConnectionMode() { return mHubConnectionMode; }
     bool getPatchServerAudio() { return mPatchServerAudio; }
