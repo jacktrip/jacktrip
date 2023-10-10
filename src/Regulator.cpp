@@ -96,7 +96,7 @@ constexpr int NumSlotsMax = 4096;  // mNumSlots looped for recent arrivals
 constexpr double DefaultAutoHeadroom =
     3.0;                           // msec padding for auto adjusting mMsecTolerance
 constexpr double AutoMax = 250.0;  // msec bounds on insane IPI, like ethernet unplugged
-constexpr double AutoInitDur = 6000.0;  // kick in auto after this many msec
+constexpr double AutoInitDur = 1000.0;  // kick in auto after this many msec
 constexpr double AutoInitValFactor =
     0.5;  // scale for initial mMsecTolerance during init phase if unspecified
 constexpr double MaxWaitTime = 30;  // msec
@@ -104,6 +104,12 @@ constexpr double MaxWaitTime = 30;  // msec
 // tweak
 constexpr int WindowDivisor = 8;     // for faster auto tracking
 constexpr int MaxFPP        = 1024;  // tested up to this FPP
+constexpr double AutoHistoryWindow =
+    60;  // rolling window of time (in seconds) over which auto tolerance roughly adjusts
+constexpr double AutoSmoothingFactor =
+    1.0
+    / (WindowDivisor * AutoHistoryWindow);  // EWMA smoothing factor for auto tolerance
+
 //*******************************************************************************
 Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
                      int sample_rate)
@@ -320,9 +326,8 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
             };
             setFPPratio();
             // number of stats tick calls per sec depends on FPP
-            int maxFPP = (mPeerFPP > mFPP) ? mPeerFPP : mFPP;
-            pushStat   = new StdDev(1, &mIncomingTimer,
-                                    (int)(floor(mSampleRate / (double)maxFPP)));
+            pushStat = new StdDev(1, &mIncomingTimer,
+                                  (int)(floor(mSampleRate / (double)mPeerFPP)));
             pullStat =
                 new StdDev(2, &mIncomingTimer, (int)(floor(mSampleRate / (double)mFPP)));
             mFPPratioIsSet = true;
@@ -729,7 +734,6 @@ StdDev::StdDev(int id, QElapsedTimer* timer, int w) : mId(id), mTimer(timer), wi
     lastMax           = 0.0;
     longTermMax       = 0.0;
     longTermMaxAcc    = 0.0;
-    longTermMean      = 0.0;
     lastTime          = 0.0;
     lastPLCdspElapsed = 0.0;
     lastPlcOverruns   = 0;
@@ -764,6 +768,13 @@ double StdDev::calcAuto(double autoHeadroom, double localFPPdur, double peerFPPd
     tmp += autoHeadroom;
     return tmp;
 };
+
+double StdDev::smooth(double avg, double current)
+{
+    // use exponential weighted moving average (EWMA) for long term calculations
+    // See https://en.wikipedia.org/wiki/Exponential_smoothing
+    return avg + AutoSmoothingFactor * (current - avg);
+}
 
 void StdDev::tick()
 {
@@ -801,30 +812,35 @@ void StdDev::tick()
         var /= (double)window;
         double stdDevTmp = sqrt(var);
 
-        if (longTermCnt <= 1) {
+        if (longTermCnt <= 3) {
             if (longTermCnt == 0 && gVerboseFlag) {
                 cout << "printing directly from Regulator->stdDev->tick:\n (mean / min / "
                         "max / "
-                        "stdDev / longTermMean / longTermMax / longTermStdDev) \n";
+                        "stdDev / longTermMax / longTermStdDev) \n";
             }
-            // ignore first stats because they will be really unreliable
+            // ignore first few stats because they are unreliable
             longTermMax       = max;
             longTermMaxAcc    = max;
-            longTermMean      = mean;
             longTermStdDev    = stdDevTmp;
             longTermStdDevAcc = stdDevTmp;
         } else {
             longTermStdDevAcc += stdDevTmp;
             longTermMaxAcc += max;
-            longTermStdDev = longTermStdDevAcc / (double)longTermCnt;
-            longTermMax    = longTermMaxAcc / (double)longTermCnt;
-            longTermMean   = longTermMean / (double)longTermCnt;
+            if (longTermCnt <= (WindowDivisor * AutoHistoryWindow)) {
+                // use simple average for startup to establish baseline
+                longTermStdDev = longTermStdDevAcc / (longTermCnt - 3);
+                longTermMax    = longTermMaxAcc / (longTermCnt - 3);
+            } else {
+                // use EWMA after startup to allow for adjustments
+                longTermStdDev = smooth(longTermStdDev, stdDevTmp);
+                longTermMax    = smooth(longTermMax, max);
+            }
         }
 
         if (gVerboseFlag) {
             cout << setw(10) << mean << setw(10) << min << setw(10) << max << setw(10)
-                 << stdDevTmp << setw(10) << longTermMean << setw(10) << longTermMax
-                 << setw(10) << longTermStdDev << " " << mId << endl;
+                 << stdDevTmp << setw(10) << longTermMax << setw(10) << longTermStdDev
+                 << " " << mId << endl;
         }
 
         longTermCnt++;

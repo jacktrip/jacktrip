@@ -113,9 +113,9 @@ class StdDev
     double longTermStdDevAcc;
     double longTermMax;
     double longTermMaxAcc;
-    double longTermMean;
 
    private:
+    double smooth(double avg, double current);
     void reset();
     QElapsedTimer* mTimer;
     std::vector<double> data;
