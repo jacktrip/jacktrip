@@ -51,7 +51,7 @@ using std::endl;
 //*******************************************************************************
 DataProtocol::DataProtocol(JackTrip* jacktrip, const runModeT runmode, int /*bind_port*/,
                            int /*peer_port*/)
-    : mStopped(false)
+    : mStopped(true)
     , mHasPacketsToReceive(false)
     , mRunMode(runmode)
     , mJackTrip(jacktrip)
@@ -61,3 +61,20 @@ DataProtocol::DataProtocol(JackTrip* jacktrip, const runModeT runmode, int /*bin
 
 //*******************************************************************************
 DataProtocol::~DataProtocol() {}
+
+//*******************************************************************************
+void DataProtocol::threadHasStarted()
+{
+    QMutexLocker lock(&mMutex);
+    mStopped = false;
+    mThreadHasStarted.notify_all();
+}
+
+//*******************************************************************************
+void DataProtocol::waitForStart()
+{
+    QMutexLocker lock(&mMutex);
+    while (mStopped) {
+        mThreadHasStarted.wait(&mMutex);
+    }
+}

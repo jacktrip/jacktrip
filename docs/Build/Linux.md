@@ -25,7 +25,7 @@ dnf install "pkgconfig(jack)" rtaudio-devel git help2man python3-jinja2
 
 ### Fedora (Qt6)
 ```sh
-dnf install qt6-qtbase-devel qt5-qtnetworkauth-devel qt5-qtwebsockets-devel qt5-qtquickcontrols2-devel qt5-qtsvg-devel qt6-qtwebengine-devel qt6-qtwebchannel-devel qt6-qt5compat-devel
+dnf install qt6-qtbase-devel qt5-qtnetworkauth-devel qt5-qtwebsockets-devel qt5-qtquickcontrols2-devel qt5-qtsvg-devel qt6-qtwebengine-devel qt6-qtwebchannel-devel qt6-qt5compat-devel qt6-qtshadertools-devel
 dnf groupinstall "C Development Tools and Libraries"
 dnf groupinstall "Development Tools"
 dnf install "pkgconfig(jack)" rtaudio-devel git help2man python3-jinja2

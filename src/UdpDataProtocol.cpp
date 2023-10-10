@@ -91,8 +91,7 @@ UdpDataProtocol::UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode,
     , mControlPacketSize(63)
     , mStopSignalSent(false)
 {
-    mStopped = false;
-    mIPv6    = false;
+    mIPv6 = false;
     std::memset(&mPeerAddr, 0, sizeof(mPeerAddr));
     std::memset(&mPeerAddr6, 0, sizeof(mPeerAddr6));
     mPeerAddr.sin_port   = htons(mPeerPort);
@@ -550,6 +549,8 @@ void UdpDataProtocol::run()
     // jack puts its clients in FF at 5 points below itself
     //
     // clang-format off
+
+    threadHasStarted();
 
     switch (mRunMode) {
     case RECEIVER: {

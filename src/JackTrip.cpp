@@ -658,18 +658,17 @@ void JackTrip::completeConnection()
         std::cout << "  JackTrip:startProcess before mDataProtocolReceiver->start"
                   << std::endl;
     mDataProtocolReceiver->start();
-    QThread::msleep(1);
+    mDataProtocolReceiver->waitForStart();
     if (gVerboseFlag)
         std::cout << "  JackTrip:startProcess before mDataProtocolSender->start"
                   << std::endl;
     mDataProtocolSender->start();
+    mDataProtocolSender->waitForStart();
     /*
      * changed order so that audio starts after receiver and sender
      * because UdpDataProtocol:run0 before setRealtimeProcessPriority()
      * causes an audio hiccup from jack JackPosixSemaphore::TimedWait err = Interrupted
-     * system call new QThread::msleep(1); to allow sender to start
      */
-    QThread::msleep(1);
     if (gVerboseFlag)
         std::cout << "step 5" << std::endl;
     if (gVerboseFlag)
