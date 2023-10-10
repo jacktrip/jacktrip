@@ -116,6 +116,7 @@ class StdDev
     double longTermMean;
 
    private:
+    double smooth(double avg, double current);
     void reset();
     QElapsedTimer* mTimer;
     std::vector<double> data;

@@ -96,10 +96,12 @@ constexpr int NumSlotsMax = 4096;  // mNumSlots looped for recent arrivals
 constexpr double DefaultAutoHeadroom =
     3.0;                           // msec padding for auto adjusting mMsecTolerance
 constexpr double AutoMax = 250.0;  // msec bounds on insane IPI, like ethernet unplugged
-constexpr double AutoInitDur = 6000.0;  // kick in auto after this many msec
+constexpr double AutoInitDur = 1000.0;  // kick in auto after this many msec
 constexpr double AutoInitValFactor =
     0.5;  // scale for initial mMsecTolerance during init phase if unspecified
 constexpr double MaxWaitTime = 30;  // msec
+constexpr double AutoSmoothingFactor =
+    0.01;  // smoothing factor used to calculate long term EWMA for auto mode
 
 // tweak
 constexpr int WindowDivisor = 8;     // for faster auto tracking
@@ -754,9 +756,10 @@ double StdDev::calcAuto(double autoHeadroom, double localFPPdur, double peerFPPd
 {
     //    qDebug() << longTermStdDev << longTermMax << AutoMax << window <<
     //    longTermCnt;
-    if ((longTermStdDev == 0.0) || (longTermMax == 0.0))
+    if ((longTermStdDev == 0.0) || (longTermMean == 0.0))
         return AutoMax;
-    double tmp = longTermStdDev + ((longTermMax > AutoMax) ? AutoMax : longTermMax);
+    // 3 standard deviations = 99.7%
+    double tmp = longTermStdDev * 3 + longTermMean;
     if (tmp > AutoMax)
         tmp = AutoMax;
     if (tmp < localFPPdur)
@@ -766,6 +769,15 @@ double StdDev::calcAuto(double autoHeadroom, double localFPPdur, double peerFPPd
     tmp += autoHeadroom;
     return tmp;
 };
+
+double StdDev::smooth(double avg, double current)
+{
+    // give values over the average 10x the weight vs other values
+    double smooth = current > avg ? (AutoSmoothingFactor * 10) : AutoSmoothingFactor;
+    // use exponential weighted moving average (EWMA) for long term calculations
+    // See https://en.wikipedia.org/wiki/Exponential_smoothing
+    return avg + smooth * (current - avg);
+}
 
 void StdDev::tick()
 {
@@ -818,9 +830,9 @@ void StdDev::tick()
         } else {
             longTermStdDevAcc += stdDevTmp;
             longTermMaxAcc += max;
-            longTermStdDev = longTermStdDevAcc / (double)longTermCnt;
-            longTermMax    = longTermMaxAcc / (double)longTermCnt;
-            longTermMean   = longTermMean / (double)longTermCnt;
+            longTermMax    = smooth(longTermMax, max);
+            longTermMean   = smooth(longTermMean, mean);
+            longTermStdDev = smooth(longTermStdDev, stdDevTmp);
         }
 
         if (gVerboseFlag) {
