@@ -135,8 +135,10 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_networkOutageTimer.setSingleShot(true);
     m_networkOutageTimer.setInterval(5000);
     m_networkOutageTimer.callOnTimeout([&]() {
-        m_networkOutage = false;
-        emit updatedNetworkOutage(m_networkOutage);
+        if (m_devicePtr.isNull())
+            return;
+        m_devicePtr->setNetworkOutage(false);
+        emit updatedNetworkOutage(false);
     });
 
     if ((m_uiMode == QJackTrip::UNSET && vsFtux())
@@ -306,7 +308,7 @@ void VirtualStudio::setConnectedErrorMsg(const QString& msg)
 
 bool VirtualStudio::networkOutage()
 {
-    return m_networkOutage;
+    return m_devicePtr.isNull() ? false : m_devicePtr->getNetworkOutage();
 }
 
 QJsonObject VirtualStudio::regions()
@@ -1368,9 +1370,11 @@ void VirtualStudio::updatedStats(const QJsonObject& stats)
 
 void VirtualStudio::udpWaitingTooLong()
 {
+    if (m_devicePtr.isNull())
+        return;
     m_networkOutageTimer.start();
-    m_networkOutage = true;
-    emit updatedNetworkOutage(m_networkOutage);
+    m_devicePtr->setNetworkOutage(true);
+    emit updatedNetworkOutage(true);
 }
 
 void VirtualStudio::sendHeartbeat()

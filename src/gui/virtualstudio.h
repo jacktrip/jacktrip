@@ -322,7 +322,6 @@ class VirtualStudio : public QObject
     bool m_collapseDeviceControls = false;
     bool m_testMode               = false;
     bool m_authenticated          = false;
-    bool m_networkOutage          = false;
     float m_fontScale             = 1;
     float m_uiScale               = 1;
     uint32_t m_webChannelPort     = 1;
