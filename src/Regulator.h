@@ -262,6 +262,7 @@ class RegulatorWorker : public QObject
         , mPacketQueue(rPtr->getPacketSize())
         , mPacketQueueTarget(1)
         , mLastUnderrun(0)
+        , mLastQueueUpdate(0)
         , mUnderrun(false)
         , mStarted(false)
     {
@@ -313,10 +314,14 @@ class RegulatorWorker : public QObject
         if (mUnderrun.load(std::memory_order_relaxed)) {
             if (mStarted) {
                 // allow up to 1 underrun per second before adjusting target
+                // only adjust target at most once per 1.0 seconds
                 double now =
                     (double)mRegulatorPtr->mIncomingTimer.nsecsElapsed() / 1000000.0;
-                if (mLastUnderrun != 0 && now - mLastUnderrun < 1000.0)
+                if (now - mLastQueueUpdate > 1000.0 && mLastUnderrun != 0
+                    && now - mLastUnderrun < 1000.0) {
                     updateQueueTarget();
+                    mLastQueueUpdate = now;
+                }
                 mLastUnderrun = now;
                 mUnderrun.store(false, std::memory_order_relaxed);
             } else {
@@ -334,24 +339,19 @@ class RegulatorWorker : public QObject
    private:
     void updateQueueTarget()
     {
-        // cap queue size at 4x the time it takes to run a prediction
-        double samples =
-            (mRegulatorPtr->getLastDspElapsed() * 4 * mRegulatorPtr->getSampleRate())
-            / 1000;
-        std::size_t maxPackets = (samples / mRegulatorPtr->getBufferSizeInSamples()) + 1;
-        if (maxPackets > mPacketQueue.capacity() / 2)
-            maxPackets = mPacketQueue.capacity() / 2;
-        if (mPacketQueueTarget < maxPackets) {
-            // adjust queue target
-            ++mPacketQueueTarget;
-            std::cout << "PLC worker queue: adjusting target=" << mPacketQueueTarget
-                      << " (max=" << maxPackets
-                      << ", lastDspElapsed=" << mRegulatorPtr->getLastDspElapsed() << ")"
-                      << std::endl;
-            if (mPacketQueueTarget == maxPackets) {
-                emit signalMaxQueueSize();
-                std::cout << "PLC worker queue: reached MAX target!" << std::endl;
-            }
+        // sanity check
+        const std::size_t maxPackets = mPacketQueue.capacity() / 2;
+        if (mPacketQueueTarget > maxPackets)
+            return;
+        // adjust queue target
+        ++mPacketQueueTarget;
+        std::cout << "PLC worker queue: adjusting target=" << mPacketQueueTarget
+                  << " (max=" << maxPackets
+                  << ", lastDspElapsed=" << mRegulatorPtr->getLastDspElapsed() << ")"
+                  << std::endl;
+        if (mPacketQueueTarget == maxPackets) {
+            emit signalMaxQueueSize();
+            std::cout << "PLC worker queue: reached MAX target!" << std::endl;
         }
     }
 
@@ -366,6 +366,9 @@ class RegulatorWorker : public QObject
 
     /// time of last underrun, in milliseconds
     double mLastUnderrun;
+
+    /// time of last packet queue update, in milliseconds
+    double mLastQueueUpdate;
 
     /// last value of packet queue underruns
     std::atomic<bool> mUnderrun;
