@@ -61,6 +61,11 @@ Rectangle {
         return idx;
     }
 
+    MouseArea {
+        anchors.fill: parent
+        propagateComposedEvents: false
+    }
+
     Rectangle {
         width: parent.width; height: 360
         anchors.verticalCenter: parent.verticalCenter
