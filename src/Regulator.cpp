@@ -727,18 +727,18 @@ StdDev::StdDev(int id, QElapsedTimer* timer, int w) : mId(id), mTimer(timer), wi
     longTermMaxAcc    = 0.0;
     lastTime          = 0.0;
     lastPLCdspElapsed = 0.0;
+    plcOverruns       = 0;
+    plcUnderruns      = 0;
     data.resize(w, 0.0);
 }
 
 void StdDev::reset()
 {
-    ctr          = 0;
-    plcOverruns  = 0;
-    plcUnderruns = 0;
-    mean         = 0.0;
-    acc          = 0.0;
-    min          = 999999.0;
-    max          = -999999.0;
+    ctr  = 0;
+    mean = 0.0;
+    acc  = 0.0;
+    min  = 999999.0;
+    max  = -999999.0;
 };
 
 double StdDev::calcAuto(double autoHeadroom, double localFPPdur, double peerFPPdur)
@@ -793,12 +793,10 @@ void StdDev::tick()
                     "stdDev / longTermStdDev) \n";
 
         longTermCnt++;
-        lastMean         = mean;
-        lastMin          = min;
-        lastMax          = max;
-        lastPlcOverruns  = plcOverruns;
-        lastPlcUnderruns = plcUnderruns;
-        lastStdDev       = stdDevTmp;
+        lastMean   = mean;
+        lastMin    = min;
+        lastMax    = max;
+        lastStdDev = stdDevTmp;
         reset();
     }
 }
@@ -835,7 +833,10 @@ bool Regulator::getStats(RingBuffer::IOStat* stat, bool reset)
     }
 
     // hijack  of  struct IOStat {
-    stat->underruns = pullStat->lastPlcUnderruns + pullStat->lastPlcOverruns;
+    stat->underruns = (pullStat->plcUnderruns - pullStat->lastPlcUnderruns)
+                      + (pullStat->plcOverruns - pullStat->lastPlcOverruns);
+    pullStat->lastPlcUnderruns = pullStat->plcUnderruns;
+    pullStat->lastPlcOverruns  = pullStat->plcOverruns;
 #define FLOATFACTOR 1000.0
     stat->overflows = FLOATFACTOR * pushStat->longTermStdDev;
     stat->skew      = FLOATFACTOR * pushStat->lastMean;
