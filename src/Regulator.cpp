@@ -92,7 +92,6 @@ using std::setw;
 
 // constants...
 constexpr int HIST          = 4;    // for mono at FPP 16-128, see below for > mono, > 128
-constexpr int ModSeqNumInit = 256;  // bounds on seqnums, 65536 is max in packet header
 constexpr int NumSlotsMax   = 128;  // mNumSlots looped for recent arrivals
 constexpr int LostWindowMax = 32;   // mLostWindow looped for recent arrivals
 constexpr double DefaultAutoHeadroom =
@@ -193,25 +192,21 @@ Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
     mLastSeqNumIn.store(-1, std::memory_order_relaxed);
     mLastSeqNumOut = -1;
     mPhasor.resize(mNumChannels, 0.0);
-    mIncomingTiming.resize(ModSeqNumInit);
-    for (int i = 0; i < ModSeqNumInit; i++)
+    mIncomingTiming.resize(NumSlotsMax);
+    for (int i = 0; i < NumSlotsMax; i++)
         mIncomingTiming[i] = 0.0;
-    mModSeqNum           = mNumSlots * 2;
     mFPPratioNumerator   = 1;
     mFPPratioDenominator = 1;
     mFPPratioIsSet       = false;
     mBytesPeerPacket     = mBytes;
-    mAssemblyCnt         = 0;
-    mModCycle            = 1;
-    mModSeqNumPeer       = 1;
     mPeerFPP             = mFPP;  // use local until first packet arrives
     mAutoHeadroom        = DefaultAutoHeadroom;
-    mFPPdurMsec          = 1000.0 * mFPP / 48000.0;
+    mFPPdurMsec          = 1000.0 * mFPP / mSampleRate;
     changeGlobal_3(LostWindowMax);
     changeGlobal_2(NumSlotsMax);  // need hg if running GUI
     if (m_b_BroadcastQueueLength) {
         m_b_BroadcastRingBuffer = new JitterBuffer(
-            mFPP, qLen, 48000, 1, m_b_BroadcastQueueLength, mNumChannels, mAudioBitRes);
+            mFPP, qLen, mSampleRate, 1, m_b_BroadcastQueueLength, mNumChannels, mAudioBitRes);
         qDebug() << "Broadcast started in Regulator with packet queue of"
                  << m_b_BroadcastQueueLength;
         // have not implemented the mJackTrip->queueLengthChanged functionality
@@ -250,7 +245,6 @@ void Regulator::changeGlobal_2(int x)
         mNumSlots = 1;
     if (mNumSlots > NumSlotsMax)
         mNumSlots = NumSlotsMax;
-    mModSeqNum = mNumSlots * 2;
     printParams();
 }
 
@@ -262,7 +256,7 @@ void Regulator::changeGlobal_3(int x)
 
 void Regulator::printParams(){
     //    qDebug() << "mMsecTolerance" << mMsecTolerance << "mNumSlots" << mNumSlots
-    //             << "mModSeqNum" << mModSeqNum << "mLostWindow" << mLostWindow;
+    //             << "mLostWindow" << mLostWindow;
 };
 
 Regulator::~Regulator()
@@ -299,13 +293,6 @@ void Regulator::setFPPratio()
         //        qDebug() << "peerBuffers / localBuffers" << mFPPratioNumerator << " / "
         //                 << mFPPratioDenominator;
     }
-    if (mFPPratioNumerator > 1) {
-        mBytesPeerPacket = mBytes / mFPPratioNumerator;
-        mModCycle        = mFPPratioNumerator - 1;
-        mModSeqNumPeer   = mModSeqNum * mFPPratioNumerator;
-    } else if (mFPPratioDenominator > 1) {
-        mModSeqNumPeer = mModSeqNum / mFPPratioDenominator;
-    }
 }
 
 //*******************************************************************************
@@ -313,8 +300,9 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
 {
     if (seq_num != -1) {
         if (!mFPPratioIsSet) {  // first peer packet
-            mPeerFPP        = len / (mNumChannels * mBitResolutionMode);
-            mPeerFPPdurMsec = 1000.0 * mPeerFPP / 48000.0;
+            mBytesPeerPacket = len;
+            mPeerFPP         = len / (mNumChannels * mBitResolutionMode);
+            mPeerFPPdurMsec  = 1000.0 * mPeerFPP / mSampleRate;
             // bufstrategy 1 autoq mode overloads qLen with negative val
             // creates this ugly code
             if (mMsecTolerance < 0) {  // handle -q auto or, for example, -q auto10
@@ -339,33 +327,28 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
             // number of stats tick calls per sec depends on FPP
             int maxFPP = (mPeerFPP > mFPP) ? mPeerFPP : mFPP;
             pushStat =
-                new StdDev(1, &mIncomingTimer, (int)(floor(48000.0 / (double)maxFPP)));
+                new StdDev(1, &mIncomingTimer, (int)(floor(mSampleRate / (double)maxFPP)));
             pullStat =
-                new StdDev(2, &mIncomingTimer, (int)(floor(48000.0 / (double)mFPP)));
+                new StdDev(2, &mIncomingTimer, (int)(floor(mSampleRate / (double)mFPP)));
             mFPPratioIsSet = true;
         }
         if (mFPPratioNumerator == mFPPratioDenominator) {
             pushPacket(buf, seq_num);
         } else {
-            seq_num %= mModSeqNumPeer;
             if (mFPPratioNumerator > 1) {  // 2/1, 4/1 peer FPP is lower, , (local/peer)/1
-                int tmp = (seq_num % mFPPratioNumerator) * mBytesPeerPacket;
-                memcpy(&mAssembledPacket[tmp], buf, mBytesPeerPacket);
-                if ((seq_num % mFPPratioNumerator) == mModCycle) {
-                    if (mAssemblyCnt == mModCycle)
-                        pushPacket(mAssembledPacket, seq_num / mFPPratioNumerator);
-                    //                    else
-                    //                        qDebug() << "incomplete due to lost packet";
-                    mAssemblyCnt = 0;
-                } else
-                    mAssemblyCnt++;
+                // reassembled audio packet slice position: 0 through (mFPPratioNumerator - 1)
+                int pos = (seq_num % mFPPratioNumerator);
+                memcpy(mAssembledPacket + (pos * mBytesPeerPacket), buf, mBytesPeerPacket);
+                // push packet if last slice position is complete
+                if (pos == (mFPPratioNumerator - 1))
+                    pushPacket(mAssembledPacket, seq_num / mFPPratioNumerator);
             } else if (mFPPratioDenominator
                        > 1) {  // 1/2, 1/4 peer FPP is higher, 1/(peer/local)
                 seq_num *= mFPPratioDenominator;
                 for (int i = 0; i < mFPPratioDenominator; i++) {
-                    int tmp = i * mBytes;
-                    memcpy(mAssembledPacket, &buf[tmp], mBytes);
+                    memcpy(mAssembledPacket, buf, mBytes);
                     pushPacket(mAssembledPacket, seq_num);
+                    buf += mBytes;
                     seq_num++;
                 }
             }
@@ -384,12 +367,11 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
 {
     if (m_b_BroadcastQueueLength)
         m_b_BroadcastRingBuffer->insertSlotNonBlocking(buf, mBytes, 0, seq_num);
-    seq_num %= mModSeqNum;
+    seq_num %= mNumSlots;
     // if (seq_num==0) return;   // impose regular loss
     mIncomingTiming[seq_num] =
         mMsecTolerance + (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
-    if (seq_num != -1)
-        memcpy(mSlots[seq_num % mNumSlots], buf, mBytes);
+    memcpy(mSlots[seq_num], buf, mBytes);
     mLastSeqNumIn.store(seq_num, std::memory_order_release);
 };
 
@@ -401,21 +383,27 @@ void Regulator::pullPacket()
     if ((lastSeqNumIn == -1) || (!mFPPratioIsSet)) {
         goto ZERO_OUTPUT;
     } else {
+        // start by assuming that the best packet to pull is last + 1
         mLastSeqNumOut++;
-        mLastSeqNumOut %= mModSeqNum;
+        mLastSeqNumOut %= mNumSlots;
         double now = (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
+        // compare it to mLostWindow most recent packets
+        // starts with the oldest moving up to most recent packet
         for (int i = mLostWindow; i >= 0; i--) {
             int next = lastSeqNumIn - i;
             if (next < 0)
-                next += mModSeqNum;
+                next += mNumSlots;
             if (mIncomingTiming[next] < mIncomingTiming[mLastSeqNumOut])
                 continue;
+            // next == mLastSeqNumOut, or a newer/better candidate
             mSkip = next - mLastSeqNumOut;
             if (mSkip < 0)
-                mSkip += mModSeqNum;
+                mSkip += mNumSlots;
             mLastSeqNumOut = next;
-            if (mIncomingTiming[next] > now) {
-                memcpy(mXfrBuffer, mSlots[mLastSeqNumOut % mNumSlots], mBytes);
+            // if next timestamp < now, it is too old based upon tolerance
+            if (mIncomingTiming[mLastSeqNumOut] >= now) {
+                // next is the best candidate
+                memcpy(mXfrBuffer, mSlots[mLastSeqNumOut], mBytes);
                 goto PACKETOK;
             }
         }

@@ -221,15 +221,11 @@ class Regulator : public RingBuffer
     int mLastSeqNumOut;
     std::vector<double> mPhasor;
     std::vector<double> mIncomingTiming;
-    int mModSeqNum;
     int mLostWindow;
     int mSkip;
     int mFPPratioNumerator;
     int mFPPratioDenominator;
-    int mAssemblyCnt;
-    int mModCycle;
     bool mAuto;
-    int mModSeqNumPeer;
     double mAutoHeadroom;
     double mFPPdurMsec;
     double mPeerFPPdurMsec;
