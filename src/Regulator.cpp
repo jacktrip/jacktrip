@@ -91,9 +91,8 @@ using std::endl;
 using std::setw;
 
 // constants...
-constexpr int HIST          = 4;    // for mono at FPP 16-128, see below for > mono, > 128
-constexpr int NumSlotsMax   = 128;  // mNumSlots looped for recent arrivals
-constexpr int LostWindowMax = 32;   // mLostWindow looped for recent arrivals
+constexpr int HIST          = 4;     // for mono at FPP 16-128, see below for > mono, > 128
+constexpr int NumSlotsMax   = 4096;  // mNumSlots looped for recent arrivals
 constexpr double DefaultAutoHeadroom =
     3.0;                           // msec padding for auto adjusting mMsecTolerance
 constexpr double AutoMax = 250.0;  // msec bounds on insane IPI, like ethernet unplugged
@@ -202,7 +201,6 @@ Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
     mPeerFPP             = mFPP;  // use local until first packet arrives
     mAutoHeadroom        = DefaultAutoHeadroom;
     mFPPdurMsec          = 1000.0 * mFPP / mSampleRate;
-    changeGlobal_3(LostWindowMax);
     changeGlobal_2(NumSlotsMax);  // need hg if running GUI
     if (m_b_BroadcastQueueLength) {
         m_b_BroadcastRingBuffer = new JitterBuffer(
@@ -248,15 +246,8 @@ void Regulator::changeGlobal_2(int x)
     printParams();
 }
 
-void Regulator::changeGlobal_3(int x)
-{  // mLostWindow
-    mLostWindow = x;
-    printParams();
-}
-
 void Regulator::printParams(){
-    //    qDebug() << "mMsecTolerance" << mMsecTolerance << "mNumSlots" << mNumSlots
-    //             << "mLostWindow" << mLostWindow;
+    //    qDebug() << "mMsecTolerance" << mMsecTolerance << "mNumSlots" << mNumSlots;
 };
 
 Regulator::~Regulator()
@@ -378,25 +369,31 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
 //*******************************************************************************
 void Regulator::pullPacket()
 {
-    int lastSeqNumIn = mLastSeqNumIn.load(std::memory_order_acquire);
-    mSkip            = 0;
+    const double now        = (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
+    const int lastSeqNumIn  = mLastSeqNumIn.load(std::memory_order_acquire);
+    mSkip                   = 0;
+
     if ((lastSeqNumIn == -1) || (!mFPPratioIsSet)) {
         goto ZERO_OUTPUT;
+    } else if (lastSeqNumIn == mLastSeqNumOut) {
+        goto UNDERRUN;
     } else {
-        // start by assuming that the best packet to pull is last + 1
-        mLastSeqNumOut++;
-        mLastSeqNumOut %= mNumSlots;
-        double now = (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
-        // compare it to mLostWindow most recent packets
-        // starts with the oldest moving up to most recent packet
-        for (int i = mLostWindow; i >= 0; i--) {
+        // calculate how many new packets we want to look at to
+        // find the next packet to pull
+        int new_pkts = lastSeqNumIn - mLastSeqNumOut;
+        if (new_pkts < 0)
+            new_pkts += mNumSlots;
+
+        // iterate through each new packet
+        for (int i = new_pkts - 1; i >= 0; i--) {
             int next = lastSeqNumIn - i;
             if (next < 0)
                 next += mNumSlots;
+            // account for missing packets
             if (mIncomingTiming[next] < mIncomingTiming[mLastSeqNumOut])
                 continue;
-            // next == mLastSeqNumOut, or a newer/better candidate
-            mSkip = next - mLastSeqNumOut;
+            // set next as the best candidate
+            mSkip = next - mLastSeqNumOut - 1;
             if (mSkip < 0)
                 mSkip += mNumSlots;
             mLastSeqNumOut = next;
@@ -407,19 +404,8 @@ void Regulator::pullPacket()
                 goto PACKETOK;
             }
         }
-        // make this a global value? -- same threshold as
-        // UdpDataProtocol::printUdpWaitedTooLong
-        double wait_time = 30;  // msec
-        if ((mLastSeqNumOut == lastSeqNumIn)
-            && ((now - mIncomingTiming[mLastSeqNumOut]) > wait_time)) {
-            //                        std::cout << (mIncomingTiming[mLastSeqNumOut] - now)
-            //                        << "lastSeqNumIn: " << lastSeqNumIn <<
-            //                        "\tmLastSeqNumOut: " << mLastSeqNumOut << std::endl;
-            goto ZERO_OUTPUT;
-        }  // "good underrun", not a stuck client
-        //                    std::cout << "within window -- lastSeqNumIn: " <<
-        //                    lastSeqNumIn <<
-        //                    "\tmLastSeqNumOut: " << mLastSeqNumOut << std::endl;
+
+        // no viable candidate
         goto UNDERRUN;
     }
 
@@ -434,6 +420,17 @@ PACKETOK : {
 }
 
 UNDERRUN : {
+    // make this a global value? -- same threshold as
+    // UdpDataProtocol::printUdpWaitedTooLong
+    static const double MaxWaitTime = 30;  // msec
+    if ((mLastSeqNumOut == lastSeqNumIn)
+        && ((now - mIncomingTiming[mLastSeqNumOut]) > MaxWaitTime)) {
+        //                        std::cout << (mIncomingTiming[mLastSeqNumOut] - now)
+        //                        << "lastSeqNumIn: " << lastSeqNumIn <<
+        //                        "\tmLastSeqNumOut: " << mLastSeqNumOut << std::endl;
+        goto ZERO_OUTPUT;
+    }
+    // "good underrun", not a stuck client
     processPacket(true);
     pullStat->plcUnderruns++;  // count late
     pullStat->tick();

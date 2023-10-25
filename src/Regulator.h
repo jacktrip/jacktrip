@@ -221,7 +221,6 @@ class Regulator : public RingBuffer
     int mLastSeqNumOut;
     std::vector<double> mPhasor;
     std::vector<double> mIncomingTiming;
-    int mLostWindow;
     int mSkip;
     int mFPPratioNumerator;
     int mFPPratioDenominator;
