@@ -91,8 +91,8 @@ using std::endl;
 using std::setw;
 
 // constants...
-constexpr int HIST          = 4;     // for mono at FPP 16-128, see below for > mono, > 128
-constexpr int NumSlotsMax   = 4096;  // mNumSlots looped for recent arrivals
+constexpr int HIST        = 4;     // for mono at FPP 16-128, see below for > mono, > 128
+constexpr int NumSlotsMax = 4096;  // mNumSlots looped for recent arrivals
 constexpr double DefaultAutoHeadroom =
     3.0;                           // msec padding for auto adjusting mMsecTolerance
 constexpr double AutoMax = 250.0;  // msec bounds on insane IPI, like ethernet unplugged
@@ -203,8 +203,9 @@ Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
     mFPPdurMsec          = 1000.0 * mFPP / mSampleRate;
     changeGlobal_2(NumSlotsMax);  // need hg if running GUI
     if (m_b_BroadcastQueueLength) {
-        m_b_BroadcastRingBuffer = new JitterBuffer(
-            mFPP, qLen, mSampleRate, 1, m_b_BroadcastQueueLength, mNumChannels, mAudioBitRes);
+        m_b_BroadcastRingBuffer =
+            new JitterBuffer(mFPP, qLen, mSampleRate, 1, m_b_BroadcastQueueLength,
+                             mNumChannels, mAudioBitRes);
         qDebug() << "Broadcast started in Regulator with packet queue of"
                  << m_b_BroadcastQueueLength;
         // have not implemented the mJackTrip->queueLengthChanged functionality
@@ -317,8 +318,8 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
             setFPPratio();
             // number of stats tick calls per sec depends on FPP
             int maxFPP = (mPeerFPP > mFPP) ? mPeerFPP : mFPP;
-            pushStat =
-                new StdDev(1, &mIncomingTimer, (int)(floor(mSampleRate / (double)maxFPP)));
+            pushStat   = new StdDev(1, &mIncomingTimer,
+                                    (int)(floor(mSampleRate / (double)maxFPP)));
             pullStat =
                 new StdDev(2, &mIncomingTimer, (int)(floor(mSampleRate / (double)mFPP)));
             mFPPratioIsSet = true;
@@ -327,9 +328,10 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
             pushPacket(buf, seq_num);
         } else {
             if (mFPPratioNumerator > 1) {  // 2/1, 4/1 peer FPP is lower, , (local/peer)/1
-                // reassembled audio packet slice position: 0 through (mFPPratioNumerator - 1)
+                // reassembled audio packet slice position: 0 to (mFPPratioNumerator-1)
                 int pos = (seq_num % mFPPratioNumerator);
-                memcpy(mAssembledPacket + (pos * mBytesPeerPacket), buf, mBytesPeerPacket);
+                memcpy(mAssembledPacket + (pos * mBytesPeerPacket), buf,
+                       mBytesPeerPacket);
                 // push packet if last slice position is complete
                 if (pos == (mFPPratioNumerator - 1))
                     pushPacket(mAssembledPacket, seq_num / mFPPratioNumerator);
@@ -369,9 +371,9 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
 //*******************************************************************************
 void Regulator::pullPacket()
 {
-    const double now        = (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
-    const int lastSeqNumIn  = mLastSeqNumIn.load(std::memory_order_acquire);
-    mSkip                   = 0;
+    const double now       = (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
+    const int lastSeqNumIn = mLastSeqNumIn.load(std::memory_order_acquire);
+    mSkip                  = 0;
 
     if ((lastSeqNumIn == -1) || (!mFPPratioIsSet)) {
         goto ZERO_OUTPUT;
@@ -448,9 +450,6 @@ OUTPUT:
 void Regulator::processPacket(bool glitch)
 {
     double tmp = 0.0;
-    if ((glitch) && (mFPPratioDenominator > 1)) {
-        glitch = !(mLastSeqNumOut % mFPPratioDenominator);
-    }
     if (glitch)
         tmp = (double)mIncomingTimer.nsecsElapsed();
     for (int ch = 0; ch < mNumChannels; ch++)
