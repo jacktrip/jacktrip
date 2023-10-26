@@ -192,8 +192,11 @@ Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
     mLastSeqNumOut = -1;
     mPhasor.resize(mNumChannels, 0.0);
     mIncomingTiming.resize(NumSlotsMax);
-    for (int i = 0; i < NumSlotsMax; i++)
+    mAssemblyCounts.resize(NumSlotsMax);
+    for (int i = 0; i < NumSlotsMax; i++) {
         mIncomingTiming[i] = 0.0;
+        mAssemblyCounts[i] = 0;
+    }
     mFPPratioNumerator   = 1;
     mFPPratioDenominator = 1;
     mFPPratioIsSet       = false;
@@ -325,25 +328,19 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
             mFPPratioIsSet = true;
         }
         if (mFPPratioNumerator == mFPPratioDenominator) {
+            // local FPP matches peer
             pushPacket(buf, seq_num);
+        } else if (mFPPratioNumerator > 1) {
+            // 2/1, 4/1 peer FPP is lower, (local/peer)/1
+            assemblePacket(buf, seq_num);
         } else {
-            if (mFPPratioNumerator > 1) {  // 2/1, 4/1 peer FPP is lower, , (local/peer)/1
-                // reassembled audio packet slice position: 0 to (mFPPratioNumerator-1)
-                int pos = (seq_num % mFPPratioNumerator);
-                memcpy(mAssembledPacket + (pos * mBytesPeerPacket), buf,
-                       mBytesPeerPacket);
-                // push packet if last slice position is complete
-                if (pos == (mFPPratioNumerator - 1))
-                    pushPacket(mAssembledPacket, seq_num / mFPPratioNumerator);
-            } else if (mFPPratioDenominator
-                       > 1) {  // 1/2, 1/4 peer FPP is higher, 1/(peer/local)
-                seq_num *= mFPPratioDenominator;
-                for (int i = 0; i < mFPPratioDenominator; i++) {
-                    memcpy(mAssembledPacket, buf, mBytes);
-                    pushPacket(mAssembledPacket, seq_num);
-                    buf += mBytes;
-                    seq_num++;
-                }
+            // 1/2, 1/4 peer FPP is higher, 1/(peer/local)
+            seq_num *= mFPPratioDenominator;
+            for (int i = 0; i < mFPPratioDenominator; i++) {
+                memcpy(mAssembledPacket, buf, mBytes);
+                pushPacket(mAssembledPacket, seq_num);
+                buf += mBytes;
+                seq_num++;
             }
         }
         pushStat->tick();
@@ -365,6 +362,27 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
     mIncomingTiming[seq_num] =
         mMsecTolerance + (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
     memcpy(mSlots[seq_num], buf, mBytes);
+    mLastSeqNumIn.store(seq_num, std::memory_order_release);
+};
+
+//*******************************************************************************
+void Regulator::assemblePacket(const int8_t* buf, int peer_seq_num)
+{
+    // copy packet fragment into slot
+    int seq_num = (peer_seq_num / mFPPratioNumerator) % mNumSlots;
+    int pkt_pos = (peer_seq_num % mFPPratioNumerator);
+    memcpy(&(mSlots[seq_num][pkt_pos * mBytesPeerPacket]), buf, mBytesPeerPacket);
+
+    // check if done assembling yet
+    if (++mAssemblyCounts[seq_num] < mFPPratioNumerator)
+        return;
+
+    // complete it
+    if (m_b_BroadcastQueueLength)
+        m_b_BroadcastRingBuffer->insertSlotNonBlocking(mSlots[seq_num], mBytes, 0,
+                                                       seq_num);
+    mIncomingTiming[seq_num] =
+        mMsecTolerance + (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
     mLastSeqNumIn.store(seq_num, std::memory_order_release);
 };
 
@@ -391,6 +409,10 @@ void Regulator::pullPacket()
             int next = lastSeqNumIn - i;
             if (next < 0)
                 next += mNumSlots;
+            if (mFPPratioNumerator) {
+                // time for assembly has passed; reset for next time
+                mAssemblyCounts[next] = 0;
+            }
             // account for missing packets
             if (mIncomingTiming[next] < mIncomingTiming[mLastSeqNumOut])
                 continue;

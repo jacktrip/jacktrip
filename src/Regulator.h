@@ -185,6 +185,7 @@ class Regulator : public RingBuffer
    private:
     void shimFPP(const int8_t* buf, int len, int seq_num);
     void pushPacket(const int8_t* buf, int seq_num);
+    void assemblePacket(const int8_t* buf, int peer_seq_num);
     void pullPacket();
     void setFPPratio();
     bool mFPPratioIsSet;
@@ -221,6 +222,7 @@ class Regulator : public RingBuffer
     int mLastSeqNumOut;
     std::vector<double> mPhasor;
     std::vector<double> mIncomingTiming;
+    std::vector<int> mAssemblyCounts;
     int mSkip;
     int mFPPratioNumerator;
     int mFPPratioDenominator;
