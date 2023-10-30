@@ -113,6 +113,7 @@ class StdDev
     double longTermStdDevAcc;
     double longTermMax;
     double longTermMaxAcc;
+    double longTermMean;
 
    private:
     void reset();

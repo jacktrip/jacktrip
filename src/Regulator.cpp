@@ -300,19 +300,17 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
             mPeerFPPdurMsec  = 1000.0 * mPeerFPP / mSampleRate;
             // bufstrategy 1 autoq mode overloads qLen with negative val
             // creates this ugly code
-            if (mMsecTolerance < 0) {  // handle -q auto or, for example, -q auto10
+            if (mMsecTolerance <= 0) {  // handle -q auto or, for example, -q auto10
                 mAuto = true;
                 // default is -500 from bufstrategy 1 autoq mode
-                // tweak
-                if (mMsecTolerance != -500.0) {
-                    // use it to set headroom
-                    mAutoHeadroom = -mMsecTolerance;
-                    qDebug() << "PLC is in auto mode and has been set with"
-                             << mAutoHeadroom << "ms headroom";
-                    if (mAutoHeadroom > 50.0)
-                        qDebug() << "That's a very large value and should be less than, "
-                                    "for example, 50ms";
-                }
+                // use mMsecTolerance to set headroom
+                mAutoHeadroom =
+                    (mMsecTolerance == -500.0) ? DefaultAutoHeadroom : -mMsecTolerance;
+                qDebug() << "PLC is in auto mode and has been set with" << mAutoHeadroom
+                         << "ms headroom";
+                if (mAutoHeadroom > 50.0)
+                    qDebug() << "That's a very large value and should be less than, "
+                                "for example, 50ms";
                 // found an interesting relationship between mPeerFPP and initial
                 // mMsecTolerance mPeerFPP*0.5 is pretty good though that's an oddball
                 // conversion of bufsize directly to msec
@@ -344,11 +342,13 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
             }
         }
         pushStat->tick();
-        double adjustAuto =
-            pushStat->calcAuto(mAutoHeadroom, mFPPdurMsec, mPeerFPPdurMsec);
-        //        qDebug() << adjustAuto;
-        if (mAuto && (pushStat->lastTime > AutoInitDur))
-            mMsecTolerance = adjustAuto;
+        if (mAuto && (pushStat->lastTime > AutoInitDur)) {
+            // use max to accomodate for bad clocks in audio interfaces that
+            // cause a wide range of callback intervals (like realtek at 11ms)
+            mMsecTolerance = std::max<double>(
+                pushStat->calcAuto(mAutoHeadroom, mFPPdurMsec, mPeerFPPdurMsec),
+                pullStat->calcAuto(mAutoHeadroom, mFPPdurMsec, mPeerFPPdurMsec));
+        }
     }
 };
 
@@ -439,7 +439,6 @@ PACKETOK : {
         pullStat->plcOverruns += mSkip;
     } else
         processPacket(false);
-    pullStat->tick();
     goto OUTPUT;
 }
 
@@ -457,7 +456,6 @@ UNDERRUN : {
     // "good underrun", not a stuck client
     processPacket(true);
     pullStat->plcUnderruns++;  // count late
-    pullStat->tick();
     goto OUTPUT;
 }
 
@@ -465,6 +463,7 @@ ZERO_OUTPUT:
     memcpy(mXfrBuffer, mZeros, mBytes);
 
 OUTPUT:
+    pullStat->tick();
     return;
 };
 
@@ -731,8 +730,11 @@ StdDev::StdDev(int id, QElapsedTimer* timer, int w) : mId(id), mTimer(timer), wi
     lastMax           = 0.0;
     longTermMax       = 0.0;
     longTermMaxAcc    = 0.0;
+    longTermMean      = 0.0;
     lastTime          = 0.0;
     lastPLCdspElapsed = 0.0;
+    lastPlcOverruns   = 0;
+    lastPlcUnderruns  = 0;
     plcOverruns       = 0;
     plcUnderruns      = 0;
     data.resize(w, 0.0);
@@ -754,6 +756,8 @@ double StdDev::calcAuto(double autoHeadroom, double localFPPdur, double peerFPPd
     if ((longTermStdDev == 0.0) || (longTermMax == 0.0))
         return AutoMax;
     double tmp = longTermStdDev + ((longTermMax > AutoMax) ? AutoMax : longTermMax);
+    if (tmp > AutoMax)
+        tmp = AutoMax;
     if (tmp < localFPPdur)
         tmp = localFPPdur;
     if (tmp < peerFPPdur)
@@ -775,7 +779,16 @@ void StdDev::tick()
             max = msElapsed;
         acc += msElapsed;
         ctr++;
+        /*
+        // for debugging startup issues -- you'll see a bunch of pushes
+        // UDPDataProtocol all at once, which I imagine were queued up
+        // in the kernel's stack
+        if (gVerboseFlag && longTermCnt == 0) {
+            std::cout << setw(10) << msElapsed << " " << mId << endl;
+        }
+        */
     } else {
+        // calculate mean and standard deviation
         mean       = (double)acc / (double)window;
         double var = 0.0;
         for (int i = 0; i < window; i++) {
@@ -784,19 +797,32 @@ void StdDev::tick()
         }
         var /= (double)window;
         double stdDevTmp = sqrt(var);
-        if (longTermCnt) {
+
+        if (longTermCnt <= 1) {
+            if (longTermCnt == 0 && gVerboseFlag) {
+                cout << "printing directly from Regulator->stdDev->tick:\n (mean / min / "
+                        "max / "
+                        "stdDev / longTermMean / longTermMax / longTermStdDev) \n";
+            }
+            // ignore first stats because they will be really unreliable
+            longTermMax       = max;
+            longTermMaxAcc    = max;
+            longTermMean      = mean;
+            longTermStdDev    = stdDevTmp;
+            longTermStdDevAcc = stdDevTmp;
+        } else {
             longTermStdDevAcc += stdDevTmp;
-            longTermStdDev = longTermStdDevAcc / (double)longTermCnt;
             longTermMaxAcc += max;
-            longTermMax = longTermMaxAcc / (double)longTermCnt;
-            if (gVerboseFlag)
-                cout << setw(10) << mean << setw(10) << lastMin << setw(10) << max
-                     << setw(10) << stdDevTmp << setw(10) << longTermStdDev << " " << mId
-                     << endl;
-        } else if (gVerboseFlag)
-            cout << "printing directly from Regulator->stdDev->tick:\n (mean / min / "
-                    "max / "
-                    "stdDev / longTermStdDev) \n";
+            longTermStdDev = longTermStdDevAcc / (double)longTermCnt;
+            longTermMax    = longTermMaxAcc / (double)longTermCnt;
+            longTermMean   = longTermMean / (double)longTermCnt;
+        }
+
+        if (gVerboseFlag) {
+            cout << setw(10) << mean << setw(10) << min << setw(10) << max << setw(10)
+                 << stdDevTmp << setw(10) << longTermMean << setw(10) << longTermMax
+                 << setw(10) << longTermStdDev << " " << mId << endl;
+        }
 
         longTermCnt++;
         lastMean   = mean;
@@ -809,6 +835,12 @@ void StdDev::tick()
 
 void Regulator::readSlotNonBlocking(int8_t* ptrToReadSlot)
 {
+    if (!mFPPratioIsSet) {
+        // audio callback before receiving first packet from peer
+        // nothing is initialized yet, so just return silence
+        memcpy(ptrToReadSlot, mZeros, mBytes);
+        return;
+    }
     if (mUseWorkerThread) {
         // use separate worker thread for PLC
         mRegulatorWorkerPtr->pop(ptrToReadSlot);
