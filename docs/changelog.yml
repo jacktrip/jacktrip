@@ -1,8 +1,13 @@
-- Version: "2.1.0"
-  Date: 2023-10-xx
+- Version: "2.1.0-beta1"
+  Date: 2023-10-30
   Description:
+  - (added) VS Mode ability to create studios without a web browser
+  - (added) VS Mode improved network stability notifications
+  - (added) VS Mode dialog when QML plugins are missing
   - (updated) VS Mode video improvements on Windows
+  - (updated) Packet loss concealment latency and quality improvements
   - (fixed) VS Mode ensure that the app is disconnected at startup
+  - (fixed) Invalid escape sequence in Linux desktop file
 - Version: "2.0.2"
   Date: 2023-09-01
   Description:
