@@ -345,9 +345,10 @@ void Settings::parseInput(int argc, char** argv)
         case 'q':
             //-------------------------------------------------------
             if (0 == strncmp(optarg, "auto", 4)) {
-                mBufferQueueLength = -atoi(optarg + 4);
-                if (0 == mBufferQueueLength) {
+                if (optarg[4] == 0) {
                     mBufferQueueLength = -500;
+                } else {
+                    mBufferQueueLength = -atoi(optarg + 4);
                 }
             } else if (atoi(optarg) <= 0) {
                 printUsage();

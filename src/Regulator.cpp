@@ -99,6 +99,8 @@ constexpr double AutoMax = 250.0;  // msec bounds on insane IPI, like ethernet u
 constexpr double AutoInitDur = 6000.0;  // kick in auto after this many msec
 constexpr double AutoInitValFactor =
     0.5;  // scale for initial mMsecTolerance during init phase if unspecified
+constexpr double MaxWaitTime = 30;  // msec
+
 // tweak
 constexpr int WindowDivisor = 8;     // for faster auto tracking
 constexpr int MaxFPP        = 1024;  // tested up to this FPP
@@ -445,7 +447,6 @@ PACKETOK : {
 UNDERRUN : {
     // make this a global value? -- same threshold as
     // UdpDataProtocol::printUdpWaitedTooLong
-    static const double MaxWaitTime = 30;  // msec
     if ((mLastSeqNumOut == lastSeqNumIn)
         && ((now - mIncomingTiming[mLastSeqNumOut]) > MaxWaitTime)) {
         //                        std::cout << (mIncomingTiming[mLastSeqNumOut] - now)
@@ -771,6 +772,10 @@ void StdDev::tick()
     double now       = (double)mTimer->nsecsElapsed() / 1000000.0;
     double msElapsed = now - lastTime;
     lastTime         = now;
+    // discard measurements that exceed the max wait time
+    // this prevents temporary outages from skewing jitter metrics
+    if (msElapsed > MaxWaitTime)
+        return;
     if (ctr != window) {
         data[ctr] = msElapsed;
         if (msElapsed < min)
