@@ -774,6 +774,7 @@ void VirtualStudio::loadSettings()
 void VirtualStudio::saveSettings()
 {
     QSettings settings;
+    settings.setValue(QStringLiteral("UpdateChannel"), m_updateChannel);
     settings.beginGroup(QStringLiteral("VirtualStudio"));
     settings.setValue(QStringLiteral("UiScale"), m_uiScale);
     settings.setValue(QStringLiteral("DarkMode"), m_darkMode);
