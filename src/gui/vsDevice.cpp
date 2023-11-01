@@ -305,8 +305,7 @@ JackTrip* VsDevice::initJackTrip(
     }
     m_jackTrip->setBindPorts(bindPort);
     m_jackTrip->setRemoteClientName(m_appID);
-    // increment m_bufferStrategy by 1 for array-index mapping
-    m_jackTrip->setBufferStrategy(bufferStrategy + 1);
+    m_jackTrip->setBufferStrategy(bufferStrategy);
     m_jackTrip->setBufferQueueLength(-500);  // use -q auto
     m_jackTrip->setPeerAddress(studioInfo->host());
     m_jackTrip->setPeerPorts(studioInfo->port());

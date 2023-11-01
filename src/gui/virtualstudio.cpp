@@ -831,7 +831,6 @@ void VirtualStudio::completeConnection()
         bool useRtAudio       = m_audioConfigPtr->getUseRtAudio();
         std::string input     = "";
         std::string output    = "";
-        int buffer_strategy   = m_audioConfigPtr->getBufferStrategy();
         int buffer_size       = 0;
         int inputMixMode      = -1;
         int baseInputChannel  = 0;
@@ -854,6 +853,27 @@ void VirtualStudio::completeConnection()
             numOutputChannels = m_audioConfigPtr->getNumOutputChannels();
         }
 #endif
+
+        // increment buffer_strategy by 1 for array-index mapping
+        int buffer_strategy = m_audioConfigPtr->getBufferStrategy() + 1;
+        // adjust buffer_strategy for PLC "auto" mode menu item
+        if (buffer_strategy == 3) {
+            if (useRtAudio) {
+                // if same device for input and output,
+                // run PLC without worker (4)
+                if (input == output)
+                    buffer_strategy = 4;
+                // else run PLC with worker (3)
+                // to reduce crackles
+            } else {
+                // run PLC without worker (4)
+                buffer_strategy = 4;
+            }
+        } else if (buffer_strategy == 5) {
+            buffer_strategy = 3;  // run PLC with worker (3)
+        }
+
+        // create a new JackTrip instance
         JackTrip* jackTrip = m_devicePtr->initJackTrip(
             useRtAudio, input, output, baseInputChannel, numInputChannels,
             baseOutputChannel, numOutputChannels, inputMixMode, buffer_size,
