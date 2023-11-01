@@ -415,13 +415,16 @@ void Regulator::pullPacket()
                 // time for assembly has passed; reset for next time
                 mAssemblyCounts[next] = 0;
             }
-            // account for missing packets
-            if (mIncomingTiming[next] < mIncomingTiming[mLastSeqNumOut])
-                continue;
+            if (mLastSeqNumOut != -1) {
+                // account for missing packets
+                if (mIncomingTiming[next] < mIncomingTiming[mLastSeqNumOut])
+                    continue;
+                // count how many we have skipped
+                mSkip = next - mLastSeqNumOut - 1;
+                if (mSkip < 0)
+                    mSkip += mNumSlots;
+            }
             // set next as the best candidate
-            mSkip = next - mLastSeqNumOut - 1;
-            if (mSkip < 0)
-                mSkip += mNumSlots;
             mLastSeqNumOut = next;
             // if next timestamp < now, it is too old based upon tolerance
             if (mIncomingTiming[mLastSeqNumOut] >= now) {
@@ -445,18 +448,13 @@ PACKETOK : {
 }
 
 UNDERRUN : {
-    // make this a global value? -- same threshold as
-    // UdpDataProtocol::printUdpWaitedTooLong
+    pullStat->plcUnderruns++;  // count late
     if ((mLastSeqNumOut == lastSeqNumIn)
         && ((now - mIncomingTiming[mLastSeqNumOut]) > MaxWaitTime)) {
-        //                        std::cout << (mIncomingTiming[mLastSeqNumOut] - now)
-        //                        << "lastSeqNumIn: " << lastSeqNumIn <<
-        //                        "\tmLastSeqNumOut: " << mLastSeqNumOut << std::endl;
         goto ZERO_OUTPUT;
     }
     // "good underrun", not a stuck client
     processPacket(true);
-    pullStat->plcUnderruns++;  // count late
     goto OUTPUT;
 }
 
