@@ -44,6 +44,7 @@
 #include <QQmlEngine>
 #include <QSettings>
 #include <QSslSocket>
+#include <QSysInfo>
 #include <algorithm>
 #include <iostream>
 
@@ -445,8 +446,28 @@ bool VirtualStudio::isExiting()
 void VirtualStudio::collectFeedbackSurvey(QString serverId, int rating, QString message)
 {
     QJsonObject feedback;
+
+    QString sysInfo = QString("[platform=%1").arg(QSysInfo::prettyProductName());
+#ifdef RT_AUDIO
+    QString inputDevice =
+        QString::fromStdString(m_audioConfigPtr->getInputDevice().toStdString());
+    if (!inputDevice.isEmpty()) {
+        sysInfo.append(QString(",input=%1").arg(inputDevice));
+    }
+    QString outputDevice =
+        QString::fromStdString(m_audioConfigPtr->getOutputDevice().toStdString());
+    if (!outputDevice.isEmpty()) {
+        sysInfo.append(QString(",output=%1").arg(outputDevice));
+    }
+#endif
+    sysInfo.append("]");
+
     feedback.insert(QStringLiteral("rating"), rating);
-    feedback.insert(QStringLiteral("message"), message);
+    if (message.isEmpty()) {
+        feedback.insert(QStringLiteral("message"), sysInfo);
+    } else {
+        feedback.insert(QStringLiteral("message"), message + " " + sysInfo);
+    }
 
     QJsonDocument data = QJsonDocument(feedback);
     m_api->submitServerFeedback(serverId, data.toJson());
