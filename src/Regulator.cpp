@@ -91,11 +91,9 @@ using std::endl;
 using std::setw;
 
 // constants...
-constexpr int HIST        = 4;     // for mono at FPP 16-128, see below for > mono, > 128
-constexpr int NumSlotsMax = 4096;  // mNumSlots looped for recent arrivals
-constexpr double DefaultAutoHeadroom =
-    3.0;                           // msec padding for auto adjusting mMsecTolerance
-constexpr double AutoMax = 250.0;  // msec bounds on insane IPI, like ethernet unplugged
+constexpr int HIST        = 4;      // for mono at FPP 16-128, see below for > mono, > 128
+constexpr int NumSlotsMax = 4096;   // mNumSlots looped for recent arrivals
+constexpr double AutoMax  = 250.0;  // msec bounds on insane IPI, like ethernet unplugged
 constexpr double AutoInitDur = 1000.0;  // kick in auto after this many msec
 constexpr double AutoInitValFactor =
     0.5;  // scale for initial mMsecTolerance during init phase if unspecified
@@ -210,7 +208,7 @@ Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
     mFPPratioIsSet       = false;
     mBytesPeerPacket     = mBytes;
     mPeerFPP             = mFPP;  // use local until first packet arrives
-    mAutoHeadroom        = DefaultAutoHeadroom;
+    mAutoHeadroom        = 3.0;
     mFPPdurMsec          = 1000.0 * mFPP / mSampleRate;
     changeGlobal_2(NumSlotsMax);  // need hg if running GUI
     if (m_b_BroadcastQueueLength) {
@@ -312,13 +310,18 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
                 mAuto = true;
                 // default is -500 from bufstrategy 1 autoq mode
                 // use mMsecTolerance to set headroom
-                mAutoHeadroom =
-                    (mMsecTolerance == -500.0) ? DefaultAutoHeadroom : -mMsecTolerance;
-                qDebug() << "PLC is in auto mode and has been set with" << mAutoHeadroom
-                         << "ms headroom";
-                if (mAutoHeadroom > 50.0)
-                    qDebug() << "That's a very large value and should be less than, "
-                                "for example, 50ms";
+                if (mMsecTolerance == -500.0) {
+                    mAutoHeadroom = -1;
+                    qDebug()
+                        << "PLC is in auto mode and has been set with variable headroom";
+                } else {
+                    mAutoHeadroom = -mMsecTolerance;
+                    qDebug() << "PLC is in auto mode and has been set with"
+                             << mAutoHeadroom << "ms headroom";
+                    if (mAutoHeadroom > 50.0)
+                        qDebug() << "That's a very large value and should be less than, "
+                                    "for example, 50ms";
+                }
                 // found an interesting relationship between mPeerFPP and initial
                 // mMsecTolerance mPeerFPP*0.5 is pretty good though that's an oddball
                 // conversion of bufsize directly to msec
@@ -734,6 +737,7 @@ StdDev::StdDev(int id, QElapsedTimer* timer, int w) : mId(id), mTimer(timer), wi
     lastMax           = 0.0;
     longTermMax       = 0.0;
     longTermMaxAcc    = 0.0;
+    autoHeadroom      = 0.0;
     lastTime          = 0.0;
     lastPLCdspElapsed = 0.0;
     lastPlcOverruns   = 0;
@@ -752,12 +756,14 @@ void StdDev::reset()
     max  = -999999.0;
 };
 
-double StdDev::calcAuto(double autoHeadroom, double localFPPdur, double peerFPPdur)
+double StdDev::calcAuto(double headroom, double localFPPdur, double peerFPPdur)
 {
     //    qDebug() << longTermStdDev << longTermMax << AutoMax << window <<
     //    longTermCnt;
     if ((longTermStdDev == 0.0) || (longTermMax == 0.0))
         return AutoMax;
+    if (headroom < 0)
+        headroom = autoHeadroom;
     double tmp = longTermStdDev + ((longTermMax > AutoMax) ? AutoMax : longTermMax);
     if (tmp > AutoMax)
         tmp = AutoMax;
@@ -765,7 +771,7 @@ double StdDev::calcAuto(double autoHeadroom, double localFPPdur, double peerFPPd
         tmp = localFPPdur;
     if (tmp < peerFPPdur)
         tmp = peerFPPdur;
-    tmp += autoHeadroom;
+    tmp += headroom;
     return tmp;
 };
 
@@ -835,6 +841,14 @@ void StdDev::tick()
                 longTermStdDev = smooth(longTermStdDev, stdDevTmp);
                 longTermMax    = smooth(longTermMax, max);
             }
+        }
+
+        // there is likely a better algo, but this seems to work???
+        autoHeadroom = 6 * std::pow(longTermStdDev, 1.2);
+        if (autoHeadroom > 5.0)
+            autoHeadroom = 5.0;
+        if (mId == 1 && longTermCnt % WindowDivisor == 0) {
+            cout << "autoHeadroom = " << autoHeadroom << endl;
         }
 
         if (gVerboseFlag) {

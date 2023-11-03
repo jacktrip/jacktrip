@@ -113,6 +113,7 @@ class StdDev
     double longTermStdDevAcc;
     double longTermMax;
     double longTermMaxAcc;
+    double autoHeadroom;
 
    private:
     double smooth(double avg, double current);
