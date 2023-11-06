@@ -44,6 +44,7 @@
 #include <QQmlEngine>
 #include <QSettings>
 #include <QSslSocket>
+#include <QSysInfo>
 #include <algorithm>
 #include <iostream>
 
@@ -87,17 +88,20 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     QSvgGenerator svgImageHack;
 
     // use a singleton QNetworkAccessManager
-    m_networkAccessManager.reset(new QNetworkAccessManager);
+    // WARNING: using a raw pointer and intentionally leaking this because
+    // it crashes at shutdown if you try to destruct it directly or try
+    // calling QObject::deleteLater()
+    m_networkAccessManagerPtr = new QNetworkAccessManager;
 
     // instantiate API
-    m_api.reset(new VsApi(m_networkAccessManager.data()));
+    m_api.reset(new VsApi(m_networkAccessManagerPtr));
     m_api->setApiHost(PROD_API_HOST);
     if (m_testMode) {
         m_api->setApiHost(TEST_API_HOST);
     }
 
     // instantiate auth
-    m_auth.reset(new VsAuth(m_networkAccessManager.data(), m_api.data()));
+    m_auth.reset(new VsAuth(m_networkAccessManagerPtr, m_api.data()));
     connect(m_auth.data(), &VsAuth::authSucceeded, this,
             &VirtualStudio::slotAuthSucceeded);
     connect(m_auth.data(), &VsAuth::refreshTokenFailed, this, [=]() {
@@ -132,8 +136,10 @@ VirtualStudio::VirtualStudio(bool firstRun, QObject* parent)
     m_networkOutageTimer.setSingleShot(true);
     m_networkOutageTimer.setInterval(5000);
     m_networkOutageTimer.callOnTimeout([&]() {
-        m_networkOutage = false;
-        emit updatedNetworkOutage(m_networkOutage);
+        if (m_devicePtr.isNull())
+            return;
+        m_devicePtr->setNetworkOutage(false);
+        emit updatedNetworkOutage(false);
     });
 
     if ((m_uiMode == QJackTrip::UNSET && vsFtux())
@@ -195,6 +201,11 @@ void VirtualStudio::setStandardWindow(QSharedPointer<QJackTrip> window)
     m_standardWindow = window;
 }
 
+void VirtualStudio::setCLISettings(QSharedPointer<Settings> settings)
+{
+    m_cliSettings = settings;
+}
+
 void VirtualStudio::show()
 {
     if (m_checkSsl) {
@@ -214,13 +225,40 @@ void VirtualStudio::show()
         }
         m_checkSsl = false;
     }
-    m_view.show();
+
+    while (m_view.status() == QQuickView::Loading) {
+        // I don't think there is any need to load network data, but just in case
+        // See https://doc.qt.io/qt-6/qquickview.html#Status-enum
+        qDebug() << "JackTrip is still loading the QML view";
+        QThread::sleep(1);
+    }
+
+    if (m_view.status() != QQuickView::Ready) {
+        QMessageBox msgBox;
+        msgBox.setText(
+            "JackTrip detected that some modules required for the "
+            "Virtual Studio mode are missing on your system. "
+            "Click \"OK\" to proceed to classic mode.\n\n"
+            "Details: JackTrip failed to load the QML view. "
+            "This is likely caused by missing QML plugins. "
+            "Please consult help.jacktrip.org for possible solutions.");
+        msgBox.setWindowTitle(QStringLiteral("JackTrip Is Missing QML Modules"));
+        connect(&msgBox, &QMessageBox::finished, this, &VirtualStudio::toStandard,
+                Qt::QueuedConnection);
+        msgBox.exec();
+        return;
+    }
+
+    raiseToTop();
 }
 
 void VirtualStudio::raiseToTop()
 {
+    if (m_view.status() != QQuickView::Ready)
+        return;
     m_view.show();             // Restore from systray
-    m_view.requestActivate();  // Raise to top
+    m_view.raise();            // raise to top
+    m_view.requestActivate();  // focus on window
 }
 
 int VirtualStudio::webChannelPort()
@@ -271,7 +309,7 @@ void VirtualStudio::setConnectedErrorMsg(const QString& msg)
 
 bool VirtualStudio::networkOutage()
 {
-    return m_networkOutage;
+    return m_devicePtr.isNull() ? false : m_devicePtr->getNetworkOutage();
 }
 
 QJsonObject VirtualStudio::regions()
@@ -408,8 +446,28 @@ bool VirtualStudio::isExiting()
 void VirtualStudio::collectFeedbackSurvey(QString serverId, int rating, QString message)
 {
     QJsonObject feedback;
+
+    QString sysInfo = QString("[platform=%1").arg(QSysInfo::prettyProductName());
+#ifdef RT_AUDIO
+    QString inputDevice =
+        QString::fromStdString(m_audioConfigPtr->getInputDevice().toStdString());
+    if (!inputDevice.isEmpty()) {
+        sysInfo.append(QString(",input=%1").arg(inputDevice));
+    }
+    QString outputDevice =
+        QString::fromStdString(m_audioConfigPtr->getOutputDevice().toStdString());
+    if (!outputDevice.isEmpty()) {
+        sysInfo.append(QString(",output=%1").arg(outputDevice));
+    }
+#endif
+    sysInfo.append("]");
+
     feedback.insert(QStringLiteral("rating"), rating);
-    feedback.insert(QStringLiteral("message"), message);
+    if (message.isEmpty()) {
+        feedback.insert(QStringLiteral("message"), sysInfo);
+    } else {
+        feedback.insert(QStringLiteral("message"), message + " " + sysInfo);
+    }
 
     QJsonDocument data = QJsonDocument(feedback);
     m_api->submitServerFeedback(serverId, data.toJson());
@@ -737,6 +795,7 @@ void VirtualStudio::loadSettings()
 void VirtualStudio::saveSettings()
 {
     QSettings settings;
+    settings.setValue(QStringLiteral("UpdateChannel"), m_updateChannel);
     settings.beginGroup(QStringLiteral("VirtualStudio"));
     settings.setValue(QStringLiteral("UiScale"), m_uiScale);
     settings.setValue(QStringLiteral("DarkMode"), m_darkMode);
@@ -793,7 +852,6 @@ void VirtualStudio::completeConnection()
         bool useRtAudio       = m_audioConfigPtr->getUseRtAudio();
         std::string input     = "";
         std::string output    = "";
-        int buffer_strategy   = m_audioConfigPtr->getBufferStrategy();
         int buffer_size       = 0;
         int inputMixMode      = -1;
         int baseInputChannel  = 0;
@@ -816,6 +874,27 @@ void VirtualStudio::completeConnection()
             numOutputChannels = m_audioConfigPtr->getNumOutputChannels();
         }
 #endif
+
+        // increment buffer_strategy by 1 for array-index mapping
+        int buffer_strategy = m_audioConfigPtr->getBufferStrategy() + 1;
+        // adjust buffer_strategy for PLC "auto" mode menu item
+        if (buffer_strategy == 3) {
+            if (useRtAudio) {
+                // if same device for input and output,
+                // run PLC without worker (4)
+                if (input == output)
+                    buffer_strategy = 4;
+                // else run PLC with worker (3)
+                // to reduce crackles
+            } else {
+                // run PLC without worker (4)
+                buffer_strategy = 4;
+            }
+        } else if (buffer_strategy == 5) {
+            buffer_strategy = 3;  // run PLC with worker (3)
+        }
+
+        // create a new JackTrip instance
         JackTrip* jackTrip = m_devicePtr->initJackTrip(
             useRtAudio, input, output, baseInputChannel, numInputChannels,
             baseOutputChannel, numOutputChannels, inputMixMode, buffer_size,
@@ -824,6 +903,7 @@ void VirtualStudio::completeConnection()
             processError("Could not bind port");
             return;
         }
+        jackTrip->setIOStatTimeout(m_cliSettings->getIOStatTimeout());
 
         // this passes ownership to JackTrip
         jackTrip->setAudioInterface(m_audioConfigPtr->newAudioInterface(jackTrip));
@@ -990,8 +1070,7 @@ void VirtualStudio::launchVideo(const QString& studioId)
 
 void VirtualStudio::createStudio()
 {
-    QUrl url = QUrl(QStringLiteral("https://%1/studios/create").arg(m_api->getApiHost()));
-    QDesktopServices::openUrl(url);
+    setWindowState(QStringLiteral("create_studio"));
 }
 
 void VirtualStudio::editProfile()
@@ -1035,7 +1114,6 @@ void VirtualStudio::handleDeeplinkRequest(const QUrl& link)
     // Note that this doesn't change the startup preference
     if (m_uiMode != QJackTrip::VIRTUAL_STUDIO) {
         m_standardWindow->hide();
-        m_view.show();
         if (m_windowState == "start") {
             setWindowState(QStringLiteral("login"));
         }
@@ -1054,6 +1132,18 @@ void VirtualStudio::handleDeeplinkRequest(const QUrl& link)
             setWindowState("connected");
             m_audioConfigPtr->stopAudio(true);
             joinStudio();
+        }
+        return;
+    }
+
+    // special case if on create_studio screen
+    if (m_windowState == "create_studio") {
+        refreshStudios(0, true);
+        if (showDeviceSetup()) {
+            setWindowState("setup");
+            m_audioConfigPtr->startAudio();
+        } else {
+            setWindowState("connected");
         }
         return;
     }
@@ -1100,6 +1190,9 @@ void VirtualStudio::exit()
 
 void VirtualStudio::slotAuthSucceeded()
 {
+    // Make sure window is on top (instead of browser, during first auth)
+    raiseToTop();
+
     // Determine which API host to use
     m_apiHost = PROD_API_HOST;
     if (m_testMode) {
@@ -1319,9 +1412,11 @@ void VirtualStudio::updatedStats(const QJsonObject& stats)
 
 void VirtualStudio::udpWaitingTooLong()
 {
+    if (m_devicePtr.isNull())
+        return;
     m_networkOutageTimer.start();
-    m_networkOutage = true;
-    emit updatedNetworkOutage(m_networkOutage);
+    m_devicePtr->setNetworkOutage(true);
+    emit updatedNetworkOutage(true);
 }
 
 void VirtualStudio::sendHeartbeat()
@@ -1625,4 +1720,6 @@ void VirtualStudio::detectedFeedbackLoop()
 VirtualStudio::~VirtualStudio()
 {
     QDesktopServices::unsetUrlHandler("jacktrip");
+    // stop the audio worker thread before destructing other things
+    m_audioConfigPtr.reset();
 }

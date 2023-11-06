@@ -120,6 +120,9 @@ void VsDevice::registerApp()
         settings.setValue(QStringLiteral("ApiPrefix"), m_apiPrefix);
         settings.setValue(QStringLiteral("ApiSecret"), m_apiSecret);
         settings.endGroup();
+        if (!m_appID.isEmpty()) {
+            updateState("");
+        }
 
         reply->deleteLater();
     });
@@ -186,6 +189,7 @@ void VsDevice::sendHeartbeat()
         json.insert(QLatin1String("stddev_rtt"), (qint64)(stats.stdDevRtt * ns_per_ms));
         json.insert(QLatin1String("high_latency"),
                     m_audioConfigPtr->getHighLatencyFlag());
+        json.insert(QLatin1String("network_outage"), m_networkOutage);
 
         // For the internal application UI, ms will suffice. No conversion needed
         QJsonObject pingStats = {};
@@ -301,15 +305,8 @@ JackTrip* VsDevice::initJackTrip(
     }
     m_jackTrip->setBindPorts(bindPort);
     m_jackTrip->setRemoteClientName(m_appID);
-    // increment m_bufferStrategy by 1 for array-index mapping
-    m_jackTrip->setBufferStrategy(bufferStrategy + 1);
-    if (bufferStrategy == 2 || bufferStrategy == 3) {
-        // use -q auto3 for loss concealment
-        m_jackTrip->setBufferQueueLength(-3);
-    } else {
-        // use -q auto
-        m_jackTrip->setBufferQueueLength(-500);
-    }
+    m_jackTrip->setBufferStrategy(bufferStrategy);
+    m_jackTrip->setBufferQueueLength(-500);  // use -q auto
     m_jackTrip->setPeerAddress(studioInfo->host());
     m_jackTrip->setPeerPorts(studioInfo->port());
     m_jackTrip->setPeerHandshakePort(studioInfo->port());
@@ -325,7 +322,8 @@ JackTrip* VsDevice::initJackTrip(
 // startJackTrip starts the current jacktrip process if applicable
 void VsDevice::startJackTrip(const VsServerInfo& studioInfo)
 {
-    m_stopping = false;
+    m_stopping      = false;
+    m_networkOutage = false;
     updateState(studioInfo.id());
 
     // setup websocket listener

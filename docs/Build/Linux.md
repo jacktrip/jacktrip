@@ -25,7 +25,7 @@ dnf install "pkgconfig(jack)" rtaudio-devel git help2man python3-jinja2
 
 ### Fedora (Qt6)
 ```sh
-dnf install qt6-qtbase-devel qt5-qtnetworkauth-devel qt5-qtwebsockets-devel qt5-qtquickcontrols2-devel qt5-qtsvg-devel qt6-qtwebengine-devel qt6-qtwebchannel-devel qt6-qt5compat-devel
+dnf install qt6-qtbase-devel qt5-qtnetworkauth-devel qt5-qtwebsockets-devel qt5-qtquickcontrols2-devel qt5-qtsvg-devel qt6-qtwebengine-devel qt6-qtwebchannel-devel qt6-qt5compat-devel qt6-qtshadertools-devel
 dnf groupinstall "C Development Tools and Libraries"
 dnf groupinstall "Development Tools"
 dnf install "pkgconfig(jack)" rtaudio-devel git help2man python3-jinja2
@@ -43,7 +43,7 @@ apt install qtbase5-dev qtbase5-dev-tools qtchooser qt5-qmake qttools5-dev libqt
 ### Ubuntu and Debian/Raspbian (Qt6)
 ```sh
 apt install --no-install-recommends build-essential autoconf automake libtool make libjack-jackd2-dev git help2man libclang-dev libdbus-1-dev libdbus-1-dev python3-jinja2
-apt install qt6-base-dev qt6-base-dev-tools qmake6 qt6-tools-dev qt6-declarative-dev qt6-webengine-dev qt6-webview-dev qt6-webview-plugins libqt6svg6-dev libqt6websockets6-dev libgl1-mesa-dev
+apt install qt6-base-dev qt6-base-dev-tools qmake6 qt6-tools-dev qt6-declarative-dev qt6-webengine-dev qt6-webview-dev qt6-webview-plugins libqt6svg6-dev libqt6websockets6-dev libqt6core5compat6-dev libqt6shadertools6-dev libgl1-mesa-dev
 # for GUI builds
 apt install libfreetype6-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev libx11-xcb-dev libdrm-dev libglu1-mesa-dev libwayland-dev libwayland-egl1-mesa libgles2-mesa-dev libwayland-server0 libwayland-egl-backend-dev libxcb1-dev libxext-dev libfontconfig1-dev libxrender-dev libxcb-keysyms1-dev libxcb-image0-dev libxcb-shm0-dev libxcb-icccm4-dev '^libxcb.*-dev' libxcb-render-util0-dev libxcomposite-dev libgtk-3-dev
 apt install librtaudio-dev # if building with RtAudio

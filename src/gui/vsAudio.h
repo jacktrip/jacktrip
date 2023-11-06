@@ -143,7 +143,7 @@ class VsAudio : public QObject
 
     // Constructor
     explicit VsAudio(QObject* parent = nullptr);
-    virtual ~VsAudio() {}
+    virtual ~VsAudio();
 
     // allow VirtualStudio to get Permissions to bind to QML view
     VsPermissions& getPermissions() { return *m_permissionsPtr; }
@@ -363,7 +363,7 @@ class VsAudio : public QObject
     // other state not shared with QML
     QSharedPointer<VsPermissions> m_permissionsPtr;
     QScopedPointer<VsAudioWorker> m_audioWorkerPtr;
-    QScopedPointer<QThread> m_workerThread;
+    QThread* m_workerThreadPtr;
     QTimer m_inputClipTimer;
     QTimer m_outputClipTimer;
     Meter* m_inputMeterPluginPtr;
@@ -379,9 +379,9 @@ class VsAudio : public QObject
     QStringList m_audioBackendComboModel      = {"JACK", "RtAudio"};
     QStringList m_feedbackDetectionComboModel = {"Enabled", "Disabled"};
     QStringList m_bufferSizeComboModel = {"16", "32", "64", "128", "256", "512", "1024"};
-    QStringList m_bufferStrategyComboModel = {"Minimal Latency", "Stable Latency",
-                                              "Loss Concealment (3)",
-                                              "Loss Concealment (4)"};
+    QStringList m_bufferStrategyComboModel = {
+        "Minimal Latency", "Stable Latency", "Loss Concealment (Auto)",
+        "Loss Concealment (No Worker)", "Loss Concealment (Use Worker)"};
 
     friend class VsAudioWorker;
 };

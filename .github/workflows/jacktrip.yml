@@ -131,23 +131,6 @@ jobs:
             qt-version: '5.15.10'
             qt-type: 'static'
 
-          - name: macOS-x64-qmake-clang-shared
-            runs-on: macos-12
-            system-rtaudio: true
-            bundled-rtaudio: false
-            nogui: false
-            novs: true
-            weakjack: true
-            # jacktrip-path: jacktrip
-            # binary-path: binary
-            # bundle-path: bundle
-            # installer-path: installer
-            build-system: qmake
-            qt-version: '5.15.10'
-            qt-type: 'dynamic'
-            macosx-deployment-target: 10.13
-            xcode-directory: /Applications/Xcode_14.0.1.app # uses SDK macOS 12.3 which is latest supported by qt5
-
           - name: macOS-x64-meson-clang-shared-bundled_rtaudio
             release-name: macOS-x64
             runs-on: macos-12
@@ -162,7 +145,7 @@ jobs:
             installer-path: installer
             build-system: meson
             meson-library-type: both
-            qt-version: '6.2.5'
+            qt-version: '6.2.6'
             qt-type: 'dynamic'
             macosx-architectures: 'x86_64;arm64'
             macosx-deployment-target: 10.14
@@ -175,27 +158,12 @@ jobs:
             nogui: true
             novs: true
             weakjack: true
-            qt-version: '6.2.5'
+            qt-version: '6.2.6'
             qt-type: 'static'
             # jacktrip-path: jacktrip.exe
             # binary-path: binary
             build-system: meson
             meson-library-type: static
-
-          - name: Windows-x64-meson-msvc-qt5
-            #release-name: Windows-x64
-            runs-on: windows-2019
-            system-rtaudio: false
-            bundled-rtaudio: true
-            nogui: false
-            novs: true
-            weakjack: true
-            qt-version: '5.15.10'
-            qt-type: 'dynamic'
-            # jacktrip-path: jacktrip.exe
-            # binary-path: binary
-            build-system: meson
-            meson-library-type: shared
 
           - name: Windows-x64-meson-msvc-qt6
             release-name: Windows-x64
@@ -205,7 +173,7 @@ jobs:
             nogui: false
             novs: false
             weakjack: true
-            qt-version: '6.2.5'
+            qt-version: '6.5.3'
             qt-type: 'dynamic'
             jacktrip-path: jacktrip.exe
             installer-path: installer
@@ -218,7 +186,7 @@ jobs:
       CLANG_TIDY_NAME: clang-tidy-result
       CLANG_TIDY_PATH: ${{ github.workspace }}/clang-tidy-result
       QT_DOWNLOAD_BASE_URL: 'https://files.jacktrip.org/contrib/qt'
-      QT_DOWNLOAD_COMMIT: '89aec80'
+      QT_DOWNLOAD_COMMIT: 'b09fbe4'
 
     steps:
       - uses: actions/checkout@v3
@@ -261,7 +229,7 @@ jobs:
             if [[ "${{ matrix.runs-on }}" == "ubuntu-20.04" ]]; then
               sudo apt-get install --yes qtbase5-dev qtbase5-dev-tools qtchooser qt5-qmake qttools5-dev qtdeclarative5-dev libqt5svg5-dev libqt5websockets5-dev qtquickcontrols2-5-dev
             else
-              sudo apt-get install --yes qt6-base-dev qt6-base-dev-tools qmake6 qt6-tools-dev qt6-declarative-dev qt6-webengine-dev qt6-webview-dev qt6-webview-plugins libqt6svg6-dev libqt6websockets6-dev libgl1-mesa-dev
+              sudo apt-get install --yes qt6-base-dev qt6-base-dev-tools qmake6 qt6-tools-dev qt6-declarative-dev qt6-webengine-dev qt6-webview-dev qt6-webview-plugins libqt6svg6-dev libqt6websockets6-dev libgl1-mesa-dev libqt6core5compat6-dev libqt6shadertools6-dev
               sudo qtchooser -install qt6 $(which qmake6)
               echo "QT_SELECT=qt6" >> $GITHUB_ENV
             fi
@@ -297,6 +265,7 @@ jobs:
           sudo installer -pkg jack2-osx-1.9.16.pkg -target /
           sudo chmod a+rwx /opt
           sudo spctl --master-disable
+          brew update
           brew install ninja
           if [[ "${{ matrix.system-rtaudio }}" == true ]]; then 
             brew install rtaudio

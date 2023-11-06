@@ -54,6 +54,7 @@
 #include <QMutex>
 #include <QMutexLocker>
 #include <QThread>
+#include <QWaitCondition>
 #include <iostream>
 
 class JackTrip;  // forward declaration
@@ -183,6 +184,9 @@ class DataProtocol : public QThread
     }
     void setUseRtPriority(bool use) { mUseRtPriority = use; }
 
+    /// @brief wait for the thread to start up
+    void waitForStart();
+
    signals:
 
     void signalError(const char* error_message);
@@ -195,6 +199,9 @@ class DataProtocol : public QThread
      */
     runModeT getRunMode() const { return mRunMode; }
 
+    /// @brief called by the thread during startup
+    void threadHasStarted();
+
     /// Boolean stop the execution of the thread
     volatile bool mStopped;
     /// Boolean to indicate if the RECEIVER is waiting to obtain peer address
@@ -202,6 +209,7 @@ class DataProtocol : public QThread
     /// Boolean that indicates if a packet was received
     volatile bool mHasPacketsToReceive;
     QMutex mMutex;
+    QWaitCondition mThreadHasStarted;
 
    private:
     int mLocalPort;           ///< Local Port number to Bind

@@ -116,6 +116,7 @@ class Analyzer : public ProcessPlugin
     int mNumSpectra               = 10;
     float** mSpectra              = nullptr;
     float** mSpectraDifferentials = nullptr;
+    uint32_t mDetectionHistory    = 0;
 
    signals:
     void signalFeedbackDetected();

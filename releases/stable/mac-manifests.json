@@ -2,6 +2,16 @@
   "app_name": "JackTrip",
   "releases": [
     {
+      "version": "2.0.2",
+      "changelog": "Full changelog at https://github.com/jacktrip/jacktrip/releases/tag/v2.0.2",
+      "download": {
+        "date": "2023-09-02T00:00:00Z",
+        "url": "https://files.jacktrip.org/app-builds/JackTrip-v2.0.2-macOS-x64-signed-installer.pkg",
+        "downloadSize": "177283016",
+        "sha256": "e4cd66790d0d008980402aef42d712fe42788a87e9d48a28c49d5e9c6ba55aea"
+      }
+    },
+    {
       "version": "2.0.1",
       "changelog": "Full changelog at https://github.com/jacktrip/jacktrip/releases/tag/v2.0.1",
       "download": {

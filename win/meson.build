@@ -5,7 +5,8 @@ if host_machine.system() == 'windows'
 					depend_files: 'jacktrip.ico',
 					include_directories: '.')
 
-	defines += '-D_WIN32_WINNT=0x0600'
+	defines += '-D_WIN32_WINNT=0x0A00'
+	defines += '-DWINVER=0x0A00'
 	defines += '-DWIN32_LEAN_AND_MEAN'
 	defines += '-DNOMINMAX'
 

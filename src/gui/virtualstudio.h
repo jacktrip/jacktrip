@@ -52,6 +52,7 @@
 #include <QWebChannel>
 #include <QWebSocketServer>
 
+#include "../Settings.h"
 #include "qjacktrip.h"
 #include "vsConstants.h"
 #include "vsQuickView.h"
@@ -127,6 +128,7 @@ class VirtualStudio : public QObject
     ~VirtualStudio() override;
 
     void setStandardWindow(QSharedPointer<QJackTrip> window);
+    void setCLISettings(QSharedPointer<Settings> settings);
     void show();
     void raiseToTop();
 
@@ -275,8 +277,9 @@ class VirtualStudio : public QObject
 
     VsQuickView m_view;
     VsServerInfo m_currentStudio;
+    QNetworkAccessManager* m_networkAccessManagerPtr;
     QSharedPointer<QJackTrip> m_standardWindow;
-    QScopedPointer<QNetworkAccessManager> m_networkAccessManager;
+    QSharedPointer<Settings> m_cliSettings;
     QSharedPointer<VsAuth> m_auth;
     QSharedPointer<VsApi> m_api;
     QScopedPointer<VsDevice> m_devicePtr;
@@ -319,7 +322,6 @@ class VirtualStudio : public QObject
     bool m_collapseDeviceControls = false;
     bool m_testMode               = false;
     bool m_authenticated          = false;
-    bool m_networkOutage          = false;
     float m_fontScale             = 1;
     float m_uiScale               = 1;
     uint32_t m_webChannelPort     = 1;

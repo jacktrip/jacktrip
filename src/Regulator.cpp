@@ -91,16 +91,16 @@ using std::endl;
 using std::setw;
 
 // constants...
-constexpr int HIST          = 4;    // for mono at FPP 16-128, see below for > mono, > 128
-constexpr int ModSeqNumInit = 256;  // bounds on seqnums, 65536 is max in packet header
-constexpr int NumSlotsMax   = 128;  // mNumSlots looped for recent arrivals
-constexpr int LostWindowMax = 32;   // mLostWindow looped for recent arrivals
+constexpr int HIST        = 4;     // for mono at FPP 16-128, see below for > mono, > 128
+constexpr int NumSlotsMax = 4096;  // mNumSlots looped for recent arrivals
 constexpr double DefaultAutoHeadroom =
     3.0;                           // msec padding for auto adjusting mMsecTolerance
 constexpr double AutoMax = 250.0;  // msec bounds on insane IPI, like ethernet unplugged
 constexpr double AutoInitDur = 6000.0;  // kick in auto after this many msec
 constexpr double AutoInitValFactor =
     0.5;  // scale for initial mMsecTolerance during init phase if unspecified
+constexpr double MaxWaitTime = 30;  // msec
+
 // tweak
 constexpr int WindowDivisor = 8;     // for faster auto tracking
 constexpr int MaxFPP        = 1024;  // tested up to this FPP
@@ -193,25 +193,24 @@ Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
     mLastSeqNumIn.store(-1, std::memory_order_relaxed);
     mLastSeqNumOut = -1;
     mPhasor.resize(mNumChannels, 0.0);
-    mIncomingTiming.resize(ModSeqNumInit);
-    for (int i = 0; i < ModSeqNumInit; i++)
+    mIncomingTiming.resize(NumSlotsMax);
+    mAssemblyCounts.resize(NumSlotsMax);
+    for (int i = 0; i < NumSlotsMax; i++) {
         mIncomingTiming[i] = 0.0;
-    mModSeqNum           = mNumSlots * 2;
+        mAssemblyCounts[i] = 0;
+    }
     mFPPratioNumerator   = 1;
     mFPPratioDenominator = 1;
     mFPPratioIsSet       = false;
     mBytesPeerPacket     = mBytes;
-    mAssemblyCnt         = 0;
-    mModCycle            = 1;
-    mModSeqNumPeer       = 1;
     mPeerFPP             = mFPP;  // use local until first packet arrives
     mAutoHeadroom        = DefaultAutoHeadroom;
-    mFPPdurMsec          = 1000.0 * mFPP / 48000.0;
-    changeGlobal_3(LostWindowMax);
+    mFPPdurMsec          = 1000.0 * mFPP / mSampleRate;
     changeGlobal_2(NumSlotsMax);  // need hg if running GUI
     if (m_b_BroadcastQueueLength) {
-        m_b_BroadcastRingBuffer = new JitterBuffer(
-            mFPP, qLen, 48000, 1, m_b_BroadcastQueueLength, mNumChannels, mAudioBitRes);
+        m_b_BroadcastRingBuffer =
+            new JitterBuffer(mFPP, qLen, mSampleRate, 1, m_b_BroadcastQueueLength,
+                             mNumChannels, mAudioBitRes);
         qDebug() << "Broadcast started in Regulator with packet queue of"
                  << m_b_BroadcastQueueLength;
         // have not implemented the mJackTrip->queueLengthChanged functionality
@@ -250,19 +249,11 @@ void Regulator::changeGlobal_2(int x)
         mNumSlots = 1;
     if (mNumSlots > NumSlotsMax)
         mNumSlots = NumSlotsMax;
-    mModSeqNum = mNumSlots * 2;
-    printParams();
-}
-
-void Regulator::changeGlobal_3(int x)
-{  // mLostWindow
-    mLostWindow = x;
     printParams();
 }
 
 void Regulator::printParams(){
-    //    qDebug() << "mMsecTolerance" << mMsecTolerance << "mNumSlots" << mNumSlots
-    //             << "mModSeqNum" << mModSeqNum << "mLostWindow" << mLostWindow;
+    //    qDebug() << "mMsecTolerance" << mMsecTolerance << "mNumSlots" << mNumSlots;
 };
 
 Regulator::~Regulator()
@@ -299,13 +290,6 @@ void Regulator::setFPPratio()
         //        qDebug() << "peerBuffers / localBuffers" << mFPPratioNumerator << " / "
         //                 << mFPPratioDenominator;
     }
-    if (mFPPratioNumerator > 1) {
-        mBytesPeerPacket = mBytes / mFPPratioNumerator;
-        mModCycle        = mFPPratioNumerator - 1;
-        mModSeqNumPeer   = mModSeqNum * mFPPratioNumerator;
-    } else if (mFPPratioDenominator > 1) {
-        mModSeqNumPeer = mModSeqNum / mFPPratioDenominator;
-    }
 }
 
 //*******************************************************************************
@@ -313,23 +297,22 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
 {
     if (seq_num != -1) {
         if (!mFPPratioIsSet) {  // first peer packet
-            mPeerFPP        = len / (mNumChannels * mBitResolutionMode);
-            mPeerFPPdurMsec = 1000.0 * mPeerFPP / 48000.0;
+            mBytesPeerPacket = len;
+            mPeerFPP         = len / (mNumChannels * mBitResolutionMode);
+            mPeerFPPdurMsec  = 1000.0 * mPeerFPP / mSampleRate;
             // bufstrategy 1 autoq mode overloads qLen with negative val
             // creates this ugly code
-            if (mMsecTolerance < 0) {  // handle -q auto or, for example, -q auto10
+            if (mMsecTolerance <= 0) {  // handle -q auto or, for example, -q auto10
                 mAuto = true;
                 // default is -500 from bufstrategy 1 autoq mode
-                // tweak
-                if (mMsecTolerance != -500.0) {
-                    // use it to set headroom
-                    mAutoHeadroom = -mMsecTolerance;
-                    qDebug() << "PLC is in auto mode and has been set with"
-                             << mAutoHeadroom << "ms headroom";
-                    if (mAutoHeadroom > 50.0)
-                        qDebug() << "That's a very large value and should be less than, "
-                                    "for example, 50ms";
-                }
+                // use mMsecTolerance to set headroom
+                mAutoHeadroom =
+                    (mMsecTolerance == -500.0) ? DefaultAutoHeadroom : -mMsecTolerance;
+                qDebug() << "PLC is in auto mode and has been set with" << mAutoHeadroom
+                         << "ms headroom";
+                if (mAutoHeadroom > 50.0)
+                    qDebug() << "That's a very large value and should be less than, "
+                                "for example, 50ms";
                 // found an interesting relationship between mPeerFPP and initial
                 // mMsecTolerance mPeerFPP*0.5 is pretty good though that's an oddball
                 // conversion of bufsize directly to msec
@@ -338,44 +321,36 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
             setFPPratio();
             // number of stats tick calls per sec depends on FPP
             int maxFPP = (mPeerFPP > mFPP) ? mPeerFPP : mFPP;
-            pushStat =
-                new StdDev(1, &mIncomingTimer, (int)(floor(48000.0 / (double)maxFPP)));
+            pushStat   = new StdDev(1, &mIncomingTimer,
+                                    (int)(floor(mSampleRate / (double)maxFPP)));
             pullStat =
-                new StdDev(2, &mIncomingTimer, (int)(floor(48000.0 / (double)mFPP)));
+                new StdDev(2, &mIncomingTimer, (int)(floor(mSampleRate / (double)mFPP)));
             mFPPratioIsSet = true;
         }
         if (mFPPratioNumerator == mFPPratioDenominator) {
+            // local FPP matches peer
             pushPacket(buf, seq_num);
+        } else if (mFPPratioNumerator > 1) {
+            // 2/1, 4/1 peer FPP is lower, (local/peer)/1
+            assemblePacket(buf, seq_num);
         } else {
-            seq_num %= mModSeqNumPeer;
-            if (mFPPratioNumerator > 1) {  // 2/1, 4/1 peer FPP is lower, , (local/peer)/1
-                int tmp = (seq_num % mFPPratioNumerator) * mBytesPeerPacket;
-                memcpy(&mAssembledPacket[tmp], buf, mBytesPeerPacket);
-                if ((seq_num % mFPPratioNumerator) == mModCycle) {
-                    if (mAssemblyCnt == mModCycle)
-                        pushPacket(mAssembledPacket, seq_num / mFPPratioNumerator);
-                    //                    else
-                    //                        qDebug() << "incomplete due to lost packet";
-                    mAssemblyCnt = 0;
-                } else
-                    mAssemblyCnt++;
-            } else if (mFPPratioDenominator
-                       > 1) {  // 1/2, 1/4 peer FPP is higher, 1/(peer/local)
-                seq_num *= mFPPratioDenominator;
-                for (int i = 0; i < mFPPratioDenominator; i++) {
-                    int tmp = i * mBytes;
-                    memcpy(mAssembledPacket, &buf[tmp], mBytes);
-                    pushPacket(mAssembledPacket, seq_num);
-                    seq_num++;
-                }
+            // 1/2, 1/4 peer FPP is higher, 1/(peer/local)
+            seq_num *= mFPPratioDenominator;
+            for (int i = 0; i < mFPPratioDenominator; i++) {
+                memcpy(mAssembledPacket, buf, mBytes);
+                pushPacket(mAssembledPacket, seq_num);
+                buf += mBytes;
+                seq_num++;
             }
         }
         pushStat->tick();
-        double adjustAuto =
-            pushStat->calcAuto(mAutoHeadroom, mFPPdurMsec, mPeerFPPdurMsec);
-        //        qDebug() << adjustAuto;
-        if (mAuto && (pushStat->lastTime > AutoInitDur))
-            mMsecTolerance = adjustAuto;
+        if (mAuto && (pushStat->lastTime > AutoInitDur)) {
+            // use max to accomodate for bad clocks in audio interfaces that
+            // cause a wide range of callback intervals (like realtek at 11ms)
+            mMsecTolerance = std::max<double>(
+                pushStat->calcAuto(mAutoHeadroom, mFPPdurMsec, mPeerFPPdurMsec),
+                pullStat->calcAuto(mAutoHeadroom, mFPPdurMsec, mPeerFPPdurMsec));
+        }
     }
 };
 
@@ -384,54 +359,82 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
 {
     if (m_b_BroadcastQueueLength)
         m_b_BroadcastRingBuffer->insertSlotNonBlocking(buf, mBytes, 0, seq_num);
-    seq_num %= mModSeqNum;
+    seq_num %= mNumSlots;
     // if (seq_num==0) return;   // impose regular loss
     mIncomingTiming[seq_num] =
         mMsecTolerance + (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
-    if (seq_num != -1)
-        memcpy(mSlots[seq_num % mNumSlots], buf, mBytes);
+    memcpy(mSlots[seq_num], buf, mBytes);
+    mLastSeqNumIn.store(seq_num, std::memory_order_release);
+};
+
+//*******************************************************************************
+void Regulator::assemblePacket(const int8_t* buf, int peer_seq_num)
+{
+    // copy packet fragment into slot
+    int seq_num = (peer_seq_num / mFPPratioNumerator) % mNumSlots;
+    int pkt_pos = (peer_seq_num % mFPPratioNumerator);
+    memcpy(&(mSlots[seq_num][pkt_pos * mBytesPeerPacket]), buf, mBytesPeerPacket);
+
+    // check if done assembling yet
+    if (++mAssemblyCounts[seq_num] < mFPPratioNumerator)
+        return;
+
+    // complete it
+    if (m_b_BroadcastQueueLength)
+        m_b_BroadcastRingBuffer->insertSlotNonBlocking(mSlots[seq_num], mBytes, 0,
+                                                       seq_num);
+    mIncomingTiming[seq_num] =
+        mMsecTolerance + (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
     mLastSeqNumIn.store(seq_num, std::memory_order_release);
 };
 
 //*******************************************************************************
 void Regulator::pullPacket()
 {
-    int lastSeqNumIn = mLastSeqNumIn.load(std::memory_order_acquire);
-    mSkip            = 0;
+    const double now       = (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
+    const int lastSeqNumIn = mLastSeqNumIn.load(std::memory_order_acquire);
+    mSkip                  = 0;
+
     if ((lastSeqNumIn == -1) || (!mFPPratioIsSet)) {
         goto ZERO_OUTPUT;
+    } else if (lastSeqNumIn == mLastSeqNumOut) {
+        goto UNDERRUN;
     } else {
-        mLastSeqNumOut++;
-        mLastSeqNumOut %= mModSeqNum;
-        double now = (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
-        for (int i = mLostWindow; i >= 0; i--) {
+        // calculate how many new packets we want to look at to
+        // find the next packet to pull
+        int new_pkts = lastSeqNumIn - mLastSeqNumOut;
+        if (new_pkts < 0)
+            new_pkts += mNumSlots;
+
+        // iterate through each new packet
+        for (int i = new_pkts - 1; i >= 0; i--) {
             int next = lastSeqNumIn - i;
             if (next < 0)
-                next += mModSeqNum;
-            if (mIncomingTiming[next] < mIncomingTiming[mLastSeqNumOut])
-                continue;
-            mSkip = next - mLastSeqNumOut;
-            if (mSkip < 0)
-                mSkip += mModSeqNum;
+                next += mNumSlots;
+            if (mFPPratioNumerator) {
+                // time for assembly has passed; reset for next time
+                mAssemblyCounts[next] = 0;
+            }
+            if (mLastSeqNumOut != -1) {
+                // account for missing packets
+                if (mIncomingTiming[next] < mIncomingTiming[mLastSeqNumOut])
+                    continue;
+                // count how many we have skipped
+                mSkip = next - mLastSeqNumOut - 1;
+                if (mSkip < 0)
+                    mSkip += mNumSlots;
+            }
+            // set next as the best candidate
             mLastSeqNumOut = next;
-            if (mIncomingTiming[next] > now) {
-                memcpy(mXfrBuffer, mSlots[mLastSeqNumOut % mNumSlots], mBytes);
+            // if next timestamp < now, it is too old based upon tolerance
+            if (mIncomingTiming[mLastSeqNumOut] >= now) {
+                // next is the best candidate
+                memcpy(mXfrBuffer, mSlots[mLastSeqNumOut], mBytes);
                 goto PACKETOK;
             }
         }
-        // make this a global value? -- same threshold as
-        // UdpDataProtocol::printUdpWaitedTooLong
-        double wait_time = 30;  // msec
-        if ((mLastSeqNumOut == lastSeqNumIn)
-            && ((now - mIncomingTiming[mLastSeqNumOut]) > wait_time)) {
-            //                        std::cout << (mIncomingTiming[mLastSeqNumOut] - now)
-            //                        << "lastSeqNumIn: " << lastSeqNumIn <<
-            //                        "\tmLastSeqNumOut: " << mLastSeqNumOut << std::endl;
-            goto ZERO_OUTPUT;
-        }  // "good underrun", not a stuck client
-        //                    std::cout << "within window -- lastSeqNumIn: " <<
-        //                    lastSeqNumIn <<
-        //                    "\tmLastSeqNumOut: " << mLastSeqNumOut << std::endl;
+
+        // no viable candidate
         goto UNDERRUN;
     }
 
@@ -441,14 +444,17 @@ PACKETOK : {
         pullStat->plcOverruns += mSkip;
     } else
         processPacket(false);
-    pullStat->tick();
     goto OUTPUT;
 }
 
 UNDERRUN : {
-    processPacket(true);
     pullStat->plcUnderruns++;  // count late
-    pullStat->tick();
+    if ((mLastSeqNumOut == lastSeqNumIn)
+        && ((now - mIncomingTiming[mLastSeqNumOut]) > MaxWaitTime)) {
+        goto ZERO_OUTPUT;
+    }
+    // "good underrun", not a stuck client
+    processPacket(true);
     goto OUTPUT;
 }
 
@@ -456,6 +462,7 @@ ZERO_OUTPUT:
     memcpy(mXfrBuffer, mZeros, mBytes);
 
 OUTPUT:
+    pullStat->tick();
     return;
 };
 
@@ -463,9 +470,6 @@ OUTPUT:
 void Regulator::processPacket(bool glitch)
 {
     double tmp = 0.0;
-    if ((glitch) && (mFPPratioDenominator > 1)) {
-        glitch = !(mLastSeqNumOut % mFPPratioDenominator);
-    }
     if (glitch)
         tmp = (double)mIncomingTimer.nsecsElapsed();
     for (int ch = 0; ch < mNumChannels; ch++)
@@ -725,20 +729,23 @@ StdDev::StdDev(int id, QElapsedTimer* timer, int w) : mId(id), mTimer(timer), wi
     lastMax           = 0.0;
     longTermMax       = 0.0;
     longTermMaxAcc    = 0.0;
+    longTermMean      = 0.0;
     lastTime          = 0.0;
     lastPLCdspElapsed = 0.0;
+    lastPlcOverruns   = 0;
+    lastPlcUnderruns  = 0;
+    plcOverruns       = 0;
+    plcUnderruns      = 0;
     data.resize(w, 0.0);
 }
 
 void StdDev::reset()
 {
-    ctr          = 0;
-    plcOverruns  = 0;
-    plcUnderruns = 0;
-    mean         = 0.0;
-    acc          = 0.0;
-    min          = 999999.0;
-    max          = -999999.0;
+    ctr  = 0;
+    mean = 0.0;
+    acc  = 0.0;
+    min  = 999999.0;
+    max  = -999999.0;
 };
 
 double StdDev::calcAuto(double autoHeadroom, double localFPPdur, double peerFPPdur)
@@ -748,6 +755,8 @@ double StdDev::calcAuto(double autoHeadroom, double localFPPdur, double peerFPPd
     if ((longTermStdDev == 0.0) || (longTermMax == 0.0))
         return AutoMax;
     double tmp = longTermStdDev + ((longTermMax > AutoMax) ? AutoMax : longTermMax);
+    if (tmp > AutoMax)
+        tmp = AutoMax;
     if (tmp < localFPPdur)
         tmp = localFPPdur;
     if (tmp < peerFPPdur)
@@ -761,6 +770,10 @@ void StdDev::tick()
     double now       = (double)mTimer->nsecsElapsed() / 1000000.0;
     double msElapsed = now - lastTime;
     lastTime         = now;
+    // discard measurements that exceed the max wait time
+    // this prevents temporary outages from skewing jitter metrics
+    if (msElapsed > MaxWaitTime)
+        return;
     if (ctr != window) {
         data[ctr] = msElapsed;
         if (msElapsed < min)
@@ -769,7 +782,16 @@ void StdDev::tick()
             max = msElapsed;
         acc += msElapsed;
         ctr++;
+        /*
+        // for debugging startup issues -- you'll see a bunch of pushes
+        // UDPDataProtocol all at once, which I imagine were queued up
+        // in the kernel's stack
+        if (gVerboseFlag && longTermCnt == 0) {
+            std::cout << setw(10) << msElapsed << " " << mId << endl;
+        }
+        */
     } else {
+        // calculate mean and standard deviation
         mean       = (double)acc / (double)window;
         double var = 0.0;
         for (int i = 0; i < window; i++) {
@@ -778,33 +800,50 @@ void StdDev::tick()
         }
         var /= (double)window;
         double stdDevTmp = sqrt(var);
-        if (longTermCnt) {
+
+        if (longTermCnt <= 1) {
+            if (longTermCnt == 0 && gVerboseFlag) {
+                cout << "printing directly from Regulator->stdDev->tick:\n (mean / min / "
+                        "max / "
+                        "stdDev / longTermMean / longTermMax / longTermStdDev) \n";
+            }
+            // ignore first stats because they will be really unreliable
+            longTermMax       = max;
+            longTermMaxAcc    = max;
+            longTermMean      = mean;
+            longTermStdDev    = stdDevTmp;
+            longTermStdDevAcc = stdDevTmp;
+        } else {
             longTermStdDevAcc += stdDevTmp;
-            longTermStdDev = longTermStdDevAcc / (double)longTermCnt;
             longTermMaxAcc += max;
-            longTermMax = longTermMaxAcc / (double)longTermCnt;
-            if (gVerboseFlag)
-                cout << setw(10) << mean << setw(10) << lastMin << setw(10) << max
-                     << setw(10) << stdDevTmp << setw(10) << longTermStdDev << " " << mId
-                     << endl;
-        } else if (gVerboseFlag)
-            cout << "printing directly from Regulator->stdDev->tick:\n (mean / min / "
-                    "max / "
-                    "stdDev / longTermStdDev) \n";
+            longTermStdDev = longTermStdDevAcc / (double)longTermCnt;
+            longTermMax    = longTermMaxAcc / (double)longTermCnt;
+            longTermMean   = longTermMean / (double)longTermCnt;
+        }
+
+        if (gVerboseFlag) {
+            cout << setw(10) << mean << setw(10) << min << setw(10) << max << setw(10)
+                 << stdDevTmp << setw(10) << longTermMean << setw(10) << longTermMax
+                 << setw(10) << longTermStdDev << " " << mId << endl;
+        }
 
         longTermCnt++;
-        lastMean         = mean;
-        lastMin          = min;
-        lastMax          = max;
-        lastPlcOverruns  = plcOverruns;
-        lastPlcUnderruns = plcUnderruns;
-        lastStdDev       = stdDevTmp;
+        lastMean   = mean;
+        lastMin    = min;
+        lastMax    = max;
+        lastStdDev = stdDevTmp;
         reset();
     }
 }
 
 void Regulator::readSlotNonBlocking(int8_t* ptrToReadSlot)
 {
+    if (!mFPPratioIsSet) {
+        // audio callback before receiving first packet from peer
+        // nothing is initialized yet, so just return silence
+        memcpy(ptrToReadSlot, mZeros, mBytes);
+        return;
+    }
     if (mUseWorkerThread) {
         // use separate worker thread for PLC
         mRegulatorWorkerPtr->pop(ptrToReadSlot);
@@ -835,7 +874,10 @@ bool Regulator::getStats(RingBuffer::IOStat* stat, bool reset)
     }
 
     // hijack  of  struct IOStat {
-    stat->underruns = pullStat->lastPlcUnderruns + pullStat->lastPlcOverruns;
+    stat->underruns = (pullStat->plcUnderruns - pullStat->lastPlcUnderruns)
+                      + (pullStat->plcOverruns - pullStat->lastPlcOverruns);
+    pullStat->lastPlcUnderruns = pullStat->plcUnderruns;
+    pullStat->lastPlcOverruns  = pullStat->plcOverruns;
 #define FLOATFACTOR 1000.0
     stat->overflows = FLOATFACTOR * pushStat->longTermStdDev;
     stat->skew      = FLOATFACTOR * pushStat->lastMean;

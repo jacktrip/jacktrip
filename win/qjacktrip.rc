@@ -1,1 +1,6 @@
 IDI_ICON1 ICON "jacktrip.ico"
+
+#ifndef RT_MANIFEST
+#define RT_MANIFEST 24
+#endif
+1 RT_MANIFEST "jacktrip.exe.manifest"

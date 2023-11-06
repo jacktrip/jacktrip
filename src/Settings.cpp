@@ -99,6 +99,7 @@ enum JTLongOptIDS {
     OPT_AUDIOINPUTDEVICE,
     OPT_AUDIOOUTPUTDEVICE,
     OPT_GUI,
+    OPT_CLASSIC_GUI,
     OPT_DEEPLINK
 };
 
@@ -208,7 +209,9 @@ void Settings::parseInput(int argc, char** argv)
         {"examine-audio-delay", required_argument, NULL,
          'x'},  // test mode - measure audio round-trip latency statistics
         {"gui", no_argument, NULL, OPT_GUI},                  // Force GUI mode
-        {"deeplink", optional_argument, NULL, OPT_DEEPLINK},  // VirtualStudio Deeplink
+        {"classic-gui", no_argument, NULL, OPT_CLASSIC_GUI},  // Force Classic Mode GUI
+        {"deeplink", optional_argument, NULL,
+         OPT_DEEPLINK},  // Deeplink URL (should be in the form jacktrip://...)
         {NULL, 0, NULL, 0}};
 
     // Parse Command Line Arguments
@@ -342,9 +345,10 @@ void Settings::parseInput(int argc, char** argv)
         case 'q':
             //-------------------------------------------------------
             if (0 == strncmp(optarg, "auto", 4)) {
-                mBufferQueueLength = -atoi(optarg + 4);
-                if (0 == mBufferQueueLength) {
+                if (optarg[4] == 0) {
                     mBufferQueueLength = -500;
+                } else {
+                    mBufferQueueLength = -atoi(optarg + 4);
                 }
             } else if (atoi(optarg) <= 0) {
                 printUsage();
@@ -678,14 +682,18 @@ void Settings::parseInput(int argc, char** argv)
             mAudioTester->setPrintIntervalSec(atof(optarg));
             break;
         }
-        // The following two options need to be handled earlier, so are all parsed in
+        // The following option needs to be handled earlier, so are all parsed in
         // main. Included here so that we don't get an unrecognized option error.
         case OPT_GUI:
+            break;
+        case OPT_CLASSIC_GUI:
+            mGuiForceClassicMode = true;
             break;
         case OPT_DEEPLINK:
             if (optarg == NULL && optind < argc && argv[optind][0] != '-') {
                 optarg = argv[optind++];
             }
+            mDeeplink = optarg;
             break;
         case ':': {
             printUsage();
@@ -710,10 +718,16 @@ void Settings::parseInput(int argc, char** argv)
         }
     }
 
+    // allow deeplink in command line without option
+    if (optind < argc && strncmp(argv[optind], "jacktrip://", 11) == 0) {
+        mDeeplink = argv[optind];
+        optind++;
+    }
+
     // Warn user if undefined options where entered
     //----------------------------------------------------------------------------
     if (optind < argc) {
-        if (strcmp(argv[optind], "help") != 0) {
+        if (strncmp(argv[optind], "help", 4) != 0) {
             cout << gPrintSeparator << endl;
             cout << "*** Unexpected command-line argument(s): ";
             for (; optind < argc; optind++) {
@@ -949,7 +963,9 @@ void Settings::printUsage()
     cout << " --password                               The password to use when connecting as a hub client (if not supplied here, this is read from standard input)" << endl;
     cout << endl;
     cout << "ARGUMENTS FOR THE GUI:" << endl;
-    cout << " --gui                                   Force JackTrip to run with the GUI. If not using VirtualStudio mode, command line switches in the required arguments, optional arguments (except -l, -j, -L, --appendthreadid), audio patching, and authentication sections will be honoured, and default settings will be used where arguments aren't supplied. Options from other sections will be ignored (and the last used settings will be loaded), except for -V, and the --version and --help switches which will override this." << endl;
+    cout << " --gui                                    Force JackTrip to run with the GUI. If not using VirtualStudio mode, command line switches in the required arguments, optional arguments (except -l, -j, -L, --appendthreadid), audio patching, and authentication sections will be honoured, and default settings will be used where arguments aren't supplied. Options from other sections will be ignored (and the last used settings will be loaded), except for -V, and the --version and --help switches which will override this." << endl;
+    cout << " --classic-gui                            Force JackTrip to run with the Classic Mode GUI." << endl;
+    cout << " --deeplink                               Handle a deeplink URL in the format jacktrip://join/<studio_id> by connecting as a hub client" << endl;
     cout << endl;
     cout << "HELP ARGUMENTS: " << endl;
     cout << " -v, --version                            Prints Version Number" << endl;

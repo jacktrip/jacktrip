@@ -52,6 +52,7 @@
 #include <QFile>
 #include <QQmlEngine>
 #include <QQuickView>
+#include <QSGRendererInterface>
 #include <QSettings>
 #include <QStandardPaths>
 #include <QTextStream>
@@ -96,9 +97,11 @@ QCoreApplication* createApplication(int& argc, char* argv[])
     // Check for some specific, GUI related command line options.
     bool forceGui = false;
     for (int i = 1; i < argc; i++) {
-        if (strcmp(argv[i], "--gui") == 0) {
+        if (strncmp(argv[i], "--gui", 5) == 0 || strncmp(argv[i], "--deeplink", 10) == 0
+            || strncmp(argv[i], "--classic-gui", 13) == 0
+            || strncmp(argv[i], "jacktrip://", 11) == 0) {
             forceGui = true;
-        } else if (strcmp(argv[i], "--test-gui") == 0) {
+        } else if (strncmp(argv[i], "--test-gui", 10) == 0) {
             // Command line option to test if the binary has been built with GUI support.
             // Exits immediately. Exits with an error if GUI support has not been built
             // in.
@@ -152,6 +155,13 @@ QCoreApplication* createApplication(int& argc, char* argv[])
         QGuiApplication::setHighDpiScaleFactorRoundingPolicy(
             Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
 #endif  // QT_VERSION
+
+        // Initialize webengine
+        QtWebEngineQuick::initialize();
+        // TODO: Add support for QtWebView
+        // qputenv("QT_WEBVIEW_PLUGIN", "native");
+        // QtWebView::initialize();
+
         return new JTApplication(argc, argv);
 #else
         // Turn on high DPI support.
@@ -168,6 +178,23 @@ QCoreApplication* createApplication(int& argc, char* argv[])
             Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
 #endif  // NO_VS
 #endif  // QT_VERSION
+
+#if !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        // Enables resource sharing between the OpenGL contexts
+        QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
+        QCoreApplication::setAttribute(Qt::AA_UseDesktopOpenGL);
+        // QCoreApplication::setAttribute(Qt::AA_UseOpenGLES);
+
+        // QQuickWindow::setGraphicsApi(QSGRendererInterface::Direct3D11);
+        QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
+
+        // Initialize webengine
+        QtWebEngineQuick::initialize();
+        // TODO: Add support for QtWebView
+        // qputenv("QT_WEBVIEW_PLUGIN", "native");
+        // QtWebView::initialize();
+#endif
+
         return new QApplication(argc, argv);
 #endif  // Q_OS_MACOS
 #endif  // NO_GUI
@@ -289,15 +316,6 @@ bool isRunFromCmd()
 
 int main(int argc, char* argv[])
 {
-#ifndef NO_GUI
-#if !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    QtWebEngineQuick::initialize();
-    // TODO: Add support for QtWebView
-    // qputenv("QT_WEBVIEW_PLUGIN", "native");
-    // QtWebView::initialize();
-#endif  // NO_VS && QT_VERSION
-#endif  // NO_GUI
-
     QScopedPointer<QCoreApplication> app(createApplication(argc, argv));
     QScopedPointer<JackTrip> jackTrip;
     QScopedPointer<UdpHubListener> udpHub;
@@ -347,16 +365,27 @@ int main(int argc, char* argv[])
         qmlRegisterType<VsQmlClipboard>("VS", 1, 0, "Clipboard");
 
         // prepare handler for deeplinks jacktrip://join/<StudioID>
-        vsDeeplinkPtr.reset(new VsDeeplink(app.data()));
+        vsDeeplinkPtr.reset(new VsDeeplink(cliSettings->getDeeplink()));
         if (!vsDeeplinkPtr->getDeeplink().isEmpty()) {
             bool readyForExit = vsDeeplinkPtr->waitForReady();
             if (readyForExit)
                 return 0;
         }
 
-        // Check if we need to show our first run window.
+        // Check which mode we are running in
         QSettings settings;
-        int uiMode = settings.value(QStringLiteral("UiMode"), QJackTrip::UNSET).toInt();
+        int uiMode = QJackTrip::UNSET;
+        if (!vsDeeplinkPtr->getDeeplink().isEmpty()) {
+            uiMode = QJackTrip::VIRTUAL_STUDIO;
+        } else if (cliSettings->guiForceClassicMode()) {
+            uiMode = QJackTrip::STANDARD;
+            // force settings change; otherwise, virtual studio
+            // window will still be displayed
+            settings.setValue(QStringLiteral("UiMode"), uiMode);
+        } else {
+            uiMode = settings.value(QStringLiteral("UiMode"), QJackTrip::UNSET).toInt();
+        }
+
         window.reset(new QJackTrip(cliSettings, !vsDeeplinkPtr->getDeeplink().isEmpty()));
 #else
         window.reset(new QJackTrip(cliSettings));
@@ -369,6 +398,7 @@ int main(int argc, char* argv[])
         QObject::connect(vsPtr.data(), &VirtualStudio::signalExit, app.data(),
                          &QCoreApplication::quit, Qt::QueuedConnection);
         vsPtr->setStandardWindow(window);
+        vsPtr->setCLISettings(cliSettings);
         window->setVs(vsPtr);
         QObject::connect(vsDeeplinkPtr.get(), &VsDeeplink::signalDeeplink, vsPtr.get(),
                          &VirtualStudio::handleDeeplinkRequest, Qt::QueuedConnection);

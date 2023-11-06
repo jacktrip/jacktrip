@@ -84,6 +84,7 @@ class Settings : public QObject
     bool getLoopBack() { return mLoopBack; }
     bool isHubServer() { return mJackTripMode == JackTrip::SERVERPINGSERVER; }
     bool guiIgnoresArguments() { return mGuiIgnoresArguments; }
+    bool guiForceClassicMode() { return mGuiForceClassicMode; }
     bool isModeSet() { return mModeSet; }
 
     JackTrip::jacktripModeT getJackTripMode() { return mJackTripMode; }
@@ -106,6 +107,7 @@ class Settings : public QObject
     bool getConnectDefaultAudioPorts() { return mConnectDefaultAudioPorts; }
     int getBufferStrategy() { return mBufferStrategy; }
     int getBroadCastQueue() { return mBroadcastQueue; }
+    int getIOStatTimeout() { return mIOStatTimeout; }
     bool getUseRtUdpPriority() { return mUseRtUdpPriority; }
     unsigned int getHubConnectionMode() { return mHubConnectionMode; }
     bool getPatchServerAudio() { return mPatchServerAudio; }
@@ -116,6 +118,7 @@ class Settings : public QObject
     QString getCredsFile() { return mCredsFile; }
     QString getUsername() { return mUsername; }
     QString getPassword() { return mPassword; }
+    const QString& getDeeplink() const { return mDeeplink; }
 
    private:
     void disableEcho(bool disabled);
@@ -123,6 +126,7 @@ class Settings : public QObject
 
     bool mGuiEnabled          = false;
     bool mGuiIgnoresArguments = false;
+    bool mGuiForceClassicMode = false;
 
     JackTrip::jacktripModeT mJackTripMode =
         JackTrip::SERVER;  ///< JackTrip::jacktripModeT
@@ -189,6 +193,7 @@ class Settings : public QObject
     QString mCredsFile;
     QString mUsername;
     QString mPassword;
+    QString mDeeplink;
 
     QSharedPointer<AudioTester> mAudioTester;
 };
