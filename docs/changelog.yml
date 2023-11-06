@@ -1,17 +1,15 @@
-- Version: "2.1.0-beta2"
-  Date: 2023-11-xx
-  Description:
-  - (fixed) VS Mode unable to change update channel
-- Version: "2.1.0-beta1"
-  Date: 2023-10-30
+- Version: "2.1.0"
+  Date: 2023-11-06
   Description:
   - (added) VS Mode ability to create studios without a web browser
   - (added) VS Mode improved network stability notifications
   - (added) VS Mode dialog when QML plugins are missing
   - (updated) VS Mode video improvements on Windows
   - (updated) Packet loss concealment latency and quality improvements
+  - (fixed) Packet loss concealment glitches when buffer sizes don't match
   - (fixed) VS Mode ensure that the app is disconnected at startup
   - (fixed) Invalid escape sequence in Linux desktop file
+  - (fixed) VS Mode unable to change update channel
 - Version: "2.0.2"
   Date: 2023-09-01
   Description:
