@@ -38,6 +38,7 @@
 #include "RtAudioInterface.h"
 
 #include <QString>
+#include <QTextStream>
 #include <cstdlib>
 
 #include "JackTrip.h"
@@ -80,6 +81,16 @@ void RtAudioDevice::printVerbose() const
         cout << "  --Probed Successful--" << endl;
     }
 #endif
+}
+
+//*******************************************************************************
+bool RtAudioDevice::checkSampleRate(unsigned int srate) const
+{
+    for (unsigned int i = 0; i < this->sampleRates.size(); i++) {
+        if (this->sampleRates[i] == srate)
+            return true;
+    }
+    return false;
 }
 
 //*******************************************************************************
@@ -217,6 +228,21 @@ void RtAudioInterface::setup(bool verbose)
         cout << "OUTPUT DEVICE:" << endl;
         out_device.printVerbose();
         cout << gPrintSeparator << endl;
+    }
+
+    if (!in_device.checkSampleRate(getSampleRate())) {
+        QString errorMsg;
+        QTextStream(&errorMsg) << "Input device \"" << QString::fromStdString(in_name)
+                               << "\" does not support sample rate of "
+                               << getSampleRate();
+        throw std::runtime_error(errorMsg.toStdString());
+    }
+    if (!out_device.checkSampleRate(getSampleRate())) {
+        QString errorMsg;
+        QTextStream(&errorMsg) << "Output device \"" << QString::fromStdString(out_name)
+                               << "\" does not support sample rate of "
+                               << getSampleRate();
+        throw std::runtime_error(errorMsg.toStdString());
     }
 
     if (in_device.api == out_device.api) {

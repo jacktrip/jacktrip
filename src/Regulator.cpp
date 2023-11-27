@@ -411,7 +411,7 @@ void Regulator::pullPacket()
             int next = lastSeqNumIn - i;
             if (next < 0)
                 next += mNumSlots;
-            if (mFPPratioNumerator) {
+            if (mFPPratioNumerator > 1) {
                 // time for assembly has passed; reset for next time
                 mAssemblyCounts[next] = 0;
             }

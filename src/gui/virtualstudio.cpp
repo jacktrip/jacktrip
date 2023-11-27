@@ -1310,7 +1310,8 @@ void VirtualStudio::processError(const QString& errorMessage)
         if (errorMessage.length() > RtAudioErrorMsg.length() + 2) {
             const QString details(errorMessage.sliced(RtAudioErrorMsg.length() + 2));
             if (details.contains(QStringLiteral("device was disconnected"))
-                || details.contains(QStringLiteral("Unable to retrieve capture buffer"))) {
+                || details.contains(
+                    QStringLiteral("Unable to retrieve capture buffer"))) {
                 msgBox.setText(QStringLiteral("Your audio interface was disconnected."));
             } else {
                 msgBox.setText(details);
