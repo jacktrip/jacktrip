@@ -343,7 +343,6 @@ class VsAudio : public QObject
     float m_inMultiplier    = 1.0;
     float m_outMultiplier   = 1.0;
     float m_monMultiplier   = 0;
-    uint32_t m_sampleRate   = gDefaultSampleRate;
 
     QString m_inputDevice;
     QString m_outputDevice;

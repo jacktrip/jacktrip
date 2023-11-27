@@ -798,10 +798,6 @@ AudioInterface* VsAudio::newAudioInterface(JackTrip* jackTripPtr)
 {
     AudioInterface* ifPtr = nullptr;
 
-#if defined(__unix__)
-    AudioInterface::setPipewireLatency(getBufferSize(), m_sampleRate);
-#endif
-
     // Create AudioInterface Client Object
     if (isBackendAvailable<AudioInterfaceMode::ALL>() && jackIsAvailable()) {
         // all backends area available
@@ -845,13 +841,17 @@ AudioInterface* VsAudio::newAudioInterface(JackTrip* jackTripPtr)
     if (ifPtr == nullptr)
         return ifPtr;
 
+#if defined(__unix__)
+    AudioInterface::setPipewireLatency(getBufferSize(), ifPtr->getSampleRate());
+#endif
+
     // AudioInterface::setup() can return a different buffer size
     // if the audio interface doesn't support the one that was requested
     if (ifPtr->getBufferSizeInSamples() != uint32_t(getBufferSize())) {
         setBufferSize(ifPtr->getBufferSizeInSamples());
     }
 
-    std::cout << "The Sampling Rate is: " << m_sampleRate << std::endl;
+    std::cout << "The Sampling Rate is: " << ifPtr->getSampleRate() << std::endl;
     std::cout << gPrintSeparator << std::endl;
     int AudioBufferSizeInBytes = ifPtr->getBufferSizeInSamples() * sizeof(sample_t);
     std::cout << "The Audio Buffer Size is: " << ifPtr->getBufferSizeInSamples()
@@ -893,8 +893,6 @@ AudioInterface* VsAudio::newJackAudioInterface([[maybe_unused]] JackTrip* jackTr
                                        jackTripPtr != nullptr, jackTripPtr);
         ifPtr->setClientName(QStringLiteral("JackTrip"));
         ifPtr->setup(true);
-
-        m_sampleRate = ifPtr->getSampleRate();
     }
 #endif
     return ifPtr;
@@ -920,7 +918,7 @@ AudioInterface* VsAudio::newRtAudioInterface([[maybe_unused]] JackTrip* jackTrip
         inputChans, outputChans,
         static_cast<AudioInterface::inputMixModeT>(getInputMixMode()),
         m_audioBitResolution, jackTripPtr != nullptr, jackTripPtr);
-    ifPtr->setSampleRate(m_sampleRate);
+    ifPtr->setSampleRate(jackTripPtr == nullptr ? 44100 : jackTripPtr->getSampleRate());
     ifPtr->setInputDevice(getInputDevice().toStdString());
     ifPtr->setOutputDevice(getOutputDevice().toStdString());
     ifPtr->setBufferSizeInSamples(getBufferSize());
