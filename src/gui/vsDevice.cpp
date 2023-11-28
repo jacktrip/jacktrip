@@ -293,12 +293,12 @@ JackTrip* VsDevice::initJackTrip(
 #ifdef RT_AUDIO
     if (useRtAudio) {
         m_jackTrip->setAudiointerfaceMode(JackTrip::RTAUDIO);
-        m_jackTrip->setSampleRate(studioInfo->sampleRate());
         m_jackTrip->setAudioBufferSizeInSamples(bufferSize);
         m_jackTrip->setInputDevice(input);
         m_jackTrip->setOutputDevice(output);
     }
 #endif
+    m_jackTrip->setSampleRate(studioInfo->sampleRate());
     int bindPort = selectBindPort();
     if (bindPort == 0) {
         return 0;

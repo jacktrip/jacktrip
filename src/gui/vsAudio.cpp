@@ -841,10 +841,6 @@ AudioInterface* VsAudio::newAudioInterface(JackTrip* jackTripPtr)
     if (ifPtr == nullptr)
         return ifPtr;
 
-#if defined(__unix__)
-    AudioInterface::setPipewireLatency(getBufferSize(), ifPtr->getSampleRate());
-#endif
-
     // AudioInterface::setup() can return a different buffer size
     // if the audio interface doesn't support the one that was requested
     if (ifPtr->getBufferSizeInSamples() != uint32_t(getBufferSize())) {
@@ -892,6 +888,11 @@ AudioInterface* VsAudio::newJackAudioInterface([[maybe_unused]] JackTrip* jackTr
         ifPtr = new JackAudioInterface(inputChans, outputChans, m_audioBitResolution,
                                        jackTripPtr != nullptr, jackTripPtr);
         ifPtr->setClientName(QStringLiteral("JackTrip"));
+#if defined(__unix__)
+        AudioInterface::setPipewireLatency(
+            getBufferSize(),
+            jackTripPtr == nullptr ? 44100 : jackTripPtr->getSampleRate());
+#endif
         ifPtr->setup(true);
     }
 #endif
@@ -926,6 +927,10 @@ AudioInterface* VsAudio::newRtAudioInterface([[maybe_unused]] JackTrip* jackTrip
     QVector<RtAudioDevice> devices = m_audioWorkerPtr->getDevices();
     if (!devices.empty())
         static_cast<RtAudioInterface*>(ifPtr)->setRtAudioDevices(devices);
+
+#if defined(__unix__)
+    AudioInterface::setPipewireLatency(getBufferSize(), ifPtr->getSampleRate());
+#endif
 
     // Note: setup might change the number of channels and/or buffer size
     ifPtr->setup(true);
