@@ -1,3 +1,8 @@
+- Version: "2.1.1"
+  Date: 2023-12-xx
+  Description:
+  - (updated) VS Mode error message for disconnected audio interfaces
+  - (fixed) VS Mode refused to connect to studios not 48khz
 - Version: "2.1.0"
   Date: 2023-11-06
   Description:

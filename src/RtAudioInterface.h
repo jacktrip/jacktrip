@@ -64,6 +64,7 @@ class RtAudioDevice : public RtAudio::DeviceInfo
     RtAudio::Api api;
     void print() const;
     void printVerbose() const;
+    bool checkSampleRate(unsigned int srate) const;
     RtAudioDevice& operator=(const RtAudio::DeviceInfo& info);
 };
 
