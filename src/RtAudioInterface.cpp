@@ -175,8 +175,7 @@ void RtAudioInterface::setup(bool verbose)
     // Locate the selected input audio device
     auto in_name = getInputDevice();
     if (in_name.empty()) {
-        mRtAudio.reset(new RtAudio);
-        long default_device_id = getDefaultDevice(*mRtAudio, true);
+        long default_device_id = getDefaultDevice(true);
         if (!getDeviceInfoFromId(default_device_id, in_device, true))
             throw std::runtime_error("default input device not found");
         cout << "Selected default INPUT device" << endl;
@@ -185,14 +184,13 @@ void RtAudioInterface::setup(bool verbose)
             throw std::runtime_error("Requested input device \"" + in_name
                                      + "\" not found.");
         }
-        mRtAudio.reset(new RtAudio(in_device.api));
         cout << "Selected INPUT device " << in_name << endl;
     }
 
     // Locate the selected output audio device
     auto out_name = getOutputDevice();
     if (out_name.empty()) {
-        long default_device_id = getDefaultDevice(*mRtAudio, false);
+        long default_device_id = getDefaultDevice(false);
         if (!getDeviceInfoFromId(default_device_id, out_device, false))
             throw std::runtime_error("default output device not found");
         cout << "Selected default OUTPUT device" << endl;
@@ -202,6 +200,16 @@ void RtAudioInterface::setup(bool verbose)
                                      + "\" not found.");
         }
         cout << "Selected OUTPUT device " << out_name << endl;
+    }
+
+    if (in_device.ID == out_device.ID) {
+        mRtAudioInput.reset(new RtAudio(in_device.api));
+        mRtAudioOutput.reset();
+        mDuplexMode = true;
+    } else {
+        mRtAudioInput.reset(new RtAudio(in_device.api));
+        mRtAudioOutput.reset(new RtAudio(out_device.api));
+        mDuplexMode = false;
     }
 
     if (in_chans_base + in_chans_num > in_device.inputChannels) {
@@ -221,13 +229,18 @@ void RtAudioInterface::setup(bool verbose)
     }
 
     if (verbose) {
-        cout << "INPUT DEVICE:" << endl;
+        if (mDuplexMode) {
+            cout << "DUPLEX DEVICE:" << endl;
+        } else {
+            cout << "INPUT DEVICE:" << endl;
+        }
         in_device.printVerbose();
         cout << gPrintSeparator << endl;
-
-        cout << "OUTPUT DEVICE:" << endl;
-        out_device.printVerbose();
-        cout << gPrintSeparator << endl;
+        if (!mDuplexMode) {
+            cout << "OUTPUT DEVICE:" << endl;
+            out_device.printVerbose();
+            cout << gPrintSeparator << endl;
+        }
     }
 
     if (!in_device.checkSampleRate(getSampleRate())) {
@@ -245,29 +258,20 @@ void RtAudioInterface::setup(bool verbose)
         throw std::runtime_error(errorMsg.toStdString());
     }
 
-    if (in_device.api == out_device.api) {
 #ifdef _WIN32
-        if (in_device.api != RtAudio::WINDOWS_ASIO) {
-            AudioInterface::setDevicesWarningMsg(
-                AudioInterface::DEVICE_WARN_ASIO_LATENCY);
-            AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_NONE);
-        } else if (in_device.api == RtAudio::WINDOWS_ASIO
-                   && in_device.ID != out_device.ID) {
-            AudioInterface::setDevicesWarningMsg(AudioInterface::DEVICE_WARN_NONE);
-            AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_SAME_ASIO);
-        }
-#else
-        if (in_device.api == RtAudio::LINUX_PULSE
-            || in_device.api == RtAudio::LINUX_OSS) {
-            AudioInterface::setDevicesWarningMsg(
-                AudioInterface::DEVICE_WARN_ALSA_LATENCY);
-            AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_NONE);
-        }
-#endif
-    } else {
-        AudioInterface::setDevicesWarningMsg(AudioInterface::DEVICE_WARN_NONE);
-        AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_INCOMPATIBLE);
+    if (in_device.api != RtAudio::WINDOWS_ASIO
+        || out_device.api != RtAudio::WINDOWS_ASIO) {
+        AudioInterface::setDevicesWarningMsg(AudioInterface::DEVICE_WARN_ASIO_LATENCY);
+        AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_NONE);
     }
+#else
+    if (in_device.api == RtAudio::LINUX_PULSE || in_device.api == RtAudio::LINUX_OSS
+        || out_device.api == RtAudio::LINUX_PULSE
+        || out_device.api == RtAudio::LINUX_OSS) {
+        AudioInterface::setDevicesWarningMsg(AudioInterface::DEVICE_WARN_ALSA_LATENCY);
+        AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_NONE);
+    }
+#endif
 
     RtAudio::StreamParameters in_params, out_params;
     in_params.deviceId      = in_device.ID;
@@ -308,9 +312,6 @@ void RtAudioInterface::setup(bool verbose)
     unsigned int sampleRate   = getSampleRate();           // mSamplingRate;
     unsigned int bufferFrames = getBufferSizeInSamples();  // mBufferSize;
 
-    if (in_device.api != out_device.api)
-        return;
-
     std::string errorText;
 
     // IMPORTANT NOTE: It's VERY important to remember to pass "this"
@@ -325,9 +326,18 @@ void RtAudioInterface::setup(bool verbose)
         errorCallback(type, errorText, nullptr);
     };
     try {
-        mRtAudio->openStream(&out_params, &in_params, RTAUDIO_FLOAT32, sampleRate,
-                             &bufferFrames, &RtAudioInterface::wrapperRtAudioCallback,
-                             this, &options, errorFunc);
+        if (mDuplexMode) {
+            mRtAudioInput->openStream(
+                &out_params, &in_params, RTAUDIO_FLOAT32, sampleRate, &bufferFrames,
+                &RtAudioInterface::wrapperRtAudioCallback, this, &options, errorFunc);
+        } else {
+            mRtAudioInput->openStream(
+                nullptr, &in_params, RTAUDIO_FLOAT32, sampleRate, &bufferFrames,
+                &RtAudioInterface::wrapperRtAudioCallback, this, &options, errorFunc);
+            mRtAudioOutput->openStream(
+                &out_params, nullptr, RTAUDIO_FLOAT32, sampleRate, &bufferFrames,
+                &RtAudioInterface::wrapperRtAudioCallback, this, &options, errorFunc);
+        }
     } catch (RtAudioError& e) {
         errorText = e.getMessage();
     }
@@ -337,19 +347,35 @@ void RtAudioInterface::setup(bool verbose)
                                             const std::string& errorText) {
         errorCallback(type, errorText, this);
     };
-    mRtAudio->setErrorCallback(errorFunc);
-    if (RTAUDIO_NO_ERROR
-        != mRtAudio->openStream(&out_params, &in_params, RTAUDIO_FLOAT32, sampleRate,
-                                &bufferFrames, &RtAudioInterface::wrapperRtAudioCallback,
-                                this, &options)) {
-        errorText = mRtAudio->getErrorText();
+    mRtAudioInput->setErrorCallback(errorFunc);
+    if (mDuplexMode) {
+        if (RTAUDIO_NO_ERROR
+            != mRtAudioInput->openStream(
+                &out_params, &in_params, RTAUDIO_FLOAT32, sampleRate, &bufferFrames,
+                &RtAudioInterface::wrapperRtAudioCallback, this, &options)) {
+            errorText = mRtAudioInput->getErrorText();
+        }
+    } else {
+        mRtAudioOutput->setErrorCallback(errorFunc);
+        if (RTAUDIO_NO_ERROR
+            != mRtAudioInput->openStream(
+                nullptr, &in_params, RTAUDIO_FLOAT32, sampleRate, &bufferFrames,
+                &RtAudioInterface::wrapperRtAudioCallback, this, &options)) {
+            errorText = mRtAudioInput->getErrorText();
+        } else if (RTAUDIO_NO_ERROR
+                   != mRtAudioOutput->openStream(
+                       &out_params, nullptr, RTAUDIO_FLOAT32, sampleRate, &bufferFrames,
+                       &RtAudioInterface::wrapperRtAudioCallback, this, &options)) {
+            errorText = mRtAudioOutput->getErrorText();
+        }
     }
 #endif
 
     if (!errorText.empty()) {
         std::cerr << "RtAudioInterface failed to open stream: " << errorText << '\n'
                   << std::endl;
-        mRtAudio.reset();
+        mRtAudioInput.reset();
+        mRtAudioOutput.reset();
         throw std::runtime_error(errorText);
     }
 
@@ -420,8 +446,10 @@ void RtAudioInterface::getDeviceIds(RtAudio& rtaudio, std::vector<unsigned int>&
 }
 
 //*******************************************************************************
-long RtAudioInterface::getDefaultDevice(RtAudio& rtaudio, bool isInput)
+long RtAudioInterface::getDefaultDevice(bool isInput)
 {
+    RtAudio rtaudio;
+
 #if RTAUDIO_VERSION_MAJOR < 6
     if (rtaudio.getCurrentApi() == RtAudio::LINUX_PULSE) {
         return getDefaultDeviceForLinuxPulseAudio(isInput);
@@ -474,32 +502,39 @@ int RtAudioInterface::RtAudioCallback(void* outputBuffer, void* inputBuffer,
                                       unsigned int nFrames, double /*streamTime*/,
                                       RtAudioStreamStatus /*status*/)
 {
-    // TODO: this function may need more changes. As-is I'm not sure this will work
+    sample_t* inputBuffer_sample  = static_cast<sample_t*>(inputBuffer);
+    sample_t* outputBuffer_sample = static_cast<sample_t*>(outputBuffer);
+    int in_chans_num              = getNumInputChannels();
 
-    sample_t* inputBuffer_sample  = NULL;
-    sample_t* outputBuffer_sample = NULL;
+    if (mDuplexMode) {
+        if (inputBuffer_sample == NULL || outputBuffer_sample == NULL) {
+            return 0;
+        }
+    } else if (inputBuffer_sample == NULL && outputBuffer_sample == NULL) {
+        return 0;
+    }
 
-    inputBuffer_sample  = (sample_t*)inputBuffer;
-    outputBuffer_sample = (sample_t*)outputBuffer;
-
-    int in_chans_num = getNumInputChannels();
-    if (inputBuffer_sample != NULL && outputBuffer_sample != NULL) {
-        // Get input and output buffers
-        //-------------------------------------------------------------------
+    // process input before output to minimize monitor latency on duplex devices
+    if (inputBuffer_sample != NULL) {
+        // copy samples to input buffer
         for (int i = 0; i < mInBuffer.size(); i++) {
             // Input Ports are READ ONLY
             mInBuffer[i] = inputBuffer_sample + (nFrames * i);
-        }
-
-        for (int i = 0; i < mOutBuffer.size(); i++) {
-            // Output Ports are WRITABLE
-            mOutBuffer[i] = outputBuffer_sample + (nFrames * i);
         }
         if (in_chans_num == 2 && mInBuffer.size() == in_chans_num
             && mInputMixMode == AudioInterface::MIXTOMONO) {
             mStereoToMonoMixerPtr->compute(nFrames, mInBuffer.data(), mInBuffer.data());
         }
-        AudioInterface::callback(mInBuffer, mOutBuffer, nFrames);
+        AudioInterface::audioInputCallback(mInBuffer, nFrames);
+    }
+
+    if (outputBuffer_sample != NULL) {
+        // copy samples to output buffer
+        for (int i = 0; i < mOutBuffer.size(); i++) {
+            // Output Ports are WRITABLE
+            mOutBuffer[i] = outputBuffer_sample + (nFrames * i);
+        }
+        AudioInterface::audioOutputCallback(mOutBuffer, nFrames);
     }
 
     return 0;
@@ -541,27 +576,35 @@ void RtAudioInterface::errorCallback(RtAudioErrorType errorType,
 //*******************************************************************************
 int RtAudioInterface::startProcess()
 {
-    if (mRtAudio.isNull())
+    if (mRtAudioInput.isNull())
+        return 0;
+    if (!mDuplexMode && mRtAudioOutput.isNull())
         return 0;
 
     std::string errorText;
 
 #if RTAUDIO_VERSION_MAJOR < 6
     try {
-        mRtAudio->startStream();
+        mRtAudioInput->startStream();
+        if (!mDuplexMode) {
+            mRtAudioOutput->startStream();
+        }
     } catch (RtAudioError& e) {
         errorText = e.getMessage();
     }
 #else
-    if (RTAUDIO_NO_ERROR != mRtAudio->startStream()) {
-        errorText = mRtAudio->getErrorText();
+    if (RTAUDIO_NO_ERROR != mRtAudioInput->startStream()) {
+        errorText = mRtAudioInput->getErrorText();
+    } else if (!mDuplexMode && RTAUDIO_NO_ERROR != mRtAudioOutput->startStream()) {
+        errorText = mRtAudioOutput->getErrorText();
     }
 #endif
 
     if (!errorText.empty()) {
         std::cerr << "RtAudioInterface failed to start stream: " << errorText
                   << std::endl;
-        mRtAudio.reset();
+        mRtAudioInput.reset();
+        mRtAudioOutput.reset();
         return (-1);
     }
 
@@ -571,28 +614,39 @@ int RtAudioInterface::startProcess()
 //*******************************************************************************
 int RtAudioInterface::stopProcess()
 {
-    if (mRtAudio.isNull())
+    if (mRtAudioInput.isNull())
+        return 0;
+    if (!mDuplexMode && mRtAudioOutput.isNull())
         return 0;
 
     std::string errorText;
 
 #if RTAUDIO_VERSION_MAJOR < 6
     try {
-        mRtAudio->closeStream();
+        mRtAudioInput->closeStream();
         // this causes it to crash for some reason
         // mRtAudio->abortStream();
+        if (!mDuplexMode) {
+            mRtAudioOutput->closeStream();
+        }
     } catch (RtAudioError& e) {
         errorText = e.getMessage();
     }
 #else
-    if (RTAUDIO_NO_ERROR != mRtAudio->abortStream()) {
-        errorText = mRtAudio->getErrorText();
+    if (RTAUDIO_NO_ERROR != mRtAudioInput->abortStream()) {
+        errorText = mRtAudioInput->getErrorText();
+    } else if (!mDuplexMode && RTAUDIO_NO_ERROR != mRtAudioOutput->abortStream()) {
+        errorText = mRtAudioOutput->getErrorText();
     } else {
-        mRtAudio->closeStream();
+        mRtAudioInput->closeStream();
+        if (!mDuplexMode) {
+            mRtAudioOutput->closeStream();
+        }
     }
 #endif
 
-    mRtAudio.reset();
+    mRtAudioInput.reset();
+    mRtAudioOutput.reset();
 
     if (!errorText.empty()) {
         std::cerr << errorText << '\n' << std::endl;

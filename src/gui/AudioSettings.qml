@@ -161,13 +161,6 @@ Rectangle {
                                 outputCombo.currentIndex = index
                                 outputCombo.popup.close()
                                 audio.outputDevice = modelData.text
-                                if (modelData.category.startsWith("Low-Latency")) {
-                                    let inputComboIdx = inputCombo.model.findIndex(it => it.category.startsWith("Low-Latency") && it.text === modelData.text);
-                                    if (inputComboIdx !== null && inputComboIdx !== undefined) {
-                                        inputCombo.currentIndex = inputComboIdx;
-                                        audio.inputDevice = modelData.text
-                                    }
-                                }
                                 audio.validateDevices()
                                 audio.restartAudio()
                             }
@@ -346,13 +339,6 @@ Rectangle {
                                 inputCombo.currentIndex = index
                                 inputCombo.popup.close()
                                 audio.inputDevice = modelData.text
-                                if (modelData.category.startsWith("Low-Latency")) {
-                                    let outputComboIdx = outputCombo.model.findIndex(it => it.category.startsWith("Low-Latency") && it.text === modelData.text);
-                                    if (outputComboIdx !== null && outputComboIdx !== undefined) {
-                                        outputCombo.currentIndex = outputComboIdx;
-                                        audio.outputDevice = modelData.text
-                                    }
-                                }
                                 audio.validateDevices()
                                 audio.restartAudio()
                             }
