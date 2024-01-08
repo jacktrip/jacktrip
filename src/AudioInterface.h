@@ -240,12 +240,10 @@ class AudioInterface
     virtual void setInputChannels(QVarLengthArray<int> inputChans)
     {
         mInputChans = inputChans;
-        mNumInChans = inputChans.size();
     }
     virtual void setOutputChannels(QVarLengthArray<int> outputChans)
     {
         mOutputChans = outputChans;
-        mNumOutChans = outputChans.size();
     }
     virtual void setInputMixMode(inputMixModeT mode) { mInputMixMode = mode; }
     virtual void setSampleRate(uint32_t sample_rate) { mSampleRate = sample_rate; }
@@ -348,8 +346,6 @@ class AudioInterface
         mMonProcessBuffers[2];  ///< Vector of Monitor buffers/channel for ProcessPlugin
     std::atomic<int>
         mMonProcessBufferIndex;  ///< Monitor process buffer index for next read
-    std::atomic<int>
-        mMonProcessBufferIndex;  ///< Monitor process buffer index for next read
     int8_t* mAudioInputPacket;   ///< Packet containing all the channels to read from the
                                  ///< RingBuffer
     int8_t* mAudioOutputPacket;  ///< Packet containing all the channels to send to the
@@ -360,8 +356,6 @@ class AudioInterface
 
    protected:
     JackTrip* mJackTrip;          ///< JackTrip Mediator Class pointer
-    int mNumInChans;              ///< Number of Input Channels
-    int mNumOutChans;             ///<  Number of Output Channels
     inputMixModeT mInputMixMode;  ///< Input mixing mode
 
     void setDevicesWarningMsg(warningMessageT msg);

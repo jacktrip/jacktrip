@@ -75,56 +75,6 @@ AudioInterface::AudioInterface(QVarLengthArray<int> InputChans,
     , mInputMixMode(InputMixMode)
     , mProcessingAudio(false)
 {
-#ifndef WAIR
-    // cc
-    // Initialize and assign memory for ProcessPlugins Buffers
-    int monitorChans = int(std::min<size_t>(mInputChans.size(), mOutputChans.size()));
-    mInProcessBuffer.resize(mInputChans.size());
-    mOutProcessBuffer.resize(mOutputChans.size());
-    mMonProcessBuffers[0].resize(monitorChans);
-    mMonProcessBuffers[1].resize(monitorChans);
-    // Set pointer to NULL
-    for (int i = 0; i < mInProcessBuffer.size(); i++) {
-        mInProcessBuffer[i] = NULL;
-    }
-    for (int i = 0; i < mOutProcessBuffer.size(); i++) {
-        mOutProcessBuffer[i] = NULL;
-    }
-    for (int i = 0; i < monitorChans; i++) {
-        mMonProcessBuffers[0][i] = NULL;
-        mMonProcessBuffers[1][i] = NULL;
-    }
-#else   // WAIR
-    int iCnt =
-        (mInputChans.size() > mNumNetRevChans) ? mInputChans.size() : mNumNetRevChans;
-    int oCnt =
-        (mOutputChans.size() > mNumNetRevChans) ? mOutputChans.size() : mNumNetRevChans;
-    int aCnt = (mNumNetRevChans) ? mInputChans.size() : 0;
-    int mCnt = std::min<int>(iCnt, oCnt);
-    for (int i = 0; i < iCnt; i++) {
-        mInProcessBuffer[i] = NULL;
-    }
-    for (int i = 0; i < oCnt; i++) {
-        mOutProcessBuffer[i] = NULL;
-    }
-    for (int i = 0; i < mCnt; i++) {
-        mMonProcessBuffers[0][i] = NULL;
-        mMonProcessBuffers[1][i] = NULL;
-    }
-    for (int i = 0; i < aCnt; i++) {
-        mAPInBuffer[i] = NULL;
-    }
-#endif  // endwhere
-
-    mInBufCopy.resize(mInputChans.size());
-    for (int i = 0; i < mInputChans.size(); i++) {
-        mInBufCopy[i] =
-            new sample_t[MAX_AUDIO_BUFFER_SIZE];  // required for processing audio input
-    }
-
-    // Not used in this class but may be needed by subclasses
-    mNumInChans  = mInputChans.size();
-    mNumOutChans = mOutputChans.size();
 }
 
 //*******************************************************************************
@@ -168,22 +118,11 @@ AudioInterface::~AudioInterface()
 //*******************************************************************************
 void AudioInterface::setup(bool /*verbose*/)
 {
-    int nChansIn  = mInputChans.size();
-    int nChansOut = mOutputChans.size();
-    int nChansMon = std::min<int>(
-        nChansIn, nChansOut);  // Note: Should be 2 when mixing stereo-to-mono
-    inputMixModeT inputMixMode = mInputMixMode;
-    if (inputMixMode == MIXTOMONO) {
-        nChansIn = 1;
-    }
-    if (inputMixMode == MONO) {
-        nChansMon = nChansOut;
-    }
     // Allocate buffer memory to read and write
     mSizeInBytesPerChannel = getSizeInBytesPerChannel();
-
-    int size_audio_input  = int(mSizeInBytesPerChannel * nChansIn);
-    int size_audio_output = int(mSizeInBytesPerChannel * nChansOut);
+    int nframes = getBufferSizeInSamples();
+    int size_audio_input  = int(mSizeInBytesPerChannel * mInputChans.size());
+    int size_audio_output = int(mSizeInBytesPerChannel * mOutputChans.size());
 #ifdef WAIR               // WAIR
     if (mNumNetRevChans)  // else don't change sizes
     {
@@ -201,66 +140,50 @@ void AudioInterface::setup(bool /*verbose*/)
         mOutProcessBuffer.resize(mNumNetRevChans);
         mMonProcessBuffers[0].resize(mNumNetRevChans);
         mMonProcessBuffers[1].resize(mNumNetRevChans);
-        mAPInBuffer.resize(nChansIn);
+        mAPInBuffer.resize(mInputChans.size());
         mNetInBuffer.resize(mNumNetRevChans);
+        for (int i = 0; i < mAPInBuffer.size(); i++) {
+            mAPInBuffer[i] = new sample_t[nframes];
+            // set memory to 0
+            std::memset(mAPInBuffer[i], 0, sizeof(sample_t) * nframes);
+        }
+        for (int i = 0; i < mNumNetRevChans; i++) {
+            mNetInBuffer[i] = new sample_t[nframes];
+            // set memory to 0
+            std::memset(mNetInBuffer[i], 0, sizeof(sample_t) * nframes);
+        }
     } else  // don't change sizes
 #endif      // endwhere
     {
-        mInProcessBuffer.resize(nChansIn);
-        mOutProcessBuffer.resize(nChansOut);
-        mMonProcessBuffers[0].resize(nChansMon);
-        mMonProcessBuffers[1].resize(nChansMon);
+        mInProcessBuffer.resize(mInputChans.size());
+        mOutProcessBuffer.resize(mOutputChans.size());
+        mMonProcessBuffers[0].resize(mOutputChans.size());
+        mMonProcessBuffers[1].resize(mOutputChans.size());
     }
 
-    int nframes = getBufferSizeInSamples();
-
-#ifndef WAIR  // NOT WAIR:
-    for (int i = 0; i < nChansIn; i++) {
+    for (int i = 0; i < mInputChans.size(); i++) {
         mInProcessBuffer[i] = new sample_t[nframes];
         // set memory to 0
         std::memset(mInProcessBuffer[i], 0, sizeof(sample_t) * nframes);
     }
-    for (int i = 0; i < nChansOut; i++) {
+    for (int i = 0; i < mOutputChans.size(); i++) {
         mOutProcessBuffer[i] = new sample_t[nframes];
         // set memory to 0
         std::memset(mOutProcessBuffer[i], 0, sizeof(sample_t) * nframes);
     }
-    for (int i = 0; i < nChansMon; i++) {
+    for (int i = 0; i < mMonProcessBuffers[0].size(); i++) {
         mMonProcessBuffers[0][i] = new sample_t[nframes];
         mMonProcessBuffers[1][i] = new sample_t[nframes];
         // set memory to 0
         std::memset(mMonProcessBuffers[0][i], 0, sizeof(sample_t) * nframes);
         std::memset(mMonProcessBuffers[1][i], 0, sizeof(sample_t) * nframes);
     }
-#else   // WAIR
-    for (int i = 0; i < ((mNumNetRevChans) ? mNumNetRevChans : nChansIn); i++) {
-        mInProcessBuffer[i] = new sample_t[nframes];
-        // set memory to 0
-        std::memset(mInProcessBuffer[i], 0, sizeof(sample_t) * nframes);
+
+    mInBufCopy.resize(mInputChans.size());
+    for (int i = 0; i < mInputChans.size(); i++) {
+        mInBufCopy[i] =
+            new sample_t[MAX_AUDIO_BUFFER_SIZE];  // required for processing audio input
     }
-    for (int i = 0; i < ((mNumNetRevChans) ? mNumNetRevChans : nChansOut); i++) {
-        mOutProcessBuffer[i] = new sample_t[nframes];
-        // set memory to 0
-        std::memset(mOutProcessBuffer[i], 0, sizeof(sample_t) * nframes);
-    }
-    for (int i = 0; i < ((mNumNetRevChans) ? mNumNetRevChans : nChansMon); i++) {
-        mMonProcessBuffers[0][i] = new sample_t[nframes];
-        mMonProcessBuffers[1][i] = new sample_t[nframes];
-        // set memory to 0
-        std::memset(mMonProcessBuffers[0][i], 0, sizeof(sample_t) * nframes);
-        std::memset(mMonProcessBuffers[1][i], 0, sizeof(sample_t) * nframes);
-    }
-    for (int i = 0; i < ((mNumNetRevChans) ? nChansIn : 0); i++) {
-        mAPInBuffer[i] = new sample_t[nframes];
-        // set memory to 0
-        std::memset(mAPInBuffer[i], 0, sizeof(sample_t) * nframes);
-    }
-    for (int i = 0; i < mNumNetRevChans; i++) {
-        mNetInBuffer[i] = new sample_t[nframes];
-        // set memory to 0
-        std::memset(mNetInBuffer[i], 0, sizeof(sample_t) * nframes);
-    }
-#endif  // endwhere
 }
 
 //*******************************************************************************
@@ -282,23 +205,10 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
 void AudioInterface::audioInputCallback(QVarLengthArray<sample_t*>& in_buffer,
                                         unsigned int n_frames)
 {
-    int nChansIn  = mInputChans.size();
-    int nChansOut = mOutputChans.size();
-    int nChansMon = std::min<int>(
-        nChansIn, nChansOut);  // Note: Should be 2 when mixing stereo-to-mono
-    inputMixModeT inputMixMode = mInputMixMode;
-    if (inputMixMode == MIXTOMONO) {
-        nChansIn = 1;
-    }
-    if (inputMixMode == MONO) {
-        nChansMon = nChansOut;
-    }
-
     // Send packets to network:
     // mAudioTesterP will be nullptr for hub server's JackTripWorker instances:
     bool audioTesting = (mAudioTesterP && mAudioTesterP->getEnabled());
-    int nop = mProcessPluginsToNetwork.size();  // number of OUTGOING processing modules
-    if (nop == 0 && !audioTesting && mProcessPluginsToMonitor.size() == 0) {
+    if (!audioTesting && mProcessPluginsToNetwork.size() == 0 && mProcessPluginsToMonitor.size() == 0) {
         // copy saved if no plugins and no audio testing in progress:
         if (mProcessWithNetwork) {
             computeProcessToNetwork(
@@ -309,7 +219,7 @@ void AudioInterface::audioInputCallback(QVarLengthArray<sample_t*>& in_buffer,
 
     // cannot modify in_buffer, so make a copy
     // in_buffer is "in" from local audio hardware
-    if (mInBufCopy.size() < nChansIn) {  // created in constructor above
+    if (mInBufCopy.size() < mInputChans.size()) {  // created in constructor above
         std::cerr << "*** AudioInterface.cpp: Number of Input Channels changed - "
                      "insufficient room reserved\n";
         exit(1);
@@ -319,13 +229,12 @@ void AudioInterface::audioInputCallback(QVarLengthArray<sample_t*>& in_buffer,
                   << " larger than expected max = " << MAX_AUDIO_BUFFER_SIZE << "\n";
         exit(1);
     }
-    for (int i = 0; i < nChansIn; i++) {
+    for (int i = 0; i < mInputChans.size(); i++) {
         std::memcpy(mInBufCopy[i], in_buffer[i], sizeof(sample_t) * n_frames);
     }
 
     // process incoming signal from audio interface using process plugins
-    for (int i = 0; i < nop; i++) {
-        ProcessPlugin* p = mProcessPluginsToNetwork[i];
+    for (auto* p : qAsConst(mProcessPluginsToNetwork)) {
         if (p->getInited()) {
             p->compute(n_frames, mInBufCopy.data(), mInBufCopy.data());
         }
@@ -336,9 +245,9 @@ void AudioInterface::audioInputCallback(QVarLengthArray<sample_t*>& in_buffer,
     // we use two buffers to help ensure safety across threads when audio input
     // and output are being processed separately (non-duplex mode)
     int monIndex = mMonProcessBufferIndex.load(std::memory_order_relaxed) == 0 ? 1 : 0;
-    for (int i = 0; i < nChansMon; i++) {
+    for (int i = 0; i < mMonProcessBuffers[0].size(); i++) {
         if ((mInputChans.size() == 2 && mInputMixMode == AudioInterface::MIXTOMONO)
-            || (mInputMixMode == AudioInterface::MONO)) {
+            || (mInputChans.size() == AudioInterface::MONO)) {
             // if using mix-to-mono, in_buffer[0] should already contain the mixed
             // audio, so copy it to the monitor buffer. See RtAudioInterface.cpp
 
@@ -380,7 +289,7 @@ void AudioInterface::audioOutputCallback(QVarLengthArray<sample_t*>& out_buffer,
 #define COMBDSP 1  // client
 #define APDSP   0  // client
 #define DCBDSP  0  // server
-    for (int i = 0; i < mNumNetRevChans; i++) {
+    for (int i = 0; i < mNetInBuffer.size(); i++) {
         std::memset(mNetInBuffer[i], 0, sizeof(sample_t) * n_frames);
     }
 #endif  // endwhere
@@ -506,22 +415,20 @@ void AudioInterface::audioOutputCallback(QVarLengthArray<sample_t*>& out_buffer,
 void AudioInterface::broadcastCallback(QVarLengthArray<sample_t*>& mon_buffer,
                                        unsigned int n_frames)
 {
-    int nChansOut = mOutputChans.size();
-
     /// \todo cast *mInBuffer[i] to the bit resolution
     // Output Process (from NETWORK to JACK)
     // ----------------------------------------------------------------
     // Read Audio buffer from RingBuffer (read from incoming packets)
     mJackTrip->receiveBroadcastPacket(mAudioOutputPacket);
     // Extract separate channels to send to Jack
-    for (int i = 0; i < nChansOut; i++) {
+    for (int i = 0; i < mOutputChans.size(); i++) {
         sample_t* tmp_sample = mon_buffer[i];  // sample buffer for channel i
         for (unsigned int j = 0; j < n_frames; j++) {
             // Change the bit resolution on each sample
             fromBitToSampleConversion(
                 // use interleaved channel layout
                 //&mOutputPacket[(i*mSizeInBytesPerChannel) + (j*mBitResolutionMode)],
-                &mAudioOutputPacket[(j * mBitResolutionMode * nChansOut)
+                &mAudioOutputPacket[(j * mBitResolutionMode * mOutputChans.size())
                                     + (i * mBitResolutionMode)],
                 &tmp_sample[j], mBitResolutionMode);
         }
@@ -535,8 +442,6 @@ void AudioInterface::broadcastCallback(QVarLengthArray<sample_t*>& mon_buffer,
 void AudioInterface::computeProcessFromNetwork(QVarLengthArray<sample_t*>& out_buffer,
                                                unsigned int n_frames)
 {
-    int nChansOut = mOutputChans.size();
-
     /// \todo cast *mInBuffer[i] to the bit resolution
     // Output Process (from NETWORK to JACK)
     // ----------------------------------------------------------------
@@ -553,7 +458,7 @@ void AudioInterface::computeProcessFromNetwork(QVarLengthArray<sample_t*>& out_b
                 fromBitToSampleConversion(
                     // use interleaved channel layout
                     //&mOutputPacket[(i*mSizeInBytesPerChannel) + (j*mBitResolutionMode)],
-                    &mOutputPacket[(j * mBitResolutionMode * nChansOut)
+                    &mOutputPacket[(j * mBitResolutionMode * mOutputChans.size())
                                    + (i * mBitResolutionMode)],
                     &tmp_sample[j], mBitResolutionMode);
             }
@@ -562,7 +467,7 @@ void AudioInterface::computeProcessFromNetwork(QVarLengthArray<sample_t*>& out_b
 #endif    // endwhere
 
         // Extract separate channels to send to Jack
-        for (int i = 0; i < nChansOut; i++) {
+        for (int i = 0; i < mOutputChans.size(); i++) {
             //--------
             // This should be faster for 32 bits
             // std::memcpy(mOutBuffer[i], &mOutputPacket[i*mSizeInBytesPerChannel],
@@ -574,7 +479,7 @@ void AudioInterface::computeProcessFromNetwork(QVarLengthArray<sample_t*>& out_b
                 fromBitToSampleConversion(
                     // use interleaved channel layout
                     //&mOutputPacket[(i*mSizeInBytesPerChannel) + (j*mBitResolutionMode)],
-                    &mAudioOutputPacket[(j * mBitResolutionMode * nChansOut)
+                    &mAudioOutputPacket[(j * mBitResolutionMode * mOutputChans.size())
                                         + (i * mBitResolutionMode)],
                     &tmp_sample[j], mBitResolutionMode);
             }
@@ -585,11 +490,7 @@ void AudioInterface::computeProcessFromNetwork(QVarLengthArray<sample_t*>& out_b
 void AudioInterface::computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buffer,
                                              unsigned int n_frames)
 {
-    int nChansIn               = mInputChans.size();
-    inputMixModeT inputMixMode = mInputMixMode;
-    if (inputMixMode == MIXTOMONO) {
-        nChansIn = 1;
-    }
+    const int nChansIn = (MIXTOMONO == mInputMixMode) ? 1 : mInputChans.size();
     // Input Process (from JACK to NETWORK)
     // ----------------------------------------------------------------
     // Concatenate  all the channels from jack to form packet
@@ -767,12 +668,7 @@ void AudioInterface::appendProcessPluginToNetwork(ProcessPlugin* plugin)
         return;
     }
 
-    int nChansIn               = mInputChans.size();
-    inputMixModeT inputMixMode = mInputMixMode;
-    if (inputMixMode == MIXTOMONO) {
-        nChansIn = 1;
-    }
-
+    const int nChansIn = (MIXTOMONO == mInputMixMode) ? 1 : mInputChans.size();
     int nTestChans   = (mAudioTesterP && mAudioTesterP->getEnabled()) ? 1 : 0;
     int nPluginChans = nChansIn - nTestChans;
     assert(nTestChans == 0 || (mAudioTesterP->getSendChannel() == nChansIn - 1));
@@ -793,11 +689,9 @@ void AudioInterface::appendProcessPluginFromNetwork(ProcessPlugin* plugin)
         return;
     }
 
-    int nChansOut = mOutputChans.size();
-
     int nTestChans   = (mAudioTesterP && mAudioTesterP->getEnabled()) ? 1 : 0;
-    int nPluginChans = nChansOut - nTestChans;
-    assert(nTestChans == 0 || (mAudioTesterP->getSendChannel() == nChansOut - 1));
+    int nPluginChans = mOutputChans.size() - nTestChans;
+    assert(nTestChans == 0 || (mAudioTesterP->getSendChannel() == mOutputChans.size() - 1));
     if (plugin->getNumOutputs() > nPluginChans) {
         std::cerr
             << "*** AudioInterface.cpp: appendProcessPluginFromNetwork: ProcessPlugin "
@@ -814,17 +708,9 @@ void AudioInterface::appendProcessPluginToMonitor(ProcessPlugin* plugin)
     if (!plugin) {
         return;
     }
-    int nChansIn  = mInputChans.size();
-    int nChansOut = mOutputChans.size();
-    int nChansMon = std::min<int>(
-        nChansIn, nChansOut);  // Note: Should be 2 when mixing stereo-to-mono
-    inputMixModeT inputMixMode = mInputMixMode;
-    if (inputMixMode == MIXTOMONO) {
-        nChansIn = 1;
-    }
-    if (inputMixMode == MONO) {
-        nChansMon = nChansOut;
-    }
+
+    const int nChansMon = mMonProcessBuffers[0].size();
+
     if (plugin->getNumInputs() > nChansMon) {
         std::cerr
             << "*** AudioInterface.cpp: appendProcessPluginToMonitor: ProcessPlugin "
@@ -850,17 +736,9 @@ void AudioInterface::appendProcessPluginToMonitor(ProcessPlugin* plugin)
 
 void AudioInterface::initPlugins(bool verbose)
 {
-    int nChansIn  = mInputChans.size();
-    int nChansOut = mOutputChans.size();
-    int nChansMon = std::min<int>(
-        nChansIn, nChansOut);  // Note: Should be 2 when mixing stereo-to-mono
-    inputMixModeT inputMixMode = mInputMixMode;
-    if (inputMixMode == MIXTOMONO) {
-        nChansIn = 1;
-    }
-    if (inputMixMode == MONO) {
-        nChansMon = nChansOut;
-    }
+    const int nChansIn = (MIXTOMONO == mInputMixMode) ? 1 : mInputChans.size();
+    const int nChansOut = mOutputChans.size();
+    const int nChansMon = mMonProcessBuffers[0].size();
     int nPlugins = mProcessPluginsFromNetwork.size() + mProcessPluginsToNetwork.size()
                    + mProcessPluginsToMonitor.size();
     if (nPlugins > 0) {
