@@ -66,7 +66,7 @@ AudioInterface::AudioInterface(QVarLengthArray<int> InputChans,
     , mBitResolutionMode(AudioBitResolution)
     , mSampleRate(gDefaultSampleRate)
     , mBufferSizeInSamples(gDefaultBufferSizeInSamples)
-    , mMonProcessBufferIndex(0)
+    , mMonitorQueuePtr(NULL)
     , mAudioInputPacket(NULL)
     , mAudioOutputPacket(NULL)
     , mLoopBack(false)
@@ -88,11 +88,7 @@ AudioInterface::~AudioInterface()
     for (int i = 0; i < mOutProcessBuffer.size(); i++) {
         delete[] mOutProcessBuffer[i];
     }
-    for (int n = 0; n < 2; n++) {
-        for (int i = 0; i < mMonProcessBuffers[n].size(); i++) {
-            delete[] mMonProcessBuffers[n][i];
-        }
-    }
+    delete mMonitorQueuePtr;
 #ifdef WAIR  // NOT WAIR:
     for (int i = 0; i < mAPInBuffer.size(); i++) {
         delete[] mAPInBuffer[i];
@@ -130,16 +126,18 @@ void AudioInterface::setup(bool /*verbose*/)
         size_audio_output = mSizeInBytesPerChannel * mNumNetRevChans;
     }
 #endif  // endwhere
-    mAudioInputPacket  = new int8_t[size_audio_input];
-    mAudioOutputPacket = new int8_t[size_audio_output];
+    const size_t audioInputPacketSize = std::max<size_t>(size_audio_input,
+        mInputChans.size() * sizeof(sample_t) * nframes);
+    const size_t audioOutputPacketSize = std::max<size_t>(size_audio_output,
+        mOutputChans.size() * sizeof(sample_t) * nframes);
+    mAudioInputPacket  = new int8_t[audioInputPacketSize];
+    mAudioOutputPacket = new int8_t[audioOutputPacketSize];
 
     // Initialize and assign memory for ProcessPlugins Buffers
 #ifdef WAIR  // WAIR
     if (mNumNetRevChans) {
         mInProcessBuffer.resize(mNumNetRevChans);
         mOutProcessBuffer.resize(mNumNetRevChans);
-        mMonProcessBuffers[0].resize(mNumNetRevChans);
-        mMonProcessBuffers[1].resize(mNumNetRevChans);
         mAPInBuffer.resize(mInputChans.size());
         mNetInBuffer.resize(mNumNetRevChans);
         for (int i = 0; i < mAPInBuffer.size(); i++) {
@@ -157,8 +155,7 @@ void AudioInterface::setup(bool /*verbose*/)
     {
         mInProcessBuffer.resize(mInputChans.size());
         mOutProcessBuffer.resize(mOutputChans.size());
-        mMonProcessBuffers[0].resize(mOutputChans.size());
-        mMonProcessBuffers[1].resize(mOutputChans.size());
+        mMonitorQueuePtr = new WaitFreeFrameBuffer<64>(audioInputPacketSize);
     }
 
     for (int i = 0; i < mInputChans.size(); i++) {
@@ -171,14 +168,6 @@ void AudioInterface::setup(bool /*verbose*/)
         // set memory to 0
         std::memset(mOutProcessBuffer[i], 0, sizeof(sample_t) * nframes);
     }
-    for (int i = 0; i < mMonProcessBuffers[0].size(); i++) {
-        mMonProcessBuffers[0][i] = new sample_t[nframes];
-        mMonProcessBuffers[1][i] = new sample_t[nframes];
-        // set memory to 0
-        std::memset(mMonProcessBuffers[0][i], 0, sizeof(sample_t) * nframes);
-        std::memset(mMonProcessBuffers[1][i], 0, sizeof(sample_t) * nframes);
-    }
-
     mInBufCopy.resize(mInputChans.size());
     for (int i = 0; i < mInputChans.size(); i++) {
         mInBufCopy[i] =
@@ -218,6 +207,19 @@ void AudioInterface::audioInputCallback(QVarLengthArray<sample_t*>& in_buffer,
         return;
     }
 
+#ifndef WAIR
+    if (mMonitorQueuePtr != nullptr && mProcessPluginsToMonitor.size() > 0) {
+        // copy audio input to monitor queue
+        for (int i = 0; i < mInputChans.size(); i++) {
+            int8_t* sample_ptr = mAudioInputPacket + (i * sizeof(sample_t) * n_frames);
+            std::memcpy(sample_ptr, in_buffer[i], sizeof(sample_t) * n_frames);
+        }
+        mMonitorQueuePtr->push(mAudioInputPacket);
+    }
+#endif  // not WAIR
+
+    // TODO: is this really necessary??
+
     // cannot modify in_buffer, so make a copy
     // in_buffer is "in" from local audio hardware
     if (mInBufCopy.size() < mInputChans.size()) {  // created in constructor above
@@ -240,30 +242,6 @@ void AudioInterface::audioInputCallback(QVarLengthArray<sample_t*>& in_buffer,
             p->compute(n_frames, mInBufCopy.data(), mInBufCopy.data());
         }
     }
-
-    // copy audio input to monitor buffers
-    // alternate between writing to the first and second monitor process buffers
-    // we use two buffers to help ensure safety across threads when audio input
-    // and output are being processed separately (non-duplex mode)
-    int monIndex = mMonProcessBufferIndex.load(std::memory_order_relaxed) == 0 ? 1 : 0;
-    for (int i = 0; i < mMonProcessBuffers[0].size(); i++) {
-        if ((mInputChans.size() == 2 && mInputMixMode == AudioInterface::MIXTOMONO)
-            || (mInputChans.size() == AudioInterface::MONO)) {
-            // if using mix-to-mono, in_buffer[0] should already contain the mixed
-            // audio, so copy it to the monitor buffer. See RtAudioInterface.cpp
-
-            // likewise if using mono, we simply copy the input to every monitor
-            // channel
-            std::memcpy(mMonProcessBuffers[monIndex][i], in_buffer[0],
-                        sizeof(sample_t) * n_frames);
-        } else {
-            // otherwise, copy each channel individually
-            std::memcpy(mMonProcessBuffers[monIndex][i], in_buffer[i],
-                        sizeof(sample_t) * n_frames);
-        }
-    }
-    // update index for next buffer ready to read
-    mMonProcessBufferIndex.store(monIndex, std::memory_order_release);
 
     // add audio testing impulse, if enabled
     if (audioTesting) {
@@ -319,6 +297,35 @@ void AudioInterface::audioOutputCallback(QVarLengthArray<sample_t*>& out_buffer,
             p->compute(n_frames, out_buffer.data(), out_buffer.data());
         }
     }
+
+    if (mMonitorQueuePtr != nullptr && mProcessPluginsToMonitor.size() > 0) {
+        // mix in the monitor signal
+        // note that using memory_order_acquire ensures all data written to the buffers
+        // will be also available be available to this thread before read
+        std::memset(mAudioOutputPacket, 0, sizeof(sample_t) * n_frames * getNumInputChannels());
+        mMonitorQueuePtr->pop(mAudioOutputPacket);
+        for (int i = 0; i < getNumOutputChannels(); i++) {
+            // if using mix-to-mono, in_buffer[0] should already contain the mixed
+            // audio, so copy it to the monitor buffer. See RtAudioInterface.cpp
+
+            // likewise if using mono, we simply copy the input to every monitor
+            // channel
+            int8_t* sample_ptr = mAudioOutputPacket;
+            if (i > 0 && getNumInputChannels() > i && mInputMixMode == AudioInterface::STEREO) {
+                // otherwise, copy each channel individually
+                sample_ptr += (i * sizeof(sample_t) * n_frames);
+            }
+            std::memcpy(mOutProcessBuffer[i], sample_ptr, sizeof(sample_t) * n_frames);
+        }
+        for (int i = 0; i < mProcessPluginsToMonitor.size(); i++) {
+            ProcessPlugin* p = mProcessPluginsToMonitor[i];
+            if (p->getInited()) {
+                // note: for monitor plugins, the output is out_buffer (to the speakers)
+                p->compute(n_frames, mOutProcessBuffer.data(), out_buffer.data());
+            }
+        }
+    }
+
 #else  // WAIR:
     // nib16 result now in mNetInBuffer
     int nChansIn  = mInputChans.size();
@@ -398,18 +405,6 @@ void AudioInterface::audioOutputCallback(QVarLengthArray<sample_t*>& out_buffer,
 #endif  // AP
     }
 #endif  // endwhere
-
-    // mix in the monitor signal
-    // note that using memory_order_acquire ensures all data written to the buffers
-    // will be also available be available to this thread before read
-    int monIndex = mMonProcessBufferIndex.load(std::memory_order_acquire);
-    for (int i = 0; i < mProcessPluginsToMonitor.size(); i++) {
-        ProcessPlugin* p = mProcessPluginsToMonitor[i];
-        if (p->getInited()) {
-            // note: for monitor plugins, the output is out_buffer (to the speakers)
-            p->compute(n_frames, mMonProcessBuffers[monIndex].data(), out_buffer.data());
-        }
-    }
 }
 
 //*******************************************************************************
@@ -711,7 +706,7 @@ void AudioInterface::appendProcessPluginToMonitor(ProcessPlugin* plugin)
         return;
     }
 
-    const int nChansMon = mMonProcessBuffers[0].size();
+    const int nChansMon = getNumMonChannels();
 
     if (plugin->getNumInputs() > nChansMon) {
         std::cerr
@@ -740,7 +735,7 @@ void AudioInterface::initPlugins(bool verbose)
 {
     const int nChansIn  = (MIXTOMONO == mInputMixMode) ? 1 : mInputChans.size();
     const int nChansOut = mOutputChans.size();
-    const int nChansMon = mMonProcessBuffers[0].size();
+    const int nChansMon = getNumMonChannels();
     int nPlugins = mProcessPluginsFromNetwork.size() + mProcessPluginsToNetwork.size()
                    + mProcessPluginsToMonitor.size();
     if (nPlugins > 0) {

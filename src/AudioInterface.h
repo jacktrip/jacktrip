@@ -40,12 +40,11 @@
 
 #include <QVarLengthArray>
 #include <QVector>
-#include <atomic>
 
 #include "AudioTester.h"
 #include "ProcessPlugin.h"
+#include "WaitFreeFrameBuffer.h"
 #include "jacktrip_types.h"
-//#include "jacktrip_globals.h"
 
 // Forward declarations
 class JackTrip;
@@ -273,6 +272,8 @@ class AudioInterface
     virtual int getNumInputChannels() const { return mInputChans.size(); }
     /// \brief Get Number of Output Channels
     virtual int getNumOutputChannels() const { return mOutputChans.size(); }
+    /// \brief Get Number of Monitor Channels
+    virtual int getNumMonChannels() const { return mOutputChans.size(); }
     virtual QVarLengthArray<int> getInputChannels() const { return mInputChans; }
     virtual QVarLengthArray<int> getOutputChannels() const { return mOutputChans; }
     virtual inputMixModeT getInputMixMode() const { return mInputMixMode; }
@@ -342,10 +343,8 @@ class AudioInterface
         mInProcessBuffer;  ///< Vector of Input buffers/channel for ProcessPlugin
     QVarLengthArray<sample_t*>
         mOutProcessBuffer;  ///< Vector of Output buffers/channel for ProcessPlugin
-    QVarLengthArray<sample_t*>
-        mMonProcessBuffers[2];  ///< Vector of Monitor buffers/channel for ProcessPlugin
-    std::atomic<int>
-        mMonProcessBufferIndex;  ///< Monitor process buffer index for next read
+    WaitFreeFrameBuffer<64>*
+        mMonitorQueuePtr;  //< Queue of audio frames from monitor signal
     int8_t* mAudioInputPacket;   ///< Packet containing all the channels to read from the
                                  ///< RingBuffer
     int8_t* mAudioOutputPacket;  ///< Packet containing all the channels to send to the
