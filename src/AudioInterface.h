@@ -321,10 +321,8 @@ class AudioInterface
     QVarLengthArray<sample_t*>
         mNetInBuffer;  ///< Vector of Input buffers/channel read from net
     QVarLengthArray<sample_t*>
-        mAPInBuffer;  ///< Vector of Input buffers/channel for AllPass input
-#endif                // endwhere
-    QVarLengthArray<sample_t*>
-        mInBufCopy;           ///< needed in callback() to modify JACK audio input
+        mAPInBuffer;          ///< Vector of Input buffers/channel for AllPass input
+#endif                        // endwhere
     int mAudioBitResolution;  ///< Bit resolution in audio samples
     AudioInterface::audioBitResolutionT
         mBitResolutionMode;  ///< Bit resolution (audioBitResolutionT) mode
@@ -344,7 +342,7 @@ class AudioInterface
     QVarLengthArray<sample_t*>
         mOutProcessBuffer;  ///< Vector of Output buffers/channel for ProcessPlugin
     WaitFreeFrameBuffer<64>*
-        mMonitorQueuePtr;  //< Queue of audio frames from monitor signal
+        mMonitorQueuePtr;        //< Queue of audio frames from monitor signal
     int8_t* mAudioInputPacket;   ///< Packet containing all the channels to read from the
                                  ///< RingBuffer
     int8_t* mAudioOutputPacket;  ///< Packet containing all the channels to send to the
