@@ -120,9 +120,9 @@ void AudioInterface::setup(bool /*verbose*/)
 {
     // Allocate buffer memory to read and write
     mSizeInBytesPerChannel = getSizeInBytesPerChannel();
-    int nframes = getBufferSizeInSamples();
-    int size_audio_input  = int(mSizeInBytesPerChannel * mInputChans.size());
-    int size_audio_output = int(mSizeInBytesPerChannel * mOutputChans.size());
+    int nframes            = getBufferSizeInSamples();
+    int size_audio_input   = int(mSizeInBytesPerChannel * mInputChans.size());
+    int size_audio_output  = int(mSizeInBytesPerChannel * mOutputChans.size());
 #ifdef WAIR               // WAIR
     if (mNumNetRevChans)  // else don't change sizes
     {
@@ -208,7 +208,8 @@ void AudioInterface::audioInputCallback(QVarLengthArray<sample_t*>& in_buffer,
     // Send packets to network:
     // mAudioTesterP will be nullptr for hub server's JackTripWorker instances:
     bool audioTesting = (mAudioTesterP && mAudioTesterP->getEnabled());
-    if (!audioTesting && mProcessPluginsToNetwork.size() == 0 && mProcessPluginsToMonitor.size() == 0) {
+    if (!audioTesting && mProcessPluginsToNetwork.size() == 0
+        && mProcessPluginsToMonitor.size() == 0) {
         // copy saved if no plugins and no audio testing in progress:
         if (mProcessWithNetwork) {
             computeProcessToNetwork(
@@ -669,8 +670,8 @@ void AudioInterface::appendProcessPluginToNetwork(ProcessPlugin* plugin)
     }
 
     const int nChansIn = (MIXTOMONO == mInputMixMode) ? 1 : mInputChans.size();
-    int nTestChans   = (mAudioTesterP && mAudioTesterP->getEnabled()) ? 1 : 0;
-    int nPluginChans = nChansIn - nTestChans;
+    int nTestChans     = (mAudioTesterP && mAudioTesterP->getEnabled()) ? 1 : 0;
+    int nPluginChans   = nChansIn - nTestChans;
     assert(nTestChans == 0 || (mAudioTesterP->getSendChannel() == nChansIn - 1));
     if (plugin->getNumInputs() < nPluginChans) {
         std::cerr
@@ -691,7 +692,8 @@ void AudioInterface::appendProcessPluginFromNetwork(ProcessPlugin* plugin)
 
     int nTestChans   = (mAudioTesterP && mAudioTesterP->getEnabled()) ? 1 : 0;
     int nPluginChans = mOutputChans.size() - nTestChans;
-    assert(nTestChans == 0 || (mAudioTesterP->getSendChannel() == mOutputChans.size() - 1));
+    assert(nTestChans == 0
+           || (mAudioTesterP->getSendChannel() == mOutputChans.size() - 1));
     if (plugin->getNumOutputs() > nPluginChans) {
         std::cerr
             << "*** AudioInterface.cpp: appendProcessPluginFromNetwork: ProcessPlugin "
@@ -736,7 +738,7 @@ void AudioInterface::appendProcessPluginToMonitor(ProcessPlugin* plugin)
 
 void AudioInterface::initPlugins(bool verbose)
 {
-    const int nChansIn = (MIXTOMONO == mInputMixMode) ? 1 : mInputChans.size();
+    const int nChansIn  = (MIXTOMONO == mInputMixMode) ? 1 : mInputChans.size();
     const int nChansOut = mOutputChans.size();
     const int nChansMon = mMonProcessBuffers[0].size();
     int nPlugins = mProcessPluginsFromNetwork.size() + mProcessPluginsToNetwork.size()

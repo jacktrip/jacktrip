@@ -258,20 +258,29 @@ void RtAudioInterface::setup(bool verbose)
         throw std::runtime_error(errorMsg.toStdString());
     }
 
+    if (in_device.api == out_device.api) {
 #ifdef _WIN32
-    if (in_device.api != RtAudio::WINDOWS_ASIO
-        || out_device.api != RtAudio::WINDOWS_ASIO) {
-        AudioInterface::setDevicesWarningMsg(AudioInterface::DEVICE_WARN_ASIO_LATENCY);
-        AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_NONE);
-    }
+        if (in_device.api != RtAudio::WINDOWS_ASIO) {
+            AudioInterface::setDevicesWarningMsg(
+                AudioInterface::DEVICE_WARN_ASIO_LATENCY);
+            AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_NONE);
+        } else if (in_device.api == RtAudio::WINDOWS_ASIO
+                   && in_device.ID != out_device.ID) {
+            AudioInterface::setDevicesWarningMsg(AudioInterface::DEVICE_WARN_NONE);
+            AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_SAME_ASIO);
+        }
 #else
-    if (in_device.api == RtAudio::LINUX_PULSE || in_device.api == RtAudio::LINUX_OSS
-        || out_device.api == RtAudio::LINUX_PULSE
-        || out_device.api == RtAudio::LINUX_OSS) {
-        AudioInterface::setDevicesWarningMsg(AudioInterface::DEVICE_WARN_ALSA_LATENCY);
-        AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_NONE);
-    }
+        if (in_device.api == RtAudio::LINUX_PULSE
+            || in_device.api == RtAudio::LINUX_OSS) {
+            AudioInterface::setDevicesWarningMsg(
+                AudioInterface::DEVICE_WARN_ALSA_LATENCY);
+            AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_NONE);
+        }
 #endif
+    } else {
+        AudioInterface::setDevicesWarningMsg(AudioInterface::DEVICE_WARN_NONE);
+        AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_INCOMPATIBLE);
+    }
 
     RtAudio::StreamParameters in_params, out_params;
     in_params.deviceId      = in_device.ID;
@@ -311,6 +320,9 @@ void RtAudioInterface::setup(bool verbose)
 
     unsigned int sampleRate   = getSampleRate();           // mSamplingRate;
     unsigned int bufferFrames = getBufferSizeInSamples();  // mBufferSize;
+
+    if (in_device.api != out_device.api)
+        return;
 
     std::string errorText;
 
