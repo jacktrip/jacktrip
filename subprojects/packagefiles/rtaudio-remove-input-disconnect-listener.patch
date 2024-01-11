@@ -1,8 +1,6 @@
-diff --git a/RtAudio.cpp b/RtAudio.cpp
-index 0a55be1..bbe2539 100644
---- a/RtAudio.cpp
-+++ b/RtAudio.cpp
-@@ -1981,7 +1981,7 @@ void RtApiCore :: closeStream( void )
+--- a/RtAudio.cpp	2024-01-11 13:04:29.148565300 -0800
++++ b/RtAudio.cpp	2024-01-11 13:04:42.305228600 -0800
+@@ -1981,7 +1981,7 @@
          }
        }
  
