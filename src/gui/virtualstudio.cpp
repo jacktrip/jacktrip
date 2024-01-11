@@ -879,6 +879,12 @@ void VirtualStudio::completeConnection()
         int buffer_strategy = m_audioConfigPtr->getBufferStrategy() + 1;
         // adjust buffer_strategy for PLC "auto" mode menu item
         if (buffer_strategy == 3) {
+            // run PLC without worker (4)
+            buffer_strategy = 4;
+            /*
+            // I don't believe this is still necessary,
+            // after splitting the input and output RtAudio streams
+            // See https://github.com/jacktrip/jacktrip/pull/1235
             if (useRtAudio) {
                 // if same device for input and output,
                 // run PLC without worker (4)
@@ -890,6 +896,7 @@ void VirtualStudio::completeConnection()
                 // run PLC without worker (4)
                 buffer_strategy = 4;
             }
+            */
         } else if (buffer_strategy == 5) {
             buffer_strategy = 3;  // run PLC with worker (3)
         }
