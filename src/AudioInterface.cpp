@@ -71,6 +71,7 @@ AudioInterface::AudioInterface(QVarLengthArray<int> InputChans,
     , mAudioOutputPacket(NULL)
     , mLoopBack(false)
     , mProcessWithNetwork(processWithNetwork)
+    , mMonitorStarted(false)
     , mJackTrip(jacktrip)
     , mInputMixMode(InputMixMode)
     , mProcessingAudio(false)
@@ -279,7 +280,13 @@ void AudioInterface::audioOutputCallback(QVarLengthArray<sample_t*>& out_buffer,
         // will be also available be available to this thread before read
         std::memset(mAudioOutputPacket, 0,
                     sizeof(sample_t) * n_frames * getNumInputChannels());
-        mMonitorQueuePtr->pop(mAudioOutputPacket);
+        if (mMonitorStarted) {
+            mMonitorQueuePtr->pop(mAudioOutputPacket);
+        } else {
+            // drain the monitor queue to minimize latency
+            while (mMonitorQueuePtr->pop(mAudioOutputPacket)) {}
+            mMonitorStarted = true;
+        }
         for (int i = 0; i < getNumOutputChannels(); i++) {
             // if using mix-to-mono, in_buffer[0] should already contain the mixed
             // audio, so copy it to the monitor buffer. See RtAudioInterface.cpp

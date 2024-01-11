@@ -349,6 +349,7 @@ class AudioInterface
                                  ///< RingBuffer
     bool mLoopBack;
     bool mProcessWithNetwork;  ///< whether or not to send/receive data via the network
+    bool mMonitorStarted;      ///< True if we have started to consume monitor audio
     AudioTester* mAudioTesterP{nullptr};
 
    protected:
