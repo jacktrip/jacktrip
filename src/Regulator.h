@@ -95,9 +95,9 @@ class ChanData
 class StdDev
 {
    public:
-    StdDev(int id, QElapsedTimer* timer, int w);
+    StdDev(int id, QElapsedTimer* timer, int fps);
     void tick();
-    double calcAuto(double autoHeadroom, double localFPPdur, double peerFPPdur);
+    double calcAuto();
     int mId;
     int plcOverruns;
     int plcUnderruns;
@@ -107,13 +107,15 @@ class StdDev
     double lastMax;
     int lastPlcOverruns;
     int lastPlcUnderruns;
+    int lastGlitches;
+    bool skipAutoHeadroom;
+    double autoHeadroom;
     double lastPLCdspElapsed;
     double lastStdDev;
     double longTermStdDev;
     double longTermStdDevAcc;
     double longTermMax;
     double longTermMaxAcc;
-    double autoHeadroom;
 
    private:
     double smooth(double avg, double current);
@@ -122,6 +124,7 @@ class StdDev
     std::vector<double> data;
     double mean;
     int window;
+    int framesPerSecond;
     double acc;
     double min;
     double max;

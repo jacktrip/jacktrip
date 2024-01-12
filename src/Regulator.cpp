@@ -94,14 +94,17 @@ using std::setw;
 constexpr int HIST        = 4;      // for mono at FPP 16-128, see below for > mono, > 128
 constexpr int NumSlotsMax = 4096;   // mNumSlots looped for recent arrivals
 constexpr double AutoMax  = 250.0;  // msec bounds on insane IPI, like ethernet unplugged
-constexpr double AutoInitDur = 1000.0;  // kick in auto after this many msec
+constexpr double AutoInitDur = 3000.0;  // kick in auto after this many msec
 constexpr double AutoInitValFactor =
     0.5;  // scale for initial mMsecTolerance during init phase if unspecified
 constexpr double MaxWaitTime = 30;  // msec
 
 // tweak
-constexpr int WindowDivisor = 8;     // for faster auto tracking
-constexpr int MaxFPP        = 1024;  // tested up to this FPP
+constexpr int WindowDivisor   = 8;     // for faster auto tracking
+constexpr int MaxFPP          = 1024;  // tested up to this FPP
+constexpr int MaxAutoHeadroom = 5;     // maximum auto headroom in milliseconds
+constexpr double AutoHeadroomGlitchTolerance =
+    0.01;  // Acceptable rate of glitches before auto headroom is increased (1%)
 constexpr double AutoHistoryWindow =
     60;  // rolling window of time (in seconds) over which auto tolerance roughly adjusts
 constexpr double AutoSmoothingFactor =
@@ -353,11 +356,22 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
         }
         pushStat->tick();
         if (mAuto && (pushStat->lastTime > AutoInitDur)) {
-            // use max to accomodate for bad clocks in audio interfaces that
-            // cause a wide range of callback intervals (like realtek at 11ms)
-            mMsecTolerance = std::max<double>(
-                pushStat->calcAuto(mAutoHeadroom, mFPPdurMsec, mPeerFPPdurMsec),
-                pullStat->calcAuto(mAutoHeadroom, mFPPdurMsec, mPeerFPPdurMsec));
+            const double pushStatTol = pushStat->calcAuto();
+            const double pullStatTol = pullStat->calcAuto();
+            int pushStatHeadroom     = mAutoHeadroom;
+            if (pushStatHeadroom < 0) {
+                // auto headroom calculation: use value calculated by pullStats
+                // because that is where it counts glitches in the incoming peer stream
+                pushStatHeadroom = pullStat->autoHeadroom;
+            }
+            double tmp = std::max<double>(pushStatTol + pushStatHeadroom, pullStatTol);
+            if (tmp > AutoMax)
+                tmp = AutoMax;
+            if (tmp < mFPPdurMsec)
+                tmp = mFPPdurMsec;
+            if (tmp < mPeerFPPdurMsec)
+                tmp = mPeerFPPdurMsec;
+            mMsecTolerance = tmp;
         }
     }
 };
@@ -725,7 +739,8 @@ ChanData::ChanData(int i, int FPP, int hist) : ch(i)
 }
 
 //*******************************************************************************
-StdDev::StdDev(int id, QElapsedTimer* timer, int w) : mId(id), mTimer(timer), window(w)
+StdDev::StdDev(int id, QElapsedTimer* timer, int fps)
+    : mId(id), mTimer(timer), window(fps), framesPerSecond(fps)
 {
     window /= WindowDivisor;
     reset();
@@ -737,14 +752,16 @@ StdDev::StdDev(int id, QElapsedTimer* timer, int w) : mId(id), mTimer(timer), wi
     lastMax           = 0.0;
     longTermMax       = 0.0;
     longTermMaxAcc    = 0.0;
+    skipAutoHeadroom  = true;
     autoHeadroom      = 0.0;
     lastTime          = 0.0;
     lastPLCdspElapsed = 0.0;
     lastPlcOverruns   = 0;
     lastPlcUnderruns  = 0;
+    lastGlitches      = 0;
     plcOverruns       = 0;
     plcUnderruns      = 0;
-    data.resize(w, 0.0);
+    data.resize(fps, 0.0);
 }
 
 void StdDev::reset()
@@ -756,22 +773,13 @@ void StdDev::reset()
     max  = -999999.0;
 };
 
-double StdDev::calcAuto(double headroom, double localFPPdur, double peerFPPdur)
+double StdDev::calcAuto()
 {
     //    qDebug() << longTermStdDev << longTermMax << AutoMax << window <<
     //    longTermCnt;
     if ((longTermStdDev == 0.0) || (longTermMax == 0.0))
         return AutoMax;
-    if (headroom < 0)
-        headroom = autoHeadroom;
     double tmp = longTermStdDev + ((longTermMax > AutoMax) ? AutoMax : longTermMax);
-    if (tmp > AutoMax)
-        tmp = AutoMax;
-    if (tmp < localFPPdur)
-        tmp = localFPPdur;
-    if (tmp < peerFPPdur)
-        tmp = peerFPPdur;
-    tmp += headroom;
     return tmp;
 };
 
@@ -841,14 +849,25 @@ void StdDev::tick()
                 longTermStdDev = smooth(longTermStdDev, stdDevTmp);
                 longTermMax    = smooth(longTermMax, max);
             }
-        }
-
-        // there is likely a better algo, but this seems to work???
-        autoHeadroom = 6 * std::pow(longTermStdDev, 1.2);
-        if (autoHeadroom > 5.0)
-            autoHeadroom = 5.0;
-        if (mId == 1 && longTermCnt % WindowDivisor == 0) {
-            cout << "autoHeadroom = " << autoHeadroom << endl;
+            // check glitch count each second
+            if (longTermCnt % WindowDivisor == 0) {
+                const int glitchesAllowed = AutoHeadroomGlitchTolerance * framesPerSecond;
+                const int totalGlitches   = plcUnderruns + plcOverruns;
+                const int newGlitches     = totalGlitches - lastGlitches;
+                lastGlitches              = totalGlitches;
+                // require two consecutive periods of glitches exceeding allowed threshold
+                if (newGlitches > glitchesAllowed && autoHeadroom < MaxAutoHeadroom) {
+                    if (skipAutoHeadroom) {
+                        skipAutoHeadroom = false;
+                    } else {
+                        skipAutoHeadroom = true;
+                        ++autoHeadroom;
+                        qDebug() << "Increasing PLC headroom to " << autoHeadroom;
+                    }
+                } else {
+                    skipAutoHeadroom = true;
+                }
+            }
         }
 
         if (gVerboseFlag) {
