@@ -346,9 +346,23 @@ void RtAudioInterface::setup(bool verbose)
             mRtAudioInput->openStream(
                 nullptr, &in_params, RTAUDIO_FLOAT32, sampleRate, &bufferFrames,
                 &RtAudioInterface::wrapperRtAudioCallback, this, &options, errorFunc);
+            const unsigned int inputBufferFrames = bufferFrames;
             mRtAudioOutput->openStream(
                 &out_params, nullptr, RTAUDIO_FLOAT32, sampleRate, &bufferFrames,
                 &RtAudioInterface::wrapperRtAudioCallback, this, &options, errorFunc);
+            if (inputBufferFrames != bufferFrames) {
+                // output device doesn't support the same buffer size
+                // try to reopen the input device with new size
+                const unsigned int outputBufferFrames = bufferFrames;
+                mRtAudioInput->closeStream();
+                mRtAudioInput->openStream(
+                    nullptr, &in_params, RTAUDIO_FLOAT32, sampleRate, &bufferFrames,
+                    &RtAudioInterface::wrapperRtAudioCallback, this, &options, errorFunc);
+                if (outputBufferFrames != bufferFrames) {
+                    // just give up if this still doesn't work
+                    errorText = "The two devices selected are incompatible";
+                }
+            }
         }
     } catch (RtAudioError& e) {
         errorText = e.getMessage();
@@ -374,11 +388,28 @@ void RtAudioInterface::setup(bool verbose)
                 nullptr, &in_params, RTAUDIO_FLOAT32, sampleRate, &bufferFrames,
                 &RtAudioInterface::wrapperRtAudioCallback, this, &options)) {
             errorText = mRtAudioInput->getErrorText();
-        } else if (RTAUDIO_NO_ERROR
-                   != mRtAudioOutput->openStream(
-                       &out_params, nullptr, RTAUDIO_FLOAT32, sampleRate, &bufferFrames,
-                       &RtAudioInterface::wrapperRtAudioCallback, this, &options)) {
-            errorText = mRtAudioOutput->getErrorText();
+        } else {
+            const unsigned int inputBufferFrames = bufferFrames;
+            if (RTAUDIO_NO_ERROR
+                != mRtAudioOutput->openStream(
+                    &out_params, nullptr, RTAUDIO_FLOAT32, sampleRate, &bufferFrames,
+                    &RtAudioInterface::wrapperRtAudioCallback, this, &options)) {
+                errorText = mRtAudioOutput->getErrorText();
+            } else if (inputBufferFrames != bufferFrames) {
+                // output device doesn't support the same buffer size
+                // try to reopen the input device with new size
+                const unsigned int outputBufferFrames = bufferFrames;
+                mRtAudioInput->closeStream();
+                if (RTAUDIO_NO_ERROR
+                    != mRtAudioInput->openStream(
+                        nullptr, &in_params, RTAUDIO_FLOAT32, sampleRate, &bufferFrames,
+                        &RtAudioInterface::wrapperRtAudioCallback, this, &options)) {
+                    errorText = mRtAudioInput->getErrorText();
+                } else if (outputBufferFrames != bufferFrames) {
+                    // just give up if this still doesn't work
+                    errorText = "The two devices selected are incompatible";
+                }
+            }
         }
     }
 #endif
