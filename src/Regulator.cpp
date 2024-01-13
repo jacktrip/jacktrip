@@ -290,6 +290,49 @@ Regulator::~Regulator()
         delete m_b_BroadcastRingBuffer;
 }
 
+//*******************************************************************************
+void Regulator::updateTolerance()
+{
+    // pushes happen when we have new packets received from peer
+    // pulls happen when our audio interface triggers a callback
+    const double pushStatTol = pushStat->calcAuto();
+    const double pullStatTol = pullStat->calcAuto();
+    if (mAutoHeadroom < 0) {
+        // auto headroom calculation: use value calculated by pullStats
+        // because that is where it counts glitches in the incoming peer stream
+        const int glitchesAllowed =
+            static_cast<int>(AutoHeadroomGlitchTolerance * mSampleRate / mPeerFPP);
+        const int totalGlitches = pullStat->plcUnderruns + pullStat->plcOverruns;
+        const int newGlitches   = totalGlitches - mLastGlitches;
+        mLastGlitches           = totalGlitches;
+        // require two consecutive periods of glitches exceeding allowed threshold
+        if (newGlitches > glitchesAllowed && mCurrentHeadroom < MaxAutoHeadroom) {
+            if (mSkipAutoHeadroom) {
+                mSkipAutoHeadroom = false;
+            } else {
+                mSkipAutoHeadroom = true;
+                ++mCurrentHeadroom;
+                qDebug() << "PLC" << newGlitches << "glitches"
+                         << ">" << glitchesAllowed << "allowed: Increasing headroom to "
+                         << mCurrentHeadroom;
+            }
+        } else {
+            mSkipAutoHeadroom = true;
+        }
+    } else {
+        mCurrentHeadroom = mAutoHeadroom;
+    }
+    double tmp = std::max<double>(pushStatTol + mCurrentHeadroom, pullStatTol);
+    if (tmp > AutoMax)
+        tmp = AutoMax;
+    if (tmp < mFPPdurMsec)
+        tmp = mFPPdurMsec;
+    if (tmp < mPeerFPPdurMsec)
+        tmp = mPeerFPPdurMsec;
+    mMsecTolerance = tmp;
+}
+
+//*******************************************************************************
 void Regulator::setFPPratio()
 {
     if (mPeerFPP != mFPP) {
@@ -361,44 +404,7 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
         if (mAuto && pushStatsUpdated && (pushStat->lastTime > AutoInitDur)
             && pushStat->longTermCnt % WindowDivisor == 0) {
             // after AutoInitDur: update auto tolerance once per second
-            // pushes happen when we have new packets received from peer
-            // pulls happen when our audio interface triggers a callback
-            const double pushStatTol = pushStat->calcAuto();
-            const double pullStatTol = pullStat->calcAuto();
-            if (mAutoHeadroom < 0) {
-                // auto headroom calculation: use value calculated by pullStats
-                // because that is where it counts glitches in the incoming peer stream
-                const int glitchesAllowed = static_cast<int>(AutoHeadroomGlitchTolerance
-                                                             * mSampleRate / mPeerFPP);
-                const int totalGlitches = pullStat->plcUnderruns + pullStat->plcOverruns;
-                const int newGlitches   = totalGlitches - mLastGlitches;
-                mLastGlitches           = totalGlitches;
-                // require two consecutive periods of glitches exceeding allowed threshold
-                if (newGlitches > glitchesAllowed && mCurrentHeadroom < MaxAutoHeadroom) {
-                    if (mSkipAutoHeadroom) {
-                        mSkipAutoHeadroom = false;
-                    } else {
-                        mSkipAutoHeadroom = true;
-                        ++mCurrentHeadroom;
-                        qDebug()
-                            << "PLC" << newGlitches << "glitches"
-                            << ">" << glitchesAllowed
-                            << "allowed: Increasing headroom to " << mCurrentHeadroom;
-                    }
-                } else {
-                    mSkipAutoHeadroom = true;
-                }
-            } else {
-                mCurrentHeadroom = mAutoHeadroom;
-            }
-            double tmp = std::max<double>(pushStatTol + mCurrentHeadroom, pullStatTol);
-            if (tmp > AutoMax)
-                tmp = AutoMax;
-            if (tmp < mFPPdurMsec)
-                tmp = mFPPdurMsec;
-            if (tmp < mPeerFPPdurMsec)
-                tmp = mPeerFPPdurMsec;
-            mMsecTolerance = tmp;
+            updateTolerance();
         }
     }
 };

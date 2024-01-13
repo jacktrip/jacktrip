@@ -188,10 +188,12 @@ class Regulator : public RingBuffer
     void pushPacket(const int8_t* buf, int seq_num);
     void assemblePacket(const int8_t* buf, int peer_seq_num);
     void pullPacket();
+    void updateTolerance();
     void setFPPratio();
-    bool mFPPratioIsSet;
     void processPacket(bool glitch);
     void processChannel(int ch, bool glitch, int packetCnt, bool lastWasGlitch);
+
+    bool mFPPratioIsSet;
     int mNumChannels;
     int mAudioBitRes;
     int mFPP;
