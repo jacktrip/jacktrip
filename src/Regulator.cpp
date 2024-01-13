@@ -104,7 +104,7 @@ constexpr int WindowDivisor   = 8;     // for faster auto tracking
 constexpr int MaxFPP          = 1024;  // tested up to this FPP
 constexpr int MaxAutoHeadroom = 5;     // maximum auto headroom in milliseconds
 constexpr double AutoHeadroomGlitchTolerance =
-    0.01;  // Acceptable rate of glitches before auto headroom is increased (1%)
+    0.007;  // Acceptable rate of glitches before auto headroom is increased (0.7%)
 constexpr double AutoHistoryWindow =
     60;  // rolling window of time (in seconds) over which auto tolerance roughly adjusts
 constexpr double AutoSmoothingFactor =
@@ -123,6 +123,9 @@ Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
     , pushStat(NULL)
     , pullStat(NULL)
     , mAuto(false)
+    , mSkipAutoHeadroom(true)
+    , mLastGlitches(0)
+    , mCurrentHeadroom(0)
     , mUseWorkerThread(false)
     , m_b_BroadcastQueueLength(bqLen)
     , mRegulatorThreadPtr(NULL)
@@ -354,17 +357,41 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
                 seq_num++;
             }
         }
-        pushStat->tick();
-        if (mAuto && (pushStat->lastTime > AutoInitDur)) {
+        bool pushStatsUpdated = pushStat->tick();
+        if (mAuto && pushStatsUpdated && (pushStat->lastTime > AutoInitDur)
+            && pushStat->longTermCnt % WindowDivisor == 0) {
+            // after AutoInitDur: update auto tolerance once per second
+            // pushes happen when we have new packets received from peer
+            // pulls happen when our audio interface triggers a callback
             const double pushStatTol = pushStat->calcAuto();
             const double pullStatTol = pullStat->calcAuto();
-            int pushStatHeadroom     = mAutoHeadroom;
-            if (pushStatHeadroom < 0) {
+            if (mAutoHeadroom < 0) {
                 // auto headroom calculation: use value calculated by pullStats
                 // because that is where it counts glitches in the incoming peer stream
-                pushStatHeadroom = pullStat->autoHeadroom;
+                const int glitchesAllowed = static_cast<int>(AutoHeadroomGlitchTolerance
+                                                             * mSampleRate / mPeerFPP);
+                const int totalGlitches = pullStat->plcUnderruns + pullStat->plcOverruns;
+                const int newGlitches   = totalGlitches - mLastGlitches;
+                mLastGlitches           = totalGlitches;
+                // require two consecutive periods of glitches exceeding allowed threshold
+                if (newGlitches > glitchesAllowed && mCurrentHeadroom < MaxAutoHeadroom) {
+                    if (mSkipAutoHeadroom) {
+                        mSkipAutoHeadroom = false;
+                    } else {
+                        mSkipAutoHeadroom = true;
+                        ++mCurrentHeadroom;
+                        qDebug()
+                            << "PLC" << newGlitches << "glitches"
+                            << ">" << glitchesAllowed
+                            << "allowed: Increasing headroom to " << mCurrentHeadroom;
+                    }
+                } else {
+                    mSkipAutoHeadroom = true;
+                }
+            } else {
+                mCurrentHeadroom = mAutoHeadroom;
             }
-            double tmp = std::max<double>(pushStatTol + pushStatHeadroom, pullStatTol);
+            double tmp = std::max<double>(pushStatTol + mCurrentHeadroom, pullStatTol);
             if (tmp > AutoMax)
                 tmp = AutoMax;
             if (tmp < mFPPdurMsec)
@@ -739,8 +766,7 @@ ChanData::ChanData(int i, int FPP, int hist) : ch(i)
 }
 
 //*******************************************************************************
-StdDev::StdDev(int id, QElapsedTimer* timer, int fps)
-    : mId(id), mTimer(timer), window(fps), framesPerSecond(fps)
+StdDev::StdDev(int id, QElapsedTimer* timer, int w) : mId(id), mTimer(timer), window(w)
 {
     window /= WindowDivisor;
     reset();
@@ -752,16 +778,13 @@ StdDev::StdDev(int id, QElapsedTimer* timer, int fps)
     lastMax           = 0.0;
     longTermMax       = 0.0;
     longTermMaxAcc    = 0.0;
-    skipAutoHeadroom  = true;
-    autoHeadroom      = 0.0;
     lastTime          = 0.0;
     lastPLCdspElapsed = 0.0;
     lastPlcOverruns   = 0;
     lastPlcUnderruns  = 0;
-    lastGlitches      = 0;
     plcOverruns       = 0;
     plcUnderruns      = 0;
-    data.resize(fps, 0.0);
+    data.resize(w, 0.0);
 }
 
 void StdDev::reset()
@@ -790,15 +813,17 @@ double StdDev::smooth(double avg, double current)
     return avg + AutoSmoothingFactor * (current - avg);
 }
 
-void StdDev::tick()
+bool StdDev::tick()
 {
     double now       = (double)mTimer->nsecsElapsed() / 1000000.0;
     double msElapsed = now - lastTime;
     lastTime         = now;
+
     // discard measurements that exceed the max wait time
     // this prevents temporary outages from skewing jitter metrics
     if (msElapsed > MaxWaitTime)
-        return;
+        return false;
+
     if (ctr != window) {
         data[ctr] = msElapsed;
         if (msElapsed < min)
@@ -815,74 +840,57 @@ void StdDev::tick()
             std::cout << setw(10) << msElapsed << " " << mId << endl;
         }
         */
-    } else {
-        // calculate mean and standard deviation
-        mean       = (double)acc / (double)window;
-        double var = 0.0;
-        for (int i = 0; i < window; i++) {
-            double tmp = data[i] - mean;
-            var += (tmp * tmp);
-        }
-        var /= (double)window;
-        double stdDevTmp = sqrt(var);
-
-        if (longTermCnt <= 3) {
-            if (longTermCnt == 0 && gVerboseFlag) {
-                cout << "printing directly from Regulator->stdDev->tick:\n (mean / min / "
-                        "max / "
-                        "stdDev / longTermMax / longTermStdDev) \n";
-            }
-            // ignore first few stats because they are unreliable
-            longTermMax       = max;
-            longTermMaxAcc    = max;
-            longTermStdDev    = stdDevTmp;
-            longTermStdDevAcc = stdDevTmp;
-        } else {
-            longTermStdDevAcc += stdDevTmp;
-            longTermMaxAcc += max;
-            if (longTermCnt <= (WindowDivisor * AutoHistoryWindow)) {
-                // use simple average for startup to establish baseline
-                longTermStdDev = longTermStdDevAcc / (longTermCnt - 3);
-                longTermMax    = longTermMaxAcc / (longTermCnt - 3);
-            } else {
-                // use EWMA after startup to allow for adjustments
-                longTermStdDev = smooth(longTermStdDev, stdDevTmp);
-                longTermMax    = smooth(longTermMax, max);
-            }
-            // check glitch count each second
-            if (longTermCnt % WindowDivisor == 0) {
-                const int glitchesAllowed = AutoHeadroomGlitchTolerance * framesPerSecond;
-                const int totalGlitches   = plcUnderruns + plcOverruns;
-                const int newGlitches     = totalGlitches - lastGlitches;
-                lastGlitches              = totalGlitches;
-                // require two consecutive periods of glitches exceeding allowed threshold
-                if (newGlitches > glitchesAllowed && autoHeadroom < MaxAutoHeadroom) {
-                    if (skipAutoHeadroom) {
-                        skipAutoHeadroom = false;
-                    } else {
-                        skipAutoHeadroom = true;
-                        ++autoHeadroom;
-                        qDebug() << "Increasing PLC headroom to " << autoHeadroom;
-                    }
-                } else {
-                    skipAutoHeadroom = true;
-                }
-            }
-        }
-
-        if (gVerboseFlag) {
-            cout << setw(10) << mean << setw(10) << min << setw(10) << max << setw(10)
-                 << stdDevTmp << setw(10) << longTermMax << setw(10) << longTermStdDev
-                 << " " << mId << endl;
-        }
-
-        longTermCnt++;
-        lastMean   = mean;
-        lastMin    = min;
-        lastMax    = max;
-        lastStdDev = stdDevTmp;
-        reset();
+        return false;
     }
+
+    // calculate mean and standard deviation
+    mean       = (double)acc / (double)window;
+    double var = 0.0;
+    for (int i = 0; i < window; i++) {
+        double tmp = data[i] - mean;
+        var += (tmp * tmp);
+    }
+    var /= (double)window;
+    double stdDevTmp = sqrt(var);
+
+    if (longTermCnt <= 3) {
+        if (longTermCnt == 0 && gVerboseFlag) {
+            cout << "printing directly from Regulator->stdDev->tick:\n (mean / min / "
+                    "max / "
+                    "stdDev / longTermMax / longTermStdDev) \n";
+        }
+        // ignore first few stats because they are unreliable
+        longTermMax       = max;
+        longTermMaxAcc    = max;
+        longTermStdDev    = stdDevTmp;
+        longTermStdDevAcc = stdDevTmp;
+    } else {
+        longTermStdDevAcc += stdDevTmp;
+        longTermMaxAcc += max;
+        if (longTermCnt <= (WindowDivisor * AutoHistoryWindow)) {
+            // use simple average for startup to establish baseline
+            longTermStdDev = longTermStdDevAcc / (longTermCnt - 3);
+            longTermMax    = longTermMaxAcc / (longTermCnt - 3);
+        } else {
+            // use EWMA after startup to allow for adjustments
+            longTermStdDev = smooth(longTermStdDev, stdDevTmp);
+            longTermMax    = smooth(longTermMax, max);
+        }
+    }
+
+    if (gVerboseFlag) {
+        cout << setw(10) << mean << setw(10) << min << setw(10) << max << setw(10)
+             << stdDevTmp << setw(10) << longTermMax << setw(10) << longTermStdDev << " "
+             << mId << endl;
+    }
+
+    longTermCnt++;
+    lastMean   = mean;
+    lastMin    = min;
+    lastMax    = max;
+    lastStdDev = stdDevTmp;
+    reset();
+    return true;
 }
 
 void Regulator::readSlotNonBlocking(int8_t* ptrToReadSlot)

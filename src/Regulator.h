@@ -95,8 +95,8 @@ class ChanData
 class StdDev
 {
    public:
-    StdDev(int id, QElapsedTimer* timer, int fps);
-    void tick();
+    StdDev(int id, QElapsedTimer* timer, int w);
+    bool tick();  // returns true if stats were updated
     double calcAuto();
     int mId;
     int plcOverruns;
@@ -107,15 +107,13 @@ class StdDev
     double lastMax;
     int lastPlcOverruns;
     int lastPlcUnderruns;
-    int lastGlitches;
-    bool skipAutoHeadroom;
-    double autoHeadroom;
     double lastPLCdspElapsed;
     double lastStdDev;
     double longTermStdDev;
     double longTermStdDevAcc;
     double longTermMax;
     double longTermMaxAcc;
+    int longTermCnt;
 
    private:
     double smooth(double avg, double current);
@@ -124,12 +122,10 @@ class StdDev
     std::vector<double> data;
     double mean;
     int window;
-    int framesPerSecond;
     double acc;
     double min;
     double max;
     int ctr;
-    int longTermCnt;
 };
 
 class Regulator : public RingBuffer
@@ -232,6 +228,9 @@ class Regulator : public RingBuffer
     int mFPPratioNumerator;
     int mFPPratioDenominator;
     bool mAuto;
+    bool mSkipAutoHeadroom;
+    int mLastGlitches;
+    double mCurrentHeadroom;
     double mAutoHeadroom;
     double mFPPdurMsec;
     double mPeerFPPdurMsec;
