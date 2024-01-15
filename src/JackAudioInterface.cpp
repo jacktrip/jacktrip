@@ -169,17 +169,17 @@ void JackAudioInterface::setupClient()
     mNumFrames = getBufferSizeInSamples();
 
     // Initialize Buffer array to read and write audio
-    mInBuffer.resize(mNumInChans);
-    mOutBuffer.resize(mNumOutChans);
-    mBroadcastBuffer.resize(mNumOutChans);
+    mInBuffer.resize(getNumInputChannels());
+    mOutBuffer.resize(getNumOutputChannels());
+    mBroadcastBuffer.resize(getNumOutputChannels());
 }
 
 //*******************************************************************************
 void JackAudioInterface::createChannels()
 {
     // Create Input Ports
-    mInPorts.resize(mNumInChans);
-    for (int i = 0; i < mNumInChans; i++) {
+    mInPorts.resize(getNumInputChannels());
+    for (int i = 0; i < getNumInputChannels(); i++) {
         QString inName;
         QTextStream(&inName) << "send_" << i + 1;
         mInPorts[i] =
@@ -188,8 +188,8 @@ void JackAudioInterface::createChannels()
     }
 
     // Create Output Ports
-    mOutPorts.resize(mNumOutChans);
-    for (int i = 0; i < mNumOutChans; i++) {
+    mOutPorts.resize(getNumOutputChannels());
+    for (int i = 0; i < getNumOutputChannels(); i++) {
         QString outName;
         QTextStream(&outName) << "receive_" << i + 1;
         mOutPorts[i] =
@@ -198,8 +198,8 @@ void JackAudioInterface::createChannels()
     }
     // Create Broadcast Ports
     if (mBroadcast) {
-        mBroadcastPorts.resize(mNumOutChans);
-        for (int i = 0; i < mNumOutChans; i++) {
+        mBroadcastPorts.resize(getNumOutputChannels());
+        for (int i = 0; i < getNumOutputChannels(); i++) {
             QString outName;
             QTextStream(&outName) << "broadcast_" << i + 1;
             mBroadcastPorts[i] =
@@ -300,12 +300,12 @@ int JackAudioInterface::processCallback(jack_nframes_t nframes)
 
     // Get input and output buffers from JACK
     //-------------------------------------------------------------------
-    for (int i = 0; i < mNumInChans; i++) {
+    for (int i = 0; i < getNumInputChannels(); i++) {
         // Input Ports are READ ONLY and change as needed (no locks) - make a copy for
         // debugging
         mInBuffer[i] = (sample_t*)jack_port_get_buffer(mInPorts[i], nframes);
     }
-    for (int i = 0; i < mNumOutChans; i++) {
+    for (int i = 0; i < getNumOutputChannels(); i++) {
         // Output Ports are WRITABLE
         mOutBuffer[i] = (sample_t*)jack_port_get_buffer(mOutPorts[i], nframes);
     }
@@ -320,7 +320,7 @@ int JackAudioInterface::processCallback(jack_nframes_t nframes)
     AudioInterface::callback(mInBuffer, mOutBuffer, nframes);
 
     if (mBroadcast) {
-        for (int i = 0; i < mNumOutChans; i++) {
+        for (int i = 0; i < getNumOutputChannels(); i++) {
             // Broadcast Ports are WRITABLE
             mBroadcastBuffer[i] =
                 (sample_t*)jack_port_get_buffer(mBroadcastPorts[i], nframes);
@@ -348,7 +348,7 @@ void JackAudioInterface::connectDefaultPorts()
         cout << "WARNING: Cannot find any physical capture ports" << endl;
     } else {
         // Connect capure ports to jacktrip send
-        for (int i = 0; i < mNumInChans; i++) {
+        for (int i = 0; i < getNumInputChannels(); i++) {
             // Check that we don't run out of capture ports
             if (ports[i] != NULL) {
                 jack_connect(mClient, ports[i], jack_port_name(mInPorts[i]));
@@ -366,7 +366,7 @@ void JackAudioInterface::connectDefaultPorts()
         cout << "WARNING: Cannot find any physical playback ports" << endl;
     } else {
         // Connect playback ports to jacktrip receive
-        for (int i = 0; i < mNumOutChans; i++) {
+        for (int i = 0; i < getNumOutputChannels(); i++) {
             // Check that we don't run out of capture ports
             if (ports[i] != NULL) {
                 jack_connect(mClient, jack_port_name(mOutPorts[i]), ports[i]);
