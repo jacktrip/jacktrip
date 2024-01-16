@@ -7,8 +7,8 @@ Rectangle {
 
     property string disabledButtonText: "#D3D4D4"
     property string saveButtonText: "#DB0A0A"
-    property int minifiedHeight: 36
-    property int fullHeight: 84
+    property int minifiedHeight: 0
+    property int fullHeight: 88 * virtualstudio.uiScale
 
     id: deviceControlsGroup
     width: parent.width
@@ -16,6 +16,7 @@ Rectangle {
     color: backgroundColour
 
     property bool showDeviceControls: studioStatus === "Ready"
+    property bool isUsingRtAudio: audio.audioBackend == "RtAudio"
 
     MouseArea {
         anchors.fill: parent
@@ -75,29 +76,29 @@ Rectangle {
 
         Item {
             Layout.fillHeight: true
-            Layout.preferredWidth: 48
-            visible: showDeviceControls
+            Layout.preferredWidth: 48 * virtualstudio.uiScale
+            visible: showDeviceControls && isUsingRtAudio
 
             ColumnLayout {
                 anchors.fill: parent
                 spacing: 2
 
                 Item {
-                    Layout.preferredHeight: 20
-                    Layout.preferredWidth: 40
+                    Layout.preferredHeight: 20 * virtualstudio.uiScale
+                    Layout.preferredWidth: 40 * virtualstudio.uiScale
                     Layout.alignment: Qt.AlignHCenter
                 }
 
                 Item {
-                    Layout.preferredHeight: 48
-                    Layout.preferredWidth: 40
+                    Layout.preferredHeight: 48 * virtualstudio.uiScale
+                    Layout.preferredWidth: 40 * virtualstudio.uiScale
                     Layout.alignment: Qt.AlignHCenter
                     visible: !showMinified
 
                     Button {
                         id: changeDevicesButton
-                        width: 36
-                        height: 36
+                        width: 36 * virtualstudio.uiScale
+                        height: 36 * virtualstudio.uiScale
                         anchors.top: parent.top
                         anchors.horizontalCenter: parent.horizontalCenter
                         background: Rectangle {

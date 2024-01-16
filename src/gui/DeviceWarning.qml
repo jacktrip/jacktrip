@@ -31,8 +31,7 @@ Item {
         id: devicesWarningTooltip
         anchors.left: warningOrErrorText.right
         anchors.leftMargin: 2 * virtualstudio.uiScale
-        anchors.bottom: warningOrErrorText.bottom
-        anchors.bottomMargin: 6 * virtualstudio.uiScale
+        anchors.top: devicesWarningIcon.top
         content: qsTr(audio.devicesError || audio.devicesWarning)
         iconColor: devicesWarningColour
         size: 16 * virtualstudio.uiScale
