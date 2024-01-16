@@ -70,15 +70,6 @@ Item {
         AudioSettings {
             id: audioSettings
         }
-
-        DeviceWarning {
-            id: deviceWarning
-            anchors.left: parent.left
-            anchors.leftMargin: 168 * virtualstudio.uiScale
-            anchors.bottom: parent.bottom
-            anchors.bottomMargin: 48 * virtualstudio.uiScale
-            visible: Boolean(audio.devicesError) || Boolean(audio.devicesWarning)
-        }
     }
 
     ToolBar {
@@ -281,6 +272,7 @@ Item {
                 width: parent.width
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
+                bottomPadding: 5 * virtualstudio.uiScale
             }
         }
     }
@@ -296,7 +288,8 @@ Item {
 
         Slider {
             id: scaleSlider
-            x: 234 * virtualstudio.uiScale; y: 100 * virtualstudio.uiScale
+            x: 220 * virtualstudio.uiScale;
+            y: 100 * virtualstudio.uiScale
             width: backendCombo.width
             from: 1; to: 1.25; value: virtualstudio.uiScale
             onMoved: { virtualstudio.uiScale = value }
@@ -393,8 +386,10 @@ Item {
                 // switch mode
                 virtualstudio.toStandard();
             }
-            x: 234 * virtualstudio.uiScale; y: 100 * virtualstudio.uiScale
-            width: 216 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+            x: 220 * virtualstudio.uiScale;
+            y: 100 * virtualstudio.uiScale
+            width: 216 * virtualstudio.uiScale;
+            height: 30 * virtualstudio.uiScale
             Text {
                 text: virtualstudio.psiBuild ? "Switch to Standard Mode" : "Switch to Classic Mode"
                 font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
@@ -413,13 +408,13 @@ Item {
 
         ComboBox {
             id: updateChannelCombo
-            x: 234 * virtualstudio.uiScale; y: modeButton.y + (48 * virtualstudio.uiScale)
+            x: 220 * virtualstudio.uiScale; y: modeButton.y + (48 * virtualstudio.uiScale)
             width: parent.width - x - (16 * virtualstudio.uiScale); height: 36 * virtualstudio.uiScale
             model: virtualstudio.updateChannelComboModel
             currentIndex: virtualstudio.updateChannel == "stable" ? 0 : 1
             onActivated: { virtualstudio.updateChannel = currentIndex == 0 ? "stable": "edge" }
             font.family: "Poppins"
-            visible: !virtualstudio.noUpdater
+            enabled: !virtualstudio.noUpdater
         }
 
         Text {
@@ -428,7 +423,6 @@ Item {
             text: "Update Channel"
             font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
-            visible: !virtualstudio.noUpdater
         }
 
         ComboBox {
@@ -440,7 +434,7 @@ Item {
                 audio.audioBackend = currentText
                 audio.restartAudio();
             }
-            x: 234 * virtualstudio.uiScale; y: updateChannelCombo.y + (48 * virtualstudio.uiScale)
+            x: 220 * virtualstudio.uiScale; y: updateChannelCombo.y + (48 * virtualstudio.uiScale)
             width: updateChannelCombo.width; height: updateChannelCombo.height
         }
 
@@ -455,7 +449,7 @@ Item {
 
         ComboBox {
             id: bufferCombo
-            x: 234 * virtualstudio.uiScale; y: backendCombo.y + (48 * virtualstudio.uiScale)
+            x: 220 * virtualstudio.uiScale; y: backendCombo.y + (48 * virtualstudio.uiScale)
             width: backendCombo.width; height: updateChannelCombo.height
             model: audio.bufferSizeComboModel
             currentIndex: getCurrentBufferSizeIndex()
@@ -763,6 +757,13 @@ Item {
                 anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
                 color: Boolean(audio.devicesError) ? disabledButtonTextColour : textColour
             }
+        }
+
+        DeviceWarning {
+            id: deviceWarning
+            x: (0.2 * window.width) + 16 * virtualstudio.uiScale
+            anchors.verticalCenter: parent.verticalCenter
+            visible: Boolean(audio.devicesError) || Boolean(audio.devicesWarning)
         }
     }
 
