@@ -16,6 +16,7 @@ Rectangle {
     color: backgroundColour
 
     property bool showDeviceControls: studioStatus === "Ready"
+    property bool isUsingRtAudio: audio.audioBackend == "RtAudio"
 
     MouseArea {
         anchors.fill: parent
@@ -76,7 +77,7 @@ Rectangle {
         Item {
             Layout.fillHeight: true
             Layout.preferredWidth: 48 * virtualstudio.uiScale
-            visible: showDeviceControls
+            visible: showDeviceControls && isUsingRtAudio
 
             ColumnLayout {
                 anchors.fill: parent
