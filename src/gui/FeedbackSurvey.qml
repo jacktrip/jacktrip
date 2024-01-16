@@ -292,39 +292,18 @@ Item {
                     anchors.topMargin: 24 * virtualstudio.uiScale
 
                     Button {
-                        id: noUserFeedbackButton
-                        anchors.left: buttonsArea.left
-                        anchors.verticalCenter: parent.buttonsArea
-                        width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
-                        onClicked: () => {
-                            userFeedbackModal.close();
-                            rating = 0;
-                            serverId = "";
-                            messageBox.clear();
-                        }
-
-                        background: Rectangle {
-                            radius: 6 * virtualstudio.uiScale
-                            color: noUserFeedbackButton.down ? buttonPressedColour : (noUserFeedbackButton.hovered ? buttonHoverColour : buttonColour)
-                            border.width: 1
-                            border.color: noUserFeedbackButton.down ? buttonPressedStroke : (noUserFeedbackButton.hovered ? buttonHoverStroke : buttonStroke)
-                        }
-
-                        Text {
-                            text: "No thanks"
-                            font.family: "Poppins"
-                            font.pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            anchors.verticalCenter: parent.verticalCenter
-                        }
-                    }
-
-                    Button {
-                        id: submitUserFeedbackButton
+                        id: userFeedbackButton
                         anchors.right: buttonsArea.right
+                        anchors.horizontalCenter: buttonsArea.horizontalCenter
                         anchors.verticalCenter: parent.buttonsArea
                         width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
                         onClicked: () => {
+                            if (rating === 0 && messageBox.text === "") {
+                                userFeedbackModal.close();
+                                serverId = "";
+                                messageBox.clear();
+                                return;
+                            }
                             virtualstudio.collectFeedbackSurvey(serverId, rating, messageBox.text);
                             submitted = true;
                             rating = 0;
@@ -336,13 +315,13 @@ Item {
 
                         background: Rectangle {
                             radius: 6 * virtualstudio.uiScale
-                            color: submitUserFeedbackButton.down ? buttonPressedColour : (submitUserFeedbackButton.hovered ? buttonHoverColour : buttonColour)
+                            color: userFeedbackButton.down ? buttonPressedColour : (userFeedbackButton.hovered ? buttonHoverColour : buttonColour)
                             border.width: 1
-                            border.color: submitUserFeedbackButton.down ? buttonPressedStroke : (submitUserFeedbackButton.hovered ? buttonHoverStroke : buttonStroke)
+                            border.color: userFeedbackButton.down ? buttonPressedStroke : (userFeedbackButton.hovered ? buttonHoverStroke : buttonStroke)
                         }
 
                         Text {
-                            text: "Submit"
+                            text: (rating === 0 && messageBox.text === "") ? "Dismiss" : "Submit"
                             font.family: "Poppins"
                             font.pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale
                             font.weight: Font.Bold
