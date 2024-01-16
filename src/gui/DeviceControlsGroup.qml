@@ -7,12 +7,11 @@ Rectangle {
 
     property string disabledButtonText: "#D3D4D4"
     property string saveButtonText: "#DB0A0A"
-    property int minifiedHeight: 0
     property int fullHeight: 88 * virtualstudio.uiScale
 
     id: deviceControlsGroup
     width: parent.width
-    height: showMinified ? minifiedHeight : fullHeight
+    height: showMinified && showDeviceControls ? 0 : fullHeight
     color: backgroundColour
 
     property bool showDeviceControls: studioStatus === "Ready"
@@ -84,16 +83,46 @@ Rectangle {
                 spacing: 2
 
                 Item {
-                    Layout.preferredHeight: 20 * virtualstudio.uiScale
-                    Layout.preferredWidth: 40 * virtualstudio.uiScale
-                    Layout.alignment: Qt.AlignHCenter
+                    Layout.preferredHeight: 24 * virtualstudio.uiScale
+                    Layout.preferredWidth: 24 * virtualstudio.uiScale
+                    Layout.topMargin: 2 * virtualstudio.uiScale
+                    Layout.rightMargin: 2 * virtualstudio.uiScale
+                    Layout.alignment: Qt.AlignRight | Qt.AlignTop
+
+                    Button {
+                        id: closeDeviceControlsButton
+                        width: 24 * virtualstudio.uiScale
+                        height: 24 * virtualstudio.uiScale
+                        background: Rectangle {
+                            color: backgroundColour
+                        }
+                        anchors.top: parent.top
+                        anchors.right: parent.right
+                        onClicked: {
+                            virtualstudio.collapseDeviceControls = true;
+                        }
+
+                        AppIcon {
+                            id: closeDeviceControlsIcon
+                            anchors { verticalCenter: parent.verticalCenter; horizontalCenter: parent.horizontalCenter }
+                            width: 24 * virtualstudio.uiScale
+                            height: 24 * virtualstudio.uiScale
+                            color: closeDeviceControlsButton.hovered ? textColour : browserButtonHoverColour
+                            icon.source: "close.svg"
+                            onClicked: {
+                                virtualstudio.collapseDeviceControls = true;
+                            }
+                        }
+                    }
                 }
 
                 Item {
-                    Layout.preferredHeight: 48 * virtualstudio.uiScale
                     Layout.preferredWidth: 40 * virtualstudio.uiScale
-                    Layout.alignment: Qt.AlignHCenter
-                    visible: !showMinified
+                    Layout.preferredHeight: 64 * virtualstudio.uiScale
+                    Layout.bottomMargin: 5 * virtualstudio.uiScale
+                    Layout.topMargin: 2 * virtualstudio.uiScale
+                    Layout.rightMargin: 2 * virtualstudio.uiScale
+                    Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
 
                     Button {
                         id: changeDevicesButton
