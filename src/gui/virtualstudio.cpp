@@ -845,6 +845,9 @@ void VirtualStudio::completeConnection()
         return;
     }
 
+    // always connect with audio device controls open
+    setCollapseDeviceControls(false);
+
     m_jackTripRunning = true;
     m_connectionState = QStringLiteral("Preparing audio...");
     emit connectionStateChanged();
