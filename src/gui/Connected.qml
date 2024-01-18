@@ -75,21 +75,11 @@ Item {
 
     DeviceControlsGroup {
         id: deviceControlsGroup
-        showMinified: false
         anchors.bottom: footer.top
     }
 
     Footer {
         id: footer
         anchors.bottom: parent.bottom
-    }
-
-    Connections {
-        target: virtualstudio
-
-        // self-managed servers do not support minified controls so keep it full size
-        function onCollapseDeviceControlsChanged(collapseDeviceControls) {
-            deviceControlsGroup.showMinified = virtualstudio.currentStudio.isManaged && collapseDeviceControls;
-        }
     }
 }
