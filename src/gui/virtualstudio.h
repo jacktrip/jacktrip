@@ -260,6 +260,7 @@ class VirtualStudio : public QObject
    private:
     void resetState();
     void getServerList(bool signalRefresh = false, int index = -1);
+    bool filterStudio(const VsServerInfo& serverInfo) const;
     void getSubscriptions();
     void getRegions();
     void getUserMetadata();
