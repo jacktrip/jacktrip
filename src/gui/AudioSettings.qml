@@ -6,6 +6,10 @@ Rectangle {
     height: parent.height
     color: backgroundColour
 
+    property bool connected: false
+    property bool showMeters: true
+    property bool showTestAudio: true
+
     property int fontBig: 20
     property int fontMedium: 13
     property int fontSmall: 11
@@ -112,6 +116,7 @@ Rectangle {
                 x: 0; y: 0
                 text: "Output Device"
                 font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                bottomPadding: 10 * virtualstudio.uiScale
                 color: textColour
             }
 
@@ -127,7 +132,7 @@ Rectangle {
             AppIcon {
                 id: headphonesIcon
                 anchors.left: outputLabel.left
-                anchors.verticalCenter: outputDeviceMeters.verticalCenter
+                anchors.top: outputLabel.bottom
                 width: 28 * virtualstudio.uiScale
                 height: 28 * virtualstudio.uiScale
                 icon.source: "headphones.svg"
@@ -168,8 +173,12 @@ Rectangle {
                                         audio.inputDevice = modelData.text
                                     }
                                 }
-                                audio.validateDevices()
-                                audio.restartAudio()
+                                if (connected) {
+                                    virtualstudio.triggerReconnect(false);
+                                } else {
+                                    audio.validateDevices()
+                                    audio.restartAudio()
+                                }
                             }
                         }
                     }
@@ -191,8 +200,9 @@ Rectangle {
                 anchors.top: outputCombo.bottom
                 anchors.topMargin: 16 * virtualstudio.uiScale
                 height: 24 * virtualstudio.uiScale
-                model: audio.outputMeterLevels
+                model: showMeters ? audio.outputMeterLevels : [0, 0]
                 clipped: audio.outputClipped
+                visible: showMeters
                 enabled: audio.audioReady && !Boolean(audio.devicesError)
             }
 
@@ -208,13 +218,14 @@ Rectangle {
                 tooltipText: "How loudly you hear other participants"
                 showLabel: false
                 sliderEnabled: true
+                visible: showMeters
             }
 
             Text {
                 id: outputChannelsLabel
                 anchors.left: outputCombo.left
                 anchors.right: outputCombo.horizontalCenter
-                anchors.top: outputSlider.bottom
+                anchors.top: showMeters ? outputSlider.bottom : outputCombo.bottom
                 anchors.topMargin: 12 * virtualstudio.uiScale
                 textFormat: Text.RichText
                 text: "Output Channel(s)"
@@ -247,8 +258,12 @@ Rectangle {
                             outputChannelsCombo.popup.close()
                             audio.baseOutputChannel = modelData.baseChannel
                             audio.numOutputChannels = modelData.numChannels
-                            audio.validateDevices()
-                            audio.restartAudio()
+                            if (connected) {
+                                virtualstudio.triggerReconnect(false);
+                            } else {
+                                audio.validateDevices()
+                                audio.restartAudio()
+                            }
                         }
                     }
                 }
@@ -264,6 +279,7 @@ Rectangle {
 
             Button {
                 id: testOutputAudioButton
+                visible: showTestAudio
                 background: Rectangle {
                     radius: 6 * virtualstudio.uiScale
                     color: testOutputAudioButton.down ? buttonPressedColour : (testOutputAudioButton.hovered ? buttonHoverColour : buttonColour)
@@ -285,7 +301,7 @@ Rectangle {
 
             Rectangle {
                 id: divider1
-                anchors.top: testOutputAudioButton.bottom
+                anchors.top: showTestAudio ? testOutputAudioButton.bottom : outputChannelsCombo.bottom
                 anchors.topMargin: 24 * virtualstudio.uiScale
                 width: parent.width - x - (16 * virtualstudio.uiScale); height: 2 * virtualstudio.uiScale
                 color: "#E0E0E0"
@@ -295,9 +311,10 @@ Rectangle {
                 id: inputLabel
                 anchors.left: outputLabel.left
                 anchors.top: divider1.bottom
-                anchors.topMargin: 32 * virtualstudio.uiScale
+                anchors.topMargin: 24 * virtualstudio.uiScale
                 text: "Input Device"
                 font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+                bottomPadding: 10 * virtualstudio.uiScale
                 color: textColour
             }
 
@@ -312,8 +329,8 @@ Rectangle {
 
             AppIcon {
                 id: microphoneIcon
-                anchors.left: outputLabel.left
-                anchors.verticalCenter: inputDeviceMeters.verticalCenter
+                anchors.left: inputLabel.left
+                anchors.top: inputLabel.bottom
                 width: 32 * virtualstudio.uiScale
                 height: 32 * virtualstudio.uiScale
                 icon.source: "mic.svg"
@@ -353,8 +370,12 @@ Rectangle {
                                         audio.outputDevice = modelData.text
                                     }
                                 }
-                                audio.validateDevices()
-                                audio.restartAudio()
+                                if (connected) {
+                                    virtualstudio.triggerReconnect(false);
+                                } else {
+                                    audio.validateDevices()
+                                    audio.restartAudio()
+                                }
                             }
                         }
                     }
@@ -376,14 +397,15 @@ Rectangle {
                 anchors.top: inputCombo.bottom
                 anchors.topMargin: 16 * virtualstudio.uiScale
                 height: 24 * virtualstudio.uiScale
-                model: audio.inputMeterLevels
+                model: showMeters ? audio.inputMeterLevels : [0, 0]
                 clipped: audio.inputClipped
+                visible: showMeters
                 enabled: audio.audioReady && !Boolean(audio.devicesError)
             }
 
             VolumeSlider {
                 id: inputSlider
-                anchors.left: inputDeviceMeters.left
+                anchors.left: inputCombo.left
                 anchors.right: parent.right
                 anchors.rightMargin: rightMargin * virtualstudio.uiScale
                 anchors.top: inputDeviceMeters.bottom
@@ -393,6 +415,7 @@ Rectangle {
                 tooltipText: "How loudly other participants hear you"
                 showLabel: false
                 sliderEnabled: true
+                visible: showMeters
             }
 
             Button {
@@ -408,7 +431,7 @@ Rectangle {
                 id: inputChannelsLabel
                 anchors.left: inputCombo.left
                 anchors.right: inputCombo.horizontalCenter
-                anchors.top: inputSlider.bottom
+                anchors.top: showMeters ? inputSlider.bottom : inputCombo.bottom
                 anchors.topMargin: 12 * virtualstudio.uiScale
                 textFormat: Text.RichText
                 text: "Input Channel(s)"
@@ -441,8 +464,12 @@ Rectangle {
                             inputChannelsCombo.popup.close()
                             audio.baseInputChannel = modelData.baseChannel
                             audio.numInputChannels = modelData.numChannels
-                            audio.validateDevices()
-                            audio.restartAudio()
+                            if (connected) {
+                                virtualstudio.triggerReconnect(false);
+                            } else {
+                                audio.validateDevices()
+                                audio.restartAudio()
+                            }
                         }
                     }
                 }
@@ -461,7 +488,7 @@ Rectangle {
                 anchors.left: inputCombo.horizontalCenter
                 anchors.right: inputCombo.right
                 anchors.rightMargin: 8 * virtualstudio.uiScale
-                anchors.top: inputSlider.bottom
+                anchors.top: showMeters ? inputSlider.bottom : inputCombo.bottom
                 anchors.topMargin: 12 * virtualstudio.uiScale
                 textFormat: Text.RichText
                 text: "Mono / Stereo"
@@ -493,8 +520,12 @@ Rectangle {
                             inputMixModeCombo.currentIndex = index
                             inputMixModeCombo.popup.close()
                             audio.inputMixMode = audio.inputMixModeComboModel[index].value
-                            audio.validateDevices();
-                            audio.restartAudio()
+                            if (connected) {
+                                virtualstudio.triggerReconnect(false);
+                            } else {
+                                audio.validateDevices()
+                                audio.restartAudio()
+                            }
                         }
                     }
                 }
@@ -605,13 +636,14 @@ Rectangle {
                 text: "Output Volume"
                 font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
                 wrapMode: Text.WordWrap
+                bottomPadding: 10 * virtualstudio.uiScale
                 color: textColour
             }
 
             AppIcon {
                 id: jackHeadphonesIcon
                 anchors.left: jackOutputLabel.left
-                anchors.verticalCenter: jackOutputVolumeSlider.verticalCenter
+                anchors.top: jackOutputLabel.bottom
                 width: 28 * virtualstudio.uiScale
                 height: 28 * virtualstudio.uiScale
                 icon.source: "headphones.svg"
@@ -624,7 +656,7 @@ Rectangle {
                 anchors.rightMargin: rightMargin * virtualstudio.uiScale
                 anchors.verticalCenter: jackOutputLabel.verticalCenter
                 height: 24 * virtualstudio.uiScale
-                model: audio.outputMeterLevels
+                model: showMeters ? audio.outputMeterLevels : [0, 0]
                 clipped: audio.outputClipped
                 enabled: audio.audioReady && !Boolean(audio.devicesError)
             }
@@ -673,13 +705,14 @@ Rectangle {
                 text: "Input Volume"
                 font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
                 wrapMode: Text.WordWrap
+                bottomPadding: 10 * virtualstudio.uiScale
                 color: textColour
             }
 
             AppIcon {
                 id: jackMicrophoneIcon
                 anchors.left: jackInputLabel.left
-                anchors.verticalCenter: jackInputVolumeSlider.verticalCenter
+                anchors.top: jackInputLabel.bottom
                 width: 32 * virtualstudio.uiScale
                 height: 32 * virtualstudio.uiScale
                 icon.source: "mic.svg"
@@ -692,7 +725,7 @@ Rectangle {
                 anchors.rightMargin: rightMargin * virtualstudio.uiScale
                 anchors.verticalCenter: jackInputLabel.verticalCenter
                 height: 24 * virtualstudio.uiScale
-                model: audio.inputMeterLevels
+                model: showMeters ? audio.inputMeterLevels : [0, 0]
                 clipped: audio.inputClipped
                 enabled: audio.audioReady && !Boolean(audio.devicesError)
             }

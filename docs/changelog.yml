@@ -1,3 +1,13 @@
+- Version: "2.2.0"
+  Date: 2024-01-22
+  Description:
+  - (updated) Improved support for different input and output devices
+  - (updated) Various latency improvements for packet loss concealment
+  - (updated) VS Mode make it easier to dismiss the user feedback dialog
+  - (updated) VS Mode error message for disconnected audio interfaces
+  - (fixed) VS Mode broken deeplinks when studio doesn't match filters
+  - (fixed) VS Mode refused to connect to studios not 48khz
+  - (fixed) VS Mode showed wrong devices selected when connected
 - Version: "2.1.0"
   Date: 2023-11-06
   Description:

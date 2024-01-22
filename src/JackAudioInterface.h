@@ -99,11 +99,6 @@ class JackAudioInterface : public AudioInterface
     /// \brief Connect the default ports, capture to sends, and receives to playback
     void connectDefaultPorts() override;
 
-    /// \brief Get Number of Input Channels
-    virtual int getNumInputChannels() const override { return mNumInChans; }
-    /// \brief Get Number of Output Channels
-    virtual int getNumOutputChannels() const override { return mNumOutChans; }
-
     //--------------SETTERS---------------------------------------------
     /// \brief Set Client Name to something different that the default (JackTrip)
     virtual void setClientName(const QString& ClientName) override

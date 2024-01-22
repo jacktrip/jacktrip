@@ -257,6 +257,7 @@ jobs:
           HOMEBREW_NO_ANALYTICS: 1
           HOMEBREW_NO_AUTO_UPDATE: 1
           HOMEBREW_NO_INSTALL_CLEANUP: 1
+          HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
         run: |
           # brew install jack
           # instead of using homebrew, install jack 1.9.16 from the installer, which should provide compatibility with both jackosx and the newer jack2
@@ -281,13 +282,20 @@ jobs:
         if: runner.os == 'Windows'
         shell: bash
         run: |
+          if [[ "${{ matrix.build-system }}" == "meson" ]]; then
+            # hack to get rid of faulty patch.exe since it breaks meson diff_files
+            rm -f c:/Strawberry/c/bin/patch.exe c:/Strawberry/perl/site/bin/patch.exe c:/Strawberry/perl/bin/patch.exe "C:/Program Files/Git/usr/bin/patch.exe"
+            # use working version of patch.exe in msys, see https://github.com/actions/runner-images/issues/1552
+            echo "C:\msys64\usr\bin" >> $GITHUB_PATH
+            # install older meson from choco which uses patch, since git is broken
+            # see https://github.com/mesonbuild/meson/issues/12092 and https://github.com/mesonbuild/meson/pull/12248
+            choco install meson --version=1.1.1 --no-progress
+            echo "C:\Program Files\Meson" >> $GITHUB_PATH
+            # disable gnu linker since it can conflict with MSVC
+            rm -f /usr/bin/link.exe C:/msys64/usr/bin/link.EXE
+          fi
           choco install jack --version=1.9.17 --no-progress
           choco install pkgconfiglite --no-progress
-          if [[ "${{ matrix.build-system }}" == "meson" ]]; then
-            python -m pip install --upgrade pip
-            pip install meson ninja
-            mv /usr/bin/link.exe /usr/bin/link_disabled # disable gnu linker
-          fi
       - name: setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
         if: runner.os == 'Windows'

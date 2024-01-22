@@ -1,0 +1,11 @@
+--- a/RtAudio.cpp	2024-01-11 13:04:29.148565300 -0800
++++ b/RtAudio.cpp	2024-01-11 13:04:42.305228600 -0800
+@@ -1981,7 +1981,7 @@
+         }
+       }
+ 
+-      if ( handle->disconnectListenerAdded[0] ) {
++      if ( handle->disconnectListenerAdded[1] ) {
+         property.mSelector = kAudioDevicePropertyDeviceIsAlive;
+         if (AudioObjectRemovePropertyListener( handle->id[1], &property, streamDisconnectListener, (void *) &stream_.callbackInfo ) != noErr) {
+           errorText_ = "RtApiCore::closeStream(): error removing disconnect property listener!";

@@ -64,6 +64,7 @@ class RtAudioDevice : public RtAudio::DeviceInfo
     RtAudio::Api api;
     void print() const;
     void printVerbose() const;
+    bool checkSampleRate(unsigned int srate) const;
     RtAudioDevice& operator=(const RtAudio::DeviceInfo& info);
 };
 
@@ -139,7 +140,7 @@ class RtAudioInterface : public AudioInterface
     // updates device and returns true if found
     bool getDeviceInfoFromId(const long deviceId, RtAudioDevice& device,
                              bool isInput) const;
-    long getDefaultDevice(RtAudio& rtaudio, bool isInput);
+    long getDefaultDevice(bool isInput);
     long getDefaultDeviceForLinuxPulseAudio(bool isInput);
 
     QVarLengthArray<float*>
@@ -148,8 +149,11 @@ class RtAudioInterface : public AudioInterface
         mOutBuffer;  ///< Vector of Output buffer/channel to write to JACK
     QVector<RtAudioDevice>
         mDevices;  ///< Vector of audio interfaces available via RTAudio
-    QSharedPointer<RtAudio>
-        mRtAudio;  ///< RtAudio class if the input and output device are the same
+    QSharedPointer<RtAudio> mRtAudioInput;   ///< RtAudio class for the input device
+    QSharedPointer<RtAudio> mRtAudioOutput;  ///< RtAudio class for the output device
+                                             ///< (null if using duplex mode)
+    bool mDuplexMode;  ///< true if using duplex stream mode (input device == output
+                       ///< device)
     QScopedPointer<StereoToMono> mStereoToMonoMixerPtr;
 };
 

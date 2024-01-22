@@ -3,19 +3,24 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 Rectangle {
-    required property bool showMinified
-
     property string disabledButtonText: "#D3D4D4"
     property string saveButtonText: "#DB0A0A"
-    property int minifiedHeight: 36
-    property int fullHeight: 84
+    property int fullHeight: 88 * virtualstudio.uiScale
+    property int minimumHeight: 48 * virtualstudio.uiScale
+
+    property bool isUsingRtAudio: audio.audioBackend == "RtAudio"
+    property bool isReady: virtualstudio.currentStudio.id !== "" && virtualstudio.currentStudio.status == "Ready"
+    property bool showDeviceControls: getShowDeviceControls()
 
     id: deviceControlsGroup
     width: parent.width
-    height: showMinified ? minifiedHeight : fullHeight
+    height: isReady ? (showDeviceControls ? fullHeight : (feedbackDetectedModal.visible ? minimumHeight : 0)) : minimumHeight;
     color: backgroundColour
 
-    property bool showDeviceControls: studioStatus === "Ready"
+    function getShowDeviceControls () {
+        // self-managed servers do not support minified controls so keep it full size
+        return !virtualstudio.currentStudio.isManaged || (!virtualstudio.collapseDeviceControls && isReady);
+    }
 
     MouseArea {
         anchors.fill: parent
@@ -31,7 +36,7 @@ Rectangle {
         Item {
             Layout.fillHeight: true
             Layout.fillWidth: true
-            visible: !showDeviceControls
+            visible: !isReady
 
             Button {
                 id: backButton
@@ -75,7 +80,7 @@ Rectangle {
 
         Item {
             Layout.fillHeight: true
-            Layout.preferredWidth: 48
+            Layout.preferredWidth: 48 * virtualstudio.uiScale
             visible: showDeviceControls
 
             ColumnLayout {
@@ -83,21 +88,53 @@ Rectangle {
                 spacing: 2
 
                 Item {
-                    Layout.preferredHeight: 20
-                    Layout.preferredWidth: 40
-                    Layout.alignment: Qt.AlignHCenter
+                    Layout.preferredHeight: 24 * virtualstudio.uiScale
+                    Layout.preferredWidth: 24 * virtualstudio.uiScale
+                    Layout.topMargin: 2 * virtualstudio.uiScale
+                    Layout.rightMargin: 2 * virtualstudio.uiScale
+                    Layout.alignment: Qt.AlignRight | Qt.AlignTop
+
+                    Button {
+                        id: closeDeviceControlsButton
+                        visible: virtualstudio.currentStudio.isManaged
+                        width: 24 * virtualstudio.uiScale
+                        height: 24 * virtualstudio.uiScale
+                        background: Rectangle {
+                            color: backgroundColour
+                        }
+                        anchors.top: parent.top
+                        anchors.right: parent.right
+                        onClicked: {
+                            virtualstudio.collapseDeviceControls = true;
+                        }
+
+                        AppIcon {
+                            id: closeDeviceControlsIcon
+                            anchors { verticalCenter: parent.verticalCenter; horizontalCenter: parent.horizontalCenter }
+                            width: 24 * virtualstudio.uiScale
+                            height: 24 * virtualstudio.uiScale
+                            color: closeDeviceControlsButton.hovered ? textColour : browserButtonHoverColour
+                            icon.source: "close.svg"
+                            onClicked: {
+                                virtualstudio.collapseDeviceControls = true;
+                            }
+                        }
+                    }
                 }
 
                 Item {
-                    Layout.preferredHeight: 48
-                    Layout.preferredWidth: 40
-                    Layout.alignment: Qt.AlignHCenter
-                    visible: !showMinified
+                    Layout.preferredWidth: 40 * virtualstudio.uiScale
+                    Layout.preferredHeight: 64 * virtualstudio.uiScale
+                    Layout.bottomMargin: 5 * virtualstudio.uiScale
+                    Layout.topMargin: 2 * virtualstudio.uiScale
+                    Layout.rightMargin: 2 * virtualstudio.uiScale
+                    Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
 
                     Button {
                         id: changeDevicesButton
-                        width: 36
-                        height: 36
+                        visible: isUsingRtAudio
+                        width: 36 * virtualstudio.uiScale
+                        height: 36 * virtualstudio.uiScale
                         anchors.top: parent.top
                         anchors.horizontalCenter: parent.horizontalCenter
                         background: Rectangle {
@@ -187,7 +224,7 @@ Rectangle {
                     height: 32 * virtualstudio.uiScale
                     icon.source: "warning.svg"
                     color: "#F21B1B"
-                    visible: !showMinified
+                    visible: showDeviceControls
                 }
 
                 AppIcon {
@@ -198,7 +235,7 @@ Rectangle {
                     width: 24 * virtualstudio.uiScale
                     icon.source: "warning.svg"
                     color: "#F21B1B"
-                    visible: showMinified
+                    visible: !showDeviceControls
                 }
 
                 Text {
@@ -213,7 +250,7 @@ Rectangle {
                     color: textColour
                     elide: Text.ElideRight
                     wrapMode: Text.WordWrap
-                    visible: !showMinified
+                    visible: showDeviceControls
                 }
 
                 Text {
@@ -228,7 +265,7 @@ Rectangle {
                     color: textColour
                     elide: Text.ElideRight
                     wrapMode: Text.WordWrap
-                    visible: !showMinified
+                    visible: showDeviceControls
                 }
 
                 Text {
@@ -242,7 +279,7 @@ Rectangle {
                     color: textColour
                     elide: Text.ElideRight
                     wrapMode: Text.WordWrap
-                    visible: showMinified
+                    visible: !showDeviceControls
                 }
 
                 Text {
@@ -258,7 +295,7 @@ Rectangle {
                     color: textColour
                     elide: Text.ElideRight
                     wrapMode: Text.WordWrap
-                    visible: !showMinified
+                    visible: showDeviceControls
                 }
 
                 Button {
@@ -280,13 +317,13 @@ Rectangle {
                     Text {
                         text: "Ok"
                         font.family: "Poppins"
-                        font.pixelSize: showMinified ? fontTiny * virtualstudio.fontScale * virtualstudio.uiScale : fontSmall * virtualstudio.fontScale * virtualstudio.uiScale
+                        font.pixelSize: showDeviceControls ? fontSmall * virtualstudio.fontScale * virtualstudio.uiScale : fontTiny * virtualstudio.fontScale * virtualstudio.uiScale
                         font.weight: Font.Bold
                         color: !Boolean(audio.devicesError) && audio.backendAvailable ? saveButtonText : disabledButtonText
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.verticalCenter: parent.verticalCenter
                     }
-                    visible: !showMinified
+                    visible: showDeviceControls
                 }
 
                 Button {
@@ -314,7 +351,7 @@ Rectangle {
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.verticalCenter: parent.verticalCenter
                     }
-                    visible: showMinified
+                    visible: !showDeviceControls
                 }
             }
         }
@@ -327,6 +364,20 @@ Rectangle {
             if (virtualstudio.windowState === "connected") {
                 feedbackDetectedModal.visible = true;
             }
+        }
+
+        function onCollapseDeviceControlsChanged(collapseDeviceControls) {
+            showDeviceControls = getShowDeviceControls()
+        }
+
+        function onCurrentStudioChanged(currentStudio) {
+            isReady = virtualstudio.currentStudio.id !== "" && virtualstudio.currentStudio.status == "Ready"
+            showDeviceControls = getShowDeviceControls()
+        }
+
+        function onConnectionStateChanged(connectionState) {
+            isReady = virtualstudio.currentStudio.id !== "" && virtualstudio.currentStudio.status == "Ready"
+            showDeviceControls = getShowDeviceControls()
         }
     }
 }

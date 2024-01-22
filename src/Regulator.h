@@ -96,8 +96,8 @@ class StdDev
 {
    public:
     StdDev(int id, QElapsedTimer* timer, int w);
-    void tick();
-    double calcAuto(double autoHeadroom, double localFPPdur, double peerFPPdur);
+    bool tick();  // returns true if stats were updated
+    double calcAuto();
     int mId;
     int plcOverruns;
     int plcUnderruns;
@@ -113,9 +113,10 @@ class StdDev
     double longTermStdDevAcc;
     double longTermMax;
     double longTermMaxAcc;
-    double longTermMean;
+    int longTermCnt;
 
    private:
+    double smooth(double avg, double current);
     void reset();
     QElapsedTimer* mTimer;
     std::vector<double> data;
@@ -125,7 +126,6 @@ class StdDev
     double min;
     double max;
     int ctr;
-    int longTermCnt;
 };
 
 class Regulator : public RingBuffer
@@ -188,10 +188,12 @@ class Regulator : public RingBuffer
     void pushPacket(const int8_t* buf, int seq_num);
     void assemblePacket(const int8_t* buf, int peer_seq_num);
     void pullPacket();
+    void updateTolerance();
     void setFPPratio();
-    bool mFPPratioIsSet;
     void processPacket(bool glitch);
     void processChannel(int ch, bool glitch, int packetCnt, bool lastWasGlitch);
+
+    bool mFPPratioIsSet;
     int mNumChannels;
     int mAudioBitRes;
     int mFPP;
@@ -228,6 +230,9 @@ class Regulator : public RingBuffer
     int mFPPratioNumerator;
     int mFPPratioDenominator;
     bool mAuto;
+    bool mSkipAutoHeadroom;
+    int mLastGlitches;
+    double mCurrentHeadroom;
     double mAutoHeadroom;
     double mFPPdurMsec;
     double mPeerFPPdurMsec;

@@ -22,7 +22,6 @@ Item {
 
             anchors.left: parent.left
             anchors.leftMargin: 8 * virtualstudio.uiScale
-            anchors.verticalCenter: parent.verticalCenter
 
             background: Rectangle {
                 color: isInput ? (audio.inputMuted ? muteButtonMutedColor : buttonColour) : "transparent"
@@ -71,7 +70,7 @@ Item {
 
         ColumnLayout {
             anchors.fill: parent
-            spacing: 2
+            spacing: 2 * virtualstudio.uiScale
 
             VolumeSlider {
                 Layout.fillWidth: true
@@ -93,7 +92,7 @@ Item {
 
         ColumnLayout {
             anchors.fill: parent
-            spacing: 2
+            spacing: 4 * virtualstudio.uiScale
 
             VolumeSlider {
                 Layout.fillWidth: true
@@ -115,15 +114,16 @@ Item {
 
     ColumnLayout {
         anchors.fill: parent
-        spacing: 2
+        spacing: 5 * virtualstudio.uiScale
 
         Item {
-            Layout.preferredHeight: minifiedHeight
+            Layout.topMargin: 5 * virtualstudio.uiScale
+            Layout.preferredHeight: 30 * virtualstudio.uiScale
             Layout.fillWidth: true
 
             RowLayout {
                 anchors.fill: parent
-                spacing: 8
+                spacing: 8 * virtualstudio.uiScale
 
                 Item {
                     Layout.fillHeight: true
@@ -132,7 +132,6 @@ Item {
                     Loader {
                         id: typeIconIndicator
                         anchors.left: parent.left
-                        anchors.verticalCenter: parent.verticalCenter
                         sourceComponent: controlIndicator
                     }
 
@@ -140,7 +139,6 @@ Item {
                         id: label
                         anchors.left: parent.left
                         anchors.leftMargin: 36 * virtualstudio.uiScale
-                        anchors.verticalCenter: parent.verticalCenter
 
                         text: isInput ? "Input" : "Output"
                         font { family: "Poppins"; weight: Font.Bold; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
@@ -159,12 +157,11 @@ Item {
                 Item {
                     Layout.fillHeight: true
                     Layout.fillWidth: true
-                    Layout.preferredWidth: 200
+                    Layout.preferredWidth: 200 * virtualstudio.uiScale
 
                     Meter {
                         anchors.fill: parent
-                        anchors.topMargin: 5
-                        anchors.rightMargin: 8
+                        anchors.rightMargin: 8 * virtualstudio.uiScale
                         model: isInput ? audio.inputMeterLevels : audio.outputMeterLevels
                         clipped: isInput ? audio.inputClipped : audio.outputClipped
                         enabled: true
@@ -174,25 +171,23 @@ Item {
         }
 
         Item {
-            Layout.preferredHeight: 42
-            Layout.minimumHeight: 42
-            Layout.maximumHeight: 42
             Layout.fillWidth: true
+            Layout.fillHeight: true
+            Layout.bottomMargin: 5 * virtualstudio.uiScale
 
             RowLayout {
                 anchors.fill: parent
-                spacing: 2
+                spacing: 8 * virtualstudio.uiScale
 
                 Item {
                     Layout.fillHeight: true
                     Layout.fillWidth: true
-                    Layout.alignment: Qt.AlignVCenter
                     Layout.leftMargin: 8 * virtualstudio.uiScale
                     Layout.rightMargin: 8 * virtualstudio.uiScale
 
                     Loader {
                         anchors.fill: parent
-                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.top: parent.top
                         sourceComponent: isInput ? inputControls : outputControls
                     }
                 }
