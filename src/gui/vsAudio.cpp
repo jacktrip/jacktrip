@@ -891,7 +891,7 @@ AudioInterface* VsAudio::newJackAudioInterface([[maybe_unused]] JackTrip* jackTr
 #if defined(__unix__)
         AudioInterface::setPipewireLatency(
             getBufferSize(),
-            jackTripPtr == nullptr ? 44100 : jackTripPtr->getSampleRate());
+            jackTripPtr == nullptr ? 48000 : jackTripPtr->getSampleRate());
 #endif
         ifPtr->setup(true);
     }
@@ -919,7 +919,7 @@ AudioInterface* VsAudio::newRtAudioInterface([[maybe_unused]] JackTrip* jackTrip
         inputChans, outputChans,
         static_cast<AudioInterface::inputMixModeT>(getInputMixMode()),
         m_audioBitResolution, jackTripPtr != nullptr, jackTripPtr);
-    ifPtr->setSampleRate(jackTripPtr == nullptr ? 44100 : jackTripPtr->getSampleRate());
+    ifPtr->setSampleRate(jackTripPtr == nullptr ? 48000 : jackTripPtr->getSampleRate());
     ifPtr->setInputDevice(getInputDevice().toStdString());
     ifPtr->setOutputDevice(getOutputDevice().toStdString());
     ifPtr->setBufferSizeInSamples(getBufferSize());
