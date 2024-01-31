@@ -14,6 +14,7 @@ Rectangle {
     property string studioName: "Test Studio"
     property string studioId: ""
     property string inviteKeyString: ""
+    property int sampleRate: 48000
     property bool publicStudio: false
     property bool admin: false
     property bool available: true
@@ -197,14 +198,9 @@ Rectangle {
         }
         visible: !connected
         onClicked: {
-            virtualstudio.studioToJoin = `jacktrip://join/${studioId}`
-            if (virtualstudio.showDeviceSetup) {
-                virtualstudio.windowState = "setup";
-                audio.startAudio();
-            } else {
-                virtualstudio.windowState = "connected";
-                virtualstudio.joinStudio();
-            }
+            virtualstudio.studioToJoin = studioId;
+            virtualstudio.windowState = virtualstudio.showDeviceSetup ? "setup" : "connected";
+            virtualstudio.joinStudio();
         }
         Image {
             id: join

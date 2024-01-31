@@ -286,13 +286,10 @@ Rectangle {
             }
             if (virtualstudio.showWarnings) {
                 virtualstudio.windowState = "recommendations";
-            } else if (virtualstudio.studioToJoin.toString() === "") {
+            } else if (virtualstudio.studioToJoin === "") {
                 virtualstudio.windowState = "browse";
-            } else if (virtualstudio.showDeviceSetup) {
-                virtualstudio.windowState = "setup";
-                audio.startAudio();
             } else {
-                virtualstudio.windowState = "connected";
+                virtualstudio.windowState = virtualstudio.showDeviceSetup ? "setup" : "connected";
                 virtualstudio.joinStudio();
             }
         }

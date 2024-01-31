@@ -471,13 +471,10 @@ Item {
                     virtualstudio.saveSettings();
                     if (permissions.micPermission !== "granted") {
                         virtualstudio.windowState = "permissions";
-                    } else if (virtualstudio.studioToJoin.toString() === "") {
+                    } else if (virtualstudio.studioToJoin === "") {
                         virtualstudio.windowState = "browse";
-                    } else if (virtualstudio.showDeviceSetup) {
-                        virtualstudio.windowState = "setup";
-                        audio.startAudio();
                     } else {
-                        virtualstudio.windowState = "connected";
+                        virtualstudio.windowState = virtualstudio.showDeviceSetup ? "setup" : "connected";
                         virtualstudio.joinStudio();
                     }
                 }
@@ -509,13 +506,10 @@ Item {
                     virtualstudio.saveSettings();
                     if (permissions.micPermission !== "granted") {
                         virtualstudio.windowState = "permissions";
-                    } else if (virtualstudio.studioToJoin.toString() === "") {
+                    } else if (virtualstudio.studioToJoin === "") {
                         virtualstudio.windowState = "browse";
-                    } else if (virtualstudio.showDeviceSetup) {
-                        virtualstudio.windowState = "setup";
-                        audio.startAudio();
                     } else {
-                        virtualstudio.windowState = "connected";
+                        virtualstudio.windowState = virtualstudio.showDeviceSetup ? "setup" : "connected";
                         virtualstudio.joinStudio();
                     }
                 }

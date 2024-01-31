@@ -268,6 +268,14 @@ void VsAudio::setFeedbackDetectionEnabled(bool enabled)
     emit feedbackDetectionEnabledChanged();
 }
 
+void VsAudio::setSampleRate(int sampleRate)
+{
+    if (m_audioSampleRate == sampleRate)
+        return;
+    m_audioSampleRate = sampleRate;
+    emit sampleRateChanged();
+}
+
 void VsAudio::setBufferSize(int bufSize)
 {
     if (m_audioBufferSize == bufSize)
@@ -901,9 +909,7 @@ AudioInterface* VsAudio::newJackAudioInterface([[maybe_unused]] JackTrip* jackTr
                                        jackTripPtr != nullptr, jackTripPtr);
         ifPtr->setClientName(QStringLiteral("JackTrip"));
 #if defined(__unix__)
-        AudioInterface::setPipewireLatency(
-            getBufferSize(),
-            jackTripPtr == nullptr ? 48000 : jackTripPtr->getSampleRate());
+        AudioInterface::setPipewireLatency(getBufferSize(), getSampleRate());
 #endif
         ifPtr->setup(true);
     }
@@ -931,7 +937,7 @@ AudioInterface* VsAudio::newRtAudioInterface([[maybe_unused]] JackTrip* jackTrip
         inputChans, outputChans,
         static_cast<AudioInterface::inputMixModeT>(getInputMixMode()),
         m_audioBitResolution, jackTripPtr != nullptr, jackTripPtr);
-    ifPtr->setSampleRate(jackTripPtr == nullptr ? 48000 : jackTripPtr->getSampleRate());
+    ifPtr->setSampleRate(getSampleRate());
     ifPtr->setInputDevice(getInputDevice().toStdString());
     ifPtr->setOutputDevice(getOutputDevice().toStdString());
     ifPtr->setBufferSizeInSamples(getBufferSize());
