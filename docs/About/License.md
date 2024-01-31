@@ -12,3 +12,7 @@
 ---
 ### LGPL License
 --8<-- "LICENSES/LGPL-3.0-only.txt"
+
+---
+### AVC License
+--8<-- "LICENSES/AVC.txt"
