@@ -1,3 +1,7 @@
+- Version: "2.2.1"
+  Date: 2024-01-29
+  Description:
+  - (fixed) Sample rate issues with certain Windows ASIO drivers
 - Version: "2.2.0"
   Date: 2024-01-22
   Description:
