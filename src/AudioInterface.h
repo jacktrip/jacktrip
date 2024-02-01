@@ -40,6 +40,7 @@
 
 #include <QVarLengthArray>
 #include <QVector>
+#include <functional>
 
 #include "AudioTester.h"
 #include "ProcessPlugin.h"
@@ -50,6 +51,9 @@
 class JackTrip;
 
 // using namespace JackTripNamespace;
+
+// callback function for audio interface errors
+typedef std::function<void(const std::string& errorText)> AudioErrorCallback;
 
 /** \brief Base Class that provides an interface with audio
  */
@@ -265,6 +269,7 @@ class AudioInterface
     virtual void setLoopBack(bool b) { mLoopBack = b; }
     virtual void enableBroadcastOutput() {}
     virtual void setAudioTesterP(AudioTester* atp) { mAudioTesterP = atp; }
+    void setErrorCallback(AudioErrorCallback c) { mErrorCallback = c; }
     //------------------------------------------------------------------
 
     //--------------GETTERS---------------------------------------------
@@ -367,6 +372,7 @@ class AudioInterface
     std::string mWarningHelpUrl;
     std::string mErrorHelpUrl;
     bool mHighLatencyFlag;
+    AudioErrorCallback mErrorCallback;
 };
 
 #endif  // __AUDIOINTERFACE_H__

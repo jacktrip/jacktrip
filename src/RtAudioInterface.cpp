@@ -610,7 +610,11 @@ void RtAudioInterface::errorCallback(RtAudioErrorType errorType,
         errorMsg += errorText;
     }
     if (arg != nullptr) {
-        static_cast<RtAudioInterface*>(arg)->mErrorMsg = errorMsg;
+        RtAudioInterface* ifPtr = static_cast<RtAudioInterface*>(arg);
+        ifPtr->mErrorMsg        = errorText;
+        if (ifPtr->mErrorCallback) {
+            ifPtr->mErrorCallback(errorText);
+        }
     }
     std::cerr << errorMsg << std::endl;
     JackTrip::sAudioStopped = true;
