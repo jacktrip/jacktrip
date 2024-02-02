@@ -621,7 +621,7 @@ QString VirtualStudio::failedMessage()
 void VirtualStudio::joinStudio()
 {
     // nothing to do unless on setup or connected windows with studio to join
-    if (m_windowState != "setup" && m_windowState != "connected"
+    if ((m_windowState != "setup" && m_windowState != "connected")
         || !m_auth->isAuthenticated() || m_studioToJoin.isEmpty())
         return;
 
