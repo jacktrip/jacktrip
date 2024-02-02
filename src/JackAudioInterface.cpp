@@ -283,7 +283,11 @@ void JackAudioInterface::jackShutdown(jack_status_t /*code*/, const char* reason
         errorMsg += reason;
     }
     if (arg != nullptr) {
-        static_cast<JackAudioInterface*>(arg)->mErrorMsg = errorMsg;
+        JackAudioInterface* ifPtr = static_cast<JackAudioInterface*>(arg);
+        ifPtr->mErrorMsg          = errorMsg;
+        if (ifPtr->mErrorCallback) {
+            ifPtr->mErrorCallback(errorMsg);
+        }
     }
     std::cerr << errorMsg << std::endl;
     JackTrip::sAudioStopped = true;

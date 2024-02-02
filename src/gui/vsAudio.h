@@ -314,6 +314,7 @@ class VsAudio : public QObject
     void updateDeviceMessages(AudioInterface& audioInterface);
     AudioInterface* newJackAudioInterface(JackTrip* jackTripPtr = nullptr);
     AudioInterface* newRtAudioInterface(JackTrip* jackTripPtr = nullptr);
+    void errorCallback(const std::string& errorText, JackTrip* jackTripPtr = nullptr);
 
     // range for volume meters
     static constexpr float m_meterMax = 0.0;
@@ -370,6 +371,7 @@ class VsAudio : public QObject
     Volume* m_inputVolumePluginPtr;
     Volume* m_outputVolumePluginPtr;
     Monitor* m_monitorPluginPtr;
+    bool mHasErrors;  ///< true if one or more error callbacks have been triggered
 
 #ifndef NO_FEEDBACK
     Analyzer* m_outputAnalyzerPluginPtr;
