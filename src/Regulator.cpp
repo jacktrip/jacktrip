@@ -658,7 +658,7 @@ bool BurgAlgorithm::classify(double d)
     return tmp;
 }
 
-void BurgAlgorithm::train(std::vector<double>& coeffs, const std::vector<double>& x)
+void BurgAlgorithm::train(std::vector<float>& coeffs, const std::vector<double>& x)
 {
     // GET SIZE FROM INPUT VECTORS
     size_t N = x.size() - 1;
@@ -732,7 +732,7 @@ void BurgAlgorithm::train(std::vector<double>& coeffs, const std::vector<double>
     coeffs.assign(++Ak.begin(), Ak.end());
 }
 
-void BurgAlgorithm::predict(std::vector<double>& coeffs, std::vector<double>& tail)
+void BurgAlgorithm::predict(std::vector<float>& coeffs, std::vector<double>& tail)
 {
     size_t m = coeffs.size();
     //    qDebug() << "tail.at(0)" << tail[0]*32768;
