@@ -79,6 +79,8 @@ class VsAudio : public QObject
     Q_PROPERTY(QString audioBackend READ getAudioBackend WRITE setAudioBackend NOTIFY
                    audioBackendChanged)
     Q_PROPERTY(
+        int sampleRate READ getSampleRate WRITE setSampleRate NOTIFY sampleRateChanged)
+    Q_PROPERTY(
         int bufferSize READ getBufferSize WRITE setBufferSize NOTIFY bufferSizeChanged)
     Q_PROPERTY(int bufferStrategy READ getBufferStrategy WRITE setBufferStrategy NOTIFY
                    bufferStrategyChanged)
@@ -168,6 +170,7 @@ class VsAudio : public QObject
     {
         return getUseRtAudio() ? QStringLiteral("RtAudio") : QStringLiteral("JACK");
     }
+    int getSampleRate() const { return m_audioSampleRate; }
     int getBufferSize() const { return m_audioBufferSize; }
     int getBufferStrategy() const { return m_bufferStrategy; }
     int getNumInputChannels() const { return getUseRtAudio() ? m_numInputChannels : 2; }
@@ -222,6 +225,7 @@ class VsAudio : public QObject
     // setters for state shared with QML
     void setFeedbackDetectionEnabled(bool enabled);
     void setAudioBackend(const QString& backend);
+    void setSampleRate(int sampleRate);
     void setBufferSize(int bufSize);
     void setBufferStrategy(int bufStrategy);
     void setNumInputChannels(int numChannels);
@@ -258,6 +262,7 @@ class VsAudio : public QObject
     void signalScanningDevicesChanged();
     void deviceModelsInitializedChanged(bool initialized);
     void audioBackendChanged(bool useRtAudio);
+    void sampleRateChanged();
     void bufferSizeChanged();
     void bufferStrategyChanged();
     void numInputChannelsChanged(int numChannels);
@@ -330,6 +335,7 @@ class VsAudio : public QObject
     bool m_scanningDevices          = false;
     bool m_feedbackDetectionEnabled = true;
     bool m_deviceModelsInitialized  = false;
+    int m_audioSampleRate           = gDefaultSampleRate;
     int m_audioBufferSize =
         gDefaultBufferSizeInSamples;  ///< Audio buffer size to process on each callback
     int m_bufferStrategy    = 0;
@@ -432,6 +438,7 @@ class VsAudioWorker : public QObject
     int getNumOutputChannels() const { return m_parentPtr->getNumOutputChannels(); }
     int getBaseInputChannel() const { return m_parentPtr->getBaseInputChannel(); }
     int getBaseOutputChannel() const { return m_parentPtr->getBaseOutputChannel(); }
+    int getSampleRate() const { return m_parentPtr->getSampleRate(); }
     int getBufferSize() const { return m_parentPtr->getBufferSize(); }
     int getInputMixMode() const { return m_parentPtr->getInputMixMode(); }
     const QString& getInputDevice() const { return m_parentPtr->getInputDevice(); }

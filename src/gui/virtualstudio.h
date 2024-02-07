@@ -86,7 +86,7 @@ class VirtualStudio : public QObject
     Q_PROPERTY(
         QVector<VsServerInfo*> serverModel READ getServerModel NOTIFY serverModelChanged)
     Q_PROPERTY(VsServerInfo* currentStudio READ currentStudio NOTIFY currentStudioChanged)
-    Q_PROPERTY(QUrl studioToJoin READ studioToJoin WRITE setStudioToJoin NOTIFY
+    Q_PROPERTY(QString studioToJoin READ studioToJoin WRITE setStudioToJoin NOTIFY
                    studioToJoinChanged)
     Q_PROPERTY(QJsonObject regions READ regions NOTIFY regionsChanged)
     Q_PROPERTY(QJsonObject userMetadata READ userMetadata NOTIFY userMetadataChanged)
@@ -163,8 +163,8 @@ class VirtualStudio : public QObject
     void setCollapseDeviceControls(bool collapseDeviceControls);
     bool testMode();
     void setTestMode(bool test);
-    QUrl studioToJoin();
-    void setStudioToJoin(const QUrl& url);
+    QString studioToJoin();
+    void setStudioToJoin(const QString& id);
     bool showDeviceSetup();
     void setShowDeviceSetup(bool show);
     bool showWarnings();
@@ -264,9 +264,8 @@ class VirtualStudio : public QObject
     void getSubscriptions();
     void getRegions();
     void getUserMetadata();
-    void stopStudio();
     bool readyToJoin();
-    void connectToStudio(VsServerInfo& studio);
+    void connectToStudio();
     void completeConnection();
 
    private:
@@ -299,7 +298,7 @@ class VirtualStudio : public QObject
     QTimer m_heartbeatTimer;
     QTimer m_networkOutageTimer;
     QMutex m_refreshMutex;
-    QUrl m_studioToJoin;
+    QString m_studioToJoin;
     QString m_updateChannel;
     QString m_refreshToken;
     QString m_userId;

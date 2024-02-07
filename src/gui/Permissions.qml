@@ -189,13 +189,10 @@ Item {
 
         function onMicPermissionUpdated() {
             if (permissions.micPermission === "granted") {
-                if (virtualstudio.studioToJoin.toString() === "") {
+                if (virtualstudio.studioToJoin === "") {
                     virtualstudio.windowState = "browse";
-                } else if (virtualstudio.showDeviceSetup) {
-                    virtualstudio.windowState = "setup";
-                    audio.startAudio();
                 } else {
-                    virtualstudio.windowState = "connected";
+                    virtualstudio.windowState = virtualstudio.showDeviceSetup ? "setup" : "connected";
                     virtualstudio.joinStudio();
                 }
             }
