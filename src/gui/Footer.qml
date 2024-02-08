@@ -10,6 +10,7 @@ Rectangle {
     color: backgroundColour
     clip: true
 
+    property string statsOrange: "#b26a00"
     property string connectionStateColor: getConnectionStateColor()
     property variant networkStatsText: getNetworkStatsText()
 
@@ -49,10 +50,10 @@ Rectangle {
             color = meterGreen;
         } else if (avgRtt < 20 && maxRtt < 30) {
             quality = "Good";
-            color = meterGreen;
+            color = meterYellow;
         } else if (avgRtt < 30 && maxRtt < 40) {
             quality = "Fair";
-            color = meterYellow;
+            color = statsOrange;
         }
 
         texts[0] = quality
