@@ -582,16 +582,16 @@ void VirtualStudio::setTestMode(bool test)
     emit testModeChanged();
 }
 
-QUrl VirtualStudio::studioToJoin()
+QString VirtualStudio::studioToJoin()
 {
     return m_studioToJoin;
 }
 
-void VirtualStudio::setStudioToJoin(const QUrl& url)
+void VirtualStudio::setStudioToJoin(const QString& id)
 {
-    if (m_studioToJoin == url)
+    if (m_studioToJoin == id)
         return;
-    m_studioToJoin = url;
+    m_studioToJoin = id;
     emit studioToJoinChanged();
 }
 
@@ -620,36 +620,31 @@ QString VirtualStudio::failedMessage()
 
 void VirtualStudio::joinStudio()
 {
+    // nothing to do unless on setup or connected windows with studio to join
+    if ((m_windowState != "setup" && m_windowState != "connected")
+        || !m_auth->isAuthenticated() || m_studioToJoin.isEmpty())
+        return;
+
+    // make sure we've retrieved a list of servers
     QMutexLocker locker(&m_refreshMutex);
-    bool authenticated = m_auth->isAuthenticated();
-    if (!authenticated || m_studioToJoin.isEmpty() || m_servers.isEmpty()) {
+    if (m_servers.isEmpty()) {
         // No servers yet. Making sure we have them.
         // getServerList emits refreshFinished which
         // will come back to this function.
-        if (authenticated && !m_studioToJoin.isEmpty() && m_servers.isEmpty()) {
-            locker.unlock();
-            getServerList(true);
-        }
+        locker.unlock();
+        getServerList(true);
         return;
     }
-    if (m_windowState != "connected") {
-        return;  // on audio setup screen before joining the studio
-    }
 
-    QString scheme = m_studioToJoin.scheme();
-    QString path   = m_studioToJoin.path();
-    QString url    = m_studioToJoin.toString();
-    setStudioToJoin(QUrl(""));
+    // pop studioToJoin
+    const QString targetId = m_studioToJoin;
+    setStudioToJoin("");
+    emit studioToJoinChanged();
 
-    m_failedMessage = "";
-    if (scheme != "jacktrip" || path.length() <= 1) {
-        m_failedMessage = "Invalid join request received: " + url;
-        emit failedMessageChanged();
-        emit failed();
-        return;
-    }
-    QString targetId = path.remove(0, 1);
+    // stop audio if already running (settings or setup windows)
+    m_audioConfigPtr->stopAudio(true);
 
+    // find and populate data for current studio
     VsServerInfoPointer sPtr;
     for (const VsServerInfoPointer& s : m_servers) {
         if (s->id() == targetId) {
@@ -659,14 +654,24 @@ void VirtualStudio::joinStudio()
     }
     locker.unlock();
 
-    if (!sPtr.isNull()) {
-        connectToStudio(*sPtr);
+    if (sPtr.isNull()) {
+        m_failedMessage = "Unable to find studio " + targetId;
+        emit failedMessageChanged();
+        emit failed();
         return;
     }
 
-    m_failedMessage = "Unable to find studio " + targetId;
-    emit failedMessageChanged();
-    emit failed();
+    m_currentStudio = *sPtr;
+    emit currentStudioChanged();
+
+    if (m_windowState == "setup") {
+        m_audioConfigPtr->setSampleRate(m_currentStudio.sampleRate());
+        m_audioConfigPtr->startAudio();
+        return;
+    }
+
+    // m_windowState == "connected"
+    connectToStudio();
 }
 
 void VirtualStudio::toStandard()
@@ -806,15 +811,13 @@ void VirtualStudio::saveSettings()
     m_audioConfigPtr->saveSettings();
 }
 
-void VirtualStudio::connectToStudio(VsServerInfo& studio)
+void VirtualStudio::connectToStudio()
 {
     m_refreshTimer.stop();
 
     m_networkStats = QJsonObject();
     emit networkStatsChanged();
 
-    m_currentStudio = studio;
-    emit currentStudioChanged();
     m_onConnectedScreen = true;
 
     m_studioSocketPtr.reset(new VsWebSocket(
@@ -914,6 +917,7 @@ void VirtualStudio::completeConnection()
             return;
         }
         jackTrip->setIOStatTimeout(m_cliSettings->getIOStatTimeout());
+        m_audioConfigPtr->setSampleRate(jackTrip->getSampleRate());
 
         // this passes ownership to JackTrip
         jackTrip->setAudioInterface(m_audioConfigPtr->newAudioInterface(jackTrip));
@@ -1104,20 +1108,34 @@ void VirtualStudio::openLink(const QString& link)
 void VirtualStudio::handleDeeplinkRequest(const QUrl& link)
 {
     // check link is valid
-    if (link.scheme() != QLatin1String("jacktrip")
-        || link.host() != QLatin1String("join")) {
-        qDebug() << "Ignoring invalid deeplink to " << link;
+    QString studioId;
+    if (link.scheme() != QLatin1String("jacktrip") || link.path().length() <= 1) {
+        qDebug() << "Ignoring invalid deeplink to" << link;
+        return;
+    }
+    if (link.host() == QLatin1String("join")) {
+        studioId = link.path().remove(0, 1);
+    } else if (link.host().isEmpty() && link.path().startsWith("join/")) {
+        studioId = link.path().remove(0, 5);
+    } else {
+        qDebug() << "Ignoring invalid deeplink to" << link;
         return;
     }
 
     // check if already connected (ignore)
     if (m_windowState == "connected" || m_windowState == "change_devices") {
-        qDebug() << "Already connected; ignoring deeplink to " << link;
+        qDebug() << "Already connected; ignoring deeplink to" << link;
         return;
     }
 
-    qDebug() << "Handling deeplink to " << link;
-    setStudioToJoin(link);
+    if (m_windowState == "setup"
+        && (m_studioToJoin == studioId || m_currentStudio.id() == studioId)) {
+        qDebug() << "Already preparing to connect; ignoring deeplink to" << link;
+        return;
+    }
+
+    qDebug() << "Handling deeplink to" << link;
+    setStudioToJoin(studioId);
     raiseToTop();
 
     // Switch to virtual studio mode, if necessary
@@ -1132,21 +1150,7 @@ void VirtualStudio::handleDeeplinkRequest(const QUrl& link)
         }
     }
 
-    // special case if on settings screen
-    if (m_windowState == "settings") {
-        if (showDeviceSetup()) {
-            // audio is already active, so we can just flip screens
-            setWindowState("setup");
-        } else {
-            // we need to stop audio before connecting
-            setWindowState("connected");
-            m_audioConfigPtr->stopAudio(true);
-            joinStudio();
-        }
-        return;
-    }
-
-    // special case if on create_studio screen:
+    // automatically navigate if on certain window screens
     // note that the studio creation happens inside of the web view,
     // and the app doesn't really know anything about it. we depend
     // on the web app triggering a deep link join event, which is
@@ -1154,27 +1158,15 @@ void VirtualStudio::handleDeeplinkRequest(const QUrl& link)
     // noticed yet, so we don't join right away; otherwise we'd just
     // get an unknown studio error. instead, we trigger a refresh and
     // rely on it to kick off the join afterwards.
-    if (m_windowState == "create_studio") {
+    if (m_windowState == "browse" || m_windowState == "create_studio"
+        || m_windowState == "settings" || m_windowState == "setup"
+        || m_windowState == "failed") {
+        if (showDeviceSetup()) {
+            setWindowState("setup");
+        } else {
+            setWindowState("connected");
+        }
         refreshStudios(0, true);
-        if (showDeviceSetup()) {
-            setWindowState("setup");
-            m_audioConfigPtr->startAudio();
-        } else {
-            setWindowState("connected");
-        }
-        return;
-    }
-
-    // special case if on browsing and failed screens
-    if (m_windowState == "browse" || m_windowState == "failed") {
-        if (showDeviceSetup()) {
-            setWindowState("setup");
-            m_audioConfigPtr->startAudio();
-        } else {
-            setWindowState("connected");
-            joinStudio();
-        }
-        return;
     }
 
     // otherwise, assume we are on setup screens and can let the normal flow handle it
@@ -1267,7 +1259,7 @@ void VirtualStudio::connectionFinished()
             } else {
                 m_audioConfigPtr->validateDevices(true);
             }
-            connectToStudio(m_currentStudio);
+            connectToStudio();
         }
         return;
     }
@@ -1710,24 +1702,6 @@ void VirtualStudio::getUserMetadata()
 
         m_userMetadata = QJsonDocument::fromJson(reply->readAll()).object();
         emit userMetadataChanged();
-        reply->deleteLater();
-    });
-}
-
-void VirtualStudio::stopStudio()
-{
-    if (m_currentStudio.id() == "") {
-        return;
-    }
-
-    QJsonObject json      = {{QLatin1String("enabled"), false}};
-    QJsonDocument request = QJsonDocument(json);
-    m_currentStudio.setHost(QLatin1String(""));
-    QNetworkReply* reply = m_api->updateServer(m_currentStudio.id(), request.toJson());
-    connect(reply, &QNetworkReply::finished, this, [=]() {
-        if (m_isExiting && !m_jackTripRunning) {
-            emit signalExit();
-        }
         reply->deleteLater();
     });
 }

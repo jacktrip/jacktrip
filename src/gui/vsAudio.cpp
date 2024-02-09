@@ -96,6 +96,13 @@ VsAudio::VsAudio(QObject* parent)
           QJsonArray::fromStringList(QStringList(QLatin1String(""))))
     , m_inputMixModeComboModel(QJsonArray::fromStringList(QStringList(QLatin1String(""))))
     , m_audioWorkerPtr(new VsAudioWorker(this))
+    , m_workerThreadPtr(nullptr)
+    , m_inputMeterPluginPtr(nullptr)
+    , m_outputMeterPluginPtr(nullptr)
+    , m_inputVolumePluginPtr(nullptr)
+    , m_outputVolumePluginPtr(nullptr)
+    , m_monitorPluginPtr(nullptr)
+    , mHasErrors(false)
 {
     loadSettings();
 
@@ -259,6 +266,14 @@ void VsAudio::setFeedbackDetectionEnabled(bool enabled)
         return;
     m_feedbackDetectionEnabled = enabled;
     emit feedbackDetectionEnabledChanged();
+}
+
+void VsAudio::setSampleRate(int sampleRate)
+{
+    if (m_audioSampleRate == sampleRate)
+        return;
+    m_audioSampleRate = sampleRate;
+    emit sampleRateChanged();
 }
 
 void VsAudio::setBufferSize(int bufSize)
@@ -841,6 +856,11 @@ AudioInterface* VsAudio::newAudioInterface(JackTrip* jackTripPtr)
     if (ifPtr == nullptr)
         return ifPtr;
 
+    mHasErrors = false;
+    ifPtr->setErrorCallback([this, jackTripPtr](const std::string& errorText) {
+        this->errorCallback(errorText, jackTripPtr);
+    });
+
     // AudioInterface::setup() can return a different buffer size
     // if the audio interface doesn't support the one that was requested
     if (ifPtr->getBufferSizeInSamples() != uint32_t(getBufferSize())) {
@@ -889,9 +909,7 @@ AudioInterface* VsAudio::newJackAudioInterface([[maybe_unused]] JackTrip* jackTr
                                        jackTripPtr != nullptr, jackTripPtr);
         ifPtr->setClientName(QStringLiteral("JackTrip"));
 #if defined(__unix__)
-        AudioInterface::setPipewireLatency(
-            getBufferSize(),
-            jackTripPtr == nullptr ? 48000 : jackTripPtr->getSampleRate());
+        AudioInterface::setPipewireLatency(getBufferSize(), getSampleRate());
 #endif
         ifPtr->setup(true);
     }
@@ -919,7 +937,7 @@ AudioInterface* VsAudio::newRtAudioInterface([[maybe_unused]] JackTrip* jackTrip
         inputChans, outputChans,
         static_cast<AudioInterface::inputMixModeT>(getInputMixMode()),
         m_audioBitResolution, jackTripPtr != nullptr, jackTripPtr);
-    ifPtr->setSampleRate(jackTripPtr == nullptr ? 48000 : jackTripPtr->getSampleRate());
+    ifPtr->setSampleRate(getSampleRate());
     ifPtr->setInputDevice(getInputDevice().toStdString());
     ifPtr->setOutputDevice(getOutputDevice().toStdString());
     ifPtr->setBufferSizeInSamples(getBufferSize());
@@ -942,6 +960,29 @@ AudioInterface* VsAudio::newRtAudioInterface([[maybe_unused]] JackTrip* jackTrip
 
 #endif  // RT_AUDIO
     return ifPtr;
+}
+
+void VsAudio::errorCallback(const std::string& errorText,
+                            [[maybe_unused]] JackTrip* jackTripPtr)
+{
+    const QString errorMsg(QString::fromStdString(errorText));
+    setDevicesErrorMsg(errorMsg);
+#ifdef _WIN32
+    // handle special case for Windows ASIO drivers that trigger
+    // asynchronous errors shortly after you try opening the
+    // RtAudio stream with a different sample rate (only for audio tester)
+    if (jackTripPtr == nullptr && getUseRtAudio()
+        && errorMsg.contains("sample rate changed")) {
+        // only refresh devices once
+        if (mHasErrors)
+            return;
+        mHasErrors = true;
+        // asynchronously refresh devices
+        refreshDevices(false);
+    }
+#else
+    mHasErrors = true;
+#endif
 }
 
 // VsAudioWorker methods

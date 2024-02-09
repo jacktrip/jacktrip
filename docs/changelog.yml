@@ -1,3 +1,10 @@
+- Version: "2.2.2"
+  Date: 2024-02-09
+  Description:
+  - (updated) VS Mode updated network connection thresholds
+  - (updated) VS Mode improved sample rate flexibility for Windows
+  - (fixed) VS Mode inconsistent deep link handling on Windows
+  - (fixed) Throttle console errors for UDP waiting too long
 - Version: "2.2.1"
   Date: 2024-01-29
   Description:

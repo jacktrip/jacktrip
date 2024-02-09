@@ -86,6 +86,7 @@ Item {
             connected: false
             studioId: modelData.id ? modelData.id : ""
             inviteKeyString: modelData.inviteKey ? modelData.inviteKey : ""
+            sampleRate: modelData.sampleRate
         }
 
         section { property: "modelData.type"; criteria: ViewSection.FullString; delegate: SectionHeading {} }
