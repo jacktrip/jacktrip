@@ -132,7 +132,7 @@ void VsDeeplink::connectionReceived()
         m_readyToExit = true;
     }
 
-    m_instanceCheckSocket->flush();
+    m_instanceCheckSocket->waitForBytesWritten();
     m_instanceCheckSocket->disconnectFromServer();  // remove next
 
     // let main thread know we are finished
@@ -171,21 +171,20 @@ void VsDeeplink::handleDeeplinkRequest()
         // Receive URL from 2nd instance
         QLocalSocket* connectedSocket = m_instanceServer->nextPendingConnection();
 
-        if (!connectedSocket->waitForConnected()) {
-            qDebug() << "Never received connection";
+        if (connectedSocket == nullptr || !connectedSocket->waitForConnected()) {
+            qDebug() << "Deeplink socket: never received connection";
             return;
         }
 
-        if (!connectedSocket->waitForReadyRead()) {
-            qDebug() << "Never ready to read";
-            if (!(connectedSocket->bytesAvailable() > 0)) {
-                qDebug() << "Not ready and no bytes available";
-                return;
-            }
+        if (!connectedSocket->waitForReadyRead()
+            && connectedSocket->bytesAvailable() <= 0) {
+            qDebug() << "Deeplink socket: not ready and no bytes available: "
+                     << connectedSocket->errorString();
+            return;
         }
 
         if (connectedSocket->bytesAvailable() < (int)sizeof(quint16)) {
-            qDebug() << "no bytes available";
+            qDebug() << "Deeplink socket: ready but no bytes available";
             break;
         }
 
