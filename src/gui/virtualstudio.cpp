@@ -1108,20 +1108,34 @@ void VirtualStudio::openLink(const QString& link)
 void VirtualStudio::handleDeeplinkRequest(const QUrl& link)
 {
     // check link is valid
-    if (link.scheme() != QLatin1String("jacktrip") || link.host() != QLatin1String("join")
-        || link.path().length() <= 1) {
-        qDebug() << "Ignoring invalid deeplink to " << link;
+    QString studioId;
+    if (link.scheme() != QLatin1String("jacktrip") || link.path().length() <= 1) {
+        qDebug() << "Ignoring invalid deeplink to" << link;
+        return;
+    }
+    if (link.host() == QLatin1String("join")) {
+        studioId = link.path().remove(0, 1);
+    } else if (link.host().isEmpty() && link.path().startsWith("join/")) {
+        studioId = link.path().remove(0, 5);
+    } else {
+        qDebug() << "Ignoring invalid deeplink to" << link;
         return;
     }
 
     // check if already connected (ignore)
     if (m_windowState == "connected" || m_windowState == "change_devices") {
-        qDebug() << "Already connected; ignoring deeplink to " << link;
+        qDebug() << "Already connected; ignoring deeplink to" << link;
         return;
     }
 
-    qDebug() << "Handling deeplink to " << link;
-    setStudioToJoin(link.path().remove(0, 1));
+    if (m_windowState == "setup"
+        && (m_studioToJoin == studioId || m_currentStudio.id() == studioId)) {
+        qDebug() << "Already preparing to connect; ignoring deeplink to" << link;
+        return;
+    }
+
+    qDebug() << "Handling deeplink to" << link;
+    setStudioToJoin(studioId);
     raiseToTop();
 
     // Switch to virtual studio mode, if necessary
