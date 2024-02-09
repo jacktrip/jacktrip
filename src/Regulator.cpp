@@ -97,7 +97,6 @@ constexpr double AutoMax  = 250.0;  // msec bounds on insane IPI, like ethernet 
 constexpr double AutoInitDur = 3000.0;  // kick in auto after this many msec
 constexpr double AutoInitValFactor =
     0.5;  // scale for initial mMsecTolerance during init phase if unspecified
-constexpr double MaxWaitTime = 30;  // msec
 
 // tweak
 constexpr int WindowDivisor   = 8;     // for faster auto tracking
@@ -505,7 +504,7 @@ PACKETOK : {
 UNDERRUN : {
     pullStat->plcUnderruns++;  // count late
     if ((mLastSeqNumOut == lastSeqNumIn)
-        && ((now - mIncomingTiming[mLastSeqNumOut]) > MaxWaitTime)) {
+        && ((now - mIncomingTiming[mLastSeqNumOut]) > gUdpWaitTimeout)) {
         goto ZERO_OUTPUT;
     }
     // "good underrun", not a stuck client
@@ -827,7 +826,7 @@ bool StdDev::tick()
 
     // discard measurements that exceed the max wait time
     // this prevents temporary outages from skewing jitter metrics
-    if (msElapsed > MaxWaitTime)
+    if (msElapsed > gUdpWaitTimeout)
         return false;
 
     if (ctr != window) {
