@@ -88,6 +88,7 @@ constexpr const char* gDefaultLocalAddress     = "";
 constexpr int gDefaultRedundancy               = 1;
 constexpr int gTimeOutMultiThreadedServer      = 10000;  // seconds
 constexpr int gWaitCounter                     = 60;
+constexpr int gUdpWaitTimeout                  = 30;  // milliseconds
 //@}
 
 //*******************************************************************************

@@ -672,7 +672,7 @@ void UdpDataProtocol::run()
             // This QT method gave me a lot of trouble, so I replaced it with my own 'waitForReady'
             // that uses signals and slots and can also report with packets have not
             // arrive for a longer time
-            //timeout = UdpSocket.waitForReadyRead(30);
+            //timeout = UdpSocket.waitForReadyRead(gUdpWaitTimeout);
             //        timeout = cc unused!
 #if defined (MANUAL_POLL)
             waitForReady(60000); //60 seconds
@@ -757,7 +757,7 @@ void UdpDataProtocol::run()
 
         // Send exit packet (with 1 redundant packet).
         cout << "sending exit packet" << endl;
-        QByteArray exitPacket = QByteArray(mControlPacketSize, 0xff);
+        QByteArray exitPacket = QByteArray(mControlPacketSize, static_cast<char>(0xff));
         sendPacket(exitPacket.constData(), mControlPacketSize);
         sendPacket(exitPacket.constData(), mControlPacketSize);
         emit signalCeaseTransmission();
@@ -800,10 +800,12 @@ void UdpDataProtocol::waitForReady(int timeout_msec)
 //*******************************************************************************
 void UdpDataProtocol::printUdpWaitedTooLong(int wait_msec)
 {
-    int wait_time = 30;  // msec
-    if (!(wait_msec % wait_time)) {
-        std::cerr << "UDP waiting too long (more than " << wait_time << "ms) for "
-                  << mPeerAddress.toString().toStdString() << "..." << endl;
+    if (!(wait_msec % gUdpWaitTimeout)) {
+        // only log error once per gap in audio, rather than every 30ms
+        if (wait_msec <= gUdpWaitTimeout) {
+            std::cerr << "UDP waiting too long (more than " << gUdpWaitTimeout << "ms) for "
+                    << mPeerAddress.toString().toStdString() << "..." << endl;
+        }
         emit signalUdpWaitingTooLong();
     }
 }
