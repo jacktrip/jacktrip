@@ -10,7 +10,7 @@ Rectangle {
 
     property string serverLocation: "Germany - Berlin"
     property string flagImage: "flags/DE.svg"
-    property string hostname: "app.jacktrip.org"
+    property string hostname: "app.jacktrip.com"
     property string studioName: "Test Studio"
     property string studioId: ""
     property string inviteKeyString: ""
@@ -265,7 +265,7 @@ Rectangle {
         onClicked: {
             inviteCopied = true;
             if (virtualstudio.testMode) {
-                hostname = "test.jacktrip.org";
+                hostname = "test.jacktrip.com";
             }
             if (!inviteKeyString) {
                 clipboard.setText(qsTr("https://" + hostname + "/studios/" + studioId + "?invited=true"));
