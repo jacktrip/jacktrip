@@ -276,7 +276,11 @@ jobs:
             brew install packages
           fi
           if [[ "${{ matrix.build-system }}" == "meson" ]]; then
-            brew install meson help2man
+            # meson builds require help2man
+            brew install help2man
+            # use pip to install meson to avoid python dependency conflicts in HomeBrew
+            python -m pip install --upgrade pip
+            pip install meson
           fi
       - name: install dependencies for Windows
         if: runner.os == 'Windows'
