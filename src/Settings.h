@@ -61,14 +61,11 @@ class Settings : public QObject
 
    public:
     Settings(bool guiEnabled = false, QObject* parent = nullptr)
-        : QObject(parent)
-#ifdef NO_GUI
-        , mGuiEnabled(false)
-#else
-        , mGuiEnabled(guiEnabled)
-#endif
-        , mAudioTester(new AudioTester)
+        : QObject(parent), mGuiEnabled(guiEnabled), mAudioTester(new AudioTester)
     {
+#ifdef NO_GUI
+        mGuiEnabled = false;
+#endif
     }
 
     /// \brief Parses command line input
