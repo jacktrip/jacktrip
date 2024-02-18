@@ -853,6 +853,7 @@ jobs:
     name: 'deploy container'
     env:
       REGISTRY_IMAGE: jacktrip/jacktrip
+      JACK_VERSION: 1.9.22-20240218
     steps:
       - uses: actions/checkout@v3
         with:
@@ -863,8 +864,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images:
-            jacktrip/jacktrip
+          images: ${{ env.REGISTRY_IMAGE }}
           tags: |
             type=edge,branch=dev
             type=match,pattern=v(\d+.\d+)..*,group=1
@@ -890,6 +890,8 @@ jobs:
         with:
           context: .
           platforms: linux/amd64,linux/arm64
+          build-args: |
+            JACK_VERSION=${{ env.JACK_VERSION }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           # For pull requests, export results to the build cache.

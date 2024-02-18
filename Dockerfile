@@ -5,8 +5,12 @@
 #
 # To build this from repository root: "podman build -t jacktrip/jacktrip ."
 
+# container image versions
+ARG FEDORA_VERSION=34
+ARG JACK_VERSION=latest
+
 # use a temporary container to build jacktrip
-FROM registry.fedoraproject.org/fedora:34 AS builder
+FROM registry.fedoraproject.org/fedora:${FEDORA_VERSION} AS builder
 
 # install tools require to build jacktrip
 RUN dnf install -y --nodocs gcc gcc-c++ meson python3-pyyaml python3-jinja2 qt5-qtbase-devel jack-audio-connection-kit-devel
@@ -21,7 +25,7 @@ RUN cd /root \
 	&& strip builddir/jacktrip
 
 # use the jack ubi-init container
-FROM jacktrip/jack:1.9.22-20240218
+FROM jacktrip/jack:${JACK_VERSION}
 
 # install libraries that we need for things to run
 RUN dnf install -y --nodocs libicu pcre libstdc++ compat-openssl11 pcre2-utf16
