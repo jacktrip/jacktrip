@@ -21,7 +21,7 @@ RUN cd /root \
 	&& strip builddir/jacktrip
 
 # use the jack ubi-init container
-FROM jacktrip/jack:1.9.22
+FROM jacktrip/jack:1.9.22-20240218
 
 # install libraries that we need for things to run
 RUN dnf install -y --nodocs libicu pcre libstdc++ compat-openssl11 pcre2-utf16

@@ -1,7 +1,7 @@
 # Run a JackTrip Server in a Container
 
-Copyright (c) 2023 JackTrip Labs, Inc.
-See [MIT License](LICENSE)
+Copyright (c) 2023-2024 JackTrip Labs, Inc.
+See [MIT License](../../LICENSES/MIT.txt)
 
 This repository provides the source code for building a container image to
 run your own JackTrip hub server. It uses the
@@ -9,7 +9,11 @@ run your own JackTrip hub server. It uses the
 and runs the [Jack Audio Connection Kit](https://jackaudio.org/)
 (`jackd`) and JackTrip servers as systemd services. The `jackd` server
 is configued to use the `dummy` audio backend so that no audio interface
-is required. 
+is required.
+
+New container images are built automatically for each release of JackTrip
+and made freely available on
+[Docker Hub](https://hub.docker.com/repository/docker/jacktrip/jacktrip/general).
 
 To build a container image using `podman`:
 
