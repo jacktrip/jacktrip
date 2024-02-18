@@ -46,7 +46,7 @@ Docker Desktop users on Mac and Windows computers may prefer to specify
 a port range instead of using host networking:
 
 ```bash
-docker run --name jacktrip -p 4464:4464/tcp -p 61000-61010:61000-61010/udp --shm-size=128M --privileged -d jacktrip/jacktrip
+docker run --name jacktrip -p 4464:4464/tcp -p 61000-61100:61000-61100/udp --shm-size=128M --privileged -d jacktrip/jacktrip
 ```
 
 By default, the servers will run using a sample rate of 48Khz and buffer

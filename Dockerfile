@@ -47,5 +47,6 @@ COPY linux/container/jacktrip.service /etc/systemd/system/
 COPY --from=builder /lib64/libQt5Core.so.5 /lib64/libQt5Network.so.5 /lib64/
 COPY --from=builder /root/builddir/jacktrip /usr/local/bin/
 
-# jacktrip hub server listens on 4464
+# jacktrip hub server listens on 4464 and uses 61000+ for clients
 EXPOSE 4464/tcp
+EXPOSE 61000-61100/udp

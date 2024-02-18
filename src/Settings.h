@@ -61,9 +61,7 @@ class Settings : public QObject
 
    public:
     Settings(bool guiEnabled = false, QObject* parent = nullptr)
-        : QObject(parent)
-        , mGuiEnabled(guiEnabled)
-        , mAudioTester(new AudioTester)
+        : QObject(parent), mGuiEnabled(guiEnabled), mAudioTester(new AudioTester)
     {
 #ifdef NO_GUI
         mGuiEnabled = false;
