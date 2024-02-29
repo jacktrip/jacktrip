@@ -919,6 +919,10 @@ void Regulator::readSlotNonBlocking(int8_t* ptrToReadSlot)
 //*******************************************************************************
 bool Regulator::getStats(RingBuffer::IOStat* stat, bool reset)
 {
+    if (!mFPPratioIsSet) {
+        return false;
+    }
+
     if (reset) {  // all are unused, this is copied from superclass
         mUnderruns        = 0;
         mOverflows        = 0;
