@@ -1125,6 +1125,7 @@ void VsAudioWorker::getDeviceList(const QVector<RtAudioDevice>& devices,
 #ifdef _WIN32
         // Realtek ASIO: seems to crash any computer that tries to use it
         QString::fromUtf8("Realtek ASIO"),
+        QString::fromUtf8("Generic Low Latency ASIO Driver"),
 #endif
         // JackRouter: crashes if not running; use Jack backend instead
         QString::fromUtf8("JackRouter"),
