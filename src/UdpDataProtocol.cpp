@@ -85,6 +85,11 @@ UdpDataProtocol::UdpDataProtocol(JackTrip* jacktrip, const runModeT runmode,
     , mBindPort(bind_port)
     , mPeerPort(peer_port)
     , mRunMode(runmode)
+#if defined(_WIN32)
+    , mSocket(INVALID_SOCKET)
+#else
+    , mSocket(-1)
+#endif
     , mAudioPacket(NULL)
     , mFullPacket(NULL)
     , mUdpRedundancyFactor(udp_redundancy_factor)
@@ -112,14 +117,34 @@ UdpDataProtocol::~UdpDataProtocol()
 {
     delete[] mAudioPacket;
     delete[] mFullPacket;
-    if (mRunMode == RECEIVER) {
-#ifdef _WIN32
-        closesocket(mSocket);
-#else
-        ::close(mSocket);
-#endif
-    }
+    closeSocket();
     wait();
+}
+
+//*******************************************************************************
+void UdpDataProtocol::stop()
+{
+    closeSocket();
+    DataProtocol::stop();
+}
+
+//*******************************************************************************
+void UdpDataProtocol::closeSocket()
+{
+    if (mRunMode != RECEIVER) {
+        return;
+    }
+#if defined(_WIN32)
+    if (mSocket != INVALID_SOCKET) {
+        closesocket(mSocket);
+        mSocket = INVALID_SOCKET;
+    }
+#else
+    if (mSocket != -1) {
+        ::close(mSocket);
+        mSocket = -1;
+    }
+#endif
 }
 
 //*******************************************************************************
