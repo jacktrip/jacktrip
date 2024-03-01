@@ -3,6 +3,7 @@
   Description:
   - (added) New container images for JackTrip hub server
   - (fixed) Support for audio interfaces on OSX with multiple channels
+  - (fixed) Hub server crashes when trying to rebind ports
   - (fixed) VS Mode blacklisted Generic Low Latency ASIO Driver
   - (fixed) VS Mode inconsistent initial connection state 
 - Version: "2.2.2"

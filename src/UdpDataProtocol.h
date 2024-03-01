@@ -85,6 +85,9 @@ class UdpDataProtocol : public DataProtocol
      */
     virtual ~UdpDataProtocol();
 
+    /// \brief Stops the execution of the Thread
+    virtual void stop();
+
     /** \brief Set the Peer address to connect to
      * \param peerHostOrIP IPv4 number or host name
      */
@@ -196,6 +199,7 @@ class UdpDataProtocol : public DataProtocol
                                       int full_packet_size);
 
    private:
+    void closeSocket();
     bool datagramAvailable();
 
     int mBindPort;            ///< Local Port number to Bind
