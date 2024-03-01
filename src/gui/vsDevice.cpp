@@ -174,7 +174,7 @@ void VsDevice::sendHeartbeat()
     };
 
     // Add stats to heartbeat body
-    if (!m_pinger.isNull()) {
+    if (!m_pinger.isNull() && m_pinger->active()) {
         VsPinger::PingStat stats = m_pinger->getPingStats();
 
         // API server expects RTTs to be in int64 nanoseconds, so we must convert
@@ -349,8 +349,10 @@ void VsDevice::startJackTrip(const VsServerInfo& studioInfo)
     // Virtual Studio
     QString host = studioInfo.sessionId();
     host.append(QString::fromStdString(".jacktrip.cloud"));
-    m_pinger.reset(new VsPinger(QString::fromStdString("wss"), host,
-                                QString::fromStdString("/ping")));
+    if (studioInfo.isManaged()) {
+        m_pinger.reset(new VsPinger(QString::fromStdString("wss"), host,
+                                    QString::fromStdString("/ping")));
+    }
 }
 
 // stopJackTrip stops the current jacktrip process if applicable
@@ -421,7 +423,7 @@ void VsDevice::onTextMessageReceived(const QString& message)
     // We have a heartbeat from which we can read the studio auth token
     // Use it to set up and start the pinger connection
     QString token = newState["authToken"].toString();
-    if (!m_pinger.isNull() && !m_pinger->active()) {
+    if (!m_pinger.isNull() && !m_pinger->active() && !token.isEmpty()) {
         m_pinger->setToken(token);
         m_pinger->start();
     }

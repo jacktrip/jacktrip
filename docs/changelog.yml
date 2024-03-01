@@ -1,3 +1,10 @@
+- Version: "2.2.3"
+  Date: 2024-03-04
+  Description:
+  - (added) New container images for JackTrip hub server
+  - (fixed) Support for audio interfaces on OSX with multiple channels
+  - (fixed) VS Mode blacklisted Generic Low Latency ASIO Driver
+  - (fixed) VS Mode inconsistent initial connection state 
 - Version: "2.2.2"
   Date: 2024-02-09
   Description:
