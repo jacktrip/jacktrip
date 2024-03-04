@@ -1,0 +1,8 @@
+*
+!docs
+!meson*
+!container
+!src
+!subprojects
+!linux
+!win

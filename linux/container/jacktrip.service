@@ -1,0 +1,33 @@
+[Unit]
+Description=JackTrip-Server
+After=network.target jack.service defaults.service
+Wants=jack.service defaults.service
+
+[Service]
+Type=simple
+User=jacktrip
+Group=audio
+NoNewPrivileges=true
+ProtectSystem=true
+ProtectHome=true
+Nice=-20
+#IOSchedulingClass=realtime
+#IOSchedulingPriority=0
+Environment="JACK_NO_AUDIO_RESERVATION=1"
+Environment="JACK_NO_START_SERVER=1"
+Environment="JACK_PROMISCUOUS_SERVER=audio"
+EnvironmentFile=/etc/default/jacktrip
+ExecStartPre=/usr/local/bin/jack_wait -w -t 5
+ExecStart=/usr/local/bin/jacktrip $JACKTRIP_OPTS
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=inherit
+SyslogIdentifier=jacktrip
+LimitMEMLOCK=infinity
+LimitRTPRIO=99
+LimitNOFILE=200000
+LimitNPROC=200000
+
+[Install]
+WantedBy=multi-user.target

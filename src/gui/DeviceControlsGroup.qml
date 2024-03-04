@@ -123,6 +123,7 @@ Rectangle {
                 }
 
                 Item {
+                    visible: isUsingRtAudio
                     Layout.preferredWidth: 40 * virtualstudio.uiScale
                     Layout.preferredHeight: 64 * virtualstudio.uiScale
                     Layout.bottomMargin: 5 * virtualstudio.uiScale
@@ -132,7 +133,6 @@ Rectangle {
 
                     Button {
                         id: changeDevicesButton
-                        visible: isUsingRtAudio
                         width: 36 * virtualstudio.uiScale
                         height: 36 * virtualstudio.uiScale
                         anchors.top: parent.top

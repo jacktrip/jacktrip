@@ -91,7 +91,7 @@ void VsWebSocket::openSocket()
     req.setRawHeader(QByteArray("Upgrade"), QByteArray("websocket"));
     req.setRawHeader(QByteArray("Connection"), QByteArray("Upgrade"));
     req.setRawHeader(QByteArray("Authorization"), authVal.toUtf8());
-    req.setRawHeader(QByteArray("Origin"), QByteArray("https://app.jacktrip.org"));
+    req.setRawHeader(QByteArray("Origin"), QByteArray("http://jacktrip.local"));
     req.setRawHeader(QByteArray("APIPrefix"), m_apiPrefix.toUtf8());
     req.setRawHeader(QByteArray("APISecret"), m_apiSecret.toUtf8());
 

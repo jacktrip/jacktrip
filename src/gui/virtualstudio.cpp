@@ -734,10 +734,10 @@ void VirtualStudio::logout()
     query.addQueryItem(QStringLiteral("client_id"), AUTH_CLIENT_ID);
     if (m_testMode) {
         query.addQueryItem(QStringLiteral("returnTo"),
-                           QStringLiteral("https://test.jacktrip.org/"));
+                           QStringLiteral("https://next-test.jacktrip.com/"));
     } else {
         query.addQueryItem(QStringLiteral("returnTo"),
-                           QStringLiteral("https://app.jacktrip.org/"));
+                           QStringLiteral("https://www.jacktrip.com/"));
     }
 
     logoutURL.setQuery(query);
