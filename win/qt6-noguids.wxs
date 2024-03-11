@@ -30,8 +30,14 @@
             <Component Id="cmp61BABE677B13AE7A25F57865DD2CB150" Directory="TARGETDIR" Guid="PUT-GUID-HERE">
                 <File Id="filD0B8E5384B7EB5609D1B2A67A98FF334" KeyPath="yes" Source="SourceDir\jacktrip.exe" />
             </Component>
+            <Component Id="cmp5C97B37BB3181F77EDC11261A4463285" Directory="TARGETDIR" Guid="PUT-GUID-HERE">
+                <File Id="fil46101D0C43E1BEF1BE4C5475DA0B2837" KeyPath="yes" Source="SourceDir\JackTrip.msi" />
+            </Component>
             <Component Id="cmpCD23A5CC7196B582D23DF7AC7DFE061F" Directory="TARGETDIR" Guid="PUT-GUID-HERE">
                 <File Id="fil00C2A327ECCB1D33F7BBF313ADEEFD43" KeyPath="yes" Source="SourceDir\jacktrip.wixobj" />
+            </Component>
+            <Component Id="cmpEF56078548B21E7891727FDE729B864B" Directory="TARGETDIR" Guid="PUT-GUID-HERE">
+                <File Id="fil01A07DE9CBC162E11AA3C8EFB4A4D4B9" KeyPath="yes" Source="SourceDir\JackTrip.wixpdb" />
             </Component>
             <Component Id="cmp63BFF65F319CB52D38DBB3FE6B8DE6F6" Directory="TARGETDIR" Guid="PUT-GUID-HERE">
                 <File Id="fil886DC1D217D62357ED536BCFF93E7C0F" KeyPath="yes" Source="SourceDir\jacktrip.wxs" />
@@ -41,6 +47,9 @@
             </Component>
             <Component Id="cmpE2BC49F17425202019B2C48873956253" Directory="TARGETDIR" Guid="PUT-GUID-HERE">
                 <File Id="fil011E2822115DD1D5BD9A9096D1914F51" KeyPath="yes" Source="SourceDir\license.rtf" />
+            </Component>
+            <Component Id="cmpC2B5C938CDBD7BD0FAE06ACAABDB3B54" Directory="TARGETDIR" Guid="PUT-GUID-HERE">
+                <File Id="fil025966B7C1FB522423ADF8E9CE443022" KeyPath="yes" Source="SourceDir\opengl32sw.dll" />
             </Component>
             <Component Id="cmpD16A82FC04DA86995B222E5199ABF99B" Directory="TARGETDIR" Guid="PUT-GUID-HERE">
                 <File Id="fil03546A9C6805C45BEB0A60D29FFC5D22" KeyPath="yes" Source="SourceDir\qt6.wixobj" />
