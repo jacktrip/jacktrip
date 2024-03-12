@@ -11,6 +11,12 @@ del deploy /s /q
 rmdir deploy /s /q
 mkdir deploy
 
+REM get opengl32sw.dll mesa3d llvm build, required by opengl software backend
+curl -L -s -o opengl32sw.zip https://files.jacktrip.org/contrib/opengl32sw.zip
+unzip opengl32sw.zip
+del opengl32sw.zip
+move opengl32sw.dll deploy
+
 copy ..\LICENSE.md deploy\
 xcopy ..\LICENSES deploy\LICENSES\
 

@@ -1,3 +1,8 @@
+- Version: "2.2.4"
+  Date: 2024-03-13
+  Description:
+  - (fixed) Allow software opengl for older windows video drivers
+  - (fixed) VS Mode avoid unnecessary JACK library checks at startup
 - Version: "2.2.3"
   Date: 2024-03-04
   Description:
