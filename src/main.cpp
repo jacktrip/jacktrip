@@ -182,7 +182,7 @@ QCoreApplication* createApplication(int& argc, char* argv[])
 #if !defined(NO_VS) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         // Enables resource sharing between the OpenGL contexts
         QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
-        QCoreApplication::setAttribute(Qt::AA_UseDesktopOpenGL);
+        // QCoreApplication::setAttribute(Qt::AA_UseDesktopOpenGL);
         // QCoreApplication::setAttribute(Qt::AA_UseOpenGLES);
 
         // QQuickWindow::setGraphicsApi(QSGRendererInterface::Direct3D11);
