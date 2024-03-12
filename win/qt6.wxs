@@ -37,7 +37,7 @@
             <Component Id="cmpE2BC49F17425202019B2C48873956253" Directory="INSTALLDIR" Guid="{4F42E138-BC56-4253-8AE7-47D1C92EA803}">
                 <File Id="fil011E2822115DD1D5BD9A9096D1914F51" KeyPath="yes" Source="SourceDir\license.rtf" />
             </Component>
-            <Component Id="cmpC2B5C938CDBD7BD0FAE06ACAABDB3B54" Directory="TARGETDIR" Guid="{E3D42FA3-DD28-4928-AB36-D33EFC3D454E}">
+            <Component Id="cmpC2B5C938CDBD7BD0FAE06ACAABDB3B54" Directory="INSTALLDIR" Guid="{E3D42FA3-DD28-4928-AB36-D33EFC3D454E}">
                 <File Id="fil025966B7C1FB522423ADF8E9CE443022" KeyPath="yes" Source="SourceDir\opengl32sw.dll" />
             </Component>
             <Component Id="cmp7111706DBFB0E180EC7A8BDC93A90139" Directory="INSTALLDIR" Guid="{B19ABB59-5607-4637-93D8-C03CA180767F}">
