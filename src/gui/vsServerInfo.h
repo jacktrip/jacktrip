@@ -59,6 +59,7 @@ class VsServerInfo : public QObject
     Q_PROPERTY(quint16 period READ period CONSTANT)
     Q_PROPERTY(quint32 sampleRate READ sampleRate CONSTANT)
     Q_PROPERTY(quint16 queueBuffer READ queueBuffer CONSTANT)
+    Q_PROPERTY(QString sessionId READ sessionId CONSTANT)
     Q_PROPERTY(QString status READ status CONSTANT)
     Q_PROPERTY(bool enabled READ enabled CONSTANT)
     Q_PROPERTY(QString cloudId READ cloudId CONSTANT)

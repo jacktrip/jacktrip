@@ -19,7 +19,7 @@ Rectangle {
 
     function getShowDeviceControls () {
         // self-managed servers do not support minified controls so keep it full size
-        return !virtualstudio.currentStudio.isManaged || (!virtualstudio.collapseDeviceControls && isReady);
+        return (!virtualstudio.currentStudio.isManaged && virtualstudio.currentStudio.sessionId === "") || (!virtualstudio.collapseDeviceControls && isReady);
     }
 
     MouseArea {
@@ -96,7 +96,7 @@ Rectangle {
 
                     Button {
                         id: closeDeviceControlsButton
-                        visible: virtualstudio.currentStudio.isManaged
+                        visible: virtualstudio.currentStudio.isManaged || virtualstudio.currentStudio.sessionId !== ""
                         width: 24 * virtualstudio.uiScale
                         height: 24 * virtualstudio.uiScale
                         background: Rectangle {
