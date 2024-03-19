@@ -272,7 +272,7 @@ QString VsServerInfo::sessionId() const
 
 void VsServerInfo::setSessionId(const QString& sessionId)
 {
-    m_sessionId = sessionId;
+    m_sessionId = (sessionId == "undefined") ? "" : sessionId;
 }
 
 QString VsServerInfo::inviteKey() const
