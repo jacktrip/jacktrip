@@ -63,8 +63,8 @@ class BurgAlgorithm
 {
    public:
     bool classify(double d);
-    void train(std::vector<double>& coeffs, const std::vector<double>& x);
-    void predict(std::vector<double>& coeffs, std::vector<double>& tail);
+    void train(std::vector<float>& coeffs, const std::vector<double>& x);
+    void predict(std::vector<float>& coeffs, std::vector<double>& tail);
 
    private:
     // the following are class members to minimize heap memory allocations
@@ -83,7 +83,7 @@ class ChanData
     std::vector<double> mTrain;
     std::vector<double> mTail;
     std::vector<sample_t> mPrediction;  // ORDER
-    std::vector<double> mCoeffs;
+    std::vector<float> mCoeffs;
     std::vector<sample_t> mXfadedPred;
     std::vector<sample_t> mLastPred;
     std::vector<std::vector<sample_t>> mLastPackets;
