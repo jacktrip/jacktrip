@@ -347,9 +347,12 @@ void VsDevice::startJackTrip(const VsServerInfo& studioInfo)
 
     // intialize the pinger used to generate network latency statistics for
     // Virtual Studio
-    QString host = studioInfo.sessionId();
-    host.append(QString::fromStdString(".jacktrip.cloud"));
+    QString host = studioInfo.host();
     if (studioInfo.isManaged()) {
+        host = studioInfo.sessionId();
+        host.append(QString::fromStdString(".jacktrip.cloud"));
+    }
+    if (studioInfo.isManaged() || !studioInfo.sessionId().isEmpty()) {
         m_pinger.reset(new VsPinger(QString::fromStdString("wss"), host,
                                     QString::fromStdString("/ping")));
     }
