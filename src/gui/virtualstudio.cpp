@@ -831,7 +831,7 @@ void VirtualStudio::connectToStudio()
     m_studioSocketPtr->openSocket();
 
     // Check if we have an address for our server
-    if (m_currentStudio.status() != "Ready" && m_currentStudio.isAdmin() == true) {
+    if (m_currentStudio.status() != "Ready") {
         m_connectionState = QStringLiteral("Waiting...");
         emit connectionStateChanged();
     } else {
@@ -843,8 +843,20 @@ void VirtualStudio::connectToStudio()
 
 void VirtualStudio::completeConnection()
 {
+    // sanity check
     if (m_currentStudio.id() == ""
         || m_currentStudio.status() == QStringLiteral("Disabled")) {
+        processError("Studio session has ended");
+        return;
+    }
+
+    // these shouldn't happen
+    if (m_currentStudio.status() != "Ready") {
+        processError("Studio session is not ready");
+        return;
+    }
+    if (m_currentStudio.host().isEmpty()) {
+        processError("Studio host is unknown");
         return;
     }
 
