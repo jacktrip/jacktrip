@@ -996,45 +996,56 @@ void VirtualStudio::triggerReconnect(bool refresh)
 
 void VirtualStudio::disconnect()
 {
-    m_connectionState = QStringLiteral("Disconnecting...");
-    emit connectionStateChanged();
-    setConnectedErrorMsg("");
-
+    // stop jackrip if it's running
     if (m_jackTripRunning) {
         m_devicePtr->stopJackTrip(false);
         // persist any volume level or device changes
         m_audioConfigPtr->saveSettings();
-    } else {
-        // How did we get here? This shouldn't be possible, but include for safety.
-        if (m_isExiting) {
-            emit signalExit();
-        } else if (m_onConnectedScreen) {
-            emit disconnected();
-            m_onConnectedScreen = false;
-        }
-    }
-
-    // Restart our studio refresh timer.
-    if (!m_isExiting) {
-        m_refreshTimer.start();
     }
 
     m_connectionState = QStringLiteral("Disconnected");
     emit connectionStateChanged();
+    setConnectedErrorMsg("");
 
-    if (!m_currentStudio.id().isEmpty()) {
-        emit openFeedbackSurveyModal(m_currentStudio.id());
+    if (m_isExiting) {
+        emit signalExit();
+        return;
     }
 
-    // cleanup
-    m_currentStudio.setId("");
-    emit currentStudioChanged();
+    // if this occurs on the setup or settings screen (for example, due to an issue with
+    // devices) then don't emit disconnected, as that would move you back to the "Browse"
+    // screen
+    if (m_onConnectedScreen) {
+        m_onConnectedScreen = false;
+        emit disconnected();
+        // Refresh studios and restart timer
+        refreshStudios(0, true);
+        m_refreshTimer.start();
+    }
+
+    if (!m_jackTripRunning) {
+        return;
+    }
+    m_jackTripRunning = false;
 
     if (!m_studioSocketPtr.isNull()) {
         m_studioSocketPtr->closeSocket();
         m_studioSocketPtr->disconnect();
         m_studioSocketPtr.reset();
     }
+
+    // reset network statistics
+    m_networkStats = QJsonObject();
+
+    if (!m_currentStudio.id().isEmpty()) {
+        emit openFeedbackSurveyModal(m_currentStudio.id());
+        m_currentStudio.setId("");
+        emit currentStudioChanged();
+    }
+
+#ifdef __APPLE__
+    m_noNap.enableNap();
+#endif
 }
 
 void VirtualStudio::manageStudio(const QString& studioId, bool start)
@@ -1279,33 +1290,6 @@ void VirtualStudio::connectionFinished()
 
     // use disconnect function to handle reset of all internal flags and timers
     disconnect();
-
-    // reset network statistics
-    m_networkStats = QJsonObject();
-
-    if (m_isExiting) {
-        emit signalExit();
-        return;
-    }
-
-    if (!m_jackTripRunning) {
-        return;
-    }
-
-    m_jackTripRunning = false;
-    m_connectionState = QStringLiteral("Disconnected");
-    emit connectionStateChanged();
-
-    // if this occurs on the setup or settings screen (for example, due to an issue with
-    // devices) then don't emit disconnected, as that would move you back to the "Browse"
-    // screen
-    if (m_onConnectedScreen) {
-        m_onConnectedScreen = false;
-        emit disconnected();
-    }
-#ifdef __APPLE__
-    m_noNap.enableNap();
-#endif
 }
 
 void VirtualStudio::processError(const QString& errorMessage)

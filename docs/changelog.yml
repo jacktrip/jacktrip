@@ -2,6 +2,7 @@
   Date: 2024-03-28
   Description:
   - (fixed) VS Mode only admins could join new sessions starting up
+  - (fixed) VS Mode only ask for feedback if you've joined a session
   - (updated) VS Mode updates to support self hosted virtual studios
 - Version: "2.2.4"
   Date: 2024-03-13
