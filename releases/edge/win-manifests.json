@@ -2,6 +2,16 @@
   "app_name": "JackTrip",
   "releases": [
     {
+      "version": "2.2.5",
+      "changelog": "Full changelog at https://github.com/jacktrip/jacktrip/releases/tag/v2.2.5",
+      "download": {
+        "date": "2024-03-29T00:00:00Z",
+        "url": "https://files.jacktrip.org/app-builds/JackTrip-v2.2.5-Windows-x64-signed-installer.msi",
+        "downloadSize": "116228096",
+        "sha256": "903343959992733001d4e7db30c83fc4ff8120903aeca0eb86b1601c9d21e15b"
+      }
+    },
+    {
       "version": "2.2.4",
       "changelog": "Full changelog at https://github.com/jacktrip/jacktrip/releases/tag/v2.2.4",
       "download": {
