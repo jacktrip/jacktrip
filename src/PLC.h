@@ -3,9 +3,12 @@
 #include <math.h>
 #include <vector>
 #include <QElapsedTimer>
+//JT needs
+#include "Regulator.h"
 
 using namespace std;
-
+//HT class BurgAlgorithm
+#define BurgAlgorithm BurgAlgorithmJT
 class BurgAlgorithm
 {
 public:
@@ -86,10 +89,14 @@ private:
     friend class PLC;
 };
 
-class Q_DECL_EXPORT PLC {
+//HT class Q_DECL_EXPORT PLC {
+class PLC : public Regulator {
     // for insertion in test points
 public:
-    PLC(int chans, int fpp, int bps, int packetsInThePast);
+//HT     PLC(int chans, int fpp, int bps, int packetsInThePast);
+    PLC(int chans, int fpp, int bps, int packetsInThePast,
+//JT
+int rcvChannels, int bit_res, int FPP, int qLen, int bqLen, int sample_rate);
     ~PLC();
     Time *mTime;
     // int audioCallback(void *outputBuffer, void *inputBuffer,

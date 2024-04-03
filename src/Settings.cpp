@@ -540,7 +540,7 @@ void Settings::parseInput(int argc, char** argv)
             break;
         case OPT_BUFSTRATEGY:  // Buf strategy
             mBufferStrategy = atoi(optarg);
-            if (-1 > mBufferStrategy || 4 < mBufferStrategy) {
+            if (-1 > mBufferStrategy || 5 < mBufferStrategy) {
                 std::cerr << "Unsupported buffer strategy " << optarg << endl;
                 printUsage();
                 std::exit(1);

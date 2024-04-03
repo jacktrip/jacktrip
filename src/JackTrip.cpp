@@ -43,6 +43,7 @@
 #include "Auth.h"
 #include "JitterBuffer.h"
 #include "Regulator.h"
+#include "PLC.h"
 #include "RingBufferWavetable.h"
 #include "UdpDataProtocol.h"
 #include "jacktrip_globals.h"
@@ -446,6 +447,18 @@ void JackTrip::setupRingBuffers()
                 mAudioInterface->enableBroadcastOutput();
             }
 
+        } else if (mBufferStrategy == 5) {
+//HT        new PLC(channels, fpp, bps, packetsInThePast);
+            PLC* plc =
+//JT  
+#define NUMPACKETSINTHEPAST 2
+#define BITRESOLUTION16 16
+ new PLC(mNumAudioChansOut, mAudioBufferSize, BITRESOLUTION16, NUMPACKETSINTHEPAST,
+                mNumAudioChansOut, mAudioBitResolution, mAudioBufferSize,
+                              mBufferQueueLength, mBroadcastQueueLength, mSampleRate);
+            mReceiveRingBuffer = plc;
+            cout << "Using latest PLC buffer strategy " << mBufferStrategy
+                 << "-- PLC with 'PLC' \n can't possibly work" << endl;
         } else {
             cout << "Using JitterBuffer strategy " << mBufferStrategy << endl;
             if (0 > mBufferQueueLength) {

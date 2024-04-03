@@ -156,8 +156,11 @@ Channel::Channel ( int fpp, int upToNow, int packetsInThePast ) {
     lastWasGlitch = false;
 }
 
-PLC::PLC(int chans, int fpp, int bps, int packetsInThePast)
-    : channels(chans), fpp(fpp), bps(bps), packetsInThePast(packetsInThePast)
+PLC::PLC(int chans, int fpp, int bps, int packetsInThePast,
+//JT
+int rcvChannels, int bit_res, int FPP, int qLen, int bqLen, int sample_rate) : 
+Regulator(rcvChannels, bit_res, FPP, qLen, bqLen, sample_rate), 
+     channels(chans), fpp(fpp), bps(bps), packetsInThePast(packetsInThePast)
 {
     cout << " --PLC " << channels << " channels\n";
     mPcnt = 0;
