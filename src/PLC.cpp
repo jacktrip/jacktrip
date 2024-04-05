@@ -370,27 +370,11 @@ void PLC::readSlotNonBlocking(int8_t* ptrToReadSlot)
     if (glitch) mGlitchSeries++; else mGlitchSeries = 0;
     bool glitchIgnored = false;
     if (mGlitchSeries > 2) { glitch = false; glitchIgnored = true; }
-    toFloatBuf( (qint16*) mSlots[0]);
+    toFloatBuf( (qint16*) mSlots[ 0 ]);
     burg( glitch, glitchIgnored );
     fromFloatBuf( (qint16*) ptrToReadSlot);
     mPcnt++;
 }
-//*******************************************************************************
-// overload so that it returns bool glitch
-//JT    pullPacket();
-//    memcpy(ptrToReadSlot, mXfrBuffer, mBytes);
-// called by audio interface which calls readSlotNonBlocking
-bool PLC::pullPacket()
-{
-//HT bool UDP::byteRingBufferPull() { // pull next packet to play out from regulator or ring
-    // std::cout << "byteRingBufferPull ";
-    bool glitch = ( mRcvSeq != (mLastRcvSeq + 1) );
-    mLastRcvSeq = mRcvSeq;
-//    if (glitch) mLastRcvSeq++;
-//    if (glitch) std::cout << mLastRcvSeq << "\n";
-    return glitch;
-};
-
 
 //*******************************************************************************
 // reimplement so that it doesn't change seq_num and only writes into slot 0
@@ -404,9 +388,22 @@ void PLC::pushPacket(const int8_t* buf, int seq_num)
 //    // if (seq_num==0) return;   // impose regular loss
 //    mIncomingTiming[seq_num] =
 //        mMsecTolerance + (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
-    memcpy(mSlots[0], buf, mBytes);
+    memcpy(mSlots[ 0 ], buf, mBytes);
     mRcvSeq = seq_num;
 };
+
+//*******************************************************************************
+//HT bool UDP::byteRingBufferPull()
+// overload so that it returns bool glitch
+//JT    pullPacket();
+//    memcpy(ptrToReadSlot, mXfrBuffer, mBytes);
+// called by audio interface which calls readSlotNonBlocking
+bool PLC::pullPacket() {
+    bool glitch = (mLastRcvSeq == mRcvSeq);
+    mLastRcvSeq = mRcvSeq;
+//    if (glitch) mLastRcvSeq++;
+    return glitch;
+}
 
 /*
 UdpDataProtocol::writeAudioBuffer calls
