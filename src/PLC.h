@@ -29,6 +29,7 @@ class Time {
     double accum = 0.0;
     int cnt = 0;
     int glitchCnt = 0;
+    int glitchIgnoredCnt = 0;
     double tmpTime = 0.0;
 public:
     QElapsedTimer mCallbackTimer; // for rcvElapsedTime
@@ -55,9 +56,17 @@ public:
         tmpTime = mCallbackTimer.nsecsElapsed();
         glitchCnt++;
     }
+    void glitchIgnored() {
+        glitchIgnoredCnt++;
+    }
     int glitches() {
         int tmp = glitchCnt;
         glitchCnt = 0;
+        return tmp;
+    }
+    int glitchIgnoreds() {
+        int tmp = glitchIgnoredCnt;
+        glitchIgnoredCnt = 0;
         return tmp;
     }
 };
@@ -103,7 +112,7 @@ int rcvChannels, int bit_res, int FPP, int qLen, int bqLen, int sample_rate);
     //                   unsigned int nBufferFrames, double streamTime,
     //                   RtAudioStreamStatus, void *bytesInfoFromStreamOpen);
     void straightWire(qint16 *out, qint16 *in, bool glitch); // generate a signal
-    void burg(bool glitch); // generate a signal
+    void burg(bool glitch, bool glitchIgnored); // generate a signal
     void zeroTmpFloatBuf();
     void toFloatBuf(qint16 *in);
     void fromFloatBuf(qint16 *out);
@@ -125,6 +134,20 @@ int rcvChannels, int bit_res, int FPP, int qLen, int bqLen, int sample_rate);
     float scale;
     float invScale;
     int mNotTrained;
+
+//HT void UDP::byteRingBufferPush(int8_t *buf, int seq) so reimplement Regulator::pushPacket
+    void pushPacket(const int8_t* buf, int seq_num);
+    void shimFPP(const int8_t* buf, int len, int seq_num);
+    bool pullPacket();
+    void readSlotNonBlocking(int8_t* ptrToReadSlot);
+//HT UDP
+    int mRcvSeq; // sequence number read from the header of the ingoing packet
+    int mLastRcvSeq; // outgoing to audio
+//HT Audio
+    int mGlitchSeries;
+    bool insertSlotNonBlocking(const int8_t* ptrToSlot, int len,
+                                       [[maybe_unused]] int lostLen, int seq_num);
+
 };
 
 #endif // PLC_H

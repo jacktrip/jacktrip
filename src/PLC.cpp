@@ -200,14 +200,16 @@ Regulator(rcvChannels, bit_res, FPP, qLen, bqLen, sample_rate),
     // lateMod = late.size();
     latePtr = 0;
     mNotTrained = 0;
+    mGlitchSeries = 0;
 }
 
-void PLC::burg(bool glitch) { // generate next bufferfull and convert to short int
+void PLC::burg(bool glitch, bool glitchIgnored) { // generate next bufferfull and convert to short int
     bool primed = mPcnt > packetsInThePast;
     for (int ch = 0; ch < channels; ch++) {
         Channel * c = mChanData[ch];
         //////////////////////////////////////
         if (glitch) mTime->trigger();
+        if (glitchIgnored) mTime->glitchIgnored();
 
         for (int i = 0; i < fpp; i++) {
             double tmp = sin( c->fakeNowPhasor );
@@ -299,6 +301,7 @@ void PLC::burg(bool glitch) { // generate next bufferfull and convert to short i
     // if (Hapitrip::as.dVerbose)
         if (!(mPcnt%300)) std::cout << "avg " << mTime->avg()
                       << " glitches " << mTime->glitches()
+                      << " glitches ignored " << mTime->glitchIgnoreds()
                       << " \n";
 }
 
@@ -345,4 +348,168 @@ void Channel::ringBufferPull(int past) { // pull numbered packet from ring
     mTmpFloatBuf = mPacketRing[pastPtr];
     // } else cout << "ring buffer not primed\n";
 }
+
+// reimplement
+void PLC::readSlotNonBlocking(int8_t* ptrToReadSlot)
+{
+    if (!mFPPratioIsSet) {
+        // audio callback before receiving first packet from peer
+        // nothing is initialized yet, so just return silence
+        memcpy(ptrToReadSlot, mZeros, mBytes);
+        return;
+    }
+//    if (mUseWorkerThread) {
+        // use separate worker thread for PLC
+//        mRegulatorWorkerPtr->pop(ptrToReadSlot);
+//        return;
+//    }
+    // use jack callback thread to perform PLC
+    
+    zeroTmpFloatBuf();
+    bool glitch = pullPacket();
+    if (glitch) mGlitchSeries++; else mGlitchSeries = 0;
+    bool glitchIgnored = false;
+    if (mGlitchSeries > 2) { glitch = false; glitchIgnored = true; }
+    toFloatBuf( (qint16*) mSlots[0]);
+    burg( glitch, glitchIgnored );
+    fromFloatBuf( (qint16*) ptrToReadSlot);
+    mPcnt++;
+}
+//*******************************************************************************
+// overload so that it returns bool glitch
+//JT    pullPacket();
+//    memcpy(ptrToReadSlot, mXfrBuffer, mBytes);
+// called by audio interface which calls readSlotNonBlocking
+bool PLC::pullPacket()
+{
+//HT bool UDP::byteRingBufferPull() { // pull next packet to play out from regulator or ring
+    // std::cout << "byteRingBufferPull ";
+    bool glitch = (mLastRcvSeq == mRcvSeq);
+    mLastRcvSeq = mRcvSeq;
+    if (glitch) mLastRcvSeq++;
+//    if (glitch) std::cout << mLastRcvSeq << "\n";
+    return glitch;
+};
+
+
+//*******************************************************************************
+// reimplement so that it doesn't change seq_num and only writes into slot 0
+//HT same behavior as UDP::byteRingBufferPush
+//JT called by shimFPP
+void PLC::pushPacket(const int8_t* buf, int seq_num)
+{
+    if (m_b_BroadcastQueueLength)
+        m_b_BroadcastRingBuffer->insertSlotNonBlocking(buf, mBytes, 0, seq_num);
+//    seq_num %= mNumSlots;
+//    // if (seq_num==0) return;   // impose regular loss
+//    mIncomingTiming[seq_num] =
+//        mMsecTolerance + (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
+    memcpy(mSlots[0], buf, mBytes);
+    mRcvSeq = seq_num;
+};
+
+/*
+UdpDataProtocol::writeAudioBuffer calls
+JackTrip::writeAudioBuffer calls
+mReceiveRingBuffer->insertSlotNonBlocking
+which was Regulator but we need PLC subclass, so we need to repeat the code for
+  insertSlotNonBlocking
+  shimFPP -- and the set of constants it depends on
+in order to have shimFPP call 
+PLC::pushPacket
+
+the following is exact duplication so PLC subclass is used instead of Regulator base class
+
+*/
+
+bool PLC::insertSlotNonBlocking(const int8_t* ptrToSlot, int len,
+                                       [[maybe_unused]] int lostLen, int seq_num) {
+   shimFPP(ptrToSlot, len, seq_num);
+   return (true);
+}
+
+// constants...
+constexpr int HIST        = 4;      // for mono at FPP 16-128, see below for > mono, > 128
+constexpr int NumSlotsMax = 4096;   // mNumSlots looped for recent arrivals
+constexpr double AutoMax  = 250.0;  // msec bounds on insane IPI, like ethernet unplugged
+constexpr double AutoInitDur = 3000.0;  // kick in auto after this many msec
+constexpr double AutoInitValFactor =
+    0.5;  // scale for initial mMsecTolerance during init phase if unspecified
+
+// tweak
+constexpr int WindowDivisor   = 8;     // for faster auto tracking
+constexpr int MaxFPP          = 1024;  // tested up to this FPP
+constexpr int MaxAutoHeadroom = 5;     // maximum auto headroom in milliseconds
+constexpr double AutoHeadroomGlitchTolerance =
+    0.007;  // Acceptable rate of glitches before auto headroom is increased (0.7%)
+constexpr double AutoHistoryWindow =
+    60;  // rolling window of time (in seconds) over which auto tolerance roughly adjusts
+constexpr double AutoSmoothingFactor =
+    1.0
+    / (WindowDivisor * AutoHistoryWindow);  // EWMA smoothing factor for auto tolerance
+
+
+//*******************************************************************************
+void PLC::shimFPP(const int8_t* buf, int len, int seq_num)
+{
+    if (seq_num != -1) {
+        if (!mFPPratioIsSet) {  // first peer packet
+            mBytesPeerPacket = len;
+            mPeerFPP         = len / (mNumChannels * mBitResolutionMode);
+            mPeerFPPdurMsec  = 1000.0 * mPeerFPP / mSampleRate;
+            // bufstrategy 1 autoq mode overloads qLen with negative val
+            // creates this ugly code
+            if (mMsecTolerance <= 0) {  // handle -q auto or, for example, -q auto10
+                mAuto = true;
+                // default is -500 from bufstrategy 1 autoq mode
+                // use mMsecTolerance to set headroom
+                if (mMsecTolerance == -500.0) {
+                    mAutoHeadroom = -1;
+                    qDebug()
+                        << "PLC is in auto mode and has been set with variable headroom";
+                } else {
+                    mAutoHeadroom = -mMsecTolerance;
+                    qDebug() << "PLC is in auto mode and has been set with"
+                             << mAutoHeadroom << "ms headroom";
+                    if (mAutoHeadroom > 50.0)
+                        qDebug() << "That's a very large value and should be less than, "
+                                    "for example, 50ms";
+                }
+                // found an interesting relationship between mPeerFPP and initial
+                // mMsecTolerance mPeerFPP*0.5 is pretty good though that's an oddball
+                // conversion of bufsize directly to msec
+                mMsecTolerance = (mPeerFPP * AutoInitValFactor);
+            };
+            setFPPratio();
+            // number of stats tick calls per sec depends on FPP
+            pushStat = new StdDev(1, &mIncomingTimer,
+                                  (int)(floor(mSampleRate / (double)mPeerFPP)));
+            pullStat =
+                new StdDev(2, &mIncomingTimer, (int)(floor(mSampleRate / (double)mFPP)));
+            mFPPratioIsSet = true;
+        }
+        if (mFPPratioNumerator == mFPPratioDenominator) {
+            // local FPP matches peer
+            pushPacket(buf, seq_num);
+        } else if (mFPPratioNumerator > 1) {
+            // 2/1, 4/1 peer FPP is lower, (local/peer)/1
+            assemblePacket(buf, seq_num);
+        } else {
+            // 1/2, 1/4 peer FPP is higher, 1/(peer/local)
+            seq_num *= mFPPratioDenominator;
+            for (int i = 0; i < mFPPratioDenominator; i++) {
+                memcpy(mAssembledPacket, buf, mBytes);
+                pushPacket(mAssembledPacket, seq_num);
+                buf += mBytes;
+                seq_num++;
+            }
+        }
+        bool pushStatsUpdated = pushStat->tick();
+        if (mAuto && pushStatsUpdated && (pushStat->lastTime > AutoInitDur)
+            && pushStat->longTermCnt % WindowDivisor == 0) {
+            // after AutoInitDur: update auto tolerance once per second
+            updateTolerance();
+        }
+    }
+};
 

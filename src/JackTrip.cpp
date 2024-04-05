@@ -449,16 +449,15 @@ void JackTrip::setupRingBuffers()
 
         } else if (mBufferStrategy == 5) {
 //HT        new PLC(channels, fpp, bps, packetsInThePast);
-            PLC* plc =
 //JT  
 #define NUMPACKETSINTHEPAST 2
 #define BITRESOLUTION16 16
- new PLC(mNumAudioChansOut, mAudioBufferSize, BITRESOLUTION16, NUMPACKETSINTHEPAST,
+            PLC* plc = new PLC(mNumAudioChansOut, mAudioBufferSize, BITRESOLUTION16, NUMPACKETSINTHEPAST,
                 mNumAudioChansOut, mAudioBitResolution, mAudioBufferSize,
                               mBufferQueueLength, mBroadcastQueueLength, mSampleRate);
             mReceiveRingBuffer = plc;
-            cout << "Using latest PLC buffer strategy " << mBufferStrategy
-                 << "-- PLC with 'PLC' \n can't possibly work" << endl;
+            cout << "Using PLC with buffer strategy 5 " << mBufferStrategy
+                 << "-- PLC with 'PLC' class " << endl;
         } else {
             cout << "Using JitterBuffer strategy " << mBufferStrategy << endl;
             if (0 > mBufferQueueLength) {
