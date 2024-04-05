@@ -384,9 +384,9 @@ bool PLC::pullPacket()
 {
 //HT bool UDP::byteRingBufferPull() { // pull next packet to play out from regulator or ring
     // std::cout << "byteRingBufferPull ";
-    bool glitch = (mLastRcvSeq == mRcvSeq);
+    bool glitch = ( mRcvSeq != (mLastRcvSeq + 1) );
     mLastRcvSeq = mRcvSeq;
-    if (glitch) mLastRcvSeq++;
+//    if (glitch) mLastRcvSeq++;
 //    if (glitch) std::cout << mLastRcvSeq << "\n";
     return glitch;
 };
