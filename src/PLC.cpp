@@ -200,16 +200,14 @@ Regulator(rcvChannels, bit_res, FPP, qLen, bqLen, sample_rate),
     // lateMod = late.size();
     latePtr = 0;
     mNotTrained = 0;
-    mGlitchSeries = 0;
 }
 
-void PLC::burg(bool glitch, bool glitchIgnored) { // generate next bufferfull and convert to short int
+void PLC::burg(bool glitch) { // generate next bufferfull and convert to short int
     bool primed = mPcnt > packetsInThePast;
     for (int ch = 0; ch < channels; ch++) {
         Channel * c = mChanData[ch];
         //////////////////////////////////////
         if (glitch) mTime->trigger();
-        if (glitchIgnored) mTime->glitchIgnored();
 
         for (int i = 0; i < fpp; i++) {
             double tmp = sin( c->fakeNowPhasor );
@@ -299,10 +297,10 @@ void PLC::burg(bool glitch, bool glitchIgnored) { // generate next bufferfull an
         if (glitch) mTime->collect();
     }
     // if (Hapitrip::as.dVerbose)
-        if (!(mPcnt%300)) std::cout << "avg " << mTime->avg()
-                      << " glitches " << mTime->glitches()
-                      << " glitches ignored " << mTime->glitchIgnoreds()
-                      << " \n";
+    if (!(mPcnt%300)) std::cout << "avg " << mTime->avg()
+                  << " glitches " << mTime->glitches()
+                  << " \n";
+    mPcnt++;
 }
 
 PLC::~PLC(){
@@ -364,16 +362,23 @@ void PLC::readSlotNonBlocking(int8_t* ptrToReadSlot)
 //        return;
 //    }
     // use jack callback thread to perform PLC
-    
-    zeroTmpFloatBuf();
-    bool glitch = pullPacket();
-    if (glitch) mGlitchSeries++; else mGlitchSeries = 0;
-    bool glitchIgnored = false;
-    if (mGlitchSeries > 2) { glitch = false; glitchIgnored = true; }
-    toFloatBuf( (qint16*) mSlots[ 0 ]);
-    burg( glitch, glitchIgnored );
-    fromFloatBuf( (qint16*) ptrToReadSlot);
-    mPcnt++;
+    {
+        const QMutexLocker locker(&mutexRcv);
+         if (mRptr == mWptr) {
+            burg( true );
+            fromFloatBuf((qint16 *)ptrToReadSlot);
+            mWptr += mLag;
+            mWptr %= mRing;
+            // std::cout << mWptr  << "\n";
+         } else {
+            toFloatBuf((qint16 *)mRingBuffer[mRptr]);
+            burg( false );
+            mRptr++;
+            mRptr %= mRing;
+         }
+
+        fromFloatBuf((qint16 *)ptrToReadSlot);
+    } 
 }
 
 //*******************************************************************************

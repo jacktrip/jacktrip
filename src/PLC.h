@@ -5,6 +5,7 @@
 #include <QElapsedTimer>
 //JT needs
 #include "Regulator.h"
+#include <QMutex>
 
 using namespace std;
 //HT class BurgAlgorithm
@@ -29,7 +30,6 @@ class Time {
     double accum = 0.0;
     int cnt = 0;
     int glitchCnt = 0;
-    int glitchIgnoredCnt = 0;
     double tmpTime = 0.0;
 public:
     QElapsedTimer mCallbackTimer; // for rcvElapsedTime
@@ -56,17 +56,9 @@ public:
         tmpTime = mCallbackTimer.nsecsElapsed();
         glitchCnt++;
     }
-    void glitchIgnored() {
-        glitchIgnoredCnt++;
-    }
     int glitches() {
         int tmp = glitchCnt;
         glitchCnt = 0;
-        return tmp;
-    }
-    int glitchIgnoreds() {
-        int tmp = glitchIgnoredCnt;
-        glitchIgnoredCnt = 0;
         return tmp;
     }
 };
@@ -112,7 +104,7 @@ int rcvChannels, int bit_res, int FPP, int qLen, int bqLen, int sample_rate);
     //                   unsigned int nBufferFrames, double streamTime,
     //                   RtAudioStreamStatus, void *bytesInfoFromStreamOpen);
     void straightWire(qint16 *out, qint16 *in, bool glitch); // generate a signal
-    void burg(bool glitch, bool glitchIgnored); // generate a signal
+    void burg(bool glitch); // generate a signal
     void zeroTmpFloatBuf();
     void toFloatBuf(qint16 *in);
     void fromFloatBuf(qint16 *out);
@@ -143,8 +135,14 @@ int rcvChannels, int bit_res, int FPP, int qLen, int bqLen, int sample_rate);
 //HT UDP
     int mRcvSeq; // sequence number read from the header of the ingoing packet
     int mLastRcvSeq; // outgoing to audio
+    QMutex mutexRcv; // for rcv
+    std::vector<int8_t *> mRingBuffer; // ring buffer
+    int mWptr; // ring buffer write pointer
+    int mRptr; // ring buffer read pointer
+    int mLag; // ring buffer pointer default separation
+    int mRing; // ring buffer length in number of packets
+
 //HT Audio
-    int mGlitchSeries;
     bool insertSlotNonBlocking(const int8_t* ptrToSlot, int len,
                                        [[maybe_unused]] int lostLen, int seq_num);
 
