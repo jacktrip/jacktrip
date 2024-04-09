@@ -363,7 +363,7 @@ void PLC::readSlotNonBlocking(int8_t* ptrToReadSlot)
 //    }
     // use jack callback thread to perform PLC
     {
-        const QMutexLocker locker(&mutexRcv);
+//        const QMutexLocker locker(&mutexRcv);
          if (mRptr == mWptr) {
             burg( true );
             fromFloatBuf((qint16 *)ptrToReadSlot);
