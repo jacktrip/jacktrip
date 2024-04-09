@@ -95,7 +95,7 @@ class PLC : public Regulator {
     // for insertion in test points
 public:
 //HT     PLC(int chans, int fpp, int bps, int packetsInThePast);
-    PLC(int chans, int fpp, int bps, int packetsInThePast,
+    PLC(int chans, int fpp, int bps, int packetsInThePast, int ringBufferLength, int ringBufferLag,
 //JT
 int rcvChannels, int bit_res, int FPP, int qLen, int bqLen, int sample_rate);
     ~PLC();
