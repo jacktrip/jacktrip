@@ -141,6 +141,7 @@ int rcvChannels, int bit_res, int FPP, int qLen, int bqLen, int sample_rate);
     int mRptr; // ring buffer read pointer
     int mLag; // ring buffer pointer default separation
     int mRing; // ring buffer length in number of packets
+    int mAudioDataLen;
 
 //HT Audio
     bool insertSlotNonBlocking(const int8_t* ptrToSlot, int len,

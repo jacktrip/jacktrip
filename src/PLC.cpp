@@ -192,14 +192,14 @@ Regulator(rcvChannels, bit_res, FPP, qLen, bqLen, sample_rate),
     mNotTrained = 0;
     
         // setup ring buffer
-    int audioDataLen = fpp * channels * (bps / 8);
+    mAudioDataLen = fpp * channels * (bps / 8);
     mRing = ringBufferLength;
     mLag = ringBufferLag;
     mWptr = mRing / 2;
     mRptr = mWptr - mLag;
     for (int i = 0; i < mRing; i++) {
-        int8_t *tmp = new int8_t[audioDataLen];
-        for (int j = 0; j < audioDataLen; j++)
+        int8_t *tmp = new int8_t[mAudioDataLen];
+        for (int j = 0; j < mAudioDataLen; j++)
             tmp[j] = 0;
         mRingBuffer.push_back(tmp);
     }
@@ -397,8 +397,10 @@ void PLC::pushPacket(const int8_t* buf, int seq_num)
 //    // if (seq_num==0) return;   // impose regular loss
 //    mIncomingTiming[seq_num] =
 //        mMsecTolerance + (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
-    memcpy(mSlots[ 0 ], buf, mBytes);
-    mRcvSeq = seq_num;
+        mRcvSeq = seq_num;
+        memcpy(mRingBuffer[mWptr], buf, mAudioDataLen); // put in ring
+        mWptr++;
+        mWptr %= mRing;
 };
 
 //*******************************************************************************
