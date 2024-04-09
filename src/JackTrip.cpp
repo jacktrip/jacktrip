@@ -42,8 +42,8 @@
 #endif
 #include "Auth.h"
 #include "JitterBuffer.h"
-#include "Regulator.h"
 #include "PLC.h"
+#include "Regulator.h"
 #include "RingBufferWavetable.h"
 #include "UdpDataProtocol.h"
 #include "jacktrip_globals.h"
@@ -448,16 +448,17 @@ void JackTrip::setupRingBuffers()
             }
 
         } else if (mBufferStrategy == 5) {
-//HT        new PLC(channels, fpp, bps, packetsInThePast);
-//JT  
+// HT        new PLC(channels, fpp, bps, packetsInThePast);
+// JT
 #define NUMPACKETSINTHEPAST 2
-#define BITRESOLUTION16 16
-#define RINGBUFFERLENGTH 300
-#define RINGBUFFERLAG 1
+#define BITRESOLUTION16     16
+#define RINGBUFFERLENGTH    300
+#define RINGBUFFERLAG       1
 
-            PLC* plc = new PLC(mNumAudioChansOut, mAudioBufferSize, BITRESOLUTION16, NUMPACKETSINTHEPAST,
-                RINGBUFFERLENGTH, RINGBUFFERLAG,
-                mNumAudioChansOut, mAudioBitResolution, mAudioBufferSize, mBufferQueueLength, mBroadcastQueueLength, mSampleRate);
+            PLC* plc = new PLC(mNumAudioChansOut, mAudioBufferSize, BITRESOLUTION16,
+                               NUMPACKETSINTHEPAST, RINGBUFFERLENGTH, RINGBUFFERLAG,
+                               mNumAudioChansOut, mAudioBitResolution, mAudioBufferSize,
+                               mBufferQueueLength, mBroadcastQueueLength, mSampleRate);
             mReceiveRingBuffer = plc;
             cout << "Using PLC with buffer strategy 5 " << mBufferStrategy
                  << "-- PLC with 'PLC' class " << endl;
