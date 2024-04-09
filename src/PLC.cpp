@@ -368,13 +368,14 @@ void PLC::readSlotNonBlocking(int8_t* ptrToReadSlot)
     // use jack callback thread to perform PLC
     {
 //        const QMutexLocker locker(&mutexRcv);
-         if (mRptr == mWptr) {
+// need to distinguish wraparound from big underrun
+        int cadence = mWptr - mRptr;
+        if (cadence < -mRing/2) cadence += mRing;
+        if (cadence <= 0) {
             burg( true );
-            fromFloatBuf((qint16 *)ptrToReadSlot);
-            mWptr += mLag;
+            mWptr = mRptr + mLag;
             mWptr %= mRing;
-            // std::cout << mWptr  << "\n";
-         } else {
+        } else {
             toFloatBuf((qint16 *)mRingBuffer[mRptr]);
             burg( false );
             mRptr++;
