@@ -164,7 +164,7 @@ PLC::PLC(int chans, int fpp, int bps, int packetsInThePast, int ringBufferLength
     , bps(bps)
     , packetsInThePast(packetsInThePast)
 {
-    cout << " --PLC " << channels << " channels\n";
+    cout << " --PLC " << packetsInThePast << " packetsInThePast\t" << channels << " channels\n";
     mPcnt = 0;
     mTime = new Time();
     mTime->start();
