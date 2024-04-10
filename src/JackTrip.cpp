@@ -452,7 +452,7 @@ void JackTrip::setupRingBuffers()
 // JT
 #define NUMPACKETSINTHEPAST 2
 #define BITRESOLUTION16     16
-#define RINGBUFFERLENGTH    4
+#define RINGBUFFERLENGTH    10
 #define RINGBUFFERLAG       1
 
             PLC* plc = new PLC(mNumAudioChansOut, mAudioBufferSize, BITRESOLUTION16,
