@@ -457,7 +457,7 @@ void JackTrip::setupRingBuffers()
 #define RINGBUFFERPTRRANGE  1024
 
             PLC* plc = new PLC(mNumAudioChansOut, mAudioBufferSize, BITRESOLUTION16,
-                               NUMPACKETSINTHEPAST, RINGBUFFERLENGTH, RINGBUFFERLAG,
+                               NUMPACKETSINTHEPAST, mBufferQueueLength, RINGBUFFERLAG,
                                RINGBUFFERPTRRANGE, mNumAudioChansOut, mAudioBitResolution,
                                mAudioBufferSize, mBufferQueueLength,
                                mBroadcastQueueLength, mSampleRate);
