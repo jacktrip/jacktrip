@@ -424,7 +424,7 @@ void PLC::pushPacket(const int8_t* buf, int seq_num)
     //    mIncomingTiming[seq_num] =
     //        mMsecTolerance + (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
     mRcvSeq = seq_num;
-    memcpy(mRingBuffer[mWptr], buf, mAudioDataLen);  // put in ring
+    memcpy(mRingBuffer[mWptr % mRing], buf, mAudioDataLen);  // put in ring
     mWptr++;
     mWptr %= mRingBufferPtrRange;
 };
