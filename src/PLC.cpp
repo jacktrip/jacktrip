@@ -155,7 +155,7 @@ Channel::Channel(int fpp, int upToNow, int packetsInThePast)
 }
 
 PLC::PLC(int chans, int fpp, int bps, int packetsInThePast, int ringBufferLength,
-         int ringBufferLag,
+         int ringBufferLag, int ringBufferPtrRange,
          // JT
          int rcvChannels, int bit_res, int FPP, int qLen, int bqLen, int sample_rate)
     : Regulator(rcvChannels, bit_res, FPP, qLen, bqLen, sample_rate)
@@ -164,7 +164,8 @@ PLC::PLC(int chans, int fpp, int bps, int packetsInThePast, int ringBufferLength
     , bps(bps)
     , packetsInThePast(packetsInThePast)
 {
-    cout << " --PLC " << packetsInThePast << " packetsInThePast\t" << channels << " channels\n";
+    cout << " --PLC " << packetsInThePast << " packetsInThePast\t" << channels
+         << " channels\n";
     mPcnt = 0;
     mTime = new Time();
     mTime->start();
@@ -195,11 +196,12 @@ PLC::PLC(int chans, int fpp, int bps, int packetsInThePast, int ringBufferLength
     mNotTrained = 0;
 
     // setup ring buffer
-    mAudioDataLen = fpp * channels * (bps / 8);
-    mRing         = ringBufferLength;
-    mLag          = ringBufferLag;
-    mWptr         = mRing / 2;
-    mRptr         = mWptr - mLag;
+    mAudioDataLen       = fpp * channels * (bps / 8);
+    mRing               = ringBufferLength;
+    mLag                = ringBufferLag;
+    mRingBufferPtrRange = ringBufferPtrRange;
+    mRptr               = 0;
+    mWptr               = mRptr + mLag;
     for (int i = 0; i < mRing; i++) {
         int8_t* tmp = new int8_t[mAudioDataLen];
         for (int j = 0; j < mAudioDataLen; j++)
@@ -356,9 +358,9 @@ void PLC::fromFloatBuf(qint16* out)
 
 void Channel::ringBufferPush()
 {  // push received packet to ring
-    mPacketRing[mWptr] = mTmpFloatBuf;
+    mPacketRing[mWptr % mRing] = mTmpFloatBuf;
     mWptr++;
-    mWptr %= mRing;
+    mWptr %= mRingBufferPtrRange;
 }
 
 void Channel::ringBufferPull(int past)
@@ -387,21 +389,22 @@ void PLC::readSlotNonBlocking(int8_t* ptrToReadSlot)
     //        return;
     //    }
     // use jack callback thread to perform PLC
+
     {
         //        const QMutexLocker locker(&mutexRcv);
         // need to distinguish wraparound from big underrun
         int cadence = mWptr - mRptr;
-        if (cadence < -mRing / 2)
-            cadence += mRing;
+        if (cadence < -mRingBufferPtrRange / 2)
+            cadence += mRingBufferPtrRange;
         if (cadence <= 0) {
             burg(true);
             mWptr = mRptr + mLag;
-            mWptr %= mRing;
+            mWptr %= mRingBufferPtrRange;
         } else {
-            toFloatBuf((qint16*)mRingBuffer[mRptr]);
+            toFloatBuf((qint16*)mRingBuffer[mRptr % mRing]);
             burg(false);
             mRptr++;
-            mRptr %= mRing;
+            mRptr %= mRingBufferPtrRange;
         }
 
         fromFloatBuf((qint16*)ptrToReadSlot);

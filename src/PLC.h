@@ -109,7 +109,7 @@ class PLC : public Regulator
    public:
     // HT     PLC(int chans, int fpp, int bps, int packetsInThePast);
     PLC(int chans, int fpp, int bps, int packetsInThePast, int ringBufferLength,
-        int ringBufferLag,
+        int ringBufferLag, int ringBufferPtrRange,
         // JT
         int rcvChannels, int bit_res, int FPP, int qLen, int bqLen, int sample_rate);
     ~PLC();

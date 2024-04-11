@@ -454,11 +454,13 @@ void JackTrip::setupRingBuffers()
 #define BITRESOLUTION16     16
 #define RINGBUFFERLENGTH    10
 #define RINGBUFFERLAG       1
+#define RINGBUFFERPTRRANGE  1024
 
             PLC* plc = new PLC(mNumAudioChansOut, mAudioBufferSize, BITRESOLUTION16,
                                NUMPACKETSINTHEPAST, RINGBUFFERLENGTH, RINGBUFFERLAG,
-                               mNumAudioChansOut, mAudioBitResolution, mAudioBufferSize,
-                               mBufferQueueLength, mBroadcastQueueLength, mSampleRate);
+                               RINGBUFFERPTRRANGE, mNumAudioChansOut, mAudioBitResolution,
+                               mAudioBufferSize, mBufferQueueLength,
+                               mBroadcastQueueLength, mSampleRate);
             mReceiveRingBuffer = plc;
             cout << "Using PLC with buffer strategy 5 " << mBufferStrategy
                  << "-- PLC with 'PLC' class " << endl;
