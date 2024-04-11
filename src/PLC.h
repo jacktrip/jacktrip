@@ -157,6 +157,7 @@ class PLC : public Regulator
     int mRptr;                         // ring buffer read pointer
     int mLag;                          // ring buffer pointer default separation
     int mRing;                         // ring buffer length in number of packets
+    int mRingBufferPtrRange;           // ring buffer ptr range
     int mAudioDataLen;
 
     // HT Audio

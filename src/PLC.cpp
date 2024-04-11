@@ -360,7 +360,7 @@ void Channel::ringBufferPush()
 {  // push received packet to ring
     mPacketRing[mWptr % mRing] = mTmpFloatBuf;
     mWptr++;
-    mWptr %= mRingBufferPtrRange;
+    mWptr %= mRing;
 }
 
 void Channel::ringBufferPull(int past)
@@ -426,7 +426,7 @@ void PLC::pushPacket(const int8_t* buf, int seq_num)
     mRcvSeq = seq_num;
     memcpy(mRingBuffer[mWptr], buf, mAudioDataLen);  // put in ring
     mWptr++;
-    mWptr %= mRing;
+    mWptr %= mRingBufferPtrRange;
 };
 
 //*******************************************************************************
