@@ -109,7 +109,7 @@ class PLC : public Regulator
    public:
     // HT     PLC(int chans, int fpp, int bps, int packetsInThePast);
     PLC(int chans, int fpp, int bps, int packetsInThePast, int ringBufferLength,
-        int ringBufferLag, int ringBufferPtrRange,
+        int ringBufferPtrRange,
         // JT
         int rcvChannels, int bit_res, int FPP, int qLen, int bqLen, int sample_rate);
     ~PLC();
@@ -155,7 +155,6 @@ class PLC : public Regulator
     std::vector<int8_t*> mRingBuffer;  // ring buffer
     int mWptr;                         // ring buffer write pointer
     int mRptr;                         // ring buffer read pointer
-    int mLag;                          // ring buffer pointer default separation
     int mRing;                         // ring buffer length in number of packets
     int mRingBufferPtrRange;           // ring buffer ptr range
     int mAudioDataLen;

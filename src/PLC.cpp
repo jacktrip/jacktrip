@@ -155,7 +155,7 @@ Channel::Channel(int fpp, int upToNow, int packetsInThePast)
 }
 
 PLC::PLC(int chans, int fpp, int bps, int packetsInThePast, int ringBufferLength,
-         int ringBufferLag, int ringBufferPtrRange,
+         int ringBufferPtrRange,
          // JT
          int rcvChannels, int bit_res, int FPP, int qLen, int bqLen, int sample_rate)
     : Regulator(rcvChannels, bit_res, FPP, qLen, bqLen, sample_rate)
@@ -198,10 +198,9 @@ PLC::PLC(int chans, int fpp, int bps, int packetsInThePast, int ringBufferLength
     // setup ring buffer
     mAudioDataLen       = fpp * channels * (bps / 8);
     mRing               = ringBufferLength;
-    mLag                = ringBufferLag;
     mRingBufferPtrRange = ringBufferPtrRange;
     mRptr               = 0;
-    mWptr               = mRptr + mLag;
+    mWptr               = mRptr;
     for (int i = 0; i < mRing; i++) {
         int8_t* tmp = new int8_t[mAudioDataLen];
         for (int j = 0; j < mAudioDataLen; j++)
@@ -398,8 +397,6 @@ void PLC::readSlotNonBlocking(int8_t* ptrToReadSlot)
             cadence += mRingBufferPtrRange;
         if (cadence <= 0) {
             burg(true);
-            mWptr = mRptr + mLag;
-            mWptr %= mRingBufferPtrRange;
         } else {
             toFloatBuf((qint16*)mRingBuffer[mRptr % mRing]);
             burg(false);
