@@ -159,21 +159,21 @@ class PLC : public Regulator
     /** \brief Same as insertSlotBlocking but non-blocking (asynchronous)
      * \param ptrToSlot Pointer to slot to insert into the RingBuffer
      */
-    /*
+
     virtual bool insertSlotNonBlocking(const int8_t* ptrToSlot, int len,
                                        [[maybe_unused]] int lostLen, int seq_num)
     {
-        //        shimFPP(ptrToSlot, len, seq_num); // use Regulator i.e., bufStrategy 4
-        RingBuffer::insertSlotNonBlocking(ptrToSlot, len, lostLen, seq_num);  // use
-    RingBuffer i.e., bufStrategy 0 return (true);
+        shimFPP(ptrToSlot, len, seq_num);  // use Regulator i.e., bufStrategy 4
+        //        RingBuffer::insertSlotNonBlocking(ptrToSlot, len, lostLen, seq_num);  //
+        //        use RingBuffer i.e., bufStrategy 0 return (true);
+        return true;
     }
-    */
 
     /** \brief Same as insertSlotBlocking but non-blocking (asynchronous)
      * \param ptrToSlot Pointer to slot to insert into the RingBuffer
      */
-    virtual bool insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int lostLen,
-                                       int seq_num);
+    virtual bool insertSlotNonBlockingRB(const int8_t* ptrToSlot, int len, int lostLen,
+                                         int seq_num);
     /// \brief Resets the ring buffer for writes over-flows non-blocking
     void overflowReset();
 
@@ -185,9 +185,15 @@ class PLC : public Regulator
     /** \brief Same as readSlotBlocking but non-blocking (asynchronous)
      * \param ptrToReadSlot Pointer to read slot from the RingBuffer
      */
-    virtual void readSlotNonBlocking(int8_t* ptrToReadSlot);
+    virtual void readSlotNonBlockingRB(int8_t* ptrToReadSlot);
     /// \brief Resets the ring buffer for reads under-runs non-blocking
     void underrunReset();
+    /** \brief Same as readSlotBlocking but non-blocking (asynchronous)
+     * \param ptrToReadSlot Pointer to read slot from the RingBuffer
+     */
+    virtual void readSlotNonBlocking(int8_t* ptrToReadSlot);
+    void pullPacket();
+    void processPacket(bool glitch);
 };
 
 #endif  // PLC_H

@@ -383,7 +383,7 @@ void PLC::setUnderrunReadSlot(int8_t* ptrToReadSlot)
 }
 
 //*******************************************************************************
-void PLC::readSlotNonBlocking(int8_t* ptrToReadSlot)
+void PLC::readSlotNonBlockingRB(int8_t* ptrToReadSlot)
 {
     QMutexLocker locker(&mMutex);  // lock the mutex
     ++mReadsNew;
@@ -459,8 +459,8 @@ void PLC::overflowReset()
 }
 
 //*******************************************************************************
-bool PLC::insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int lostLen,
-                                [[maybe_unused]] int seq_num)
+bool PLC::insertSlotNonBlockingRB(const int8_t* ptrToSlot, int len, int lostLen,
+                                  [[maybe_unused]] int seq_num)
 {
     //    if (!(seq_num % 100))  // impose underrun
     //        return true;
@@ -483,8 +483,8 @@ bool PLC::insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int lostLen,
     /// \todo It may be better here to insert the slot anyways,
     /// instead of not writing anything
     if (mFullSlots == RingBuffer::mNumSlots) {
-        std::cout << "OUTPUT OVERFLOW NON BLOCKING = " << RingBuffer::mNumSlots
-                  << std::endl;
+        //        std::cout << "OUTPUT OVERFLOW NON BLOCKING = " << RingBuffer::mNumSlots
+        //        << std::endl;
         overflowReset();
         return true;
     }
@@ -498,3 +498,119 @@ bool PLC::insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int lostLen,
     mBufferIsNotEmpty.wakeAll();
     return true;
 }
+
+void PLC::readSlotNonBlocking(int8_t* ptrToReadSlot)
+{
+    if (!mFPPratioIsSet) {
+        // audio callback before receiving first packet from peer
+        // nothing is initialized yet, so just return silence
+        memcpy(ptrToReadSlot, mZeros, mBytes);
+        return;
+    }
+    // use jack callback thread to perform PLC
+    pullPacket();  // calls burg
+    fromFloatBuf((qint16*)mXfrBuffer);
+    memcpy(ptrToReadSlot, mXfrBuffer, mBytes);
+}
+
+//*******************************************************************************
+void PLC::processPacket(bool glitch)
+{
+    // mXfrBuffer holds input
+    double tmp = 0.0;
+    if (glitch)
+        tmp = (double)mIncomingTimer.nsecsElapsed();
+    //    for (int ch = 0; ch < mNumChannels; ch++)
+    //        processChannel(ch, glitch, mPacketCnt, mLastWasGlitch);
+    //    mLastWasGlitch = glitch;
+    mPacketCnt++;
+    // 32 bit is good for days:  (/ (* (- (expt 2 32) 1) (/ 32 48000.0)) (* 60 60 24))
+    zeroTmpFloatBuf();  // ahead of either call to burg
+    memcpy(mTmpByteBuf, mXfrBuffer, mBytes);
+    toFloatBuf((qint16*)mTmpByteBuf);
+    burg(glitch);
+
+    if (glitch) {
+        double tmp2 = (double)mIncomingTimer.nsecsElapsed() - tmp;
+        tmp2 /= 1000000.0;
+        pullStat->lastPLCdspElapsed = tmp2;
+    }
+}
+
+//*******************************************************************************
+void PLC::pullPacket()
+{
+    const double now       = (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
+    const int lastSeqNumIn = mLastSeqNumIn.load(std::memory_order_acquire);
+    mSkip                  = 0;
+
+    if ((lastSeqNumIn == -1) || (!mFPPratioIsSet)) {
+        goto ZERO_OUTPUT;
+    } else if (lastSeqNumIn == mLastSeqNumOut) {
+        goto UNDERRUN;
+    } else {
+        // calculate how many new packets we want to look at to
+        // find the next packet to pull
+        int new_pkts = lastSeqNumIn - mLastSeqNumOut;
+        if (new_pkts < 0)
+            new_pkts += mNumSlots;
+
+        // iterate through each new packet
+        for (int i = new_pkts - 1; i >= 0; i--) {
+            int next = lastSeqNumIn - i;
+            if (next < 0)
+                next += mNumSlots;
+            if (mFPPratioNumerator > 1) {
+                // time for assembly has passed; reset for next time
+                mAssemblyCounts[next] = 0;
+            }
+            if (mLastSeqNumOut != -1) {
+                // account for missing packets
+                if (mIncomingTiming[next] < mIncomingTiming[mLastSeqNumOut])
+                    continue;
+                // count how many we have skipped
+                mSkip = next - mLastSeqNumOut - 1;
+                if (mSkip < 0)
+                    mSkip += mNumSlots;
+            }
+            // set next as the best candidate
+            mLastSeqNumOut = next;
+            // if next timestamp < now, it is too old based upon tolerance
+            if (mIncomingTiming[mLastSeqNumOut] >= now) {
+                // next is the best candidate
+                memcpy(mXfrBuffer, mSlots[mLastSeqNumOut], mBytes);
+                goto PACKETOK;
+            }
+        }
+
+        // no viable candidate
+        goto UNDERRUN;
+    }
+
+PACKETOK : {
+    if (mSkip) {
+        processPacket(true);
+        pullStat->plcOverruns += mSkip;
+    } else
+        processPacket(false);
+    goto OUTPUT;
+}
+
+UNDERRUN : {
+    pullStat->plcUnderruns++;  // count late
+    if ((mLastSeqNumOut == lastSeqNumIn)
+        && ((now - mIncomingTiming[mLastSeqNumOut]) > gUdpWaitTimeout)) {
+        goto ZERO_OUTPUT;
+    }
+    // "good underrun", not a stuck client
+    processPacket(true);
+    goto OUTPUT;
+}
+
+ZERO_OUTPUT:
+    memcpy(mXfrBuffer, mZeros, mBytes);
+
+OUTPUT:
+    pullStat->tick();
+    return;
+};
