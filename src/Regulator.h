@@ -58,6 +58,7 @@
 
 // forward declaration
 class RegulatorWorker;
+#define BurgAlgorithm BurgAlgorithmJT
 
 class BurgAlgorithm
 {
@@ -253,7 +254,6 @@ class Regulator : public RingBuffer
     RegulatorWorker* mRegulatorWorkerPtr;
 
     friend class RegulatorWorker;
-    friend class PLC;
 };
 
 class RegulatorWorker : public QObject
