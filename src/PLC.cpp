@@ -376,7 +376,7 @@ void Channel::ringBufferPull(int past)
 //*******************************************************************************
 void PLC::setUnderrunReadSlot(int8_t* ptrToReadSlot)
 {
-    std::memset(ptrToReadSlot, 0, mSlotSize);
+    //    std::memset(ptrToReadSlot, 0, mSlotSize);
     burg(true);
     fromFloatBuf((qint16*)ptrToReadSlot);
 }
@@ -420,4 +420,18 @@ void PLC::readSlotNonBlocking(int8_t* ptrToReadSlot)
     mFullSlots--;  // update full slots
     // Wake threads waitng for bufferIsNotFull condition
     mBufferIsNotFull.wakeAll();
+}
+
+//*******************************************************************************
+// Under-run happens when there's nothing to read.
+void PLC::underrunReset()
+{
+    // Advance the write pointer 1/2 the ring buffer
+    // mWritePosition = ( mReadPosition + ( (mNumSlots/2) * mSlotSize ) ) % mTotalSize;
+    // mWritePosition = ( mWritePosition + ( (mNumSlots/2) * mSlotSize ) ) % mTotalSize;
+    // mFullSlots += mNumSlots/2;
+    // There's nothing new to read, so we clear the whole buffer (Set the entire buffer to
+    // 0)
+    //    std::memset(mRingBuffer, 0, mTotalSize);
+    ++mUnderrunsNew;
 }

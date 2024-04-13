@@ -176,6 +176,8 @@ class PLC : public Regulator
      * \param ptrToReadSlot Pointer to read slot from the RingBuffer
      */
     virtual void readSlotNonBlocking(int8_t* ptrToReadSlot);
+    /// \brief Resets the ring buffer for reads under-runs non-blocking
+    void underrunReset();
 };
 
 #endif  // PLC_H
