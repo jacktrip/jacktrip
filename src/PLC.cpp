@@ -173,8 +173,9 @@ PLC::PLC(int chans, int fpp, int bps, int packetsInThePast,
     , bps(bps)
     , packetsInThePast(packetsInThePast)
 {
-    cout << " --PLC " << packetsInThePast << " packetsInThePast\t" << channels
-         << " channels\n";
+    cout << " --PLC " << ring_buffer_audio_output_slot_size
+         << " ring_buffer_audio_output_slot_size\t" << packetsInThePast
+         << " packetsInThePast\t" << channels << " channels\n";
     mPcnt = 0;
     mTime = new Time();
     mTime->start();
@@ -394,11 +395,16 @@ void PLC::readSlotNonBlocking(int8_t* ptrToReadSlot)
 
     zeroTmpFloatBuf();  // ahead of either call to burg
 
+    if ((mPcnt % 100) == 99) {  // impose overflow
+        mPcnt++;
+        fromFloatBuf((qint16*)ptrToReadSlot);
+        return;
+    }
     // Check if there are slots available to read
     // If the Ringbuffer is empty, it returns a buffer of zeros and rests the buffer
     if (mFullSlots <= 0) {
         // Returns a buffer of zeros if there's nothing to read
-        // std::cerr << "READ UNDER-RUN NON BLOCKING = " << mNumSlots << endl;
+        // std::cerr << "READ UNDER-RUN NON BLOCKING = " << RingBuffer::mNumSlots << endl;
         // std::memset(ptrToReadSlot, 0, mSlotSize);
         setUnderrunReadSlot(ptrToReadSlot);
         underrunReset();
@@ -427,11 +433,66 @@ void PLC::readSlotNonBlocking(int8_t* ptrToReadSlot)
 void PLC::underrunReset()
 {
     // Advance the write pointer 1/2 the ring buffer
-    // mWritePosition = ( mReadPosition + ( (mNumSlots/2) * mSlotSize ) ) % mTotalSize;
-    // mWritePosition = ( mWritePosition + ( (mNumSlots/2) * mSlotSize ) ) % mTotalSize;
-    // mFullSlots += mNumSlots/2;
-    // There's nothing new to read, so we clear the whole buffer (Set the entire buffer to
-    // 0)
+    // mWritePosition = ( mReadPosition + ( (RingBuffer::mNumSlots/2) * mSlotSize ) ) %
+    // mTotalSize; mWritePosition = ( mWritePosition + ( (RingBuffer::mNumSlots/2) *
+    // mSlotSize ) ) % mTotalSize; mFullSlots += RingBuffer::mNumSlots/2; There's nothing
+    // new to read, so we clear the whole buffer (Set the entire buffer to 0)
     //    std::memset(mRingBuffer, 0, mTotalSize);
     ++mUnderrunsNew;
+}
+
+//*******************************************************************************
+// Over-flow happens when there's no space to write more slots.
+void PLC::overflowReset()
+{
+    // Advance the read pointer 1/2 the ring buffer
+    // mReadPosition = ( mWritePosition + ( (RingBuffer::mNumSlots/2) * mSlotSize ) ) %
+    // mTotalSize;
+    int d         = RingBuffer::mNumSlots / 2;
+    mReadPosition = (mReadPosition + (d * mSlotSize)) % mTotalSize;
+    mFullSlots -= d;
+    mOverflows += d + 1;
+    mBufDecOverflow += d + 1;
+    mLevelCur -= d;
+}
+
+//*******************************************************************************
+bool PLC::insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int lostLen,
+                                [[maybe_unused]] int seq_num)
+{
+    //    if (!(seq_num % 100))  // impose underrun
+    //        return true;
+    if (len != mSlotSize && 0 != len) {
+        // RingBuffer does not support mixed buf sizes
+        return false;
+    }
+    QMutexLocker locker(&mMutex);  // lock the mutex
+    if (0 < lostLen) {
+        int lostCount = lostLen / mSlotSize;
+        mBufDecPktLoss += lostCount;
+        mSkewRaw -= lostCount;
+        mLevelCur -= lostCount;
+    }
+    updateReadStats();
+
+    // Check if there is space available to write a slot
+    // If the Ringbuffer is full, it returns without writing anything
+    // and resets the buffer
+    /// \todo It may be better here to insert the slot anyways,
+    /// instead of not writing anything
+    if (mFullSlots == RingBuffer::mNumSlots) {
+        std::cout << "OUTPUT OVERFLOW NON BLOCKING = " << RingBuffer::mNumSlots
+                  << std::endl;
+        overflowReset();
+        return true;
+    }
+
+    // Copy mSlotSize bytes to mRingBuffer
+    std::memcpy(mRingBuffer + mWritePosition, ptrToSlot, mSlotSize);
+    // Update write position
+    mWritePosition = (mWritePosition + mSlotSize) % mTotalSize;
+    mFullSlots++;  // update full slots
+    // Wake threads waitng for bufferIsNotFull condition
+    mBufferIsNotEmpty.wakeAll();
+    return true;
 }

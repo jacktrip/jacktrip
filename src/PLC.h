@@ -159,14 +159,24 @@ class PLC : public Regulator
     /** \brief Same as insertSlotBlocking but non-blocking (asynchronous)
      * \param ptrToSlot Pointer to slot to insert into the RingBuffer
      */
+    /*
     virtual bool insertSlotNonBlocking(const int8_t* ptrToSlot, int len,
                                        [[maybe_unused]] int lostLen, int seq_num)
     {
         //        shimFPP(ptrToSlot, len, seq_num); // use Regulator i.e., bufStrategy 4
-        RingBuffer::insertSlotNonBlocking(ptrToSlot, len, lostLen,
-                                          seq_num);  // use RingBuffer i.e., bufStrategy 0
-        return (true);
+        RingBuffer::insertSlotNonBlocking(ptrToSlot, len, lostLen, seq_num);  // use
+    RingBuffer i.e., bufStrategy 0 return (true);
     }
+    */
+
+    /** \brief Same as insertSlotBlocking but non-blocking (asynchronous)
+     * \param ptrToSlot Pointer to slot to insert into the RingBuffer
+     */
+    virtual bool insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int lostLen,
+                                       int seq_num);
+    /// \brief Resets the ring buffer for writes over-flows non-blocking
+    void overflowReset();
+
     /** \brief Sets the memory in the Read Slot when uderrun occurs. By default,
      * this sets it to 0. Override this method in a subclass for a different behavior.
      * \param ptrToReadSlot Pointer to read slot from the RingBuffer
