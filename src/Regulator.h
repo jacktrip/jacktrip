@@ -58,7 +58,6 @@
 
 // forward declaration
 class RegulatorWorker;
-#define BurgAlgorithm BurgAlgorithmJT
 
 class BurgAlgorithm
 {
@@ -134,7 +133,8 @@ class Regulator : public RingBuffer
    public:
     /// construct a new regulator
     Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
-              int sample_rate);
+              int sample_rate,
+              int ring_buffer_audio_output_slot_size = 0);
 
     // virtual destructor
     virtual ~Regulator();
@@ -184,8 +184,9 @@ class Regulator : public RingBuffer
     //    virtual QString getStats(uint32_t statCount, uint32_t lostCount);
     virtual bool getStats(IOStat* stat, bool reset);
 
-   private:
+   protected:
     void shimFPP(const int8_t* buf, int len, int seq_num);
+//    private:
     void pushPacket(const int8_t* buf, int seq_num);
     void assemblePacket(const int8_t* buf, int peer_seq_num);
     void pullPacket();

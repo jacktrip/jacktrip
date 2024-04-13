@@ -7,7 +7,8 @@
 // JT needs
 #include <QMutex>
 
-#include "RingBuffer.h"
+#include "Regulator.h"
+#define BurgAlgorithm BurgAlgorithmJT
 
 using namespace std;
 // HT class BurgAlgorithm
@@ -102,16 +103,16 @@ class Channel
 };
 
 // HT class Q_DECL_EXPORT PLC {
-class PLC : public RingBuffer
+class PLC : public Regulator
 {
     // for insertion in test points
    public:
     // HT     PLC(int chans, int fpp, int bps, int packetsInThePast);
-// JT                new RingBuffer(audio_output_slot_size, mBufferQueueLength);
-    PLC(int chans, int fpp, int bps, int packetsInThePast, 
+    PLC(int chans, int fpp, int bps, int packetsInThePast,
         // JT
-int SlotSize, int NumSlots);
-//        int rcvChannels, int bit_res, int FPP, int qLen, int bqLen, int sample_rate);
+        int rcvChannels, int bit_res, int FPP, int qLen, int bqLen, int sample_rate,
+        int ring_buffer_audio_output_slot_size);
+
     ~PLC();
     Time* mTime;
     // int audioCallback(void *outputBuffer, void *inputBuffer,
@@ -147,23 +148,34 @@ int SlotSize, int NumSlots);
     int mRcvSeq;      // sequence number read from the header of the ingoing packet
     int mLastRcvSeq;  // outgoing to audio
     QMutex mutexRcv;  // for rcv
-    std::vector<int8_t*> mRingBufferXXXXX;  // ring buffer conflicts with RingBuffer.h
-    int mWptr;                         // ring buffer write pointer
-    int mRptr;                         // ring buffer read pointer
-    int mRing;                         // ring buffer length in number of packets
-    int mRingBufferPtrRange;           // ring buffer ptr range
     int mAudioDataLen;
+    int8_t* mTmpByteBuf;
+
+    // can hijack unused2 to propagate incoming seq num if needed
+    // option is in UdpDataProtocol
+    // if (!mJackTrip->writeAudioBuffer(src, host_buf_size, last_seq_num))
+    // instead of
+    // if (!mJackTrip->writeAudioBuffer(src, host_buf_size, gap_size))
+    /** \brief Same as insertSlotBlocking but non-blocking (asynchronous)
+     * \param ptrToSlot Pointer to slot to insert into the RingBuffer
+     */
+    virtual bool insertSlotNonBlocking(const int8_t* ptrToSlot, int len,
+                                       [[maybe_unused]] int lostLen, int seq_num)
+    {
+        //        shimFPP(ptrToSlot, len, seq_num); // use Regulator i.e., bufStrategy 4
+        RingBuffer::insertSlotNonBlocking(ptrToSlot, len, lostLen,
+                                          seq_num);  // use RingBuffer i.e., bufStrategy 0
+        return (true);
+    }
     /** \brief Sets the memory in the Read Slot when uderrun occurs. By default,
      * this sets it to 0. Override this method in a subclass for a different behavior.
      * \param ptrToReadSlot Pointer to read slot from the RingBuffer
      */
     virtual void setUnderrunReadSlot(int8_t* ptrToReadSlot);
-    /** \brief Same as insertSlotBlocking but non-blocking (asynchronous)
-     * \param ptrToSlot Pointer to slot to insert into the RingBuffer
+    /** \brief Same as readSlotBlocking but non-blocking (asynchronous)
+     * \param ptrToReadSlot Pointer to read slot from the RingBuffer
      */
-    virtual bool insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int lostLen,
-                                       int seq_num);
-
+    virtual void readSlotNonBlocking(int8_t* ptrToReadSlot);
 };
 
 #endif  // PLC_H

@@ -1,13 +1,13 @@
 #include "PLC.h"
+
+#include <QDebug>
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
 #include <stdexcept>
-#include "JackTrip.h"
 
-#include <QDebug>
-#include <iostream>
+#include "JackTrip.h"
 
 BurgAlgorithm::BurgAlgorithm(size_t size)  // upToNow = packetsInThePast * fpp
 {
@@ -160,13 +160,14 @@ Channel::Channel(int fpp, int upToNow, int packetsInThePast)
     lastWasGlitch = false;
 }
 
-// JT                new RingBuffer(audio_output_slot_size, mBufferQueueLength);
-PLC::PLC(int chans, int fpp, int bps, int packetsInThePast, 
+// JT set ring_buffer_audio_output_slot_size so Regulator initializes RingBuffer base
+// class with slots
+PLC::PLC(int chans, int fpp, int bps, int packetsInThePast,
          // JT
-         int SlotSize, int NumSlots)
-//         int rcvChannels, int bit_res, int FPP, int qLen, int bqLen, int sample_rate)
-    : RingBuffer(SlotSize, NumSlots)
-    // rcvChannels, bit_res, FPP, qLen, bqLen, sample_rate)
+         int rcvChannels, int bit_res, int FPP, int qLen, int bqLen, int sample_rate,
+         int ring_buffer_audio_output_slot_size)
+    : Regulator(rcvChannels, bit_res, FPP, qLen, bqLen, sample_rate,
+                ring_buffer_audio_output_slot_size)
     , channels(chans)
     , fpp(fpp)
     , bps(bps)
@@ -204,17 +205,8 @@ PLC::PLC(int chans, int fpp, int bps, int packetsInThePast,
     mNotTrained = 0;
 
     // setup ring buffer
-    mAudioDataLen       = fpp * channels * (bps / 8);
-    mRing               = 999;
-    mRingBufferPtrRange = 999;
-    mRptr               = 0;
-    mWptr               = mRptr;
-    for (int i = 0; i < mRing; i++) {
-        int8_t* tmp = new int8_t[mAudioDataLen];
-        for (int j = 0; j < mAudioDataLen; j++)
-            tmp[j] = 0;
-        mRingBufferXXXXX.push_back(tmp);
-    }
+    mAudioDataLen = fpp * channels * (bps / 8);
+    mTmpByteBuf   = new int8_t[mAudioDataLen];
 }
 
 void PLC::burg(bool glitch)
@@ -381,54 +373,51 @@ void Channel::ringBufferPull(int past)
     // } else cout << "ring buffer not primed\n";
 }
 
-
 //*******************************************************************************
 void PLC::setUnderrunReadSlot(int8_t* ptrToReadSlot)
 {
     std::memset(ptrToReadSlot, 0, mSlotSize);
-zeroTmpFloatBuf();
-burg( true );
-fromFloatBuf((qint16 *)ptrToReadSlot);
+    burg(true);
+    fromFloatBuf((qint16*)ptrToReadSlot);
 }
 
 //*******************************************************************************
-bool PLC::insertSlotNonBlocking(const int8_t* ptrToSlot, int len, int lostLen,
-                                       [[maybe_unused]] int seq_num)
+void PLC::readSlotNonBlocking(int8_t* ptrToReadSlot)
 {
-    if (len != mSlotSize && 0 != len) {
-        // RingBuffer does not support mixed buf sizes
-        return false;
-    }
     QMutexLocker locker(&mMutex);  // lock the mutex
-    if (0 < lostLen) {
-        int lostCount = lostLen / mSlotSize;
-        mBufDecPktLoss += lostCount;
-        mSkewRaw -= lostCount;
-        mLevelCur -= lostCount;
+    ++mReadsNew;
+    if (mFullSlots < mLevelCur) {
+        mLevelCur = std::max<double>((double)mFullSlots, mLevelCur - mLevelDownRate);
+    } else {
+        mLevelCur = mFullSlots;
     }
-    updateReadStats();
 
-    // Check if there is space available to write a slot
-    // If the Ringbuffer is full, it returns without writing anything
-    // and resets the buffer
-    /// \todo It may be better here to insert the slot anyways,
-    /// instead of not writing anything
-    if (mFullSlots == mNumSlots) {
-        // std::cout << "OUTPUT OVERFLOW NON BLOCKING = " << mNumSlots << std::endl;
-        overflowReset();
-        return true;
+    zeroTmpFloatBuf();  // ahead of either call to burg
+
+    // Check if there are slots available to read
+    // If the Ringbuffer is empty, it returns a buffer of zeros and rests the buffer
+    if (mFullSlots <= 0) {
+        // Returns a buffer of zeros if there's nothing to read
+        // std::cerr << "READ UNDER-RUN NON BLOCKING = " << mNumSlots << endl;
+        // std::memset(ptrToReadSlot, 0, mSlotSize);
+        setUnderrunReadSlot(ptrToReadSlot);
+        underrunReset();
+        return;
     }
-toFloatBuf((qint16 *) mRingBuffer + mWritePosition);
-burg( false );
-fromFloatBuf((qint16 *)ptrToSlot);
 
-    // Copy mSlotSize bytes to mRingBuffer
-//    std::memcpy(mRingBuffer + mWritePosition, ptrToSlot, mSlotSize);
+    // Copy mSlotSize bytes to ReadSlot
+    // std::memcpy(ptrToReadSlot, mRingBuffer + mReadPosition, mSlotSize);
+    std::memcpy(mTmpByteBuf, mRingBuffer + mReadPosition, mSlotSize);
+    toFloatBuf((qint16*)mTmpByteBuf);
+    //    toFloatBuf((qint16*)(int8_t*)mRingBuffer + mReadPosition);
+    burg(false);
+    fromFloatBuf((qint16*)ptrToReadSlot);
+
+    // Always save memory of the last read slot
+    std::memcpy(mLastReadSlot, mRingBuffer + mReadPosition, mSlotSize);
     // Update write position
-    mWritePosition = (mWritePosition + mSlotSize) % mTotalSize;
-    mFullSlots++;  // update full slots
+    mReadPosition = (mReadPosition + mSlotSize) % mTotalSize;
+    mFullSlots--;  // update full slots
     // Wake threads waitng for bufferIsNotFull condition
-    mBufferIsNotEmpty.wakeAll();
-    return true;
+    mBufferIsNotFull.wakeAll();
 }
-
