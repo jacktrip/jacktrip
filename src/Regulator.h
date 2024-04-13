@@ -42,7 +42,7 @@
 #ifndef __REGULATOR_H__
 #define __REGULATOR_H__
 
-//#define REGULATOR_SHARED_WORKER_THREAD
+// #define REGULATOR_SHARED_WORKER_THREAD
 
 #include <math.h>
 
@@ -132,8 +132,7 @@ class Regulator : public RingBuffer
 {
    public:
     /// construct a new regulator
-    Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
-              int sample_rate,
+    Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen, int sample_rate,
               int ring_buffer_audio_output_slot_size = 0);
 
     // virtual destructor
@@ -186,7 +185,7 @@ class Regulator : public RingBuffer
 
    protected:
     void shimFPP(const int8_t* buf, int len, int seq_num);
-//    private:
+    //    private:
     void pushPacket(const int8_t* buf, int seq_num);
     void assemblePacket(const int8_t* buf, int peer_seq_num);
     void pullPacket();

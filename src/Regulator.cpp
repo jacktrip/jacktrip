@@ -111,10 +111,11 @@ constexpr double AutoSmoothingFactor =
     / (WindowDivisor * AutoHistoryWindow);  // EWMA smoothing factor for auto tolerance
 
 //*******************************************************************************
-Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
-                     int sample_rate,
-                     int ring_buffer_audio_output_slot_size) // defaults to 0 but needed for PLC
-    : RingBuffer(ring_buffer_audio_output_slot_size, (ring_buffer_audio_output_slot_size) ? qLen : 0)
+Regulator::Regulator(
+    int rcvChannels, int bit_res, int FPP, int qLen, int bqLen, int sample_rate,
+    int ring_buffer_audio_output_slot_size)  // defaults to 0 but needed for PLC
+    : RingBuffer(ring_buffer_audio_output_slot_size,
+                 (ring_buffer_audio_output_slot_size) ? qLen : 0)
     , mNumChannels(rcvChannels)
     , mAudioBitRes(bit_res)
     , mFPP(FPP)

@@ -394,12 +394,14 @@ void PLC::readSlotNonBlocking(int8_t* ptrToReadSlot)
     }
 
     zeroTmpFloatBuf();  // ahead of either call to burg
+                        /*
+                            if ((mPcnt % 100) == 99) {  // impose overflow
+                                mPcnt++;
+                                fromFloatBuf((qint16*)ptrToReadSlot);
+                                return;
+                            }
+                            */
 
-    if ((mPcnt % 100) == 99) {  // impose overflow
-        mPcnt++;
-        fromFloatBuf((qint16*)ptrToReadSlot);
-        return;
-    }
     // Check if there are slots available to read
     // If the Ringbuffer is empty, it returns a buffer of zeros and rests the buffer
     if (mFullSlots <= 0) {
