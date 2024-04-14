@@ -170,8 +170,8 @@ class PLC : public Regulator
         //                            }
 
         shimFPP(ptrToSlot, len, seq_num);  // use Regulator i.e., bufStrategy 4
-        //        for future test, use RingBuffer i.e., bufStrategy 0 
-        //        RingBuffer::insertSlotNonBlocking(ptrToSlot, len, lostLen, seq_num);  
+        //        for future test, use RingBuffer i.e., bufStrategy 0
+        //        RingBuffer::insertSlotNonBlocking(ptrToSlot, len, lostLen, seq_num);
         return true;
     }
 

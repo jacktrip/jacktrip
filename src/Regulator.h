@@ -133,7 +133,8 @@ class Regulator : public RingBuffer
    public:
     /// construct a new regulator
     Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen, int sample_rate,
-              int ring_buffer_audio_output_slot_size = 0); // defaults to 0 for backward compatibility
+              int ring_buffer_audio_output_slot_size =
+                  0);  // defaults to 0 for backward compatibility
 
     // virtual destructor
     virtual ~Regulator();
