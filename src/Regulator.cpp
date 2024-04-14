@@ -390,8 +390,11 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
             pushPacket(buf, seq_num);
         } else if (mFPPratioNumerator > 1) {
             // 2/1, 4/1 peer FPP is lower, (local/peer)/1
+            //    cout << seq_num << " mFPPratioNumerator > 1 \n"; // glitch = true every
+            //    other = avg 2.73748 glitches 300
             assemblePacket(buf, seq_num);
         } else {
+            //    cout << seq_num << " mFPPratioNumerator < 1\n";
             // 1/2, 1/4 peer FPP is higher, 1/(peer/local)
             seq_num *= mFPPratioDenominator;
             for (int i = 0; i < mFPPratioDenominator; i++) {
