@@ -113,8 +113,8 @@ constexpr double AutoSmoothingFactor =
 //*******************************************************************************
 Regulator::Regulator(
     int rcvChannels, int bit_res, int FPP, int qLen, int bqLen, int sample_rate,
-    int ring_buffer_audio_output_slot_size)  // defaults to 0 but needed for PLC
-    : RingBuffer(ring_buffer_audio_output_slot_size,
+    int ring_buffer_audio_output_slot_size)  // defaults to 0
+    : RingBuffer(ring_buffer_audio_output_slot_size, // for PLC to use RingBuffer as its base class
                  (ring_buffer_audio_output_slot_size) ? qLen : 0)
     , mNumChannels(rcvChannels)
     , mAudioBitRes(bit_res)
@@ -390,8 +390,6 @@ void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
             pushPacket(buf, seq_num);
         } else if (mFPPratioNumerator > 1) {
             // 2/1, 4/1 peer FPP is lower, (local/peer)/1
-            //    cout << seq_num << " mFPPratioNumerator > 1 \n"; // glitch = true every
-            //    other = avg 2.73748 glitches 300
             assemblePacket(buf, seq_num);
         } else {
             //    cout << seq_num << " mFPPratioNumerator < 1\n";

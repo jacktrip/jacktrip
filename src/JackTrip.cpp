@@ -448,8 +448,8 @@ void JackTrip::setupRingBuffers()
             }
 
         } else if (mBufferStrategy == 5) {
-// HT        new PLC(channels, fpp, bps, packetsInThePast);
-// JT
+// new version of PLC
+// uses Regulator as its base class, but can be tested with RingBuffer in future
 #define NUMPACKETSINTHEPAST 2
 #define BITRESOLUTION16     16
 
@@ -461,7 +461,7 @@ void JackTrip::setupRingBuffers()
 
             mReceiveRingBuffer = plc;
             cout << "Using PLC with buffer strategy 5 " << mBufferStrategy
-                 << "-- PLC with 'PLC' class " << endl;
+                 << "-- 'PLC' subclass of Regulator --" << endl;
         } else {
             cout << "Using JitterBuffer strategy " << mBufferStrategy << endl;
             if (0 > mBufferQueueLength) {

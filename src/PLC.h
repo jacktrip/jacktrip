@@ -157,6 +157,7 @@ class PLC : public Regulator
     // if (!mJackTrip->writeAudioBuffer(src, host_buf_size, last_seq_num))
     // instead of
     // if (!mJackTrip->writeAudioBuffer(src, host_buf_size, gap_size))
+
     /** \brief Same as insertSlotBlocking but non-blocking (asynchronous)
      * \param ptrToSlot Pointer to slot to insert into the RingBuffer
      */
@@ -169,8 +170,8 @@ class PLC : public Regulator
         //                            }
 
         shimFPP(ptrToSlot, len, seq_num);  // use Regulator i.e., bufStrategy 4
-        //        RingBuffer::insertSlotNonBlocking(ptrToSlot, len, lostLen, seq_num);  //
-        //        use RingBuffer i.e., bufStrategy 0 return (true);
+        //        for future test, use RingBuffer i.e., bufStrategy 0 
+        //        RingBuffer::insertSlotNonBlocking(ptrToSlot, len, lostLen, seq_num);  
         return true;
     }
 
