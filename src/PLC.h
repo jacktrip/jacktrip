@@ -213,10 +213,10 @@ class PLC : public Regulator
     {
         for (int ch = 0; ch < mNumChannels; ch++)
             for (int s = 0; s < mFPP; s++) {
-              double tmpOut = mChanData[ch]->mTmpFloatBuf[s];
-//              if (tmpOut > 1.0) tmpOut = 1.0;
-//              if (tmpOut < -1.0) tmpOut = -1.0;
-              sampleToBits(tmpOut, ch, s);
+                double tmpOut = mChanData[ch]->mTmpFloatBuf[s];
+                //              if (tmpOut > 1.0) tmpOut = 1.0;
+                //              if (tmpOut < -1.0) tmpOut = -1.0;
+                sampleToBits(tmpOut, ch, s);
             }
     };
 
@@ -224,11 +224,10 @@ class PLC : public Regulator
     {
         for (int ch = 0; ch < mNumChannels; ch++)
             for (int s = 0; s < mFPP; s++) {
-               double tmpIn = bitsToSample(ch, s);
-            mChanData[ch]->mTmpFloatBuf[s] = tmpIn;
+                double tmpIn                   = bitsToSample(ch, s);
+                mChanData[ch]->mTmpFloatBuf[s] = tmpIn;
             }
     };
-
 };
 
 #endif  // PLC_H

@@ -510,7 +510,7 @@ void PLC::readSlotNonBlocking(int8_t* ptrToReadSlot)
     // use jack callback thread to perform PLC
 
     pullPacket();  // calls burg
-floatBufToXfrBuffer();
+    floatBufToXfrBuffer();
 
     // sineToXfrBuffer();
     memcpy(ptrToReadSlot, mXfrBuffer, mBytes);
@@ -519,7 +519,7 @@ floatBufToXfrBuffer();
 //*******************************************************************************
 void PLC::processPacket(bool glitch)
 {
-// if ((mPacketCnt % 10) == 9) glitch = true; // impose regular glitching
+    // if ((mPacketCnt % 10) == 9) glitch = true; // impose regular glitching
     // mXfrBuffer holds input derived from received packets untangled by pullPacket
     double tmp = 0.0;
     if (glitch)
@@ -529,19 +529,19 @@ void PLC::processPacket(bool glitch)
     //    mLastWasGlitch = glitch;
     mPacketCnt++;
     // 32 bit is good for days:  (/ (* (- (expt 2 32) 1) (/ 32 48000.0)) (* 60 60 24))
-    
-//    sineToXfrBuffer();
-//    xfrBufferToFloatBuf();
-//    floatBufToXfrBuffer();
-    
+
+    //    sineToXfrBuffer();
+    //    xfrBufferToFloatBuf();
+    //    floatBufToXfrBuffer();
+
     zeroTmpFloatBuf();  // ahead of either call to burg
-xfrBufferToFloatBuf();
+    xfrBufferToFloatBuf();
     burg(glitch);
-// output is in floatBuf
+    // output is in floatBuf
 
-// floatBufToXfrBuffer();
+    // floatBufToXfrBuffer();
 
-//    sineToXfrBuffer();
+    //    sineToXfrBuffer();
 
     if (glitch) {
         double tmp2 = (double)mIncomingTimer.nsecsElapsed() - tmp;
