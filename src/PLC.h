@@ -115,6 +115,7 @@ class PLC : public Regulator
 
     ~PLC();
     Time* mTime;
+
     // int audioCallback(void *outputBuffer, void *inputBuffer,
     //                   unsigned int nBufferFrames, double streamTime,
     //                   RtAudioStreamStatus, void *bytesInfoFromStreamOpen);
@@ -163,6 +164,10 @@ class PLC : public Regulator
     virtual bool insertSlotNonBlocking(const int8_t* ptrToSlot, int len,
                                        [[maybe_unused]] int lostLen, int seq_num)
     {
+        //                                if ((seq_num % 100) == 99) {  // impose lost
+        //                                packet return true;
+        //                            }
+
         shimFPP(ptrToSlot, len, seq_num);  // use Regulator i.e., bufStrategy 4
         //        RingBuffer::insertSlotNonBlocking(ptrToSlot, len, lostLen, seq_num);  //
         //        use RingBuffer i.e., bufStrategy 0 return (true);
@@ -194,6 +199,36 @@ class PLC : public Regulator
     virtual void readSlotNonBlocking(int8_t* ptrToReadSlot);
     void pullPacket();
     void processPacket(bool glitch);
+
+    void sineToXfrBuffer()
+    {
+        for (int ch = 0; ch < mNumChannels; ch++)
+            for (int s = 0; s < mFPP; s++) {
+                sampleToBits(0.7 * sin(mPhasor[ch]), ch, s);
+                mPhasor[ch] += (!ch) ? 0.1 : 0.11;
+            }
+    };
+
+    void floatBufToXfrBuffer()
+    {
+        for (int ch = 0; ch < mNumChannels; ch++)
+            for (int s = 0; s < mFPP; s++) {
+              double tmpOut = mChanData[ch]->mTmpFloatBuf[s];
+//              if (tmpOut > 1.0) tmpOut = 1.0;
+//              if (tmpOut < -1.0) tmpOut = -1.0;
+              sampleToBits(tmpOut, ch, s);
+            }
+    };
+
+    void xfrBufferToFloatBuf()
+    {
+        for (int ch = 0; ch < mNumChannels; ch++)
+            for (int s = 0; s < mFPP; s++) {
+               double tmpIn = bitsToSample(ch, s);
+            mChanData[ch]->mTmpFloatBuf[s] = tmpIn;
+            }
+    };
+
 };
 
 #endif  // PLC_H

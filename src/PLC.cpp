@@ -508,15 +508,19 @@ void PLC::readSlotNonBlocking(int8_t* ptrToReadSlot)
         return;
     }
     // use jack callback thread to perform PLC
+
     pullPacket();  // calls burg
-    fromFloatBuf((qint16*)mXfrBuffer);
+floatBufToXfrBuffer();
+
+    // sineToXfrBuffer();
     memcpy(ptrToReadSlot, mXfrBuffer, mBytes);
 }
 
 //*******************************************************************************
 void PLC::processPacket(bool glitch)
 {
-    // mXfrBuffer holds input
+// if ((mPacketCnt % 10) == 9) glitch = true; // impose regular glitching
+    // mXfrBuffer holds input derived from received packets untangled by pullPacket
     double tmp = 0.0;
     if (glitch)
         tmp = (double)mIncomingTimer.nsecsElapsed();
@@ -525,10 +529,19 @@ void PLC::processPacket(bool glitch)
     //    mLastWasGlitch = glitch;
     mPacketCnt++;
     // 32 bit is good for days:  (/ (* (- (expt 2 32) 1) (/ 32 48000.0)) (* 60 60 24))
+    
+//    sineToXfrBuffer();
+//    xfrBufferToFloatBuf();
+//    floatBufToXfrBuffer();
+    
     zeroTmpFloatBuf();  // ahead of either call to burg
-    memcpy(mTmpByteBuf, mXfrBuffer, mBytes);
-    toFloatBuf((qint16*)mTmpByteBuf);
+xfrBufferToFloatBuf();
     burg(glitch);
+// output is in floatBuf
+
+// floatBufToXfrBuffer();
+
+//    sineToXfrBuffer();
 
     if (glitch) {
         double tmp2 = (double)mIncomingTimer.nsecsElapsed() - tmp;
@@ -537,6 +550,7 @@ void PLC::processPacket(bool glitch)
     }
 }
 
+// identical to Regulator --
 //*******************************************************************************
 void PLC::pullPacket()
 {
@@ -579,6 +593,7 @@ void PLC::pullPacket()
             if (mIncomingTiming[mLastSeqNumOut] >= now) {
                 // next is the best candidate
                 memcpy(mXfrBuffer, mSlots[mLastSeqNumOut], mBytes);
+                // sineToXfrBuffer(); // insert sine for imposed glitch testing
                 goto PACKETOK;
             }
         }
