@@ -828,7 +828,7 @@ void AudioInterface::setDevicesWarningMsg(warningMessageT msg)
             "You audio device drivers may cause high latency or audio delay. Install "
             "and use ASIO drivers provided by your device's manufacturer to reduce "
             "audio delays.";
-        mWarningHelpUrl  = "https://help.jacktrip.org/hc/en-us/articles/4409919243155";
+        mWarningHelpUrl  = "https://support.jacktrip.com/troubleshooting-windows-drivers-and-asio";
         mHighLatencyFlag = true;
         break;
     case DEVICE_WARN_ALSA_LATENCY:
@@ -856,7 +856,7 @@ void AudioInterface::setDevicesErrorMsg(errorMessageT msg)
             "The two devices you have selected are not compatible. Please select a "
             "different pair of devices.";
 #ifdef _WIN32
-        mErrorHelpUrl = "https://help.jacktrip.org/hc/en-us/articles/4409919243155";
+        mErrorHelpUrl = "https://support.jacktrip.com/troubleshooting-windows-drivers-and-asio";
 #else
         mErrorHelpUrl = "";
 #endif
@@ -877,7 +877,7 @@ void AudioInterface::setDevicesErrorMsg(errorMessageT msg)
     case DEVICE_ERR_SAME_ASIO:
         mErrorMsg =
             "When using ASIO, please select the same device for your input and output.";
-        mErrorHelpUrl = "https://help.jacktrip.org/hc/en-us/articles/4409919243155";
+        mErrorHelpUrl = "https://support.jacktrip.com/troubleshooting-windows-drivers-and-asio";
         break;
 #endif
     default:

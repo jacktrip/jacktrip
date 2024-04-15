@@ -241,7 +241,7 @@ void VirtualStudio::show()
             "Click \"OK\" to proceed to classic mode.\n\n"
             "Details: JackTrip failed to load the QML view. "
             "This is likely caused by missing QML plugins. "
-            "Please consult help.jacktrip.org for possible solutions.");
+            "Please consult support.jacktrip.com for possible solutions.");
         msgBox.setWindowTitle(QStringLiteral("JackTrip Is Missing QML Modules"));
         connect(&msgBox, &QMessageBox::finished, this, &VirtualStudio::toStandard,
                 Qt::QueuedConnection);
