@@ -851,14 +851,14 @@ bool StdDev::tick(double prevTime, double curTime)
 
 void Regulator::readSlotNonBlocking(int8_t* ptrToReadSlot)
 {
-    pullStat->tick();
-
     if (!mInitialized) {
         // audio callback before receiving first packet from peer
         // nothing is initialized yet, so just return silence
         memcpy(ptrToReadSlot, mZeros, mBytes);
         return;
     }
+
+    pullStat->tick();
 
     if (mFPPratioNumerator == mFPPratioDenominator) {
         // local FPP matches peer
