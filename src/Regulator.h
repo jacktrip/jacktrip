@@ -210,7 +210,6 @@ class Regulator : public RingBuffer
     bool mLastWasGlitch;
     int8_t** mSlots;
     int8_t* mSlotBuf;
-    int8_t* mZeros;
     double mMsecTolerance;
     std::vector<ChanData*> mChanData;
     StdDev* pushStat;

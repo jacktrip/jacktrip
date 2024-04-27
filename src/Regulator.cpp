@@ -124,7 +124,6 @@ Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
     , mBroadcastBuffer(NULL)
     , mBroadcastPullPtr(NULL)
     , mSlotBuf(NULL)
-    , mZeros(NULL)
     , mMsecTolerance((double)qLen)  // handle non-auto mode, expects positive qLen
     , pushStat(NULL)
     , pullStat(NULL)
@@ -164,8 +163,6 @@ Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
     }
     mBytes      = mFPP * mNumChannels * mBitResolutionMode;
     mFPPdurMsec = 1000.0 * mFPP / mSampleRate;
-    mZeros      = new int8_t[mBytes];
-    memset(mZeros, 0, mBytes);
     mPhasor.resize(mNumChannels, 0.0);
     mIncomingTiming.resize(NumSlotsMax);
     for (int i = 0; i < NumSlotsMax; i++) {
@@ -199,7 +196,6 @@ Regulator::~Regulator()
     delete[] mXfrBuffer;
     delete[] mBroadcastBuffer;
     delete[] mSlotBuf;
-    delete[] mZeros;
     delete pushStat;
     delete pullStat;
     for (int i = 0; i < mNumChannels; i++)
@@ -460,7 +456,7 @@ UNDERRUN : {
 }
 
 ZERO_OUTPUT:
-    memcpy(mXfrBuffer, mZeros, mPeerBytes);
+    memset(mXfrBuffer, 0, mPeerBytes);
 
 OUTPUT:
     return;
@@ -854,7 +850,7 @@ void Regulator::readSlotNonBlocking(int8_t* ptrToReadSlot)
     if (!mInitialized) {
         // audio callback before receiving first packet from peer
         // nothing is initialized yet, so just return silence
-        memcpy(ptrToReadSlot, mZeros, mBytes);
+        memset(ptrToReadSlot, 0, mBytes);
         return;
     }
 
@@ -891,7 +887,7 @@ void Regulator::readBroadcastSlot(int8_t* ptrToReadSlot)
     if (!mInitialized || m_b_BroadcastRingBuffer == NULL) {
         // audio callback before receiving first packet from peer
         // nothing is initialized yet, so just return silence
-        memcpy(ptrToReadSlot, mZeros, mBytes);
+        memset(ptrToReadSlot, 0, mBytes);
         return;
     }
 
