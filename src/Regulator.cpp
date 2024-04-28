@@ -254,9 +254,11 @@ void Regulator::setFPPratio(int len)
         return;
     }
 
-    mPeerBytes      = len;
-    mPeerFPP        = len / (mNumChannels * mBitResolutionMode);
-    mPeerFPPdurMsec = 1000.0 * mPeerFPP / mSampleRate;
+    mPeerBytes           = len;
+    mPeerFPP             = len / (mNumChannels * mBitResolutionMode);
+    mPeerFPPdurMsec      = 1000.0 * mPeerFPP / mSampleRate;
+    mFPPratioNumerator   = 1;
+    mFPPratioDenominator = 1;
 
     if (mPeerFPP != mFPP) {
         if (mPeerFPP > mFPP)
@@ -378,7 +380,7 @@ void Regulator::updatePushStats(int seq_num)
 //*******************************************************************************
 void Regulator::pushPacket(const int8_t* buf, int seq_num)
 {
-    if (m_b_BroadcastQueueLength)
+    if (m_b_BroadcastRingBuffer != NULL)
         m_b_BroadcastRingBuffer->insertSlotNonBlocking(buf, mPeerBytes, 0, seq_num);
     seq_num %= mNumSlots;
     // if (seq_num==0) return;   // impose regular loss
