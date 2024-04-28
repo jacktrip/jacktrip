@@ -114,10 +114,16 @@ constexpr double AutoSmoothingFactor =
 Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
                      int sample_rate)
     : RingBuffer(0, 0)
+    , mInitialized(false)
     , mNumChannels(rcvChannels)
     , mAudioBitRes(bit_res)
     , mFPP(FPP)
     , mSampleRate(sample_rate)
+    , mXfrBuffer(NULL)
+    , mXfrPullPtr(NULL)
+    , mBroadcastBuffer(NULL)
+    , mBroadcastPullPtr(NULL)
+    , mSlotBuf(NULL)
     , mMsecTolerance((double)qLen)  // handle non-auto mode, expects positive qLen
     , pushStat(NULL)
     , pullStat(NULL)
@@ -125,10 +131,8 @@ Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
     , mSkipAutoHeadroom(true)
     , mLastGlitches(0)
     , mCurrentHeadroom(0)
-    , mUseWorkerThread(false)
+    , m_b_BroadcastRingBuffer(NULL)
     , m_b_BroadcastQueueLength(bqLen)
-    , mRegulatorThreadPtr(NULL)
-    , mRegulatorWorkerPtr(NULL)
 {
     // catch settings that are compute bound using long HIST
     // hub client rcvChannels is set from client's settings parameters
@@ -157,92 +161,14 @@ Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
         mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT32;
         break;
     }
-    mHist = HIST;  //    HIST (default) is 4
-                   //    as FPP decreases the rate of PLC triggers potentially goes up
-                   //    and load increases so don't use an inverse relation
-
-    //    crossfaded prediction is a full packet ahead of predicted
-    //    packet, so the size of mPrediction needs to account for 2 full packets (2*FPP)
-    //    but trainSamps = (HIST * FPP) and mPrediction.resize(trainSamps - 1, 0.0) so if
-    //    hist = 2, then it exceeds the size
-
-    if (((mNumChannels > 1) && (mFPP > 64)) || (mFPP > 128))
-        mHist = 3;  // min packets for prediction, needs at least 3
-
-    if (gVerboseFlag)
-        cout << "mHist = " << mHist << " at " << mFPP << "\n";
-    mBytes     = mFPP * mNumChannels * mBitResolutionMode;
-    mXfrBuffer = new int8_t[mBytes];
-    mPacketCnt = 0;  // burg initialization
-    mFadeUp.resize(mFPP, 0.0);
-    mFadeDown.resize(mFPP, 0.0);
-    for (int i = 0; i < mFPP; i++) {
-        mFadeUp[i]   = (double)i / (double)mFPP;
-        mFadeDown[i] = 1.0 - mFadeUp[i];
-    }
-    mLastWasGlitch = false;
-    mNumSlots      = NumSlotsMax;
-
-    for (int i = 0; i < mNumSlots; i++) {
-        int8_t* tmp = new int8_t[mBytes];
-        mSlots.push_back(tmp);
-    }
-    for (int i = 0; i < mNumChannels; i++) {
-        ChanData* tmp = new ChanData(i, mFPP, mHist);
-        mChanData.push_back(tmp);
-        for (int s = 0; s < mFPP; s++)
-            sampleToBits(0.0, i, s);  // zero all channels in mXfrBuffer
-    }
-    mZeros = new int8_t[mBytes];
-    memcpy(mZeros, mXfrBuffer, mBytes);
-    mAssembledPacket = new int8_t[mBytes];  // for asym
-    memcpy(mAssembledPacket, mXfrBuffer, mBytes);
-    mLastLostCount = 0;  // for stats
-    mIncomingTimer.start();
-    mLastSeqNumIn.store(-1, std::memory_order_relaxed);
-    mLastSeqNumOut = -1;
+    mBytes      = mFPP * mNumChannels * mBitResolutionMode;
+    mFPPdurMsec = 1000.0 * mFPP / mSampleRate;
     mPhasor.resize(mNumChannels, 0.0);
     mIncomingTiming.resize(NumSlotsMax);
-    mAssemblyCounts.resize(NumSlotsMax);
     for (int i = 0; i < NumSlotsMax; i++) {
         mIncomingTiming[i] = 0.0;
-        mAssemblyCounts[i] = 0;
     }
-    mFPPratioNumerator   = 1;
-    mFPPratioDenominator = 1;
-    mFPPratioIsSet       = false;
-    mBytesPeerPacket     = mBytes;
-    mPeerFPP             = mFPP;  // use local until first packet arrives
-    mAutoHeadroom        = 3.0;
-    mFPPdurMsec          = 1000.0 * mFPP / mSampleRate;
     changeGlobal_2(NumSlotsMax);  // need hg if running GUI
-    if (m_b_BroadcastQueueLength) {
-        m_b_BroadcastRingBuffer =
-            new JitterBuffer(mFPP, qLen, mSampleRate, 1, m_b_BroadcastQueueLength,
-                             mNumChannels, mAudioBitRes);
-        qDebug() << "Broadcast started in Regulator with packet queue of"
-                 << m_b_BroadcastQueueLength;
-        // have not implemented the mJackTrip->queueLengthChanged functionality
-    }
-}
-
-void Regulator::enableWorkerThread(QThread* thread_ptr)
-{
-    if (thread_ptr == nullptr) {
-        // create owned regulator thread (client mode)
-        if (mRegulatorThreadPtr == nullptr) {
-            mRegulatorThreadPtr = new QThread();
-            mRegulatorThreadPtr->setObjectName("RegulatorThread");
-            mRegulatorThreadPtr->start();
-        }
-        thread_ptr = mRegulatorThreadPtr;
-    }
-    if (mRegulatorWorkerPtr != nullptr) {
-        delete mRegulatorWorkerPtr;
-    }
-    mRegulatorWorkerPtr = new RegulatorWorker(this);
-    mRegulatorWorkerPtr->moveToThread(thread_ptr);
-    mUseWorkerThread = true;
 }
 
 void Regulator::changeGlobal(double x)
@@ -267,25 +193,14 @@ void Regulator::printParams(){
 
 Regulator::~Regulator()
 {
-    if (mRegulatorThreadPtr != nullptr) {
-        // Stop the Regulator thread before deleting other things
-        mRegulatorThreadPtr->quit();
-        mRegulatorThreadPtr->wait();
-        delete mRegulatorThreadPtr;
-    }
-    if (mRegulatorWorkerPtr != nullptr)
-        delete mRegulatorWorkerPtr;
     delete[] mXfrBuffer;
-    delete[] mZeros;
-    delete[] mAssembledPacket;
+    delete[] mBroadcastBuffer;
+    delete[] mSlotBuf;
     delete pushStat;
     delete pullStat;
     for (int i = 0; i < mNumChannels; i++)
         delete mChanData[i];
-    for (auto& slot : mSlots) {
-        delete[] slot;
-    };
-    if (m_b_BroadcastQueueLength)
+    if (m_b_BroadcastRingBuffer)
         delete m_b_BroadcastRingBuffer;
 }
 
@@ -332,113 +247,146 @@ void Regulator::updateTolerance()
 }
 
 //*******************************************************************************
-void Regulator::setFPPratio()
+void Regulator::setFPPratio(int len)
 {
+    // only for first peer packet
+    if (mInitialized) {
+        return;
+    }
+
+    mPeerBytes           = len;
+    mPeerFPP             = len / (mNumChannels * mBitResolutionMode);
+    mPeerFPPdurMsec      = 1000.0 * mPeerFPP / mSampleRate;
+    mFPPratioNumerator   = 1;
+    mFPPratioDenominator = 1;
+
     if (mPeerFPP != mFPP) {
         if (mPeerFPP > mFPP)
             mFPPratioDenominator = mPeerFPP / mFPP;
         else
             mFPPratioNumerator = mFPP / mPeerFPP;
-        //        qDebug() << "peerBuffers / localBuffers" << mFPPratioNumerator << " / "
-        //                 << mFPPratioDenominator;
+    }
+
+    // bufstrategy 1 autoq mode overloads qLen with negative val
+    // creates this ugly code
+    if (mMsecTolerance <= 0) {  // handle -q auto or, for example, -q auto10
+        mAuto = true;
+        // default is -500 from bufstrategy 1 autoq mode
+        // use mMsecTolerance to set headroom
+        if (mMsecTolerance == -500.0) {
+            mAutoHeadroom = -1;
+            qDebug() << "PLC is in auto mode and has been set with variable headroom";
+        } else {
+            mAutoHeadroom = -mMsecTolerance;
+            qDebug() << "PLC is in auto mode and has been set with" << mAutoHeadroom
+                     << "ms headroom";
+            if (mAutoHeadroom > 50.0)
+                qDebug() << "That's a very large value and should be less than, "
+                            "for example, 50ms";
+        }
+        // found an interesting relationship between mPeerFPP and initial
+        // mMsecTolerance mPeerFPP*0.5 is pretty good though that's an oddball
+        // conversion of bufsize directly to msec
+        mMsecTolerance = (mPeerFPP * AutoInitValFactor);
+    } else {
+        qDebug() << "PLC is using a fixed tolerance of " << mMsecTolerance << "ms";
+    }
+
+    mHist = HIST;  //    HIST (default) is 4
+                   //    as FPP decreases the rate of PLC triggers potentially goes up
+                   //    and load increases so don't use an inverse relation
+
+    //    crossfaded prediction is a full packet ahead of predicted
+    //    packet, so the size of mPrediction needs to account for 2 full packets (2*FPP)
+    //    but trainSamps = (HIST * FPP) and mPrediction.resize(trainSamps - 1, 0.0) so if
+    //    hist = 2, then it exceeds the size
+
+    if (((mNumChannels > 1) && (mPeerFPP > 64)) || (mPeerFPP > 128))
+        mHist = 3;  // min packets for prediction, needs at least 3
+    if (gVerboseFlag)
+        cout << "mHist = " << mHist << " at " << mPeerFPP << "\n";
+
+    mXfrBuffer       = new int8_t[mPeerBytes];
+    mBroadcastBuffer = new int8_t[mPeerBytes];
+    memset(mXfrBuffer, 0, mPeerBytes);
+    memset(mBroadcastBuffer, 0, mPeerBytes);
+    mPacketCnt = 0;  // burg initialization
+    mFadeUp.resize(mPeerFPP, 0.0);
+    mFadeDown.resize(mPeerFPP, 0.0);
+    for (int i = 0; i < mPeerFPP; i++) {
+        mFadeUp[i]   = (double)i / (double)mPeerFPP;
+        mFadeDown[i] = 1.0 - mFadeUp[i];
+    }
+    mLastWasGlitch = false;
+    mNumSlots      = NumSlotsMax;
+
+    mSlots      = new int8_t*[mNumSlots];
+    mSlotBuf    = new int8_t[mNumSlots * mPeerBytes];
+    int8_t* tmp = mSlotBuf;
+    for (int i = 0; i < mNumSlots; i++) {
+        mSlots[i] = tmp;
+        tmp += mPeerBytes;
+    }
+
+    for (int i = 0; i < mNumChannels; i++) {
+        ChanData* tmp = new ChanData(i, mPeerFPP, mHist);
+        mChanData.push_back(tmp);
+        for (int s = 0; s < mPeerFPP; s++)
+            sampleToBits(0.0, i, s);  // zero all channels in mXfrBuffer
+    }
+    mLastLostCount = 0;  // for stats
+    mIncomingTimer.start();
+    mLastSeqNumIn.store(-1, std::memory_order_relaxed);
+    mLastSeqNumOut = -1;
+    if (m_b_BroadcastQueueLength) {
+        m_b_BroadcastRingBuffer =
+            new JitterBuffer(mPeerFPP, 10, mSampleRate, 1, m_b_BroadcastQueueLength,
+                             mNumChannels, mAudioBitRes);
+        qDebug() << "Broadcast started in Regulator with packet queue of"
+                 << m_b_BroadcastQueueLength;
+        // have not implemented the mJackTrip->queueLengthChanged functionality
+    }
+
+    // number of stats tick calls per sec depends on FPP
+    pushStat =
+        new StdDev(1, &mIncomingTimer, (int)(floor(mSampleRate / (double)mPeerFPP)));
+    pullStat = new StdDev(2, &mIncomingTimer, (int)(floor(mSampleRate / (double)mFPP)));
+
+    mInitialized = true;
+}
+
+//*******************************************************************************
+void Regulator::updatePushStats(int seq_num)
+{
+    // use time of last packet pulled as a baseline time for previous packet
+    // this avoids having to search for a previous packet that wasn't missing
+    // pkts is distance of previous packet from mLastSeqNumOut
+    int pkts = seq_num - 1 - mLastSeqNumOut;
+    if (pkts < 0)
+        pkts += mNumSlots;
+    double prev_time = mIncomingTiming[mLastSeqNumOut] + (pkts * mPeerFPPdurMsec);
+    if (prev_time >= mIncomingTiming[seq_num])
+        return;  // skip edge case where mLastSeqNumOut was very late
+
+    // update push stats
+    bool pushStatsUpdated = pushStat->tick(prev_time, mIncomingTiming[seq_num]);
+    if (mAuto && pushStatsUpdated && (pushStat->lastTime > AutoInitDur)
+        && pushStat->longTermCnt % WindowDivisor == 0) {
+        // after AutoInitDur: update auto tolerance once per second
+        updateTolerance();
     }
 }
 
 //*******************************************************************************
-void Regulator::shimFPP(const int8_t* buf, int len, int seq_num)
-{
-    if (seq_num != -1) {
-        if (!mFPPratioIsSet) {  // first peer packet
-            mBytesPeerPacket = len;
-            mPeerFPP         = len / (mNumChannels * mBitResolutionMode);
-            mPeerFPPdurMsec  = 1000.0 * mPeerFPP / mSampleRate;
-            // bufstrategy 1 autoq mode overloads qLen with negative val
-            // creates this ugly code
-            if (mMsecTolerance <= 0) {  // handle -q auto or, for example, -q auto10
-                mAuto = true;
-                // default is -500 from bufstrategy 1 autoq mode
-                // use mMsecTolerance to set headroom
-                if (mMsecTolerance == -500.0) {
-                    mAutoHeadroom = -1;
-                    qDebug()
-                        << "PLC is in auto mode and has been set with variable headroom";
-                } else {
-                    mAutoHeadroom = -mMsecTolerance;
-                    qDebug() << "PLC is in auto mode and has been set with"
-                             << mAutoHeadroom << "ms headroom";
-                    if (mAutoHeadroom > 50.0)
-                        qDebug() << "That's a very large value and should be less than, "
-                                    "for example, 50ms";
-                }
-                // found an interesting relationship between mPeerFPP and initial
-                // mMsecTolerance mPeerFPP*0.5 is pretty good though that's an oddball
-                // conversion of bufsize directly to msec
-                mMsecTolerance = (mPeerFPP * AutoInitValFactor);
-            };
-            setFPPratio();
-            // number of stats tick calls per sec depends on FPP
-            pushStat = new StdDev(1, &mIncomingTimer,
-                                  (int)(floor(mSampleRate / (double)mPeerFPP)));
-            pullStat =
-                new StdDev(2, &mIncomingTimer, (int)(floor(mSampleRate / (double)mFPP)));
-            mFPPratioIsSet = true;
-        }
-        if (mFPPratioNumerator == mFPPratioDenominator) {
-            // local FPP matches peer
-            pushPacket(buf, seq_num);
-        } else if (mFPPratioNumerator > 1) {
-            // 2/1, 4/1 peer FPP is lower, (local/peer)/1
-            assemblePacket(buf, seq_num);
-        } else {
-            // 1/2, 1/4 peer FPP is higher, 1/(peer/local)
-            seq_num *= mFPPratioDenominator;
-            for (int i = 0; i < mFPPratioDenominator; i++) {
-                memcpy(mAssembledPacket, buf, mBytes);
-                pushPacket(mAssembledPacket, seq_num);
-                buf += mBytes;
-                seq_num++;
-            }
-        }
-        bool pushStatsUpdated = pushStat->tick();
-        if (mAuto && pushStatsUpdated && (pushStat->lastTime > AutoInitDur)
-            && pushStat->longTermCnt % WindowDivisor == 0) {
-            // after AutoInitDur: update auto tolerance once per second
-            updateTolerance();
-        }
-    }
-};
-
-//*******************************************************************************
 void Regulator::pushPacket(const int8_t* buf, int seq_num)
 {
-    if (m_b_BroadcastQueueLength)
-        m_b_BroadcastRingBuffer->insertSlotNonBlocking(buf, mBytes, 0, seq_num);
+    if (m_b_BroadcastRingBuffer != NULL)
+        m_b_BroadcastRingBuffer->insertSlotNonBlocking(buf, mPeerBytes, 0, seq_num);
     seq_num %= mNumSlots;
     // if (seq_num==0) return;   // impose regular loss
     mIncomingTiming[seq_num] =
         mMsecTolerance + (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
-    memcpy(mSlots[seq_num], buf, mBytes);
-    mLastSeqNumIn.store(seq_num, std::memory_order_release);
-};
-
-//*******************************************************************************
-void Regulator::assemblePacket(const int8_t* buf, int peer_seq_num)
-{
-    // copy packet fragment into slot
-    int seq_num = (peer_seq_num / mFPPratioNumerator) % mNumSlots;
-    int pkt_pos = (peer_seq_num % mFPPratioNumerator);
-    memcpy(&(mSlots[seq_num][pkt_pos * mBytesPeerPacket]), buf, mBytesPeerPacket);
-
-    // check if done assembling yet
-    if (++mAssemblyCounts[seq_num] < mFPPratioNumerator)
-        return;
-
-    // complete it
-    if (m_b_BroadcastQueueLength)
-        m_b_BroadcastRingBuffer->insertSlotNonBlocking(mSlots[seq_num], mBytes, 0,
-                                                       seq_num);
-    mIncomingTiming[seq_num] =
-        mMsecTolerance + (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
+    memcpy(mSlots[seq_num], buf, mPeerBytes);
     mLastSeqNumIn.store(seq_num, std::memory_order_release);
 };
 
@@ -449,7 +397,7 @@ void Regulator::pullPacket()
     const int lastSeqNumIn = mLastSeqNumIn.load(std::memory_order_acquire);
     mSkip                  = 0;
 
-    if ((lastSeqNumIn == -1) || (!mFPPratioIsSet)) {
+    if ((lastSeqNumIn == -1) || (!mInitialized)) {
         goto ZERO_OUTPUT;
     } else if (lastSeqNumIn == mLastSeqNumOut) {
         goto UNDERRUN;
@@ -465,14 +413,11 @@ void Regulator::pullPacket()
             int next = lastSeqNumIn - i;
             if (next < 0)
                 next += mNumSlots;
-            if (mFPPratioNumerator > 1) {
-                // time for assembly has passed; reset for next time
-                mAssemblyCounts[next] = 0;
-            }
             if (mLastSeqNumOut != -1) {
                 // account for missing packets
                 if (mIncomingTiming[next] < mIncomingTiming[mLastSeqNumOut])
                     continue;
+                updatePushStats(next);
                 // count how many we have skipped
                 mSkip = next - mLastSeqNumOut - 1;
                 if (mSkip < 0)
@@ -483,7 +428,7 @@ void Regulator::pullPacket()
             // if next timestamp < now, it is too old based upon tolerance
             if (mIncomingTiming[mLastSeqNumOut] >= now) {
                 // next is the best candidate
-                memcpy(mXfrBuffer, mSlots[mLastSeqNumOut], mBytes);
+                memcpy(mXfrBuffer, mSlots[mLastSeqNumOut], mPeerBytes);
                 goto PACKETOK;
             }
         }
@@ -513,10 +458,9 @@ UNDERRUN : {
 }
 
 ZERO_OUTPUT:
-    memcpy(mXfrBuffer, mZeros, mBytes);
+    memset(mXfrBuffer, 0, mPeerBytes);
 
 OUTPUT:
-    pullStat->tick();
     return;
 };
 
@@ -544,13 +488,13 @@ void Regulator::processChannel(int ch, bool glitch, int packetCnt, bool lastWasG
 {
     //    if(glitch) qDebug() << "glitch"; else fprintf(stderr,".");
     ChanData* cd = mChanData[ch];
-    for (int s = 0; s < mFPP; s++)
+    for (int s = 0; s < mPeerFPP; s++)
         cd->mTruth[s] = bitsToSample(ch, s);
     if (packetCnt) {
         // always update mTrain
         for (int i = 0; i < mHist; i++) {
-            for (int s = 0; s < mFPP; s++)
-                cd->mTrain[s + ((mHist - (i + 1)) * mFPP)] = cd->mLastPackets[i][s];
+            for (int s = 0; s < mPeerFPP; s++)
+                cd->mTrain[s + ((mHist - (i + 1)) * mPeerFPP)] = cd->mLastPackets[i][s];
         }
         if (glitch) {
             // GET LINEAR PREDICTION COEFFICIENTS
@@ -567,30 +511,30 @@ void Regulator::processChannel(int ch, bool glitch, int packetCnt, bool lastWasG
         }
         // cross fade last prediction with mTruth
         if (lastWasGlitch)
-            for (int s = 0; s < mFPP; s++)
+            for (int s = 0; s < mPeerFPP; s++)
                 cd->mXfadedPred[s] =
                     cd->mTruth[s] * mFadeUp[s] + cd->mLastPred[s] * mFadeDown[s];
-        for (int s = 0; s < mFPP; s++)
+        for (int s = 0; s < mPeerFPP; s++)
             sampleToBits((glitch)
                              ? cd->mPrediction[s]
                              : ((lastWasGlitch) ? cd->mXfadedPred[s] : cd->mTruth[s]),
                          ch, s);
         if (glitch) {
-            for (int s = 0; s < mFPP; s++)
-                cd->mLastPred[s] = cd->mPrediction[s + mFPP];
+            for (int s = 0; s < mPeerFPP; s++)
+                cd->mLastPred[s] = cd->mPrediction[s + mPeerFPP];
         }
     }
 
     // copy down history
 
     for (int i = mHist - 1; i > 0; i--) {
-        for (int s = 0; s < mFPP; s++)
+        for (int s = 0; s < mPeerFPP; s++)
             cd->mLastPackets[i][s] = cd->mLastPackets[i - 1][s];
     }
 
     // add prediction  or current input to history, the former checking if primed
 
-    for (int s = 0; s < mFPP; s++)
+    for (int s = 0; s < mPeerFPP; s++)
         cd->mLastPackets[0][s] =
             //                ((!glitch) || (packetCnt < mHist)) ? cd->mTruth[s] :
             //                cd->mPrediction[s];
@@ -600,7 +544,7 @@ void Regulator::processChannel(int ch, bool glitch, int packetCnt, bool lastWasG
     // diagnostic output
     /////////////////////
     if (false)
-        for (int s = 0; s < mFPP; s++) {
+        for (int s = 0; s < mPeerFPP; s++) {
             sampleToBits(0.7 * sin(mPhasor[ch]), ch, s);
             mPhasor[ch] += (!ch) ? 0.1 : 0.11;
         }
@@ -818,11 +762,16 @@ double StdDev::smooth(double avg, double current)
     return avg + AutoSmoothingFactor * (current - avg);
 }
 
-bool StdDev::tick()
+bool StdDev::tick(double prevTime, double curTime)
 {
-    double now       = (double)mTimer->nsecsElapsed() / 1000000.0;
-    double msElapsed = now - lastTime;
-    lastTime         = now;
+    double msElapsed = curTime - prevTime;
+    if (msElapsed > 0) {
+        lastTime = curTime;
+    } else {
+        double now = (double)mTimer->nsecsElapsed() / 1000000.0;
+        msElapsed  = now - lastTime;
+        lastTime   = now;
+    }
 
     // discard measurements that exceed the max wait time
     // this prevents temporary outages from skewing jitter metrics
@@ -900,26 +849,79 @@ bool StdDev::tick()
 
 void Regulator::readSlotNonBlocking(int8_t* ptrToReadSlot)
 {
-    if (!mFPPratioIsSet) {
+    if (!mInitialized) {
         // audio callback before receiving first packet from peer
         // nothing is initialized yet, so just return silence
-        memcpy(ptrToReadSlot, mZeros, mBytes);
+        memset(ptrToReadSlot, 0, mBytes);
         return;
     }
-    if (mUseWorkerThread) {
-        // use separate worker thread for PLC
-        mRegulatorWorkerPtr->pop(ptrToReadSlot);
+
+    pullStat->tick();
+
+    if (mFPPratioNumerator == mFPPratioDenominator) {
+        // local FPP matches peer
+        pullPacket();
+        memcpy(ptrToReadSlot, mXfrBuffer, mBytes);
         return;
     }
-    // use jack callback thread to perform PLC
-    pullPacket();
-    memcpy(ptrToReadSlot, mXfrBuffer, mBytes);
+
+    if (mFPPratioNumerator > 1) {
+        // 2/1, 4/1 peer FPP is lower, (local/peer)/1
+        for (int i = 0; i < mFPPratioNumerator; i++) {
+            pullPacket();
+            memcpy(ptrToReadSlot, mXfrBuffer, mPeerBytes);
+            ptrToReadSlot += mPeerBytes;
+        }
+        return;
+    }
+
+    // 1/2, 1/4 peer FPP is higher, 1/(peer/local)
+    if (mXfrPullPtr == NULL || mXfrPullPtr >= (mXfrBuffer + mPeerBytes)) {
+        pullPacket();
+        mXfrPullPtr = mXfrBuffer;
+    }
+    memcpy(ptrToReadSlot, mXfrPullPtr, mBytes);
+    mXfrPullPtr += mBytes;
+}
+
+void Regulator::readBroadcastSlot(int8_t* ptrToReadSlot)
+{
+    if (!mInitialized || m_b_BroadcastRingBuffer == NULL) {
+        // audio callback before receiving first packet from peer
+        // nothing is initialized yet, so just return silence
+        memset(ptrToReadSlot, 0, mBytes);
+        return;
+    }
+
+    if (mFPPratioNumerator == mFPPratioDenominator) {
+        // local FPP matches peer
+        m_b_BroadcastRingBuffer->readBroadcastSlot(ptrToReadSlot);
+        return;
+    }
+
+    if (mFPPratioNumerator > 1) {
+        // 2/1, 4/1 peer FPP is lower, (local/peer)/1
+        for (int i = 0; i < mFPPratioNumerator; i++) {
+            m_b_BroadcastRingBuffer->readBroadcastSlot(ptrToReadSlot);
+            ptrToReadSlot += mPeerBytes;
+        }
+        return;
+    }
+
+    // 1/2, 1/4 peer FPP is higher, 1/(peer/local)
+    if (mBroadcastPullPtr == NULL
+        || mBroadcastPullPtr >= (mBroadcastBuffer + mPeerBytes)) {
+        m_b_BroadcastRingBuffer->readBroadcastSlot(mBroadcastBuffer);
+        mBroadcastPullPtr = mBroadcastBuffer;
+    }
+    memcpy(ptrToReadSlot, mBroadcastPullPtr, mBytes);
+    mBroadcastPullPtr += mBytes;
 }
 
 //*******************************************************************************
 bool Regulator::getStats(RingBuffer::IOStat* stat, bool reset)
 {
-    if (!mFPPratioIsSet) {
+    if (!mInitialized) {
         return false;
     }
 
@@ -933,10 +935,6 @@ bool Regulator::getStats(RingBuffer::IOStat* stat, bool reset)
         mBufIncUnderrun   = 0;
         mBufIncCompensate = 0;
         mBroadcastSkew    = 0;
-    }
-
-    if (mUseWorkerThread && mRegulatorWorkerPtr != nullptr) {
-        mRegulatorWorkerPtr->getStats();
     }
 
     // hijack  of  struct IOStat {

@@ -1,3 +1,11 @@
+- Version: "2.3.0-beta1"
+  Date: 2024-04-xx
+  Description:
+  - (fixed) PLC audio degradation when buffer sizes don't match
+  - (fixed) PLC statistics for auto latency adjustments
+  - (updated) VS Mode help links to point to support.jacktrip.com
+  - (updated) Removed worker thread for PLC buffer strategies
+  - (updated) Improved PLC performance and quality
 - Version: "2.2.5"
   Date: 2024-03-28
   Description:

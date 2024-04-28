@@ -423,21 +423,12 @@ void JackTrip::setupRingBuffers()
                 new RingBuffer(audio_output_slot_size, mBufferQueueLength);
             mPacketHeader->setBufferRequiresSameSettings(true);
         } else if ((mBufferStrategy == 3) || (mBufferStrategy == 4)) {
-            bool use_worker_thread = (mBufferStrategy == 3);
             cout << "Using experimental buffer strategy " << mBufferStrategy
-                 << "-- Regulator with PLC (worker="
-                 << (use_worker_thread ? "true" : "false") << ")" << endl;
+                 << "-- Regulator with PLC" << endl;
             Regulator* regulator_ptr =
                 new Regulator(mNumAudioChansOut, mAudioBitResolution, mAudioBufferSize,
                               mBufferQueueLength, mBroadcastQueueLength, mSampleRate);
             mReceiveRingBuffer = regulator_ptr;
-            if (use_worker_thread) {
-#ifdef REGULATOR_SHARED_WORKER_THREAD
-                regulator_ptr->enableWorkerThread(mRegulatorThreadPtr);
-#else
-                regulator_ptr->enableWorkerThread();
-#endif
-            }
             // bufStrategy 3 or 4, mBufferQueueLength is in integer msec not packets
 
             mPacketHeader->setBufferRequiresSameSettings(false);  // = asym is default
