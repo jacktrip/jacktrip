@@ -896,27 +896,8 @@ void VirtualStudio::completeConnection()
         // increment buffer_strategy by 1 for array-index mapping
         int buffer_strategy = m_audioConfigPtr->getBufferStrategy() + 1;
         // adjust buffer_strategy for PLC "auto" mode menu item
-        if (buffer_strategy == 3) {
-            // run PLC without worker (4)
-            buffer_strategy = 4;
-            /*
-            // I don't believe this is still necessary,
-            // after splitting the input and output RtAudio streams
-            // See https://github.com/jacktrip/jacktrip/pull/1235
-            if (useRtAudio) {
-                // if same device for input and output,
-                // run PLC without worker (4)
-                if (input == output)
-                    buffer_strategy = 4;
-                // else run PLC with worker (3)
-                // to reduce crackles
-            } else {
-                // run PLC without worker (4)
-                buffer_strategy = 4;
-            }
-            */
-        } else if (buffer_strategy == 5) {
-            buffer_strategy = 3;  // run PLC with worker (3)
+        if (buffer_strategy == 4 || buffer_strategy == 5) {
+            buffer_strategy = 3;
         }
 
         // create a new JackTrip instance
