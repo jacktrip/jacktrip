@@ -375,7 +375,7 @@ void AudioInterface::audioOutputCallback(QVarLengthArray<sample_t*>& out_buffer,
                                                    out_buffer.data());
         // compute ap2 into aob2
 
-        //#define ADD_DIRECT
+        // #define ADD_DIRECT
 #ifdef ADD_DIRECT
         for (int i = 0; i < nChansIn; i++) {
             sample_t* mix_sample = out_buffer[i];

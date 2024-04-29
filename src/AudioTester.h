@@ -41,7 +41,7 @@
 #include <iostream>
 
 #include "jacktrip_types.h"  // sample_t
-//#include <ctime>
+// #include <ctime>
 #include <QVarLengthArray>
 #include <chrono>
 #include <cmath>

@@ -42,7 +42,7 @@
 #ifndef __LIMITER_H__
 #define __LIMITER_H__
 
-//#define SINE_TEST
+// #define SINE_TEST
 
 #ifdef SINE_TEST
 #include "limitertest.h"
@@ -127,9 +127,9 @@ class Limiter : public ProcessPlugin
                         warnCount = 0;
                     }
                 }  // warnCount==nextWarning
-            }      // above warningAmp
-        }          // loop over frames
-    }              // checkAmplitudes()
+            }  // above warningAmp
+        }  // loop over frames
+    }  // checkAmplitudes()
 
    private:
     float fs;

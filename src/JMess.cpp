@@ -55,11 +55,9 @@ JMess::JMess()
     mClient = jack_client_open("lsp", JackNoStartServer, &mStatus);
     if (mClient == NULL) {
         if (mStatus & JackServerFailed) {
-            std::cerr << "JACK server not running"
-                      << "\n";
+            std::cerr << "JACK server not running" << "\n";
         } else {
-            std::cerr << "jack_client_open() failed, "
-                      << "status = 0x%2.0x\n"
+            std::cerr << "jack_client_open() failed, " << "status = 0x%2.0x\n"
                       << mStatus << "\n";
         }
         exit(1);
@@ -74,8 +72,7 @@ JMess::JMess()
 JMess::~JMess()
 {
     if (jack_client_close(mClient))
-        std::cerr << "ERROR: Could not close the hidden jmess jack client."
-                  << "\n";
+        std::cerr << "ERROR: Could not close the hidden jmess jack client." << "\n";
 }
 
 //*******************************************************************************
@@ -98,10 +95,10 @@ JMess::~JMess()
 
 ///////////////////////////////
 // test NUC as server
-//#define HARDWIRED_AUDIO_PROCESS_ON_SERVER "par20straightWire"
-//#define ENUMERATE ""
-//#define HARDWIRED_AUDIO_PROCESS_ON_SERVER_IN ":in_"
-//#define HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT ":out_"
+// #define HARDWIRED_AUDIO_PROCESS_ON_SERVER "par20straightWire"
+// #define ENUMERATE ""
+// #define HARDWIRED_AUDIO_PROCESS_ON_SERVER_IN ":in_"
+// #define HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT ":out_"
 
 ///////////////////////////////
 // test Riviera as server
