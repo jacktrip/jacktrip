@@ -427,10 +427,10 @@ void JackTrip::setupRingBuffers()
                  << "-- Regulator with PLC" << endl;
 #define NUMPACKETSINTHEPAST 2
 #define BITRESOLUTION16     16
-            Regulator* regulator_ptr =
-                new Regulator(mNumAudioChansOut, mAudioBufferSize, BITRESOLUTION16,
-                        NUMPACKETSINTHEPAST, mNumAudioChansOut, mAudioBitResolution, mAudioBufferSize,
-                              mBufferQueueLength, mBroadcastQueueLength, mSampleRate);
+            Regulator* regulator_ptr = new Regulator(
+                mNumAudioChansOut, mAudioBufferSize, BITRESOLUTION16, NUMPACKETSINTHEPAST,
+                mNumAudioChansOut, mAudioBitResolution, mAudioBufferSize,
+                mBufferQueueLength, mBroadcastQueueLength, mSampleRate);
             mReceiveRingBuffer = regulator_ptr;
             // bufStrategy 3 or 4, mBufferQueueLength is in integer msec not packets
 
