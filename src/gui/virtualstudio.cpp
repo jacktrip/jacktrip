@@ -639,7 +639,6 @@ void VirtualStudio::joinStudio()
     // pop studioToJoin
     const QString targetId = m_studioToJoin;
     setStudioToJoin("");
-    emit studioToJoinChanged();
 
     // stop audio if already running (settings or setup windows)
     m_audioConfigPtr->stopAudio(true);
@@ -741,7 +740,7 @@ void VirtualStudio::logout()
     }
 
     logoutURL.setQuery(query);
-    launchBrowser(logoutURL);
+    QDesktopServices::openUrl(logoutURL);
 
     m_auth->logout();
 
@@ -1027,63 +1026,6 @@ void VirtualStudio::disconnect()
 #ifdef __APPLE__
     m_noNap.enableNap();
 #endif
-}
-
-void VirtualStudio::manageStudio(const QString& studioId, bool start)
-{
-    if (studioId.isEmpty()) {
-        processError("Manage requires a unique studio identifier");
-        return;
-    }
-    QUrl url;
-    if (!start) {
-        url = QUrl(
-            QStringLiteral("https://%1/studios/%2").arg(m_api->getApiHost(), studioId));
-    } else {
-        QString expiration =
-            QDateTime::currentDateTimeUtc().addSecs(60 * 30).toString(Qt::ISODate);
-        QJsonObject json      = {{QLatin1String("enabled"), true},
-                            {QLatin1String("expiresAt"), expiration}};
-        QJsonDocument request = QJsonDocument(json);
-
-        QNetworkReply* reply = m_api->updateServer(studioId, request.toJson());
-        connect(reply, &QNetworkReply::finished, this, [&, reply]() {
-            if (reply->error() != QNetworkReply::NoError) {
-                m_connectionState      = QStringLiteral("Unable to Start Studio");
-                QJsonDocument errorDoc = QJsonDocument::fromJson(reply->readAll());
-                if (!errorDoc.isNull()) {
-                    QJsonObject errorObj = errorDoc.object();
-                    if (errorObj.contains("error")) {
-                        QString errorMessage = errorObj.value("error").toString();
-                        if (errorMessage.contains(
-                                "Only one studio may be running at a time")) {
-                            setConnectedErrorMsg("one-studio-limit-reached");
-                        }
-                    }
-                }
-                emit connectionStateChanged();
-            } else {
-                setConnectedErrorMsg("");
-                QByteArray response       = reply->readAll();
-                QJsonDocument serverState = QJsonDocument::fromJson(response);
-                if (serverState.object()[QStringLiteral("status")].toString()
-                    == QLatin1String("Starting")) {}
-            }
-            reply->deleteLater();
-        });
-    }
-    QDesktopServices::openUrl(url);
-}
-
-void VirtualStudio::launchVideo(const QString& studioId)
-{
-    if (studioId.isEmpty()) {
-        processError("Manage requires a unique studio identifier");
-        return;
-    }
-    QUrl url = QUrl(
-        QStringLiteral("https://%1/studios/%2/live").arg(m_api->getApiHost(), studioId));
-    QDesktopServices::openUrl(url);
 }
 
 void VirtualStudio::createStudio()
@@ -1372,17 +1314,6 @@ void VirtualStudio::restartStudioSocket()
     }
 }
 
-void VirtualStudio::launchBrowser(const QUrl& url)
-{
-    std::cout << "Launching Browser" << std::endl;
-    bool success = QDesktopServices::openUrl(url);
-    if (success) {
-        std::cout << "Success" << std::endl;
-    } else {
-        std::cout << "Unable to open URL" << std::endl;
-    }
-}
-
 void VirtualStudio::updatedStats(const QJsonObject& stats)
 {
     QJsonObject newStats;
@@ -1504,6 +1435,8 @@ void VirtualStudio::getServerList(bool signalRefresh, int index)
                     serverInfo->setId(servers.at(i)[QStringLiteral("id")].toString());
                     serverInfo->setSessionId(
                         servers.at(i)[QStringLiteral("sessionId")].toString());
+                    serverInfo->setStreamId(
+                        servers.at(i)[QStringLiteral("streamId")].toString());
                     serverInfo->setInviteKey(
                         servers.at(i)[QStringLiteral("inviteKey")].toString());
                     serverInfo->setCloudId(

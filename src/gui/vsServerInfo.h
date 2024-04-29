@@ -60,6 +60,7 @@ class VsServerInfo : public QObject
     Q_PROPERTY(quint32 sampleRate READ sampleRate CONSTANT)
     Q_PROPERTY(quint16 queueBuffer READ queueBuffer CONSTANT)
     Q_PROPERTY(QString sessionId READ sessionId CONSTANT)
+    Q_PROPERTY(QString streamId READ streamId CONSTANT)
     Q_PROPERTY(QString status READ status CONSTANT)
     Q_PROPERTY(bool enabled READ enabled CONSTANT)
     Q_PROPERTY(QString cloudId READ cloudId CONSTANT)
@@ -110,6 +111,8 @@ class VsServerInfo : public QObject
     void setId(const QString& id);
     QString sessionId() const;
     void setSessionId(const QString& sessionId);
+    QString streamId() const;
+    void setStreamId(const QString& streamId);
     QString status() const;
     void setStatus(const QString& status);
     QString inviteKey() const;
@@ -138,6 +141,7 @@ class VsServerInfo : public QObject
     QString m_bannerURL;
     QString m_id;
     QString m_sessionId;
+    QString m_streamId;
     QString m_status;
     QString m_cloudId;
     QString m_inviteKey;
