@@ -13,6 +13,7 @@ Rectangle {
     property string hostname: "app.jacktrip.com"
     property string studioName: "Test Studio"
     property string studioId: ""
+    property string streamId: ""
     property string inviteKeyString: ""
     property int sampleRate: 48000
     property bool publicStudio: false
@@ -323,28 +324,38 @@ Rectangle {
     }
 
     Button {
-        id: manageOrVideoButton
+        id: manageButton
         x: parent.width - (65 * virtualstudio.uiScale); y: topMargin * virtualstudio.uiScale
         width: 40 * virtualstudio.uiScale; height: width
         background: Rectangle {
             radius: width / 2
-            color: manageOrVideoButton.down ? managePressedColour : (manageOrVideoButton.hovered ? manageHoverColour : manageColour)
-            border.width:  manageOrVideoButton.down ? 1 : 0
+            color: manageButton.down ? managePressedColour : (manageButton.hovered ? manageHoverColour : manageColour)
+            border.width:  manageButton.down ? 1 : 0
             border.color: manageStroke
         }
         onClicked: {
-            if (connected) {
-                virtualstudio.launchVideo(studioId)
+            var url = "";
+            if (streamId === "") {
+                if (virtualstudio.testMode) {
+                    url = "https://test.jacktrip.com/studios/" + studioId;
+                } else {
+                    url = "https://app.jacktrip.com/studios/" + studioId;
+                }
             } else {
-                virtualstudio.manageStudio(studioId);
+                if (virtualstudio.testMode) {
+                    url = "https://next-test.jacktrip.com/@" + streamId + "/dashboard";
+                } else {
+                    url = "https://www.jacktrip.com/@" + streamId + "/dashboard";
+                }
             }
+            virtualstudio.openLink(qsTr(url));
         }
         visible: admin || connected
         Image {
             id: manageImg
             width: 20 * virtualstudio.uiScale; height: width
             anchors { verticalCenter: parent.verticalCenter; horizontalCenter: parent.horizontalCenter }
-            source: connected ? "video.svg" : "manage.svg"
+            source: "manage.svg"
             sourceSize: Qt.size(manageImg.width,manageImg.height)
             fillMode: Image.PreserveAspectFit
             smooth: true
@@ -352,9 +363,9 @@ Rectangle {
     }
 
     Text {
-        anchors.horizontalCenter: manageOrVideoButton.horizontalCenter
+        anchors.horizontalCenter: manageButton.horizontalCenter
         y: 56 * virtualstudio.uiScale
-        text: connected ? "Video" : "Manage"
+        text: "Manage"
         font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
         visible: admin || connected
         color: textColour

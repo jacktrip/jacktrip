@@ -57,6 +57,7 @@ VsServerInfo& VsServerInfo::operator=(const VsServerInfo& info)
     m_bannerURL   = info.m_bannerURL;
     m_id          = info.m_id;
     m_sessionId   = info.m_sessionId;
+    m_streamId    = info.m_streamId;
     m_status      = info.m_status;
     m_cloudId     = info.m_cloudId;
     m_inviteKey   = info.m_inviteKey;
@@ -273,6 +274,16 @@ QString VsServerInfo::sessionId() const
 void VsServerInfo::setSessionId(const QString& sessionId)
 {
     m_sessionId = (sessionId == "undefined") ? "" : sessionId;
+}
+
+QString VsServerInfo::streamId() const
+{
+    return m_streamId;
+}
+
+void VsServerInfo::setStreamId(const QString& streamId)
+{
+    m_streamId = (streamId == "undefined") ? "" : streamId;
 }
 
 QString VsServerInfo::inviteKey() const
