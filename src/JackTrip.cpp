@@ -425,8 +425,11 @@ void JackTrip::setupRingBuffers()
         } else if ((mBufferStrategy == 3) || (mBufferStrategy == 4)) {
             cout << "Using experimental buffer strategy " << mBufferStrategy
                  << "-- Regulator with PLC" << endl;
+#define NUMPACKETSINTHEPAST 2
+#define BITRESOLUTION16     16
             Regulator* regulator_ptr =
-                new Regulator(mNumAudioChansOut, mAudioBitResolution, mAudioBufferSize,
+                new Regulator(mNumAudioChansOut, mAudioBufferSize, BITRESOLUTION16,
+                        NUMPACKETSINTHEPAST, mNumAudioChansOut, mAudioBitResolution, mAudioBufferSize,
                               mBufferQueueLength, mBroadcastQueueLength, mSampleRate);
             mReceiveRingBuffer = regulator_ptr;
             // bufStrategy 3 or 4, mBufferQueueLength is in integer msec not packets

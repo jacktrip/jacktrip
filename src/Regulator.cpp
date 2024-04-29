@@ -202,6 +202,85 @@ void BurgAlgorithm::predict(std::vector<float>& coeffs, std::vector<float>& tail
 }
 
 //*******************************************************************************
+#define NOW (pCnt * fpp)  // incrementing time
+Channel::Channel(int fpp, int upToNow, int packetsInThePast)
+{
+    predictedNowPacket.resize(fpp);
+    realNowPacket.resize(fpp);
+    outputNowPacket.resize(fpp);
+    futurePredictedPacket.resize(fpp);
+    mTmpFloatBuf.resize(fpp);
+    mZeros.resize(fpp);
+    for (int i = 0; i < fpp; i++)
+        predictedNowPacket[i] = realNowPacket[i] = outputNowPacket[i] =
+            futurePredictedPacket[i] = mTmpFloatBuf[i] = mZeros[i] = 0.0;
+
+    realPast.resize(upToNow);
+    for (int i = 0; i < upToNow; i++)
+        realPast[i] = 0.0;
+    zeroPast.resize(upToNow);
+    for (int i = 0; i < upToNow; i++)
+        zeroPast[i] = 1.0;
+
+    for (int i = 0; i < packetsInThePast; i++) {  // don't resize, using push_back
+        std::vector<float> tmp(fpp);
+        for (int j = 0; j < fpp; j++)
+            tmp[j] = 0.0;
+        predictedPast.push_back(tmp);
+    }
+
+    coeffs.resize(upToNow - 1);
+    for (int i = 0; i < upToNow - 1; i++) {
+        coeffs[i] = 0.0;
+    }
+
+    prediction.resize(upToNow + fpp * 2);
+    for (int i = 0; i < upToNow + fpp * 2; i++) {
+        prediction[i] = 0.0;
+    }
+
+    // setup ring buffer
+    mRing = packetsInThePast;
+    mWptr = mRing / 2;
+    // mRptr = mWptr - 2;
+    for (int i = 0; i < mRing; i++) {  // don't resize, using push_back
+        std::vector<float> tmp(fpp);
+        for (int j = 0; j < fpp; j++)
+            tmp[j] = 0.0;
+        mPacketRing.push_back(tmp);
+    }
+
+    fakeNow.resize(fpp);
+    fakeNowPhasor    = 0.0;
+    fakeNowPhasorInc = 0.22;
+    for (int i = 0; i < fpp; i++) {
+        double tmp = sin(fakeNowPhasor);
+        tmp *= 0.1;
+        fakeNow[i] = tmp;
+        fakeNowPhasor += fakeNowPhasorInc;
+    }
+    lastWasGlitch = false;
+}
+
+void Channel::ringBufferPush()
+{  // push received packet to ring
+    mPacketRing[mWptr % mRing] = mTmpFloatBuf;
+    mWptr++;
+    mWptr %= mRing;
+}
+
+void Channel::ringBufferPull(int past)
+{  // pull numbered packet from ring
+    // bool priming = ((mPcnt - past) < 0); checked outside
+    // if (!priming) {
+    int pastPtr = mWptr - past;
+    if (pastPtr < 0)
+        pastPtr += mRing;
+    mTmpFloatBuf = mPacketRing[pastPtr];
+    // } else cout << "ring buffer not primed\n";
+}
+
+//*******************************************************************************
 Regulator::Regulator(int chans, int fpp, int bps, int packetsInThePast,
 int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
                      int sample_rate)
@@ -244,11 +323,11 @@ int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
     upToNow   = packetsInThePast * fpp;        // duration
     beyondNow = (packetsInThePast + 1) * fpp;  // duration
 
-    mChanData.resize(channels);
-    for (int ch = 0; ch < channels; ch++) {
-        mChanData[ch]                   = new Channel(fpp, upToNow, packetsInThePast);
-        mChanData[ch]->fakeNowPhasorInc = 0.11 + 0.03 * ch;
-    }
+// !peerFPP    mChanData.resize(channels);
+// !peerFPP    for (int ch = 0; ch < channels; ch++) {
+// !peerFPP        mChanData[ch]                   = new Channel(fpp, upToNow, packetsInThePast);
+// !peerFPP        mChanData[ch]->fakeNowPhasorInc = 0.11 + 0.03 * ch;
+// !peerFPP    }
 
     mFadeUp.resize(fpp);
     mFadeDown.resize(fpp);
@@ -488,7 +567,7 @@ void Regulator::setFPPratio(int len)
     }
 
     for (int i = 0; i < mNumChannels; i++) {
-        ChanData* tmp = new ChanData(i, mPeerFPP, mHist);
+        Channel* tmp = new Channel(i, mPeerFPP, mHist);
         mChanData.push_back(tmp);
         for (int s = 0; s < mPeerFPP; s++)
             sampleToBits(0.0, i, s);  // zero all channels in mXfrBuffer
@@ -644,74 +723,6 @@ void Regulator::processPacket(bool glitch)
         tmp2 /= 1000000.0;
         pullStat->lastPLCdspElapsed = tmp2;
     }
-}
-
-//*******************************************************************************
-void Regulator::processChannel(int ch, bool glitch, int packetCnt, bool lastWasGlitch)
-{
-    //    if(glitch) qDebug() << "glitch"; else fprintf(stderr,".");
-    ChanData* cd = mChanData[ch];
-    for (int s = 0; s < mPeerFPP; s++)
-        cd->mTruth[s] = bitsToSample(ch, s);
-    if (packetCnt) {
-        // always update mTrain
-        for (int i = 0; i < mHist; i++) {
-            for (int s = 0; s < mPeerFPP; s++)
-                cd->mTrain[s + ((mHist - (i + 1)) * mPeerFPP)] = cd->mLastPackets[i][s];
-        }
-        if (glitch) {
-            // GET LINEAR PREDICTION COEFFICIENTS
-            ba.train(cd->mCoeffs, cd->mTrain);
-
-            // LINEAR PREDICT DATA
-            cd->mTail = cd->mTrain;
-
-            ba.predict(cd->mCoeffs,
-                       cd->mTail);  // resizes to TRAINSAMPS-2 + TRAINSAMPS
-
-            for (int i = 0; i < (cd->trainSamps - 2); i++)
-                cd->mPrediction[i] = cd->mTail[i + cd->trainSamps];
-        }
-        // cross fade last prediction with mTruth
-        if (lastWasGlitch)
-            for (int s = 0; s < mPeerFPP; s++)
-                cd->mXfadedPred[s] =
-                    cd->mTruth[s] * mFadeUp[s] + cd->mLastPred[s] * mFadeDown[s];
-        for (int s = 0; s < mPeerFPP; s++)
-            sampleToBits((glitch)
-                             ? cd->mPrediction[s]
-                             : ((lastWasGlitch) ? cd->mXfadedPred[s] : cd->mTruth[s]),
-                         ch, s);
-        if (glitch) {
-            for (int s = 0; s < mPeerFPP; s++)
-                cd->mLastPred[s] = cd->mPrediction[s + mPeerFPP];
-        }
-    }
-
-    // copy down history
-
-    for (int i = mHist - 1; i > 0; i--) {
-        for (int s = 0; s < mPeerFPP; s++)
-            cd->mLastPackets[i][s] = cd->mLastPackets[i - 1][s];
-    }
-
-    // add prediction  or current input to history, the former checking if primed
-
-    for (int s = 0; s < mPeerFPP; s++)
-        cd->mLastPackets[0][s] =
-            //                ((!glitch) || (packetCnt < mHist)) ? cd->mTruth[s] :
-            //                cd->mPrediction[s];
-            ((glitch) ? ((packetCnt >= mHist) ? cd->mPrediction[s] : cd->mTruth[s])
-                      : ((lastWasGlitch) ? cd->mXfadedPred[s] : cd->mTruth[s]));
-
-    // diagnostic output
-    /////////////////////
-    if (false)
-        for (int s = 0; s < mPeerFPP; s++) {
-            sampleToBits(0.7 * sin(mPhasor[ch]), ch, s);
-            mPhasor[ch] += (!ch) ? 0.1 : 0.11;
-        }
-    /////////////////////
 }
 
 //*******************************************************************************
@@ -939,6 +950,117 @@ void Regulator::readBroadcastSlot(int8_t* ptrToReadSlot)
     }
     memcpy(ptrToReadSlot, mBroadcastPullPtr, mBytes);
     mBroadcastPullPtr += mBytes;
+}
+
+//*******************************************************************************
+void Regulator::burg(bool glitch)
+{  // generate next bufferfull and convert to short int
+    bool primed = mPcnt > packetsInThePast;
+    for (int ch = 0; ch < channels; ch++) {
+        Channel* c = mChanData[ch];
+        //////////////////////////////////////
+        if (glitch)
+            mTime->trigger();
+
+        for (int i = 0; i < fpp; i++) {
+            double tmp = sin(c->fakeNowPhasor);
+            tmp *= 0.1;
+            c->fakeNow[i] = tmp;
+            c->fakeNowPhasor += c->fakeNowPhasorInc;
+        }
+
+        for (int s = 0; s < fpp; s++)
+            c->realNowPacket[s] = (!glitch) ? c->mTmpFloatBuf[s] : 0.0;
+        // for ( int s = 0; s < fpp; s++ ) c->realNowPacket[s] = (!glitch) ? c->fakeNow[s]
+        // : 0.0; keep history of generated signal
+        if (!glitch) {
+            for (int s = 0; s < fpp; s++)
+                c->mTmpFloatBuf[s] = c->realNowPacket[s];
+            c->ringBufferPush();
+        }
+
+        if (primed) {
+            int offset = 0;
+            for (int i = 0; i < packetsInThePast; i++) {
+                c->ringBufferPull(packetsInThePast - i);
+                for (int s = 0; s < fpp; s++)
+                    c->realPast[s + offset] = c->mTmpFloatBuf[s];
+                offset += fpp;
+            }
+        }
+
+        if (glitch) {
+            for (int s = 0; s < upToNow; s++)
+                c->prediction[s] = c->predictedPast[s / fpp][s % fpp];
+            // for ( int s = 0; s < upToNow; s++ ) c->prediction[s] = (s%fpp) ?
+            //                            c->predictedPast[s/fpp][s%fpp]
+            //                            : 0.5;
+            // if (!(mNotTrained%100))
+            {
+                ba->train(c->coeffs,
+                          // c->realPast
+                          c->prediction
+                          // (c->lastWasGlitch) ? c->prediction : c->realPast
+                          ,
+                          upToNow);
+                // cout << "\ncoeffs ";
+            }
+            // if (mNotTrained < 2) c->coeffs[0] = 0.9;
+            mNotTrained++;
+
+            ba->predict(c->coeffs, c->prediction);
+            // if (pCnt < 200) for ( int s = 0; s < 3; s++ )
+            //         cout << pCnt << "\t" << s << "---"
+            //              << prediction[s+upToNow] << " \t"
+            //              << coeffs[s] << " \n";
+            for (int s = 0; s < fpp; s++)
+                c->predictedNowPacket[s] = c->prediction[upToNow + s];
+        }
+
+        for (int s = 0; s < fpp; s++)
+            c->mTmpFloatBuf[s] = c->outputNowPacket[s] =
+                ((glitch)
+                     ? ((primed) ? c->predictedNowPacket[s] : 0.0)
+                     : ((c->lastWasGlitch) ? (mFadeDown[s] * c->futurePredictedPacket[s]
+                                              + mFadeUp[s] * c->realNowPacket[s])
+                                           : c->realNowPacket[s]));
+
+        for (int s = 0; s < fpp; s++)
+            c->mTmpFloatBuf[s] = c->outputNowPacket[s];
+        //         (c->lastWasGlitch) ? c->prediction[s] : c->realPast[s];
+        // for ( int s = 0; s < fpp; s++ ) c->mTmpFloatBuf[s] = c->coeffs[s + 0*fpp];
+        // for ( int s = 0; s < fpp; s++ ) c->mTmpFloatBuf[s] = c->prediction[upToNow +
+        // s];
+
+        c->lastWasGlitch = glitch;
+
+        for (int i = 0; i < packetsInThePast - 1; i++) {
+            for (int s = 0; s < fpp; s++)
+                c->predictedPast[i][s] = c->predictedPast[i + 1][s];
+        }
+        for (int s = 0; s < fpp; s++)
+            c->predictedPast[packetsInThePast - 1][s] = c->outputNowPacket[s];
+
+        if (false)
+            for (int i = 0; i < packetsInThePast - 1; i++) {
+                for (int s = 0; s < fpp; s++)
+                    c->predictedPast[i][s] = c->prediction[(i + 1) * fpp + s];
+            }
+
+        for (int s = 0; s < fpp; s++) {
+            c->futurePredictedPacket[s] = c->prediction[beyondNow + s - 0];
+            // earlier bug was heap overflow because of smaller coeffs size, so -1 was ok,
+            // now prediction is larger
+        }
+        //////////////////////////////////////
+
+        if (glitch)
+            mTime->collect();
+    }
+    // if (Hapitrip::as.dVerbose)
+    if (!(mPcnt % 300))
+        std::cout << "avg " << mTime->avg() << " glitches " << mTime->glitches() << " \n";
+    mPcnt++;
 }
 
 //*******************************************************************************

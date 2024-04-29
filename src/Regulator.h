@@ -237,7 +237,7 @@ int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
     virtual bool getStats(IOStat* stat, bool reset);
 
    private:
-// !peer FPP   void shimFPP(const int8_t* buf, int seq_num);
+// !peerFPP   void shimFPP(const int8_t* buf, int seq_num);
     void pushPacket(const int8_t* buf, int seq_num);
     void updatePushStats(int seq_num);
     void pullPacket();
