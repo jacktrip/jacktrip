@@ -110,10 +110,107 @@ constexpr double AutoSmoothingFactor =
     1.0
     / (WindowDivisor * AutoHistoryWindow);  // EWMA smoothing factor for auto tolerance
 
+BurgAlgorithm::BurgAlgorithm(size_t size)  // upToNow = packetsInThePast * fpp
+{
+    // GET SIZE FROM INPUT VECTORS
+    m = N      = size - 1;
+    this->size = size;
+    if (size < m)
+        qDebug() << "time_series should have more elements than the AR order is";
+    Ak.resize(size);
+    for (size_t i = 0; i < size; i++)
+        Ak[i] = 0.0;
+    AkReset.resize(size);
+    AkReset    = Ak;
+    AkReset[0] = 1.0;
+
+    f.resize(size);
+    b.resize(size);
+}
+
+void BurgAlgorithm::train(std::vector<float>& coeffs, const std::vector<float>& x, size_t size)
+{
+    // INITIALIZE Ak
+    Ak = AkReset;
+
+    // INITIALIZE f and b
+    for (size_t i = 0; i < size; i++)
+        f[i] = b[i] = x[i];
+
+    // INITIALIZE Dk
+    float Dk = 0.0;
+    for (size_t j = 0; j <= N; j++) {
+        // Dk += 2.000001 * f[ j ] * f[ j ]; // needs more damping than orig 2.0
+        // Dk += 2.5 * f[ j ] * f[ j ]; // needs more damping than orig 2.0
+        // Dk += 3.0 * f[ j ] * f[ j ]; // needs more damping than orig 2.0
+        Dk += 2.00002 * f[j] * f[j];  // needs more damping than orig 2.0
+        // Dk += 2.00003 * f[ j ] * f[ j ]; // needs more damping than orig 2.0
+        // eliminate overflow Dk += 2.0001 * f[ j ] * f[ j ]; // needs more damping than
+        // orig 2.0
+
+        // JT >>
+        // Dk += 2.00001 * f[j] * f[j];  // CC: needs more damping than orig 2.0
+
+        // was >>
+        // Dk += 2.0000001 * f[ j ] * f[ j ]; // needs more damping than orig 2.0
+    }
+    Dk -= f[0] * f[0] + b[N] * b[N];
+
+    // BURG RECURSION
+    for (size_t k = 0; k < m; k++) {
+        // COMPUTE MU
+        float mu = 0.0;
+        for (size_t n = 0; n <= N - k - 1; n++) {
+            mu += f[n + k + 1] * b[n];
+        }
+
+        if (Dk == 0.0)
+            Dk = 0.0000001;  // from online testing
+        mu *= -2.0 / Dk;
+
+        // UPDATE Ak
+        for (size_t n = 0; n <= (k + 1) / 2; n++) {
+            float t1      = Ak[n] + mu * Ak[k + 1 - n];
+            float t2      = Ak[k + 1 - n] + mu * Ak[n];
+            Ak[n]         = t1;
+            Ak[k + 1 - n] = t2;
+        }
+
+        // UPDATE f and b
+        for (size_t n = 0; n <= N - k - 1; n++) {
+            float t1     = f[n + k + 1] + mu * b[n];  // were double
+            float t2     = b[n] + mu * f[n + k + 1];
+            f[n + k + 1] = t1;
+            b[n]         = t2;
+        }
+
+        // UPDATE Dk
+        Dk = (1.0 - mu * mu) * Dk - f[k + 1] * f[k + 1] - b[N - k - 1] * b[N - k - 1];
+    }
+    // ASSIGN COEFFICIENTS
+    coeffs.assign(++Ak.begin(), Ak.end());
+}
+
+void BurgAlgorithm::predict(std::vector<float>& coeffs, std::vector<float>& tail)
+{
+    for (size_t i = m; i < tail.size(); i++) {
+        tail[i] = 0.0;
+        for (size_t j = 0; j < m; j++) {
+            tail[i] -= coeffs[j] * tail[i - 1 - j];
+        }
+    }
+}
+
 //*******************************************************************************
-Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
+Regulator::Regulator(int chans, int fpp, int bps, int packetsInThePast,
+int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
                      int sample_rate)
     : RingBuffer(0, 0)
+    , channels(chans)
+    , fpp(fpp)
+    , bps(bps)
+    //////////////////////////////////////
+    , packetsInThePast(packetsInThePast)
     , mInitialized(false)
     , mNumChannels(rcvChannels)
     , mAudioBitRes(bit_res)
@@ -134,6 +231,38 @@ Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
     , m_b_BroadcastRingBuffer(NULL)
     , m_b_BroadcastQueueLength(bqLen)
 {
+    cout << " --PLC diagnostics-- " << packetsInThePast
+         << " packetsInThePast\t" << channels << " channels\n";
+    mPcnt = 0;
+    mTime = new Time();
+    mTime->start();
+    if (bps == 16) {
+        scale    = 32767.0;
+        invScale = 1.0 / 32767.0;
+    } else
+        cout << "bps != 16 -- add code\n";
+    upToNow   = packetsInThePast * fpp;        // duration
+    beyondNow = (packetsInThePast + 1) * fpp;  // duration
+
+    mChanData.resize(channels);
+    for (int ch = 0; ch < channels; ch++) {
+        mChanData[ch]                   = new Channel(fpp, upToNow, packetsInThePast);
+        mChanData[ch]->fakeNowPhasorInc = 0.11 + 0.03 * ch;
+    }
+
+    mFadeUp.resize(fpp);
+    mFadeDown.resize(fpp);
+    for (int i = 0; i < fpp; i++) {
+        mFadeUp[i]   = (double)i / (double)fpp;
+        mFadeDown[i] = 1.0 - mFadeUp[i];
+    }
+
+    ba = new BurgAlgorithm(upToNow);
+
+    mNotTrained = 0;
+
+    //////////////////////////////////////
+
     // catch settings that are compute bound using long HIST
     // hub client rcvChannels is set from client's settings parameters
     // hub server rcvChannels is set from connecting client, not from hub parameters
@@ -202,6 +331,36 @@ Regulator::~Regulator()
         delete mChanData[i];
     if (m_b_BroadcastRingBuffer)
         delete m_b_BroadcastRingBuffer;
+    delete mTime;
+    delete ba;
+}
+
+void Regulator::zeroTmpFloatBuf()
+{
+    for (int ch = 0; ch < channels; ch++)
+        mChanData[ch]->mTmpFloatBuf = mChanData[ch]->mZeros;
+}
+
+void Regulator::toFloatBuf(qint16* in)
+{
+    for (int ch = 0; ch < channels; ch++)
+        for (int i = 0; i < fpp; i++) {
+            double tmpIn                   = ((qint16)*in++) * invScale;
+            mChanData[ch]->mTmpFloatBuf[i] = tmpIn;
+        }
+}
+
+void Regulator::fromFloatBuf(qint16* out)
+{
+    for (int ch = 0; ch < channels; ch++)
+        for (int i = 0; i < fpp; i++) {
+            double tmpOut = mChanData[ch]->mTmpFloatBuf[i];
+            if (tmpOut > 1.0)
+                tmpOut = 1.0;
+            if (tmpOut < -1.0)
+                tmpOut = -1.0;
+            *out++ = (qint16)(tmpOut * scale);
+        }
 }
 
 //*******************************************************************************
@@ -470,12 +629,16 @@ void Regulator::processPacket(bool glitch)
     double tmp = 0.0;
     if (glitch)
         tmp = (double)mIncomingTimer.nsecsElapsed();
-    for (int ch = 0; ch < mNumChannels; ch++)
-        processChannel(ch, glitch, mPacketCnt, mLastWasGlitch);
-    mLastWasGlitch = glitch;
+//  !PLC  for (int ch = 0; ch < mNumChannels; ch++)
+//  !PLC      processChannel(ch, glitch, mPacketCnt, mLastWasGlitch);
+//  !PLC  mLastWasGlitch = glitch;
     mPacketCnt++;
     // 32 bit is good for days:  (/ (* (- (expt 2 32) 1) (/ 32 48000.0)) (* 60 60 24))
 
+    zeroTmpFloatBuf();  // ahead of either call to burg
+    xfrBufferToFloatBuf();
+    burg(glitch);
+    
     if (glitch) {
         double tmp2 = (double)mIncomingTimer.nsecsElapsed() - tmp;
         tmp2 /= 1000000.0;
@@ -573,146 +736,6 @@ void Regulator::sampleToBits(sample_t sample, int ch, int frame)
         mBitResolutionMode);
 }
 
-//*******************************************************************************
-bool BurgAlgorithm::classify(double d)
-{
-    bool tmp = false;
-    switch (fpclassify(d)) {
-    case FP_INFINITE:
-        qDebug() << ("infinite");
-        tmp = true;
-        break;
-    case FP_NAN:
-        qDebug() << ("NaN");
-        tmp = true;
-        break;
-    case FP_ZERO:
-        qDebug() << ("zero");
-        tmp = true;
-        break;
-    case FP_SUBNORMAL:
-        qDebug() << ("subnormal");
-        tmp = true;
-        break;
-        //    case FP_NORMAL:    qDebug() <<  ("normal");    break;
-    }
-    //  if (signbit(d)) qDebug() <<  (" negative\n"); else qDebug() <<  (" positive or
-    //  unsigned\n");
-    return tmp;
-}
-
-void BurgAlgorithm::train(std::vector<double>& coeffs, const std::vector<double>& x)
-{
-    // GET SIZE FROM INPUT VECTORS
-    size_t N = x.size() - 1;
-    size_t m = coeffs.size();
-
-    //        if (x.size() < m) qDebug() << "time_series should have more elements
-    //        than the AR order is";
-
-    // INITIALIZE Ak
-    //    vector<double> Ak(m + 1, 0.0);
-    Ak.assign(m + 1, 0.0);
-    Ak[0] = 1.0;
-
-    // INITIALIZE f and b
-    //    vector<double> f;
-    f.resize(x.size());
-    for (unsigned int i = 0; i < x.size(); i++)
-        f[i] = x[i];
-    //    vector<double> b(f);
-    b = f;
-
-    // INITIALIZE Dk
-    double Dk = 0.0;
-    for (size_t j = 0; j <= N; j++)  // CC: N is $#x-1 in C++ but $#x in perl
-    {
-        Dk += 2.00001 * f[j] * f[j];  // CC: needs more damping than orig 2.0
-    }
-    Dk -= f[0] * f[0] + b[N] * b[N];
-
-    //    qDebug() << "Dk" << qStringFromLongDouble1(Dk);
-    //        if ( classify(Dk) )
-    //        { qDebug() << pCnt << "init";
-    //        }
-
-    // BURG RECURSION
-    for (size_t k = 0; k < m; k++) {
-        // COMPUTE MU
-        double mu = 0.0;
-        for (size_t n = 0; n <= N - k - 1; n++) {
-            mu += f[n + k + 1] * b[n];
-        }
-
-        if (Dk == 0.0)
-            Dk = 0.0000001;  // CC: from testing, needs eps
-        //            if ( classify(Dk) ) qDebug() << pCnt << "run";
-
-        mu *= -2.0 / Dk;
-        //            if ( isnan(Dk) )  { qDebug() << "k" << k; }
-        //            if (Dk==0.0) qDebug() << "k" << k << "Dk==0";
-
-        // UPDATE Ak
-        for (size_t n = 0; n <= (k + 1) / 2; n++) {
-            double t1     = Ak[n] + mu * Ak[k + 1 - n];
-            double t2     = Ak[k + 1 - n] + mu * Ak[n];
-            Ak[n]         = t1;
-            Ak[k + 1 - n] = t2;
-        }
-
-        // UPDATE f and b
-        for (size_t n = 0; n <= N - k - 1; n++) {
-            double t1    = f[n + k + 1] + mu * b[n];  // were double
-            double t2    = b[n] + mu * f[n + k + 1];
-            f[n + k + 1] = t1;
-            b[n]         = t2;
-        }
-
-        // UPDATE Dk
-        Dk = (1.0 - mu * mu) * Dk - f[k + 1] * f[k + 1] - b[N - k - 1] * b[N - k - 1];
-    }
-    // ASSIGN COEFFICIENTS
-    coeffs.assign(++Ak.begin(), Ak.end());
-}
-
-void BurgAlgorithm::predict(std::vector<double>& coeffs, std::vector<double>& tail)
-{
-    size_t m = coeffs.size();
-    //    qDebug() << "tail.at(0)" << tail[0]*32768;
-    //    qDebug() << "tail.at(1)" << tail[1]*32768;
-    tail.resize(m + tail.size());
-    //    qDebug() << "tail.at(m)" << tail[m]*32768;
-    //    qDebug() << "tail.at(...end...)" << tail[tail.size()-1]*32768;
-    //    qDebug() << "m" << m << "tail.size()" << tail.size();
-    for (size_t i = m; i < tail.size(); i++) {
-        tail[i] = 0.0;
-        for (size_t j = 0; j < m; j++) {
-            tail[i] -= coeffs[j] * tail[i - 1 - j];
-        }
-    }
-}
-
-//*******************************************************************************
-ChanData::ChanData(int i, int FPP, int hist) : ch(i)
-{
-    int shrinkCoeffsFactor = 1;
-    if (FPP == 1024)
-        shrinkCoeffsFactor = 8;
-    trainSamps = (hist * FPP);
-    mTruth.resize(FPP, 0.0);
-    mXfadedPred.resize(FPP, 0.0);
-    mLastPred.resize(FPP, 0.0);
-    for (int i = 0; i < hist; i++) {
-        std::vector<sample_t> tmp(FPP, 0.0);
-        mLastPackets.push_back(tmp);
-    }
-    mTrain.resize(trainSamps, 0.0);
-    mPrediction.resize(trainSamps - 1, 0.0);  // ORDER
-    mCoeffs.resize(trainSamps / shrinkCoeffsFactor - 2, 0.0);
-    mCrossFadeDown.resize(FPP, 0.0);
-    mCrossFadeUp.resize(FPP, 0.0);
-    mCrossfade.resize(FPP, 0.0);
-}
 
 //*******************************************************************************
 StdDev::StdDev(int id, QElapsedTimer* timer, int w) : mId(id), mTimer(timer), window(w)

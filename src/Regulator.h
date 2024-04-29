@@ -46,6 +46,7 @@
 
 #include <QDebug>
 #include <QElapsedTimer>
+#include <vector>
 #include <atomic>
 #include <cstring>
 
@@ -57,34 +58,91 @@
 class BurgAlgorithm
 {
    public:
-    bool classify(double d);
-    void train(std::vector<double>& coeffs, const std::vector<double>& x);
-    void predict(std::vector<double>& coeffs, std::vector<double>& tail);
+    BurgAlgorithm(size_t size);
+    void train(std::vector<float>& coeffs, const std::vector<float>& x, size_t size);
+    void predict(std::vector<float>& coeffs, std::vector<float>& predicted);
 
    private:
-    // the following are class members to minimize heap memory allocations
-    std::vector<double> Ak;
-    std::vector<double> f;
-    std::vector<double> b;
+    size_t m;
+    size_t N;
+    int size;
+    std::vector<float> Ak;
+    std::vector<float> AkReset;
+    std::vector<float> f;
+    std::vector<float> b;
 };
 
-class ChanData
+class Time
+{
+    double accum   = 0.0;
+    int cnt        = 0;
+    int glitchCnt  = 0;
+    double tmpTime = 0.0;
+
+   public:
+    QElapsedTimer mCallbackTimer;  // for rcvElapsedTime
+    void collect()
+    {
+        double tmp = (mCallbackTimer.nsecsElapsed() - tmpTime) / 1000000.0;
+        accum += tmp;
+        cnt++;
+    }
+    double instantElapsed()
+    {
+        return (mCallbackTimer.nsecsElapsed() - tmpTime) / 1000000.0;
+    }
+    double instantAbsolute() { return (mCallbackTimer.nsecsElapsed()) / 1000000.0; }
+    double avg()
+    {
+        if (!cnt)
+            return 0.0;
+        double tmp = accum / (double)cnt;
+        accum      = 0.0;
+        cnt        = 0;
+        return tmp;
+    }
+    void start() { mCallbackTimer.start(); }
+    void trigger()
+    {
+        tmpTime = mCallbackTimer.nsecsElapsed();
+        glitchCnt++;
+    }
+    int glitches()
+    {
+        int tmp   = glitchCnt;
+        glitchCnt = 0;
+        return tmp;
+    }
+};
+
+class Channel
 {
    public:
-    ChanData(int i, int FPP, int hist);
-    int ch;
-    int trainSamps;
-    std::vector<sample_t> mTruth;
-    std::vector<double> mTrain;
-    std::vector<double> mTail;
-    std::vector<sample_t> mPrediction;  // ORDER
-    std::vector<double> mCoeffs;
-    std::vector<sample_t> mXfadedPred;
-    std::vector<sample_t> mLastPred;
-    std::vector<std::vector<sample_t>> mLastPackets;
-    std::vector<sample_t> mCrossFadeDown;
-    std::vector<sample_t> mCrossFadeUp;
-    std::vector<sample_t> mCrossfade;
+    Channel(int fpp, int upToNow, int packetsInThePast);
+    void ringBufferPush();
+    void ringBufferPull(int past);
+    double fakeNowPhasorInc;
+    std::vector<float>
+        mTmpFloatBuf;  // one bufferfull of audio, used for rcv and send operations
+    std::vector<float> prediction;
+    std::vector<float> predictedNowPacket;
+    std::vector<float> realNowPacket;
+    std::vector<float> outputNowPacket;
+    std::vector<float> futurePredictedPacket;
+    std::vector<float> realPast;
+    std::vector<float> zeroPast;
+    std::vector<std::vector<float>> predictedPast;
+    std::vector<float> coeffs;
+    std::vector<std::vector<float>> mPacketRing;
+    int mWptr;
+    int mRing;
+    std::vector<float> fakeNow;
+    double fakeNowPhasor;
+    std::vector<float> mZeros;
+    bool lastWasGlitch;
+
+   private:
+    friend class PLC;
 };
 
 class StdDev
@@ -128,11 +186,14 @@ class Regulator : public RingBuffer
 {
    public:
     /// construct a new regulator
-    Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
+    Regulator(int chans, int fpp, int bps, int packetsInThePast,
+int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
               int sample_rate);
 
     // virtual destructor
     virtual ~Regulator();
+
+    Time* mTime;
 
     // can hijack unused2 to propagate incoming seq num if needed
     // option is in UdpDataProtocol
@@ -176,15 +237,38 @@ class Regulator : public RingBuffer
     virtual bool getStats(IOStat* stat, bool reset);
 
    private:
-    void shimFPP(const int8_t* buf, int seq_num);
+// !peer FPP   void shimFPP(const int8_t* buf, int seq_num);
     void pushPacket(const int8_t* buf, int seq_num);
     void updatePushStats(int seq_num);
     void pullPacket();
     void updateTolerance();
     void setFPPratio(int len);
     void processPacket(bool glitch);
-    void processChannel(int ch, bool glitch, int packetCnt, bool lastWasGlitch);
+//  !PLC  void processChannel(int ch, bool glitch, int packetCnt, bool lastWasGlitch);
 
+    void burg(bool glitch);
+    void zeroTmpFloatBuf();
+    void toFloatBuf(qint16* in);
+    void fromFloatBuf(qint16* out);
+
+    int mPcnt;
+    std::vector<float> mTmpFloatBuf;
+    std::vector<Channel*> mChanData;
+    BurgAlgorithm* ba;
+    int channels;
+    int fpp;
+    int bps;
+    int packetsInThePast;
+    int upToNow;    // duration
+    int beyondNow;  // duration
+    std::vector<float> mFadeUp;
+    std::vector<float> mFadeDown;
+    float scale;
+    float invScale;
+    int mNotTrained;
+
+    //////////////////////////////////////
+        
     bool mInitialized;
     int mNumChannels;
     int mAudioBitRes;
@@ -195,7 +279,7 @@ class Regulator : public RingBuffer
     int mNumSlots;
     int mHist;
     AudioInterface::audioBitResolutionT mBitResolutionMode;
-    BurgAlgorithm ba;
+// !PLC    BurgAlgorithm ba;
     int mBytes;
     int mPeerBytes;
     int8_t* mXfrBuffer;
@@ -205,13 +289,13 @@ class Regulator : public RingBuffer
     int mPacketCnt;
     sample_t bitsToSample(int ch, int frame);
     void sampleToBits(sample_t sample, int ch, int frame);
-    std::vector<sample_t> mFadeUp;
-    std::vector<sample_t> mFadeDown;
+// !PLC    std::vector<sample_t> mFadeUp;
+// !PLC     std::vector<sample_t> mFadeDown;
     bool mLastWasGlitch;
     int8_t** mSlots;
     int8_t* mSlotBuf;
     double mMsecTolerance;
-    std::vector<ChanData*> mChanData;
+// !PLC        std::vector<ChanData*> mChanData;
     StdDev* pushStat;
     StdDev* pullStat;
     QElapsedTimer mIncomingTimer;
@@ -237,6 +321,26 @@ class Regulator : public RingBuffer
     /// Pointer for the Broadcast RingBuffer
     RingBuffer* m_b_BroadcastRingBuffer;
     int m_b_BroadcastQueueLength;
+    
+    void floatBufToXfrBuffer()
+    {
+        for (int ch = 0; ch < mNumChannels; ch++)
+            for (int s = 0; s < mFPP; s++) {
+                double tmpOut = mChanData[ch]->mTmpFloatBuf[s];
+                //              if (tmpOut > 1.0) tmpOut = 1.0;
+                //              if (tmpOut < -1.0) tmpOut = -1.0;
+                sampleToBits(tmpOut, ch, s);
+            }
+    };
+
+    void xfrBufferToFloatBuf()
+    {
+        for (int ch = 0; ch < mNumChannels; ch++)
+            for (int s = 0; s < mFPP; s++) {
+                double tmpIn                   = bitsToSample(ch, s);
+                mChanData[ch]->mTmpFloatBuf[s] = tmpIn;
+            }
+    };
 };
 
 #endif  //__REGULATOR_H__
