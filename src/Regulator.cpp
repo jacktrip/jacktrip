@@ -567,7 +567,7 @@ void Regulator::setFPPratio(int len)
     }
 
     for (int i = 0; i < mNumChannels; i++) {
-        Channel* tmp = new Channel(i, mPeerFPP, mHist);
+        Channel* tmp = new Channel(mPeerFPP, upToNow, packetsInThePast);
         mChanData.push_back(tmp);
         for (int s = 0; s < mPeerFPP; s++)
             sampleToBits(0.0, i, s);  // zero all channels in mXfrBuffer
