@@ -46,9 +46,9 @@
 
 #include <QDebug>
 #include <QElapsedTimer>
-#include <vector>
 #include <atomic>
 #include <cstring>
+#include <vector>
 
 #include "AudioInterface.h"
 #include "RingBuffer.h"
@@ -186,9 +186,8 @@ class Regulator : public RingBuffer
 {
    public:
     /// construct a new regulator
-    Regulator(int chans, int fpp, int bps, int packetsInThePast,
-int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
-              int sample_rate);
+    Regulator(int chans, int fpp, int bps, int packetsInThePast, int rcvChannels,
+              int bit_res, int FPP, int qLen, int bqLen, int sample_rate);
 
     // virtual destructor
     virtual ~Regulator();
@@ -237,14 +236,14 @@ int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
     virtual bool getStats(IOStat* stat, bool reset);
 
    private:
-// !peerFPP   void shimFPP(const int8_t* buf, int seq_num);
+    // !peerFPP   void shimFPP(const int8_t* buf, int seq_num);
     void pushPacket(const int8_t* buf, int seq_num);
     void updatePushStats(int seq_num);
     void pullPacket();
     void updateTolerance();
     void setFPPratio(int len);
     void processPacket(bool glitch);
-//  !PLC  void processChannel(int ch, bool glitch, int packetCnt, bool lastWasGlitch);
+    //  !PLC  void processChannel(int ch, bool glitch, int packetCnt, bool lastWasGlitch);
 
     void burg(bool glitch);
     void zeroTmpFloatBuf();
@@ -268,7 +267,7 @@ int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
     int mNotTrained;
 
     //////////////////////////////////////
-        
+
     bool mInitialized;
     int mNumChannels;
     int mAudioBitRes;
@@ -279,7 +278,7 @@ int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
     int mNumSlots;
     int mHist;
     AudioInterface::audioBitResolutionT mBitResolutionMode;
-// !PLC    BurgAlgorithm ba;
+    // !PLC    BurgAlgorithm ba;
     int mBytes;
     int mPeerBytes;
     int8_t* mXfrBuffer;
@@ -289,13 +288,13 @@ int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
     int mPacketCnt;
     sample_t bitsToSample(int ch, int frame);
     void sampleToBits(sample_t sample, int ch, int frame);
-// !PLC    std::vector<sample_t> mFadeUp;
-// !PLC     std::vector<sample_t> mFadeDown;
+    // !PLC    std::vector<sample_t> mFadeUp;
+    // !PLC     std::vector<sample_t> mFadeDown;
     bool mLastWasGlitch;
     int8_t** mSlots;
     int8_t* mSlotBuf;
     double mMsecTolerance;
-// !PLC        std::vector<ChanData*> mChanData;
+    // !PLC        std::vector<ChanData*> mChanData;
     StdDev* pushStat;
     StdDev* pullStat;
     QElapsedTimer mIncomingTimer;
@@ -321,7 +320,7 @@ int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
     /// Pointer for the Broadcast RingBuffer
     RingBuffer* m_b_BroadcastRingBuffer;
     int m_b_BroadcastQueueLength;
-    
+
     void floatBufToXfrBuffer()
     {
         for (int ch = 0; ch < mNumChannels; ch++)

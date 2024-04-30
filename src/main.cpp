@@ -261,10 +261,10 @@ bool isRunFromCmd()
     HANDLE h = NULL;
     PROCESSENTRY32 pe;
     ZeroMemory(&pe, sizeof(PROCESSENTRY32));
-    DWORD pid  = GetCurrentProcessId();
+    DWORD pid = GetCurrentProcessId();
     DWORD ppid = 0;
-    pe.dwSize  = sizeof(PROCESSENTRY32);
-    h          = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    pe.dwSize = sizeof(PROCESSENTRY32);
+    h = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
     if (Process32First(h, &pe)) {
         do {
             // Loop through the list of processes until we find ours.
@@ -278,9 +278,9 @@ bool isRunFromCmd()
 
     // Get the name of our parent process;
     char pname[MAX_PATH] = {0};
-    DWORD size           = MAX_PATH;
-    h                    = NULL;
-    h                    = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, ppid);
+    DWORD size = MAX_PATH;
+    h = NULL;
+    h = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, ppid);
     if (h) {
         if (QueryFullProcessImageNameA(h, 0, pname, &size)) {
             CloseHandle(h);
