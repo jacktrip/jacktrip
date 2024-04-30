@@ -34,8 +34,10 @@ Rectangle {
     property string backgroundColour: virtualstudio.darkMode ? "#494646" : "#F4F6F6"
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
     property string shadowColour: virtualstudio.darkMode ? "#40000000" : "#80A1A1A1"
-    property string toolTipBackgroundColour: inviteCopied ? "#57B147" : (virtualstudio.darkMode ? "#323232" : "#F3F3F3")
-    property string toolTipTextColour: inviteCopied ? "#FAFBFB" : textColour
+    property string inviteToolTipBackgroundColour: virtualstudio.darkMode ? "#323232" : "#F3F3F3"
+    property string inviteToolTipTextColour: textColour
+    property string inviteCopiedBackgroundColour: "#57B147"
+    property string inviteCopiedTextColour: "#FAFBFB"
     property string tooltipStroke: virtualstudio.darkMode ? "#80827D7D" : "#34979797"
 
     property string baseButtonColour: virtualstudio.darkMode ? "#F0F1F1" : "#EAEBEB"
@@ -260,7 +262,7 @@ Rectangle {
         }
         Timer {
             id: copiedResetTimer
-            interval: 2000; running: false; repeat: false
+            interval: 3000; running: false; repeat: false
             onTriggered: inviteCopied = false;
         }
         onClicked: {
@@ -287,12 +289,12 @@ Rectangle {
         }
         ToolTip {
             parent: inviteButton
-            visible: inviteButton.hovered || inviteCopied
+            visible: !inviteCopied && inviteButton.hovered
             bottomPadding: bottomToolTipMargin * virtualstudio.uiScale
             rightPadding: rightToolTipMargin * virtualstudio.uiScale
             delay: 100
             contentItem: Rectangle {
-                color: toolTipBackgroundColour
+                color: inviteToolTipBackgroundColour
                 radius: 3
                 anchors.fill: parent
                 anchors.bottomMargin: bottomToolTipMargin * virtualstudio.uiScale
@@ -304,8 +306,35 @@ Rectangle {
                 Text {
                     anchors.centerIn: parent
                     font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale}
-                    text: inviteCopied ?  qsTr("📋 Copied invitation link to Clipboard") : qsTr("Copy invite link for Studio")
-                    color: toolTipTextColour
+                    text: qsTr("Copy invite link for Studio")
+                    color: inviteToolTipTextColour
+                }
+            }
+            background: Rectangle {
+                color: "transparent"
+            }
+        }
+        ToolTip {
+            parent: inviteButton
+            visible: inviteCopied
+            bottomPadding: bottomToolTipMargin * virtualstudio.uiScale
+            rightPadding: rightToolTipMargin * virtualstudio.uiScale
+            delay: 100
+            contentItem: Rectangle {
+                color: inviteCopiedBackgroundColour
+                radius: 3
+                anchors.fill: parent
+                anchors.bottomMargin: bottomToolTipMargin * virtualstudio.uiScale
+                anchors.rightMargin: rightToolTipMargin * virtualstudio.uiScale
+                layer.enabled: true
+                border.width: 1
+                border.color: tooltipStroke
+
+                Text {
+                    anchors.centerIn: parent
+                    font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale}
+                    text: qsTr("📋 Copied invitation link to Clipboard")
+                    color: inviteCopiedTextColour
                 }
             }
             background: Rectangle {
