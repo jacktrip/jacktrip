@@ -282,12 +282,10 @@ void Channel::ringBufferPull(int past)
 }
 
 //*******************************************************************************
-Regulator::Regulator(int chans, int fpp, int packetsInThePast, int rcvChannels,
-                     int bit_res, int FPP, int qLen, int bqLen, int sample_rate)
+Regulator::Regulator(int chans, int packetsInThePast, int rcvChannels, int bit_res,
+                     int FPP, int qLen, int bqLen, int sample_rate)
     : RingBuffer(0, 0)
     , channels(chans)
-    , fpp(fpp)
-    , bps(bps)
     //////////////////////////////////////
     , packetsInThePast(packetsInThePast)
     , mInitialized(false)
@@ -315,13 +313,8 @@ Regulator::Regulator(int chans, int fpp, int packetsInThePast, int rcvChannels,
     mPcnt = 0;
     mTime = new Time();
     mTime->start();
-    if (bps == 16) {
-        scale    = 32767.0;
-        invScale = 1.0 / 32767.0;
-    } else
-        cout << "bps != 16 -- add code\n";
-    upToNow   = packetsInThePast * fpp;        // duration
-    beyondNow = (packetsInThePast + 1) * fpp;  // duration
+    upToNow   = packetsInThePast * mFPP;        // duration
+    beyondNow = (packetsInThePast + 1) * mFPP;  // duration
 
     // !peerFPP    mChanData.resize(channels);
     // !peerFPP    for (int ch = 0; ch < channels; ch++) {
@@ -329,10 +322,10 @@ Regulator::Regulator(int chans, int fpp, int packetsInThePast, int rcvChannels,
     // packetsInThePast); !peerFPP        mChanData[ch]->fakeNowPhasorInc = 0.11 + 0.03 *
     // ch; !peerFPP    }
 
-    mFadeUp.resize(fpp);
-    mFadeDown.resize(fpp);
-    for (int i = 0; i < fpp; i++) {
-        mFadeUp[i]   = (double)i / (double)fpp;
+    mFadeUp.resize(mFPP);
+    mFadeDown.resize(mFPP);
+    for (int i = 0; i < mFPP; i++) {
+        mFadeUp[i]   = (double)i / (double)mFPP;
         mFadeDown[i] = 1.0 - mFadeUp[i];
     }
 
@@ -746,7 +739,7 @@ void Regulator::xfrBufferToFloatBuf()
 void Regulator::toFloatBuf(qint16* in)
 {
     for (int ch = 0; ch < channels; ch++)
-        for (int i = 0; i < fpp; i++) {
+        for (int i = 0; i < mFPP; i++) {
             double tmpIn                   = ((qint16)*in++) * invScale;
             mChanData[ch]->mTmpFloatBuf[i] = tmpIn;
         }
@@ -755,7 +748,7 @@ void Regulator::toFloatBuf(qint16* in)
 void Regulator::fromFloatBuf(qint16* out)
 {
     for (int ch = 0; ch < channels; ch++)
-        for (int i = 0; i < fpp; i++) {
+        for (int i = 0; i < mFPP; i++) {
             double tmpOut = mChanData[ch]->mTmpFloatBuf[i];
             if (tmpOut > 1.0)
                 tmpOut = 1.0;
@@ -985,19 +978,19 @@ void Regulator::burg(bool glitch)
         if (glitch)
             mTime->trigger();
 
-        for (int i = 0; i < fpp; i++) {
+        for (int i = 0; i < mFPP; i++) {
             double tmp = sin(c->fakeNowPhasor);
             tmp *= 0.1;
             c->fakeNow[i] = tmp;
             c->fakeNowPhasor += c->fakeNowPhasorInc;
         }
 
-        for (int s = 0; s < fpp; s++)
+        for (int s = 0; s < mFPP; s++)
             c->realNowPacket[s] = (!glitch) ? c->mTmpFloatBuf[s] : 0.0;
-        // for ( int s = 0; s < fpp; s++ ) c->realNowPacket[s] = (!glitch) ? c->fakeNow[s]
-        // : 0.0; keep history of generated signal
+        // for ( int s = 0; s < mFPP; s++ ) c->realNowPacket[s] = (!glitch) ?
+        // c->fakeNow[s] : 0.0; keep history of generated signal
         if (!glitch) {
-            for (int s = 0; s < fpp; s++)
+            for (int s = 0; s < mFPP; s++)
                 c->mTmpFloatBuf[s] = c->realNowPacket[s];
             c->ringBufferPush();
         }
@@ -1006,17 +999,17 @@ void Regulator::burg(bool glitch)
             int offset = 0;
             for (int i = 0; i < packetsInThePast; i++) {
                 c->ringBufferPull(packetsInThePast - i);
-                for (int s = 0; s < fpp; s++)
+                for (int s = 0; s < mFPP; s++)
                     c->realPast[s + offset] = c->mTmpFloatBuf[s];
-                offset += fpp;
+                offset += mFPP;
             }
         }
 
         if (glitch) {
             for (int s = 0; s < upToNow; s++)
-                c->prediction[s] = c->predictedPast[s / fpp][s % fpp];
-            // for ( int s = 0; s < upToNow; s++ ) c->prediction[s] = (s%fpp) ?
-            //                            c->predictedPast[s/fpp][s%fpp]
+                c->prediction[s] = c->predictedPast[s / mFPP][s % mFPP];
+            // for ( int s = 0; s < upToNow; s++ ) c->prediction[s] = (s%mFPP) ?
+            //                            c->predictedPast[s/mFPP][s%mFPP]
             //                            : 0.5;
             // if (!(mNotTrained%100))
             {
@@ -1036,11 +1029,11 @@ void Regulator::burg(bool glitch)
             //         cout << pCnt << "\t" << s << "---"
             //              << prediction[s+upToNow] << " \t"
             //              << coeffs[s] << " \n";
-            for (int s = 0; s < fpp; s++)
+            for (int s = 0; s < mFPP; s++)
                 c->predictedNowPacket[s] = c->prediction[upToNow + s];
         }
 
-        for (int s = 0; s < fpp; s++)
+        for (int s = 0; s < mFPP; s++)
             c->mTmpFloatBuf[s] = c->outputNowPacket[s] =
                 ((glitch)
                      ? ((primed) ? c->predictedNowPacket[s] : 0.0)
@@ -1048,29 +1041,29 @@ void Regulator::burg(bool glitch)
                                               + mFadeUp[s] * c->realNowPacket[s])
                                            : c->realNowPacket[s]));
 
-        for (int s = 0; s < fpp; s++)
+        for (int s = 0; s < mFPP; s++)
             c->mTmpFloatBuf[s] = c->outputNowPacket[s];
         //         (c->lastWasGlitch) ? c->prediction[s] : c->realPast[s];
-        // for ( int s = 0; s < fpp; s++ ) c->mTmpFloatBuf[s] = c->coeffs[s + 0*fpp];
-        // for ( int s = 0; s < fpp; s++ ) c->mTmpFloatBuf[s] = c->prediction[upToNow +
+        // for ( int s = 0; s < mFPP; s++ ) c->mTmpFloatBuf[s] = c->coeffs[s + 0*mFPP];
+        // for ( int s = 0; s < mFPP; s++ ) c->mTmpFloatBuf[s] = c->prediction[upToNow +
         // s];
 
         c->lastWasGlitch = glitch;
 
         for (int i = 0; i < packetsInThePast - 1; i++) {
-            for (int s = 0; s < fpp; s++)
+            for (int s = 0; s < mFPP; s++)
                 c->predictedPast[i][s] = c->predictedPast[i + 1][s];
         }
-        for (int s = 0; s < fpp; s++)
+        for (int s = 0; s < mFPP; s++)
             c->predictedPast[packetsInThePast - 1][s] = c->outputNowPacket[s];
 
         if (false)
             for (int i = 0; i < packetsInThePast - 1; i++) {
-                for (int s = 0; s < fpp; s++)
-                    c->predictedPast[i][s] = c->prediction[(i + 1) * fpp + s];
+                for (int s = 0; s < mFPP; s++)
+                    c->predictedPast[i][s] = c->prediction[(i + 1) * mFPP + s];
             }
 
-        for (int s = 0; s < fpp; s++) {
+        for (int s = 0; s < mFPP; s++) {
             c->futurePredictedPacket[s] = c->prediction[beyondNow + s - 0];
             // earlier bug was heap overflow because of smaller coeffs size, so -1 was ok,
             // now prediction is larger

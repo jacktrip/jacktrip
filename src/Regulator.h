@@ -186,8 +186,8 @@ class Regulator : public RingBuffer
 {
    public:
     /// construct a new regulator
-    Regulator(int chans, int fpp, int packetsInThePast, int rcvChannels, int bit_res,
-              int FPP, int qLen, int bqLen, int sample_rate);
+    Regulator(int chans, int packetsInThePast, int rcvChannels, int bit_res, int FPP,
+              int qLen, int bqLen, int sample_rate);
 
     // virtual destructor
     virtual ~Regulator();
@@ -257,8 +257,6 @@ class Regulator : public RingBuffer
     std::vector<Channel*> mChanData;
     BurgAlgorithm* ba;
     int channels;
-    int fpp;
-    int bps;
     int packetsInThePast;
     int upToNow;    // duration
     int beyondNow;  // duration
