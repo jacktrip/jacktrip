@@ -128,8 +128,7 @@ BurgAlgorithm::BurgAlgorithm(size_t size)  // upToNow = packetsInThePast * fpp
     b.resize(size);
 }
 
-void BurgAlgorithm::train(std::vector<float>& coeffs, const std::vector<float>& x,
-                          size_t size)
+void BurgAlgorithm::train(std::vector<float>& coeffs, const std::vector<float>& x, size_t size)
 {
     // INITIALIZE Ak
     Ak = AkReset;
@@ -282,8 +281,9 @@ void Channel::ringBufferPull(int past)
 }
 
 //*******************************************************************************
-Regulator::Regulator(int chans, int fpp, int bps, int packetsInThePast, int rcvChannels,
-                     int bit_res, int FPP, int qLen, int bqLen, int sample_rate)
+Regulator::Regulator(int chans, int fpp, int bps, int packetsInThePast,
+int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
+                     int sample_rate)
     : RingBuffer(0, 0)
     , channels(chans)
     , fpp(fpp)
@@ -310,8 +310,8 @@ Regulator::Regulator(int chans, int fpp, int bps, int packetsInThePast, int rcvC
     , m_b_BroadcastRingBuffer(NULL)
     , m_b_BroadcastQueueLength(bqLen)
 {
-    cout << " --PLC diagnostics-- " << packetsInThePast << " packetsInThePast\t"
-         << channels << " channels\n";
+    cout << " --PLC diagnostics-- " << packetsInThePast
+         << " packetsInThePast\t" << channels << " channels\n";
     mPcnt = 0;
     mTime = new Time();
     mTime->start();
@@ -323,11 +323,11 @@ Regulator::Regulator(int chans, int fpp, int bps, int packetsInThePast, int rcvC
     upToNow   = packetsInThePast * fpp;        // duration
     beyondNow = (packetsInThePast + 1) * fpp;  // duration
 
-    // !peerFPP    mChanData.resize(channels);
-    // !peerFPP    for (int ch = 0; ch < channels; ch++) {
-    // !peerFPP        mChanData[ch]                   = new Channel(fpp, upToNow,
-    // packetsInThePast); !peerFPP        mChanData[ch]->fakeNowPhasorInc = 0.11 + 0.03 *
-    // ch; !peerFPP    }
+// !peerFPP    mChanData.resize(channels);
+// !peerFPP    for (int ch = 0; ch < channels; ch++) {
+// !peerFPP        mChanData[ch]                   = new Channel(fpp, upToNow, packetsInThePast);
+// !peerFPP        mChanData[ch]->fakeNowPhasorInc = 0.11 + 0.03 * ch;
+// !peerFPP    }
 
     mFadeUp.resize(fpp);
     mFadeDown.resize(fpp);
@@ -708,16 +708,16 @@ void Regulator::processPacket(bool glitch)
     double tmp = 0.0;
     if (glitch)
         tmp = (double)mIncomingTimer.nsecsElapsed();
-    //  !PLC  for (int ch = 0; ch < mNumChannels; ch++)
-    //  !PLC      processChannel(ch, glitch, mPacketCnt, mLastWasGlitch);
-    //  !PLC  mLastWasGlitch = glitch;
+//  !PLC  for (int ch = 0; ch < mNumChannels; ch++)
+//  !PLC      processChannel(ch, glitch, mPacketCnt, mLastWasGlitch);
+//  !PLC  mLastWasGlitch = glitch;
     mPacketCnt++;
     // 32 bit is good for days:  (/ (* (- (expt 2 32) 1) (/ 32 48000.0)) (* 60 60 24))
 
     zeroTmpFloatBuf();  // ahead of either call to burg
     xfrBufferToFloatBuf();
     burg(glitch);
-
+    
     if (glitch) {
         double tmp2 = (double)mIncomingTimer.nsecsElapsed() - tmp;
         tmp2 /= 1000000.0;
@@ -746,6 +746,7 @@ void Regulator::sampleToBits(sample_t sample, int ch, int frame)
                     + (ch * mBitResolutionMode)],
         mBitResolutionMode);
 }
+
 
 //*******************************************************************************
 StdDev::StdDev(int id, QElapsedTimer* timer, int w) : mId(id), mTimer(timer), window(w)
