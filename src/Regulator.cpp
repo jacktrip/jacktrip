@@ -91,7 +91,7 @@ using std::endl;
 using std::setw;
 
 // constants...
-constexpr int HIST        = 4;      // for mono at FPP 16-128, see below for > mono, > 128
+constexpr int HIST        = 2;      // mPacketsInThePast
 constexpr int NumSlotsMax = 4096;   // mNumSlots looped for recent arrivals
 constexpr double AutoMax  = 250.0;  // msec bounds on insane IPI, like ethernet unplugged
 constexpr double AutoInitDur = 3000.0;  // kick in auto after this many msec
@@ -110,7 +110,7 @@ constexpr double AutoSmoothingFactor =
     1.0
     / (WindowDivisor * AutoHistoryWindow);  // EWMA smoothing factor for auto tolerance
 
-BurgAlgorithm::BurgAlgorithm(size_t size)  // upToNow = packetsInThePast * fpp
+BurgAlgorithm::BurgAlgorithm(size_t size)  // mUpToNow = mPacketsInThePast * fpp
 {
     // GET SIZE FROM INPUT VECTORS
     m = N      = size - 1;
@@ -282,12 +282,10 @@ void Channel::ringBufferPull(int past)
 }
 
 //*******************************************************************************
-Regulator::Regulator(int chans, int packetsInThePast, int rcvChannels, int bit_res,
-                     int FPP, int qLen, int bqLen, int sample_rate)
+Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
+                     int sample_rate)
     : RingBuffer(0, 0)
-    , channels(chans)
-    //////////////////////////////////////
-    , packetsInThePast(packetsInThePast)
+    , mPacketsInThePast(HIST)
     , mInitialized(false)
     , mNumChannels(rcvChannels)
     , mAudioBitRes(bit_res)
@@ -308,19 +306,14 @@ Regulator::Regulator(int chans, int packetsInThePast, int rcvChannels, int bit_r
     , m_b_BroadcastRingBuffer(NULL)
     , m_b_BroadcastQueueLength(bqLen)
 {
-    cout << " --PLC diagnostics-- " << packetsInThePast << " packetsInThePast\t"
-         << channels << " channels\n";
+    if (gVerboseFlag)
+        cout << "mPacketsInThePast = " << mPacketsInThePast << " at " << mFPP << "\n";
+
     mPcnt = 0;
     mTime = new Time();
     mTime->start();
-    upToNow   = packetsInThePast * mFPP;        // duration
-    beyondNow = (packetsInThePast + 1) * mFPP;  // duration
-
-    // !peerFPP    mChanData.resize(channels);
-    // !peerFPP    for (int ch = 0; ch < channels; ch++) {
-    // !peerFPP        mChanData[ch]                   = new Channel(fpp, upToNow,
-    // packetsInThePast); !peerFPP        mChanData[ch]->fakeNowPhasorInc = 0.11 + 0.03 *
-    // ch; !peerFPP    }
+    mUpToNow   = mPacketsInThePast * mFPP;        // duration
+    mBeyondNow = (mPacketsInThePast + 1) * mFPP;  // duration
 
     mFadeUp.resize(mFPP);
     mFadeDown.resize(mFPP);
@@ -329,20 +322,11 @@ Regulator::Regulator(int chans, int packetsInThePast, int rcvChannels, int bit_r
         mFadeDown[i] = 1.0 - mFadeUp[i];
     }
 
-    ba = new BurgAlgorithm(upToNow);
+    ba = new BurgAlgorithm(mUpToNow);
 
     mNotTrained = 0;
 
     //////////////////////////////////////
-
-    // catch settings that are compute bound using long HIST
-    // hub client rcvChannels is set from client's settings parameters
-    // hub server rcvChannels is set from connecting client, not from hub parameters
-    //    if (mNumChannels > MaxChans) {
-    //        std::cerr << "*** Regulator.cpp: receive channels = " << mNumChannels
-    //                  << " larger than max channels = " << MaxChans << "\n";
-    //        exit(1);
-    //    }
     if (mFPP > MaxFPP) {
         std::cerr << "*** Regulator.cpp: local FPP = " << mFPP
                   << " larger than max FPP = " << MaxFPP << "\n";
@@ -362,10 +346,10 @@ Regulator::Regulator(int chans, int packetsInThePast, int rcvChannels, int bit_r
         mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT32;
         break;
     }
-    scale    = pow(2.0, (((mBitResolutionMode * 8) - 1.0))) - 1.0;
-    invScale = 1.0 / scale;
+    mScale    = pow(2.0, (((mBitResolutionMode * 8) - 1.0))) - 1.0;
+    mInvScale = 1.0 / mScale;
 
-    std::cout << "mBitResolutionMode = " << mBitResolutionMode << " scale = " << scale
+    std::cout << "mBitResolutionMode = " << mBitResolutionMode << " scale = " << mScale
               << "\n";
 
     mBytes      = mFPP * mNumChannels * mBitResolutionMode;
@@ -501,20 +485,6 @@ void Regulator::setFPPratio(int len)
         qDebug() << "PLC is using a fixed tolerance of " << mMsecTolerance << "ms";
     }
 
-    mHist = HIST;  //    HIST (default) is 4
-                   //    as FPP decreases the rate of PLC triggers potentially goes up
-                   //    and load increases so don't use an inverse relation
-
-    //    crossfaded prediction is a full packet ahead of predicted
-    //    packet, so the size of mPrediction needs to account for 2 full packets (2*FPP)
-    //    but trainSamps = (HIST * FPP) and mPrediction.resize(trainSamps - 1, 0.0) so if
-    //    hist = 2, then it exceeds the size
-
-    if (((mNumChannels > 1) && (mPeerFPP > 64)) || (mPeerFPP > 128))
-        mHist = 3;  // min packets for prediction, needs at least 3
-    if (gVerboseFlag)
-        cout << "mHist = " << mHist << " at " << mPeerFPP << "\n";
-
     mXfrBuffer = new int8_t[mPeerBytes];
     memset(mXfrBuffer, 0, mPeerBytes);
     mBroadcastBuffer = new int8_t[mPeerBytes];
@@ -538,7 +508,7 @@ void Regulator::setFPPratio(int len)
     }
 
     for (int i = 0; i < mNumChannels; i++) {
-        Channel* tmp = new Channel(mPeerFPP, upToNow, packetsInThePast);
+        Channel* tmp = new Channel(mPeerFPP, mUpToNow, mPacketsInThePast);
         mChanData.push_back(tmp);
     }
     mLastLostCount = 0;  // for stats
@@ -738,29 +708,29 @@ void Regulator::xfrBufferToFloatBuf()
 
 void Regulator::toFloatBuf(qint16* in)
 {
-    for (int ch = 0; ch < channels; ch++)
+    for (int ch = 0; ch < mNumChannels; ch++)
         for (int i = 0; i < mFPP; i++) {
-            double tmpIn                   = ((qint16)*in++) * invScale;
+            double tmpIn                   = ((qint16)*in++) * mInvScale;
             mChanData[ch]->mTmpFloatBuf[i] = tmpIn;
         }
 }
 
 void Regulator::fromFloatBuf(qint16* out)
 {
-    for (int ch = 0; ch < channels; ch++)
+    for (int ch = 0; ch < mNumChannels; ch++)
         for (int i = 0; i < mFPP; i++) {
             double tmpOut = mChanData[ch]->mTmpFloatBuf[i];
             if (tmpOut > 1.0)
                 tmpOut = 1.0;
             if (tmpOut < -1.0)
                 tmpOut = -1.0;
-            *out++ = (qint16)(tmpOut * scale);
+            *out++ = (qint16)(tmpOut * mScale);
         }
 }
 
 void Regulator::zeroTmpFloatBuf()
 {
-    for (int ch = 0; ch < channels; ch++)
+    for (int ch = 0; ch < mNumChannels; ch++)
         mChanData[ch]->mTmpFloatBuf = mChanData[ch]->mZeros;
 }
 
@@ -971,8 +941,8 @@ void Regulator::readBroadcastSlot(int8_t* ptrToReadSlot)
 //*******************************************************************************
 void Regulator::burg(bool glitch)
 {  // generate next bufferfull and convert to short int
-    bool primed = mPcnt > packetsInThePast;
-    for (int ch = 0; ch < channels; ch++) {
+    bool primed = mPcnt > mPacketsInThePast;
+    for (int ch = 0; ch < mNumChannels; ch++) {
         Channel* c = mChanData[ch];
         //////////////////////////////////////
         if (glitch)
@@ -997,8 +967,8 @@ void Regulator::burg(bool glitch)
 
         if (primed) {
             int offset = 0;
-            for (int i = 0; i < packetsInThePast; i++) {
-                c->ringBufferPull(packetsInThePast - i);
+            for (int i = 0; i < mPacketsInThePast; i++) {
+                c->ringBufferPull(mPacketsInThePast - i);
                 for (int s = 0; s < mFPP; s++)
                     c->realPast[s + offset] = c->mTmpFloatBuf[s];
                 offset += mFPP;
@@ -1006,9 +976,9 @@ void Regulator::burg(bool glitch)
         }
 
         if (glitch) {
-            for (int s = 0; s < upToNow; s++)
+            for (int s = 0; s < mUpToNow; s++)
                 c->prediction[s] = c->predictedPast[s / mFPP][s % mFPP];
-            // for ( int s = 0; s < upToNow; s++ ) c->prediction[s] = (s%mFPP) ?
+            // for ( int s = 0; s < mUpToNow; s++ ) c->prediction[s] = (s%mFPP) ?
             //                            c->predictedPast[s/mFPP][s%mFPP]
             //                            : 0.5;
             // if (!(mNotTrained%100))
@@ -1018,7 +988,7 @@ void Regulator::burg(bool glitch)
                           c->prediction
                           // (c->lastWasGlitch) ? c->prediction : c->realPast
                           ,
-                          upToNow);
+                          mUpToNow);
                 // cout << "\ncoeffs ";
             }
             // if (mNotTrained < 2) c->coeffs[0] = 0.9;
@@ -1027,10 +997,10 @@ void Regulator::burg(bool glitch)
             ba->predict(c->coeffs, c->prediction);
             // if (pCnt < 200) for ( int s = 0; s < 3; s++ )
             //         cout << pCnt << "\t" << s << "---"
-            //              << prediction[s+upToNow] << " \t"
+            //              << prediction[s+mUpToNow] << " \t"
             //              << coeffs[s] << " \n";
             for (int s = 0; s < mFPP; s++)
-                c->predictedNowPacket[s] = c->prediction[upToNow + s];
+                c->predictedNowPacket[s] = c->prediction[mUpToNow + s];
         }
 
         for (int s = 0; s < mFPP; s++)
@@ -1045,26 +1015,26 @@ void Regulator::burg(bool glitch)
             c->mTmpFloatBuf[s] = c->outputNowPacket[s];
         //         (c->lastWasGlitch) ? c->prediction[s] : c->realPast[s];
         // for ( int s = 0; s < mFPP; s++ ) c->mTmpFloatBuf[s] = c->coeffs[s + 0*mFPP];
-        // for ( int s = 0; s < mFPP; s++ ) c->mTmpFloatBuf[s] = c->prediction[upToNow +
+        // for ( int s = 0; s < mFPP; s++ ) c->mTmpFloatBuf[s] = c->prediction[mUpToNow +
         // s];
 
         c->lastWasGlitch = glitch;
 
-        for (int i = 0; i < packetsInThePast - 1; i++) {
+        for (int i = 0; i < mPacketsInThePast - 1; i++) {
             for (int s = 0; s < mFPP; s++)
                 c->predictedPast[i][s] = c->predictedPast[i + 1][s];
         }
         for (int s = 0; s < mFPP; s++)
-            c->predictedPast[packetsInThePast - 1][s] = c->outputNowPacket[s];
+            c->predictedPast[mPacketsInThePast - 1][s] = c->outputNowPacket[s];
 
         if (false)
-            for (int i = 0; i < packetsInThePast - 1; i++) {
+            for (int i = 0; i < mPacketsInThePast - 1; i++) {
                 for (int s = 0; s < mFPP; s++)
                     c->predictedPast[i][s] = c->prediction[(i + 1) * mFPP + s];
             }
 
         for (int s = 0; s < mFPP; s++) {
-            c->futurePredictedPacket[s] = c->prediction[beyondNow + s - 0];
+            c->futurePredictedPacket[s] = c->prediction[mBeyondNow + s - 0];
             // earlier bug was heap overflow because of smaller coeffs size, so -1 was ok,
             // now prediction is larger
         }

@@ -186,8 +186,8 @@ class Regulator : public RingBuffer
 {
    public:
     /// construct a new regulator
-    Regulator(int chans, int packetsInThePast, int rcvChannels, int bit_res, int FPP,
-              int qLen, int bqLen, int sample_rate);
+    Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
+              int sample_rate);
 
     // virtual destructor
     virtual ~Regulator();
@@ -256,18 +256,14 @@ class Regulator : public RingBuffer
     std::vector<float> mTmpFloatBuf;
     std::vector<Channel*> mChanData;
     BurgAlgorithm* ba;
-    int channels;
-    int packetsInThePast;
-    int upToNow;    // duration
-    int beyondNow;  // duration
+    int mPacketsInThePast;
+    int mUpToNow;    // duration
+    int mBeyondNow;  // duration
     std::vector<float> mFadeUp;
     std::vector<float> mFadeDown;
-    float scale;
-    float invScale;
+    float mScale;
+    float mInvScale;
     int mNotTrained;
-
-    //////////////////////////////////////
-
     bool mInitialized;
     int mNumChannels;
     int mAudioBitRes;
@@ -276,7 +272,6 @@ class Regulator : public RingBuffer
     int mSampleRate;
     uint32_t mLastLostCount;
     int mNumSlots;
-    int mHist;
     AudioInterface::audioBitResolutionT mBitResolutionMode;
     // !PLC    BurgAlgorithm ba;
     int mBytes;
