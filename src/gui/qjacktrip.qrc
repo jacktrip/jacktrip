@@ -8,6 +8,7 @@
     <file>vs.qml</file>
     <file>FirstLaunch.qml</file>
     <file>Login.qml</file>
+    <file>LearnMoreButton.qml</file>
     <file>Recommendations.qml</file>
     <file>Permissions.qml</file>
     <file>ChangeDevices.qml</file>
