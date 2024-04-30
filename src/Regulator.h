@@ -136,9 +136,6 @@ class Channel
     int mRing;
     std::vector<float> mZeros;
     bool lastWasGlitch;
-
-   private:
-    friend class PLC;
 };
 
 class StdDev
@@ -239,22 +236,21 @@ class Regulator : public RingBuffer
     void updateTolerance();
     void setFPPratio(int len);
     void processPacket(bool glitch);
-    //  !PLC  void processChannel(int ch, bool glitch, int packetCnt, bool lastWasGlitch);
-
     void burg(bool glitch);
+    sample_t bitsToSample(int ch, int frame);
+    void sampleToBits(sample_t sample, int ch, int frame);
     void floatBufToXfrBuffer();
     void xfrBufferToFloatBuf();
     void toFloatBuf(qint16* in);
     void fromFloatBuf(qint16* out);
     void zeroTmpFloatBuf();
-
     int mPcnt;
     std::vector<float> mTmpFloatBuf;
     std::vector<Channel*> mChanData;
     BurgAlgorithm* ba;
     int mPacketsInThePast;
-    int mUpToNow;    // duration
-    int mBeyondNow;  // duration
+    int mUpToNow;
+    int mBeyondNow;
     std::vector<float> mFadeUp;
     std::vector<float> mFadeDown;
     float mScale;
@@ -269,23 +265,15 @@ class Regulator : public RingBuffer
     uint32_t mLastLostCount;
     int mNumSlots;
     AudioInterface::audioBitResolutionT mBitResolutionMode;
-    // !PLC    BurgAlgorithm ba;
     int mBytes;
     int mPeerBytes;
     int8_t* mXfrBuffer;
     int8_t* mXfrPullPtr;
     int8_t* mBroadcastBuffer;
     int8_t* mBroadcastPullPtr;
-    int mPacketCnt;
-    sample_t bitsToSample(int ch, int frame);
-    void sampleToBits(sample_t sample, int ch, int frame);
-    // !PLC    std::vector<sample_t> mFadeUp;
-    // !PLC     std::vector<sample_t> mFadeDown;
-    bool mLastWasGlitch;
     int8_t** mSlots;
     int8_t* mSlotBuf;
     double mMsecTolerance;
-    // !PLC        std::vector<ChanData*> mChanData;
     StdDev* pushStat;
     StdDev* pullStat;
     QElapsedTimer mIncomingTimer;

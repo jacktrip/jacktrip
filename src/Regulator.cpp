@@ -479,15 +479,13 @@ void Regulator::setFPPratio(int len)
     memset(mXfrBuffer, 0, mPeerBytes);
     mBroadcastBuffer = new int8_t[mPeerBytes];
     memset(mBroadcastBuffer, 0, mPeerBytes);
-    mPacketCnt = 0;  // burg initialization
     mFadeUp.resize(mPeerFPP, 0.0);
     mFadeDown.resize(mPeerFPP, 0.0);
     for (int i = 0; i < mPeerFPP; i++) {
         mFadeUp[i]   = (double)i / (double)mPeerFPP;
         mFadeDown[i] = 1.0 - mFadeUp[i];
     }
-    mLastWasGlitch = false;
-    mNumSlots      = NumSlotsMax;
+    mNumSlots = NumSlotsMax;
 
     mSlots      = new int8_t*[mNumSlots];
     mSlotBuf    = new int8_t[mNumSlots * mPeerBytes];
@@ -637,11 +635,6 @@ void Regulator::processPacket(bool glitch)
     double tmp = 0.0;
     if (glitch)
         tmp = (double)mIncomingTimer.nsecsElapsed();
-    //  !PLC  for (int ch = 0; ch < mNumChannels; ch++)
-    //  !PLC      processChannel(ch, glitch, mPacketCnt, mLastWasGlitch);
-    //  !PLC  mLastWasGlitch = glitch;
-    mPacketCnt++;
-    // 32 bit is good for days:  (/ (* (- (expt 2 32) 1) (/ 32 48000.0)) (* 60 60 24))
 
     zeroTmpFloatBuf();  // ahead of either call to burg
     xfrBufferToFloatBuf();
@@ -1027,6 +1020,7 @@ void Regulator::burg(bool glitch)
     if (!(mPcnt % 300))
         std::cout << "avg " << mTime->avg() << " glitches " << mTime->glitches() << " \n";
     mPcnt++;
+    // 32 bit is good for days:  (/ (* (- (expt 2 32) 1) (/ 32 48000.0)) (* 60 60 24))
 }
 
 //*******************************************************************************
