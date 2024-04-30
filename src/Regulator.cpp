@@ -282,7 +282,7 @@ void Channel::ringBufferPull(int past)
 }
 
 //*******************************************************************************
-Regulator::Regulator(int chans, int fpp, int bps, int packetsInThePast, int rcvChannels,
+Regulator::Regulator(int chans, int fpp, int packetsInThePast, int rcvChannels,
                      int bit_res, int FPP, int qLen, int bqLen, int sample_rate)
     : RingBuffer(0, 0)
     , channels(chans)
@@ -369,7 +369,12 @@ Regulator::Regulator(int chans, int fpp, int bps, int packetsInThePast, int rcvC
         mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT32;
         break;
     }
-    std::cout << "mBitResolutionMode = " << mBitResolutionMode << "\n";
+    scale    = pow(2.0, (((mBitResolutionMode * 8) - 1.0))) - 1.0;
+    invScale = 1.0 / scale;
+
+    std::cout << "mBitResolutionMode = " << mBitResolutionMode << " scale = " << scale
+              << "\n";
+
     mBytes      = mFPP * mNumChannels * mBitResolutionMode;
     mFPPdurMsec = 1000.0 * mFPP / mSampleRate;
     mPhasor.resize(mNumChannels, 0.0);
@@ -413,34 +418,6 @@ Regulator::~Regulator()
         delete m_b_BroadcastRingBuffer;
     delete mTime;
     delete ba;
-}
-
-void Regulator::zeroTmpFloatBuf()
-{
-    for (int ch = 0; ch < channels; ch++)
-        mChanData[ch]->mTmpFloatBuf = mChanData[ch]->mZeros;
-}
-
-void Regulator::toFloatBuf(qint16* in)
-{
-    for (int ch = 0; ch < channels; ch++)
-        for (int i = 0; i < fpp; i++) {
-            double tmpIn                   = ((qint16)*in++) * invScale;
-            mChanData[ch]->mTmpFloatBuf[i] = tmpIn;
-        }
-}
-
-void Regulator::fromFloatBuf(qint16* out)
-{
-    for (int ch = 0; ch < channels; ch++)
-        for (int i = 0; i < fpp; i++) {
-            double tmpOut = mChanData[ch]->mTmpFloatBuf[i];
-            if (tmpOut > 1.0)
-                tmpOut = 1.0;
-            if (tmpOut < -1.0)
-                tmpOut = -1.0;
-            *out++ = (qint16)(tmpOut * scale);
-        }
 }
 
 //*******************************************************************************
@@ -744,6 +721,54 @@ void Regulator::sampleToBits(sample_t sample, int ch, int frame)
         &mXfrBuffer[(frame * mBitResolutionMode * mNumChannels)
                     + (ch * mBitResolutionMode)],
         mBitResolutionMode);
+}
+
+void Regulator::floatBufToXfrBuffer()
+{
+    for (int ch = 0; ch < mNumChannels; ch++)
+        for (int s = 0; s < mFPP; s++) {
+            double tmpOut = mChanData[ch]->mTmpFloatBuf[s];
+            //              if (tmpOut > 1.0) tmpOut = 1.0;
+            //              if (tmpOut < -1.0) tmpOut = -1.0;
+            sampleToBits(tmpOut, ch, s);
+        }
+};
+
+void Regulator::xfrBufferToFloatBuf()
+{
+    for (int ch = 0; ch < mNumChannels; ch++)
+        for (int s = 0; s < mFPP; s++) {
+            double tmpIn                   = bitsToSample(ch, s);
+            mChanData[ch]->mTmpFloatBuf[s] = tmpIn;
+        }
+};
+
+void Regulator::toFloatBuf(qint16* in)
+{
+    for (int ch = 0; ch < channels; ch++)
+        for (int i = 0; i < fpp; i++) {
+            double tmpIn                   = ((qint16)*in++) * invScale;
+            mChanData[ch]->mTmpFloatBuf[i] = tmpIn;
+        }
+}
+
+void Regulator::fromFloatBuf(qint16* out)
+{
+    for (int ch = 0; ch < channels; ch++)
+        for (int i = 0; i < fpp; i++) {
+            double tmpOut = mChanData[ch]->mTmpFloatBuf[i];
+            if (tmpOut > 1.0)
+                tmpOut = 1.0;
+            if (tmpOut < -1.0)
+                tmpOut = -1.0;
+            *out++ = (qint16)(tmpOut * scale);
+        }
+}
+
+void Regulator::zeroTmpFloatBuf()
+{
+    for (int ch = 0; ch < channels; ch++)
+        mChanData[ch]->mTmpFloatBuf = mChanData[ch]->mZeros;
 }
 
 //*******************************************************************************

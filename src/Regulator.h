@@ -186,8 +186,8 @@ class Regulator : public RingBuffer
 {
    public:
     /// construct a new regulator
-    Regulator(int chans, int fpp, int bps, int packetsInThePast, int rcvChannels,
-              int bit_res, int FPP, int qLen, int bqLen, int sample_rate);
+    Regulator(int chans, int fpp, int packetsInThePast, int rcvChannels, int bit_res,
+              int FPP, int qLen, int bqLen, int sample_rate);
 
     // virtual destructor
     virtual ~Regulator();
@@ -246,9 +246,11 @@ class Regulator : public RingBuffer
     //  !PLC  void processChannel(int ch, bool glitch, int packetCnt, bool lastWasGlitch);
 
     void burg(bool glitch);
-    void zeroTmpFloatBuf();
+    void floatBufToXfrBuffer();
+    void xfrBufferToFloatBuf();
     void toFloatBuf(qint16* in);
     void fromFloatBuf(qint16* out);
+    void zeroTmpFloatBuf();
 
     int mPcnt;
     std::vector<float> mTmpFloatBuf;
@@ -320,26 +322,6 @@ class Regulator : public RingBuffer
     /// Pointer for the Broadcast RingBuffer
     RingBuffer* m_b_BroadcastRingBuffer;
     int m_b_BroadcastQueueLength;
-
-    void floatBufToXfrBuffer()
-    {
-        for (int ch = 0; ch < mNumChannels; ch++)
-            for (int s = 0; s < mFPP; s++) {
-                double tmpOut = mChanData[ch]->mTmpFloatBuf[s];
-                //              if (tmpOut > 1.0) tmpOut = 1.0;
-                //              if (tmpOut < -1.0) tmpOut = -1.0;
-                sampleToBits(tmpOut, ch, s);
-            }
-    };
-
-    void xfrBufferToFloatBuf()
-    {
-        for (int ch = 0; ch < mNumChannels; ch++)
-            for (int s = 0; s < mFPP; s++) {
-                double tmpIn                   = bitsToSample(ch, s);
-                mChanData[ch]->mTmpFloatBuf[s] = tmpIn;
-            }
-    };
 };
 
 #endif  //__REGULATOR_H__
