@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2021 Juan-Pablo Caceres, Chris Chafe.
+  Copyright (c) 2024 Juan-Pablo Caceres, Chris Chafe.
   SoundWIRE group at CCRMA, Stanford University.
 
   Permission is hereby granted, free of charge, to any person
@@ -32,7 +32,7 @@
 /**
  * \file Regulator.cpp
  * \author Chris Chafe
- * \date May-Sep 2021
+ * \date May, 2021 - May, 2024
  */
 
 // EXPERIMENTAL for testing in JackTrip v1.5.<n>
@@ -369,6 +369,7 @@ Regulator::Regulator(int chans, int fpp, int bps, int packetsInThePast, int rcvC
         mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT32;
         break;
     }
+    std::cout << "mBitResolutionMode = " << mBitResolutionMode << "\n";
     mBytes      = mFPP * mNumChannels * mBitResolutionMode;
     mFPPdurMsec = 1000.0 * mFPP / mSampleRate;
     mPhasor.resize(mNumChannels, 0.0);
@@ -544,9 +545,9 @@ void Regulator::setFPPratio(int len)
     if (gVerboseFlag)
         cout << "mHist = " << mHist << " at " << mPeerFPP << "\n";
 
-    mXfrBuffer       = new int8_t[mPeerBytes];
-    mBroadcastBuffer = new int8_t[mPeerBytes];
+    mXfrBuffer = new int8_t[mPeerBytes];
     memset(mXfrBuffer, 0, mPeerBytes);
+    mBroadcastBuffer = new int8_t[mPeerBytes];
     memset(mBroadcastBuffer, 0, mPeerBytes);
     mPacketCnt = 0;  // burg initialization
     mFadeUp.resize(mPeerFPP, 0.0);
@@ -569,8 +570,6 @@ void Regulator::setFPPratio(int len)
     for (int i = 0; i < mNumChannels; i++) {
         Channel* tmp = new Channel(mPeerFPP, upToNow, packetsInThePast);
         mChanData.push_back(tmp);
-        for (int s = 0; s < mPeerFPP; s++)
-            sampleToBits(0.0, i, s);  // zero all channels in mXfrBuffer
     }
     mLastLostCount = 0;  // for stats
     mIncomingTimer.start();
