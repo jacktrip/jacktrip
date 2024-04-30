@@ -82,18 +82,18 @@
 #include "Regulator.h"
 
 #include <iomanip>
-#include <sstream>
 
-#include "JitterBuffer.h"
-#include "jacktrip_globals.h"
+#include "JitterBuffer.h"  // for broadcast
+
 using std::cout;
 using std::endl;
 using std::setw;
 
 // constants...
-constexpr int HIST        = 2;      // mPacketsInThePast
-constexpr int NumSlotsMax = 4096;   // mNumSlots looped for recent arrivals
-constexpr double AutoMax  = 250.0;  // msec bounds on insane IPI, like ethernet unplugged
+constexpr bool PrintDirect = false;  // print stats direct from -V not -I
+constexpr int HIST         = 2;      // mPacketsInThePast
+constexpr int NumSlotsMax  = 4096;   // mNumSlots looped for recent arrivals
+constexpr double AutoMax   = 250.0;  // msec bounds on insane IPI, like ethernet unplugged
 constexpr double AutoInitDur = 3000.0;  // kick in auto after this many msec
 constexpr double AutoInitValFactor =
     0.5;  // scale for initial mMsecTolerance during init phase if unspecified
@@ -260,15 +260,13 @@ void Channel::ringBufferPush()
     mWptr %= mRing;
 }
 
+// pull numbered packet from ring
 void Channel::ringBufferPull(int past)
-{  // pull numbered packet from ring
-    // bool priming = ((mPcnt - past) < 0); checked outside
-    // if (!priming) {
+{
     int pastPtr = mWptr - past;
     if (pastPtr < 0)
         pastPtr += mRing;
     mTmpFloatBuf = mPacketRing[pastPtr];
-    // } else cout << "ring buffer not primed\n";
 }
 
 //*******************************************************************************
@@ -314,8 +312,6 @@ Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
 
     ba = new BurgAlgorithm(mUpToNow);
 
-    mNotTrained = 0;
-
     //////////////////////////////////////
     if (mFPP > MaxFPP) {
         std::cerr << "*** Regulator.cpp: local FPP = " << mFPP
@@ -339,8 +335,9 @@ Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
     mScale    = pow(2.0, (((mBitResolutionMode * 8) - 1.0))) - 1.0;
     mInvScale = 1.0 / mScale;
 
-    std::cout << "mBitResolutionMode = " << mBitResolutionMode << " scale = " << mScale
-              << "\n";
+    if (gVerboseFlag)
+        cout << "mBitResolutionMode = " << mBitResolutionMode << " scale = " << mScale
+             << "\n";
 
     mBytes      = mFPP * mNumChannels * mBitResolutionMode;
     mFPPdurMsec = 1000.0 * mFPP / mSampleRate;
@@ -811,7 +808,7 @@ bool StdDev::tick(double prevTime, double curTime)
     double stdDevTmp = sqrt(var);
 
     if (longTermCnt <= 3) {
-        if (longTermCnt == 0 && gVerboseFlag) {
+        if (longTermCnt == 0 && gVerboseFlag && PrintDirect) {
             cout << "printing directly from Regulator->stdDev->tick:\n (mean / min / "
                     "max / "
                     "stdDev / longTermMax / longTermStdDev) \n";
@@ -835,7 +832,7 @@ bool StdDev::tick(double prevTime, double curTime)
         }
     }
 
-    if (gVerboseFlag) {
+    if (gVerboseFlag && PrintDirect) {
         cout << setw(10) << mean << setw(10) << min << setw(10) << max << setw(10)
              << stdDevTmp << setw(10) << longTermMax << setw(10) << longTermStdDev << " "
              << mId << endl;
@@ -930,8 +927,10 @@ void Regulator::burg(bool glitch)
         //////////////////////////////////////
         if (glitch)
             mTime->trigger();
+
         for (int s = 0; s < mFPP; s++)
             c->realNowPacket[s] = (!glitch) ? c->mTmpFloatBuf[s] : 0.0;
+
         if (!glitch) {
             for (int s = 0; s < mFPP; s++)
                 c->mTmpFloatBuf[s] = c->realNowPacket[s];
@@ -951,27 +950,11 @@ void Regulator::burg(bool glitch)
         if (glitch) {
             for (int s = 0; s < mUpToNow; s++)
                 c->prediction[s] = c->predictedPast[s / mFPP][s % mFPP];
-            // for ( int s = 0; s < mUpToNow; s++ ) c->prediction[s] = (s%mFPP) ?
-            //                            c->predictedPast[s/mFPP][s%mFPP]
-            //                            : 0.5;
-            // if (!(mNotTrained%100))
-            {
-                ba->train(c->coeffs,
-                          // c->realPast
-                          c->prediction
-                          // (c->lastWasGlitch) ? c->prediction : c->realPast
-                          ,
-                          mUpToNow);
-                // cout << "\ncoeffs ";
-            }
-            // if (mNotTrained < 2) c->coeffs[0] = 0.9;
-            mNotTrained++;
+
+            ba->train(c->coeffs, c->prediction, mUpToNow);
 
             ba->predict(c->coeffs, c->prediction);
-            // if (pCnt < 200) for ( int s = 0; s < 3; s++ )
-            //         cout << pCnt << "\t" << s << "---"
-            //              << prediction[s+mUpToNow] << " \t"
-            //              << coeffs[s] << " \n";
+
             for (int s = 0; s < mFPP; s++)
                 c->predictedNowPacket[s] = c->prediction[mUpToNow + s];
         }
@@ -986,10 +969,6 @@ void Regulator::burg(bool glitch)
 
         for (int s = 0; s < mFPP; s++)
             c->mTmpFloatBuf[s] = c->outputNowPacket[s];
-        //         (c->lastWasGlitch) ? c->prediction[s] : c->realPast[s];
-        // for ( int s = 0; s < mFPP; s++ ) c->mTmpFloatBuf[s] = c->coeffs[s + 0*mFPP];
-        // for ( int s = 0; s < mFPP; s++ ) c->mTmpFloatBuf[s] = c->prediction[mUpToNow +
-        // s];
 
         c->lastWasGlitch = glitch;
 
@@ -1006,19 +985,15 @@ void Regulator::burg(bool glitch)
                     c->predictedPast[i][s] = c->prediction[(i + 1) * mFPP + s];
             }
 
-        for (int s = 0; s < mFPP; s++) {
+        for (int s = 0; s < mFPP; s++)
             c->futurePredictedPacket[s] = c->prediction[mBeyondNow + s - 0];
-            // earlier bug was heap overflow because of smaller coeffs size, so -1 was ok,
-            // now prediction is larger
-        }
         //////////////////////////////////////
 
         if (glitch)
             mTime->collect();
     }
-    // if (Hapitrip::as.dVerbose)
-    if (!(mPcnt % 300))
-        std::cout << "avg " << mTime->avg() << " glitches " << mTime->glitches() << " \n";
+    if ((!(mPcnt % 300)) && (gVerboseFlag))
+        cout << "avg " << mTime->avg() << " glitches " << mTime->glitches() << " \n";
     mPcnt++;
     // 32 bit is good for days:  (/ (* (- (expt 2 32) 1) (/ 32 48000.0)) (* 60 60 24))
 }
