@@ -334,21 +334,6 @@ Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
     for (int i = 0; i < NumSlotsMax; i++) {
         mIncomingTiming[i] = 0.0;
     }
-    changeGlobal_2(NumSlotsMax);  // need hg if running GUI
-}
-
-void Regulator::changeGlobal(double x)
-{
-    mMsecTolerance = x;
-}
-
-void Regulator::changeGlobal_2(int x)
-{  // mNumSlots
-    mNumSlots = x;
-    if (!mNumSlots)
-        mNumSlots = 1;
-    if (mNumSlots > NumSlotsMax)
-        mNumSlots = NumSlotsMax;
 }
 
 Regulator::~Regulator()

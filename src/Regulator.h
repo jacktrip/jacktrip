@@ -291,9 +291,6 @@ class Regulator : public RingBuffer
     double mAutoHeadroom;
     double mFPPdurMsec;
     double mPeerFPPdurMsec;
-    void changeGlobal(double);
-    void changeGlobal_2(int);
-    void changeGlobal_3(int);
 
     /// Pointer for the Broadcast RingBuffer
     RingBuffer* m_b_BroadcastRingBuffer;
