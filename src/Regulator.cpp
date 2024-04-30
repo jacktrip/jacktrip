@@ -32,7 +32,7 @@
 /**
  * \file Regulator.cpp
  * \author Chris Chafe
- * \date May, 2021 - May, 2024
+ * \date May 2021 - May 2024
  */
 
 // EXPERIMENTAL for testing in JackTrip v1.5.<n>
@@ -249,16 +249,6 @@ Channel::Channel(int fpp, int upToNow, int packetsInThePast)
         for (int j = 0; j < fpp; j++)
             tmp[j] = 0.0;
         mPacketRing.push_back(tmp);
-    }
-
-    fakeNow.resize(fpp);
-    fakeNowPhasor    = 0.0;
-    fakeNowPhasorInc = 0.22;
-    for (int i = 0; i < fpp; i++) {
-        double tmp = sin(fakeNowPhasor);
-        tmp *= 0.1;
-        fakeNow[i] = tmp;
-        fakeNowPhasor += fakeNowPhasorInc;
     }
     lastWasGlitch = false;
 }
@@ -947,18 +937,8 @@ void Regulator::burg(bool glitch)
         //////////////////////////////////////
         if (glitch)
             mTime->trigger();
-
-        for (int i = 0; i < mFPP; i++) {
-            double tmp = sin(c->fakeNowPhasor);
-            tmp *= 0.1;
-            c->fakeNow[i] = tmp;
-            c->fakeNowPhasor += c->fakeNowPhasorInc;
-        }
-
         for (int s = 0; s < mFPP; s++)
             c->realNowPacket[s] = (!glitch) ? c->mTmpFloatBuf[s] : 0.0;
-        // for ( int s = 0; s < mFPP; s++ ) c->realNowPacket[s] = (!glitch) ?
-        // c->fakeNow[s] : 0.0; keep history of generated signal
         if (!glitch) {
             for (int s = 0; s < mFPP; s++)
                 c->mTmpFloatBuf[s] = c->realNowPacket[s];

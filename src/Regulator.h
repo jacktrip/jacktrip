@@ -32,7 +32,7 @@
 /**
  * \file Regulator.h
  * \author Chris Chafe
- * \date May 2021
+ * \date May 2021 - May 2024
  */
 
 // Initial references and starter code to bring up Burg's recursion
@@ -52,7 +52,6 @@
 
 #include "AudioInterface.h"
 #include "RingBuffer.h"
-#include "WaitFreeFrameBuffer.h"
 #include "jacktrip_globals.h"
 
 class BurgAlgorithm
@@ -121,7 +120,6 @@ class Channel
     Channel(int fpp, int upToNow, int packetsInThePast);
     void ringBufferPush();
     void ringBufferPull(int past);
-    double fakeNowPhasorInc;
     std::vector<float>
         mTmpFloatBuf;  // one bufferfull of audio, used for rcv and send operations
     std::vector<float> prediction;
@@ -136,8 +134,6 @@ class Channel
     std::vector<std::vector<float>> mPacketRing;
     int mWptr;
     int mRing;
-    std::vector<float> fakeNow;
-    double fakeNowPhasor;
     std::vector<float> mZeros;
     bool lastWasGlitch;
 
