@@ -294,7 +294,6 @@ class Regulator : public RingBuffer
     void changeGlobal(double);
     void changeGlobal_2(int);
     void changeGlobal_3(int);
-    void printParams();
 
     /// Pointer for the Broadcast RingBuffer
     RingBuffer* m_b_BroadcastRingBuffer;

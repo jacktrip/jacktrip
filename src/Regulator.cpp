@@ -116,7 +116,7 @@ BurgAlgorithm::BurgAlgorithm(size_t size)  // mUpToNow = mPacketsInThePast * fpp
     m = N      = size - 1;
     this->size = size;
     if (size < m)
-        qDebug() << "time_series should have more elements than the AR order is";
+        cout << "time_series should have more elements than the AR order is \n";
     Ak.resize(size);
     for (size_t i = 0; i < size; i++)
         Ak[i] = 0.0;
@@ -140,21 +140,10 @@ void BurgAlgorithm::train(std::vector<float>& coeffs, const std::vector<float>& 
 
     // INITIALIZE Dk
     float Dk = 0.0;
-    for (size_t j = 0; j <= N; j++) {
-        // Dk += 2.000001 * f[ j ] * f[ j ]; // needs more damping than orig 2.0
-        // Dk += 2.5 * f[ j ] * f[ j ]; // needs more damping than orig 2.0
-        // Dk += 3.0 * f[ j ] * f[ j ]; // needs more damping than orig 2.0
+
+    for (size_t j = 0; j <= N; j++)
         Dk += 2.00002 * f[j] * f[j];  // needs more damping than orig 2.0
-        // Dk += 2.00003 * f[ j ] * f[ j ]; // needs more damping than orig 2.0
-        // eliminate overflow Dk += 2.0001 * f[ j ] * f[ j ]; // needs more damping than
-        // orig 2.0
 
-        // JT >>
-        // Dk += 2.00001 * f[j] * f[j];  // CC: needs more damping than orig 2.0
-
-        // was >>
-        // Dk += 2.0000001 * f[ j ] * f[ j ]; // needs more damping than orig 2.0
-    }
     Dk -= f[0] * f[0] + b[N] * b[N];
 
     // BURG RECURSION
@@ -203,7 +192,6 @@ void BurgAlgorithm::predict(std::vector<float>& coeffs, std::vector<float>& tail
 }
 
 //*******************************************************************************
-#define NOW (pCnt * fpp)  // incrementing time
 Channel::Channel(int fpp, int upToNow, int packetsInThePast)
 {
     predictedNowPacket.resize(fpp);
@@ -240,10 +228,9 @@ Channel::Channel(int fpp, int upToNow, int packetsInThePast)
         prediction[i] = 0.0;
     }
 
-    // setup ring buffer
+    // set up ring buffer
     mRing = packetsInThePast;
     mWptr = mRing / 2;
-    // mRptr = mWptr - 2;
     for (int i = 0; i < mRing; i++) {  // don't resize, using push_back
         std::vector<float> tmp(fpp);
         for (int j = 0; j < fpp; j++)
@@ -253,8 +240,9 @@ Channel::Channel(int fpp, int upToNow, int packetsInThePast)
     lastWasGlitch = false;
 }
 
+// push received packet to ring
 void Channel::ringBufferPush()
-{  // push received packet to ring
+{
     mPacketRing[mWptr % mRing] = mTmpFloatBuf;
     mWptr++;
     mWptr %= mRing;
@@ -352,7 +340,6 @@ Regulator::Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
 void Regulator::changeGlobal(double x)
 {
     mMsecTolerance = x;
-    printParams();
 }
 
 void Regulator::changeGlobal_2(int x)
@@ -362,12 +349,7 @@ void Regulator::changeGlobal_2(int x)
         mNumSlots = 1;
     if (mNumSlots > NumSlotsMax)
         mNumSlots = NumSlotsMax;
-    printParams();
 }
-
-void Regulator::printParams(){
-    //    qDebug() << "mMsecTolerance" << mMsecTolerance << "mNumSlots" << mNumSlots;
-};
 
 Regulator::~Regulator()
 {
@@ -406,9 +388,9 @@ void Regulator::updateTolerance()
             } else {
                 mSkipAutoHeadroom = true;
                 ++mCurrentHeadroom;
-                qDebug() << "PLC" << newGlitches << "glitches"
-                         << ">" << glitchesAllowed << "allowed: Increasing headroom to "
-                         << mCurrentHeadroom;
+                cout << "PLC" << newGlitches << "glitches"
+                     << ">" << glitchesAllowed << "allowed: Increasing headroom to "
+                     << mCurrentHeadroom << endl;
             }
         } else {
             mSkipAutoHeadroom = true;
@@ -455,21 +437,21 @@ void Regulator::setFPPratio(int len)
         // use mMsecTolerance to set headroom
         if (mMsecTolerance == -500.0) {
             mAutoHeadroom = -1;
-            qDebug() << "PLC is in auto mode and has been set with variable headroom";
+            cout << "PLC is in auto mode and has been set with variable headroom \n";
         } else {
             mAutoHeadroom = -mMsecTolerance;
-            qDebug() << "PLC is in auto mode and has been set with" << mAutoHeadroom
-                     << "ms headroom";
+            cout << "PLC is in auto mode and has been set with" << mAutoHeadroom
+                 << "ms headroom \n";
             if (mAutoHeadroom > 50.0)
-                qDebug() << "That's a very large value and should be less than, "
-                            "for example, 50ms";
+                cout << "That's a very large value and should be less than, "
+                        "for example, 50ms \n";
         }
         // found an interesting relationship between mPeerFPP and initial
         // mMsecTolerance mPeerFPP*0.5 is pretty good though that's an oddball
         // conversion of bufsize directly to msec
         mMsecTolerance = (mPeerFPP * AutoInitValFactor);
     } else {
-        qDebug() << "PLC is using a fixed tolerance of " << mMsecTolerance << "ms";
+        cout << "PLC is using a fixed tolerance of " << mMsecTolerance << "ms \n";
     }
 
     mXfrBuffer = new int8_t[mPeerBytes];
@@ -504,8 +486,8 @@ void Regulator::setFPPratio(int len)
         m_b_BroadcastRingBuffer =
             new JitterBuffer(mPeerFPP, 10, mSampleRate, 1, m_b_BroadcastQueueLength,
                              mNumChannels, mAudioBitRes);
-        qDebug() << "Broadcast started in Regulator with packet queue of"
-                 << m_b_BroadcastQueueLength;
+        cout << "Broadcast started in Regulator with packet queue of"
+             << m_b_BroadcastQueueLength << endl;
         // have not implemented the mJackTrip->queueLengthChanged functionality
     }
 
@@ -747,8 +729,6 @@ void StdDev::reset()
 
 double StdDev::calcAuto()
 {
-    //    qDebug() << longTermStdDev << longTermMax << AutoMax << window <<
-    //    longTermCnt;
     if ((longTermStdDev == 0.0) || (longTermMax == 0.0))
         return AutoMax;
     double tmp = longTermStdDev + ((longTermMax > AutoMax) ? AutoMax : longTermMax);
