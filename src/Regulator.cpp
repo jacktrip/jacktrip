@@ -395,7 +395,7 @@ void Regulator::changeGlobal_2(int x)
     printParams();
 }
 
-void Regulator::printParams() {
+void Regulator::printParams(){
     //    qDebug() << "mMsecTolerance" << mMsecTolerance << "mNumSlots" << mNumSlots;
 };
 
@@ -464,8 +464,9 @@ void Regulator::updateTolerance()
             } else {
                 mSkipAutoHeadroom = true;
                 ++mCurrentHeadroom;
-                qDebug() << "PLC" << newGlitches << "glitches" << ">" << glitchesAllowed
-                         << "allowed: Increasing headroom to " << mCurrentHeadroom;
+                qDebug() << "PLC" << newGlitches << "glitches"
+                         << ">" << glitchesAllowed << "allowed: Increasing headroom to "
+                         << mCurrentHeadroom;
             }
         } else {
             mSkipAutoHeadroom = true;
@@ -674,7 +675,7 @@ void Regulator::pullPacket()
         goto UNDERRUN;
     }
 
-PACKETOK: {
+PACKETOK : {
     if (mSkip) {
         processPacket(true);
         pullStat->plcOverruns += mSkip;
@@ -683,7 +684,7 @@ PACKETOK: {
     goto OUTPUT;
 }
 
-UNDERRUN: {
+UNDERRUN : {
     pullStat->plcUnderruns++;  // count late
     if ((mLastSeqNumOut == lastSeqNumIn)
         && ((now - mIncomingTiming[mLastSeqNumOut]) > gUdpWaitTimeout)) {

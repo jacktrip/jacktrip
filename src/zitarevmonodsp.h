@@ -1130,8 +1130,8 @@ class FAUST_API AccUpDownConverter : public UpdatableValueConverter
     Interpolator fF2A;
 
    public:
-    AccUpDownConverter(double amin, double amid, double amax, double fmin, double /*fmid*/,
-                       double fmax)
+    AccUpDownConverter(double amin, double amid, double amax, double fmin,
+                       double /*fmid*/, double fmax)
         : fA2F(amin, amid, amax, fmin, fmax, fmin)
         , fF2A(fmin, fmax, amin,
                amax)  // Special, pseudo inverse of a non monotonic function
@@ -1167,8 +1167,8 @@ class FAUST_API AccDownUpConverter : public UpdatableValueConverter
     Interpolator fF2A;
 
    public:
-    AccDownUpConverter(double amin, double amid, double amax, double fmin, double /*fmid*/,
-                       double fmax)
+    AccDownUpConverter(double amin, double amid, double amax, double fmin,
+                       double /*fmid*/, double fmax)
         : fA2F(amin, amid, amax, fmax, fmin, fmax)
         , fF2A(fmin, fmax, amin,
                amax)  // Special, pseudo inverse of a non monotonic function
@@ -1207,8 +1207,9 @@ class FAUST_API ZoneControl
 
     virtual void update(double /*v*/) const {}
 
-    virtual void setMappingValues(int /*curve*/, double /*amin*/, double /*amid*/, double /*amax*/,
-                                  double /*min*/, double /*init*/, double /*max*/)
+    virtual void setMappingValues(int /*curve*/, double /*amin*/, double /*amid*/,
+                                  double /*amax*/, double /*min*/, double /*init*/,
+                                  double /*max*/)
     {
     }
     virtual void getMappingValues(double& /*amin*/, double& /*amid*/, double& /*amax*/) {}
@@ -1701,7 +1702,7 @@ class APIUI
         std::string path = std::string(path_aux);
         auto it          = find_if(fItems.begin(), fItems.end(), [=](const Item& it) {
             return (it.fLabel == path) || (it.fShortname == path) || (it.fPath == path);
-                 });
+        });
         return (it != fItems.end()) ? int(it - fItems.begin()) : -1;
     }
 
@@ -2793,8 +2794,8 @@ class zitarevmonodsp : public dsp
             fRec44[0]     = fTemp27 - (fTemp28 + fSlow5 * fRec44[2]);
             float fTemp29 = fSlow5 * fRec44[0];
             output0[i0]   = FAUSTFLOAT(
-                  fRec0[0]
-                  * (0.5f * fRec1[0]
+                fRec0[0]
+                * (0.5f * fRec1[0]
                        * (fTemp22 + fRec2[2] + fTemp20 + fTemp21
                           + fSlow3 * ((fTemp22 + fTemp21 + fRec2[2]) - fTemp20))
                    + fTemp23 + fTemp23

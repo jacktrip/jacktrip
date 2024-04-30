@@ -55,9 +55,11 @@ JMess::JMess()
     mClient = jack_client_open("lsp", JackNoStartServer, &mStatus);
     if (mClient == NULL) {
         if (mStatus & JackServerFailed) {
-            std::cerr << "JACK server not running" << "\n";
+            std::cerr << "JACK server not running"
+                      << "\n";
         } else {
-            std::cerr << "jack_client_open() failed, " << "status = 0x%2.0x\n"
+            std::cerr << "jack_client_open() failed, "
+                      << "status = 0x%2.0x\n"
                       << mStatus << "\n";
         }
         exit(1);
@@ -72,7 +74,8 @@ JMess::JMess()
 JMess::~JMess()
 {
     if (jack_client_close(mClient))
-        std::cerr << "ERROR: Could not close the hidden jmess jack client." << "\n";
+        std::cerr << "ERROR: Could not close the hidden jmess jack client."
+                  << "\n";
 }
 
 //*******************************************************************************

@@ -127,9 +127,9 @@ class Limiter : public ProcessPlugin
                         warnCount = 0;
                     }
                 }  // warnCount==nextWarning
-            }  // above warningAmp
-        }  // loop over frames
-    }  // checkAmplitudes()
+            }      // above warningAmp
+        }          // loop over frames
+    }              // checkAmplitudes()
 
    private:
     float fs;

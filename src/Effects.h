@@ -462,11 +462,11 @@ class Effects
                                     << "*** Effects.h: parseCompressorArgs: lastParam "
                                     << lastParam << " invalid\n";
                                 returnCode = 3;  // "reality failure"
-                            }  // switch(lastParam)
-                        }  // have valid parameter from atof
+                            }                    // switch(lastParam)
+                        }                        // have valid parameter from atof
                     }  // have valid non-alpha char for parameter
-                }  // switch(ch)
-            }  // for (ulong i=0; i<argLen; i++) {
+                }      // switch(ch)
+            }          // for (ulong i=0; i<argLen; i++) {
             if (inOrOut == IO_IN) {
                 inCompressorPreset = newPreset;
             } else if (inOrOut == IO_OUT) {
@@ -612,7 +612,7 @@ class Effects
                     break;
                 default:
                     break;  // ignore
-                }  // switch(optarg[i])
+                }           // switch(optarg[i])
             }
         }
         return returnCode;
@@ -658,7 +658,7 @@ class Effects
                               << ch << "\n";
                     returnCode = 2;
                 }  // switch(ch)
-            }  // process optarg char ch
+            }      // process optarg char ch
             mLimit =
                 (haveIncoming && haveOutgoing
                      ? LIMITER_BOTH
@@ -685,7 +685,7 @@ class Effects
                     std::cout << "Set up NO Overflow Limiters\n";
                 }
             }  // gVerboseFlag
-        }  // optarg cases
+        }      // optarg cases
         return returnCode;
     }  // parseLimiterOptArg()
 

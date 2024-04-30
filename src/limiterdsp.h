@@ -1702,7 +1702,7 @@ class APIUI
         std::string path = std::string(path_aux);
         auto it          = find_if(fItems.begin(), fItems.end(), [=](const Item& it) {
             return (it.fLabel == path) || (it.fShortname == path) || (it.fPath == path);
-                 });
+        });
         return (it != fItems.end()) ? int(it - fItems.begin()) : -1;
     }
 
