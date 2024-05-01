@@ -57,13 +57,13 @@
 class BurgAlgorithm
 {
    public:
-    BurgAlgorithm(size_t size);
-    void train(std::vector<float>& coeffs, const std::vector<float>& x, size_t size);
+    BurgAlgorithm(int size);
+    void train(std::vector<float>& coeffs, const std::vector<float>& x, int size);
     void predict(std::vector<float>& coeffs, std::vector<float>& predicted);
 
    private:
-    size_t m;
-    size_t N;
+    int m;
+    int N;
     int size;
     std::vector<float> Ak;
     std::vector<float> AkReset;
@@ -229,7 +229,6 @@ class Regulator : public RingBuffer
     virtual bool getStats(IOStat* stat, bool reset);
 
    private:
-    // !peerFPP   void shimFPP(const int8_t* buf, int seq_num);
     void pushPacket(const int8_t* buf, int seq_num);
     void updatePushStats(int seq_num);
     void pullPacket();

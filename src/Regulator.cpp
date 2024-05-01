@@ -110,7 +110,7 @@ constexpr double AutoSmoothingFactor =
     1.0
     / (WindowDivisor * AutoHistoryWindow);  // EWMA smoothing factor for auto tolerance
 
-BurgAlgorithm::BurgAlgorithm(size_t size)  // mUpToNow = mPacketsInThePast * fpp
+BurgAlgorithm::BurgAlgorithm(int size)  // mUpToNow = mPacketsInThePast * fpp
 {
     // GET SIZE FROM INPUT VECTORS
     m = N      = size - 1;
@@ -118,7 +118,7 @@ BurgAlgorithm::BurgAlgorithm(size_t size)  // mUpToNow = mPacketsInThePast * fpp
     if (size < m)
         cout << "time_series should have more elements than the AR order is \n";
     Ak.resize(size);
-    for (size_t i = 0; i < size; i++)
+    for (int i = 0; i < size; i++)
         Ak[i] = 0.0;
     AkReset.resize(size);
     AkReset    = Ak;
@@ -129,28 +129,28 @@ BurgAlgorithm::BurgAlgorithm(size_t size)  // mUpToNow = mPacketsInThePast * fpp
 }
 
 void BurgAlgorithm::train(std::vector<float>& coeffs, const std::vector<float>& x,
-                          size_t size)
+                          int size)
 {
     // INITIALIZE Ak
     Ak = AkReset;
 
     // INITIALIZE f and b
-    for (size_t i = 0; i < size; i++)
+    for (int i = 0; i < size; i++)
         f[i] = b[i] = x[i];
 
     // INITIALIZE Dk
     float Dk = 0.0;
 
-    for (size_t j = 0; j <= N; j++)
+    for (int j = 0; j <= N; j++)
         Dk += 2.00002 * f[j] * f[j];  // needs more damping than orig 2.0
 
     Dk -= f[0] * f[0] + b[N] * b[N];
 
     // BURG RECURSION
-    for (size_t k = 0; k < m; k++) {
+    for (int k = 0; k < m; k++) {
         // COMPUTE MU
         float mu = 0.0;
-        for (size_t n = 0; n <= N - k - 1; n++) {
+        for (int n = 0; n <= N - k - 1; n++) {
             mu += f[n + k + 1] * b[n];
         }
 
@@ -159,7 +159,7 @@ void BurgAlgorithm::train(std::vector<float>& coeffs, const std::vector<float>& 
         mu *= -2.0 / Dk;
 
         // UPDATE Ak
-        for (size_t n = 0; n <= (k + 1) / 2; n++) {
+        for (int n = 0; n <= (k + 1) / 2; n++) {
             float t1      = Ak[n] + mu * Ak[k + 1 - n];
             float t2      = Ak[k + 1 - n] + mu * Ak[n];
             Ak[n]         = t1;
@@ -167,7 +167,7 @@ void BurgAlgorithm::train(std::vector<float>& coeffs, const std::vector<float>& 
         }
 
         // UPDATE f and b
-        for (size_t n = 0; n <= N - k - 1; n++) {
+        for (int n = 0; n <= N - k - 1; n++) {
             float t1     = f[n + k + 1] + mu * b[n];  // were double
             float t2     = b[n] + mu * f[n + k + 1];
             f[n + k + 1] = t1;
@@ -183,9 +183,9 @@ void BurgAlgorithm::train(std::vector<float>& coeffs, const std::vector<float>& 
 
 void BurgAlgorithm::predict(std::vector<float>& coeffs, std::vector<float>& tail)
 {
-    for (size_t i = m; i < tail.size(); i++) {
+    for (int i = m; i < tail.size(); i++) {
         tail[i] = 0.0;
-        for (size_t j = 0; j < m; j++) {
+        for (int j = 0; j < m; j++) {
             tail[i] -= coeffs[j] * tail[i - 1 - j];
         }
     }
