@@ -65,6 +65,8 @@ class BurgAlgorithm
     int m;
     int N;
     int size;
+    int mCoeffsSize;
+    int mTailSize;
     std::vector<float> Ak;
     std::vector<float> AkReset;
     std::vector<float> f;

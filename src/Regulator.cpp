@@ -183,7 +183,7 @@ void BurgAlgorithm::train(std::vector<float>& coeffs, const std::vector<float>& 
 
 void BurgAlgorithm::predict(std::vector<float>& coeffs, std::vector<float>& tail)
 {
-    for (int i = m; i < tail.size(); i++) {
+    for (int i = m; i < mTailSize; i++) {
         tail[i] = 0.0;
         for (int j = 0; j < m; j++) {
             tail[i] -= coeffs[j] * tail[i - 1 - j];
@@ -218,13 +218,15 @@ Channel::Channel(int fpp, int upToNow, int packetsInThePast)
         predictedPast.push_back(tmp);
     }
 
-    coeffs.resize(upToNow - 1);
-    for (int i = 0; i < upToNow - 1; i++) {
+    mCoeffsSize = upToNow - 1;
+    coeffs.resize(mCoeffsSize);
+    for (int i = 0; i < mCoeffsSize; i++) {
         coeffs[i] = 0.0;
     }
 
-    prediction.resize(upToNow + fpp * 2);
-    for (int i = 0; i < upToNow + fpp * 2; i++) {
+    mTailSize = upToNow + fpp * 2;
+    prediction.resize(mTailSize);
+    for (int i = 0; i < mTailSize; i++) {
         prediction[i] = 0.0;
     }
 
