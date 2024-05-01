@@ -181,7 +181,7 @@ class Regulator : public RingBuffer
 {
    public:
     /// construct a new regulator
-    Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
+    Regulator(int rcvChannels, int bit_res, int localFPP, int qLen, int bqLen,
               int sample_rate);
 
     // virtual destructor
@@ -216,10 +216,10 @@ class Regulator : public RingBuffer
     inline int getSampleRate() const { return mSampleRate; }
 
     /// @brief returns number of bytes in an audio "packet"
-    inline int getPacketSize() const { return mBytes; }
+    inline int getPacketSize() const { return mLocalBytes; }
 
     /// @brief returns number of samples, or frames per callback period
-    inline int getBufferSizeInSamples() const { return mFPP; }
+    inline int getBufferSizeInSamples() const { return mLocalFPP; }
 
     /// @brief returns time taken for last PLC prediction, in milliseconds
     inline double getLastDspElapsed() const
@@ -245,11 +245,17 @@ class Regulator : public RingBuffer
     void toFloatBuf(qint16* in);
     void fromFloatBuf(qint16* out);
     void zeroTmpFloatBuf();
+    int mPacketsInThePast;
+    bool mInitialized;
+    int mNumChannels;
+    int mAudioBitRes;
+    int mLocalFPP;
+    int mPeerFPP;
+    int mSampleRate;
     int mPcnt;
     std::vector<float> mTmpFloatBuf;
     std::vector<Channel*> mChanData;
     BurgAlgorithm* ba;
-    int mPacketsInThePast;
     int mUpToNow;
     int mBeyondNow;
     std::vector<float> mFadeUp;
@@ -257,17 +263,13 @@ class Regulator : public RingBuffer
     float mScale;
     float mInvScale;
     int mNotTrained;
-    bool mInitialized;
-    int mNumChannels;
-    int mAudioBitRes;
-    int mFPP;
-    int mPeerFPP;
-    int mSampleRate;
     uint32_t mLastLostCount;
     int mNumSlots;
     AudioInterface::audioBitResolutionT mBitResolutionMode;
-    int mBytes;
+    int mLocalBytes;
     int mPeerBytes;
+    double mLocalFPPdurMsec;
+    double mPeerFPPdurMsec;
     int8_t* mXfrBuffer;
     int8_t* mXfrPullPtr;
     int8_t* mBroadcastBuffer;
@@ -280,7 +282,6 @@ class Regulator : public RingBuffer
     QElapsedTimer mIncomingTimer;
     std::atomic<int> mLastSeqNumIn;
     int mLastSeqNumOut;
-    std::vector<double> mPhasor;
     std::vector<double> mIncomingTiming;
     int mSkip;
     int mFPPratioNumerator;
@@ -290,8 +291,6 @@ class Regulator : public RingBuffer
     int mLastGlitches;
     double mCurrentHeadroom;
     double mAutoHeadroom;
-    double mFPPdurMsec;
-    double mPeerFPPdurMsec;
 
     /// Pointer for the Broadcast RingBuffer
     RingBuffer* m_b_BroadcastRingBuffer;
