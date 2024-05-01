@@ -59,14 +59,12 @@ class BurgAlgorithm
    public:
     BurgAlgorithm(int size);
     void train(std::vector<float>& coeffs, const std::vector<float>& x, int size);
-    void predict(std::vector<float>& coeffs, std::vector<float>& predicted);
+    void predict(std::vector<float>& coeffs, std::vector<float>& predicted, int size);
 
    private:
     int m;
     int N;
     int size;
-    int mCoeffsSize;
-    int mTailSize;
     std::vector<float> Ak;
     std::vector<float> AkReset;
     std::vector<float> f;
@@ -138,6 +136,8 @@ class Channel
     int mRing;
     std::vector<float> mZeros;
     bool lastWasGlitch;
+    int mCoeffsSize;
+    int mTailSize;
 };
 
 class StdDev

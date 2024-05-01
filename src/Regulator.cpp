@@ -181,9 +181,10 @@ void BurgAlgorithm::train(std::vector<float>& coeffs, const std::vector<float>& 
     coeffs.assign(++Ak.begin(), Ak.end());
 }
 
-void BurgAlgorithm::predict(std::vector<float>& coeffs, std::vector<float>& tail)
+void BurgAlgorithm::predict(std::vector<float>& coeffs, std::vector<float>& tail,
+                            int size)
 {
-    for (int i = m; i < mTailSize; i++) {
+    for (int i = m; i < size; i++) {
         tail[i] = 0.0;
         for (int j = 0; j < m; j++) {
             tail[i] -= coeffs[j] * tail[i - 1 - j];
@@ -920,7 +921,7 @@ void Regulator::burg(bool glitch)
 
             ba->train(c->coeffs, c->prediction, mUpToNow);
 
-            ba->predict(c->coeffs, c->prediction);
+            ba->predict(c->coeffs, c->prediction, c->mTailSize);
 
             for (int s = 0; s < mFPP; s++)
                 c->predictedNowPacket[s] = c->prediction[mUpToNow + s];
