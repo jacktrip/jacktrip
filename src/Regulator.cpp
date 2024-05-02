@@ -632,10 +632,10 @@ void Regulator::sampleToBits(sample_t sample, int ch, int frame)
         mBitResolutionMode);
 }
 
-void sineToXfrBuffer()
+void Regulator::sineToXfrBuffer()
 {
     for (int ch = 0; ch < mNumChannels; ch++)
-        for (int s = 0; s < mFPP; s++) {
+        for (int s = 0; s < mPeerFPP; s++) {
             sampleToBits(0.7 * sin(mPhasor[ch]), ch, s);
             mPhasor[ch] += (!ch) ? 0.1 : 0.11;
         }
@@ -835,7 +835,7 @@ void Regulator::readSlotNonBlocking(int8_t* ptrToReadSlot)
         // local FPP matches peer
         pullPacket();
 
-        // sineToXfrBuffer();
+        sineToXfrBuffer();
 
         memcpy(ptrToReadSlot, mXfrBuffer, mLocalBytes);
         return;

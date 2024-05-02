@@ -238,6 +238,7 @@ class Regulator : public RingBuffer
     void burg(bool glitch);
     sample_t bitsToSample(int ch, int frame);
     void sampleToBits(sample_t sample, int ch, int frame);
+    void sineToXfrBuffer();
     void floatBufToXfrBuffer();
     void xfrBufferToFloatBuf();
     void toFloatBuf(qint16* in);
@@ -289,6 +290,7 @@ class Regulator : public RingBuffer
     double mCurrentHeadroom;
     double mAutoHeadroom;
     Time* mTime = nullptr;
+    std::vector<double> mPhasor;
 
     /// Pointer for the Broadcast RingBuffer
     RingBuffer* m_b_BroadcastRingBuffer = nullptr;
