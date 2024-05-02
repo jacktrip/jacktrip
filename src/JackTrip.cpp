@@ -1582,8 +1582,9 @@ bool JackTrip::checkIfPortIsBinded(int port)
     std::map<std::string, QHostAddress::SpecialAddress>::iterator it;
     for (it = interfaces.begin(); it != interfaces.end(); it++) {
         bool binded = UdpSockTemp.bind(it->second, port, QUdpSocket::DontShareAddress);
+        QUdpSocket::SocketError err = UdpSockTemp.error();
         UdpSockTemp.close();
-        if (!binded) {
+        if (!binded && err != QUdpSocket::UnsupportedSocketOperationError) {
             return true;
         }
     }
