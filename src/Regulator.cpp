@@ -81,6 +81,7 @@
 
 #include "Regulator.h"
 
+#include <cfloat>
 #include <iomanip>
 
 #include "JitterBuffer.h"  // for broadcast
@@ -155,7 +156,7 @@ void BurgAlgorithm::train(std::vector<float>& coeffs, const std::vector<float>& 
         }
 
         if (Dk == 0.0)
-            Dk = 0.0000001;  // from online testing
+            Dk = FLT_EPSILON;  // 0.0000001 from online testing when it was a double
         mu *= -2.0 / Dk;
 
         // UPDATE Ak
