@@ -942,19 +942,14 @@ void Regulator::burg(bool glitch)
         for (int s = 0; s < mPeerFPP; s++)
             c->predictedPast[mPacketsInThePast - 1][s] = c->outputNowPacket[s];
 
-        if (false)
-            for (int i = 0; i < mPacketsInThePast - 1; i++) {
-                for (int s = 0; s < mPeerFPP; s++)
-                    c->predictedPast[i][s] = c->prediction[(i + 1) * mPeerFPP + s];
-            }
-
         for (int s = 0; s < mPeerFPP; s++)
             c->futurePredictedPacket[s] = c->prediction[mBeyondNow + s - 0];
-        //////////////////////////////////////
 
         if (glitch)
             mTime->collect();
+        //////////////////////////////////////
     }
+
     if ((!(mPcnt % 300)) && (gVerboseFlag))
         cout << "avg " << mTime->avg() << " glitches " << mTime->glitches() << " \n";
     mPcnt++;
