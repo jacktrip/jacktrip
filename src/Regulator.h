@@ -264,7 +264,6 @@ class Regulator : public RingBuffer
     float mInvScale;
     int mNotTrained;
     uint32_t mLastLostCount;
-    int mNumSlots;
     AudioInterface::audioBitResolutionT mBitResolutionMode;
     int mLocalBytes;
     int mPeerBytes;

@@ -92,7 +92,7 @@ using std::setw;
 // constants...
 constexpr bool PrintDirect = false;  // print stats direct from -V not -I
 constexpr int HIST         = 2;      // mPacketsInThePast
-constexpr int NumSlotsMax  = 4096;   // mNumSlots looped for recent arrivals
+constexpr int NumSlots     = 4096;   // NumSlots looped for recent arrivals
 constexpr double AutoMax   = 250.0;  // msec bounds on insane IPI, like ethernet unplugged
 constexpr double AutoInitDur = 3000.0;  // kick in auto after this many msec
 constexpr double AutoInitValFactor =
@@ -285,11 +285,6 @@ Regulator::Regulator(int rcvChannels, int bit_res, int localFPP, int qLen, int b
     , m_b_BroadcastRingBuffer(NULL)
     , m_b_BroadcastQueueLength(bqLen)
 {
-    if (mLocalFPP > MaxFPP) {
-        std::cerr << "*** Regulator.cpp: local FPP = " << mLocalFPP
-                  << " larger than max FPP = " << MaxFPP << "\n";
-        exit(1);
-    }
     switch (mAudioBitRes) {  // int from JitterBuffer to AudioInterface enum
     case 1:
         mBitResolutionMode = AudioInterface::audioBitResolutionT::BIT8;
@@ -311,8 +306,8 @@ Regulator::Regulator(int rcvChannels, int bit_res, int localFPP, int qLen, int b
         cout << "mBitResolutionMode = " << mBitResolutionMode << " scale = " << mScale
              << "\n";
 
-    mIncomingTiming.resize(NumSlotsMax);
-    for (int i = 0; i < NumSlotsMax; i++) {
+    mIncomingTiming.resize(NumSlots);
+    for (int i = 0; i < NumSlots; i++) {
         mIncomingTiming[i] = 0.0;
     }
 
@@ -411,12 +406,10 @@ void Regulator::setFPPratio(int len)
         mFadeDown[i] = 1.0 - mFadeUp[i];
     }
 
-    mNumSlots = NumSlotsMax;
-
-    mSlots      = new int8_t*[mNumSlots];
-    mSlotBuf    = new int8_t[mNumSlots * mPeerBytes];
+    mSlots      = new int8_t*[NumSlots];
+    mSlotBuf    = new int8_t[NumSlots * mPeerBytes];
     int8_t* tmp = mSlotBuf;
-    for (int i = 0; i < mNumSlots; i++) {
+    for (int i = 0; i < NumSlots; i++) {
         mSlots[i] = tmp;
         tmp += mPeerBytes;
     }
@@ -497,7 +490,7 @@ void Regulator::updatePushStats(int seq_num)
     // pkts is distance of previous packet from mLastSeqNumOut
     int pkts = seq_num - 1 - mLastSeqNumOut;
     if (pkts < 0)
-        pkts += mNumSlots;
+        pkts += NumSlots;
     double prev_time = mIncomingTiming[mLastSeqNumOut] + (pkts * mPeerFPPdurMsec);
     if (prev_time >= mIncomingTiming[seq_num])
         return;  // skip edge case where mLastSeqNumOut was very late
@@ -516,7 +509,7 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
 {
     if (m_b_BroadcastRingBuffer != NULL)
         m_b_BroadcastRingBuffer->insertSlotNonBlocking(buf, mPeerBytes, 0, seq_num);
-    seq_num %= mNumSlots;
+    seq_num %= NumSlots;
     // if (seq_num==0) return;   // impose regular loss
     mIncomingTiming[seq_num] =
         mMsecTolerance + (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
@@ -540,13 +533,13 @@ void Regulator::pullPacket()
         // find the next packet to pull
         int new_pkts = lastSeqNumIn - mLastSeqNumOut;
         if (new_pkts < 0)
-            new_pkts += mNumSlots;
+            new_pkts += NumSlots;
 
         // iterate through each new packet
         for (int i = new_pkts - 1; i >= 0; i--) {
             int next = lastSeqNumIn - i;
             if (next < 0)
-                next += mNumSlots;
+                next += NumSlots;
             if (mLastSeqNumOut != -1) {
                 // account for missing packets
                 if (mIncomingTiming[next] < mIncomingTiming[mLastSeqNumOut])
@@ -555,7 +548,7 @@ void Regulator::pullPacket()
                 // count how many we have skipped
                 mSkip = next - mLastSeqNumOut - 1;
                 if (mSkip < 0)
-                    mSkip += mNumSlots;
+                    mSkip += NumSlots;
             }
             // set next as the best candidate
             mLastSeqNumOut = next;
