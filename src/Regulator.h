@@ -167,7 +167,7 @@ class StdDev
    private:
     double smooth(double avg, double current);
     void reset();
-    QElapsedTimer* mTimer;
+    QElapsedTimer* mTimer = nullptr;
     std::vector<double> data;
     double mean;
     int window;
@@ -187,7 +187,7 @@ class Regulator : public RingBuffer
     // virtual destructor
     virtual ~Regulator();
 
-    Time* mTime;
+    Time* mTime = nullptr;
 
     // can hijack unused2 to propagate incoming seq num if needed
     // option is in UdpDataProtocol
@@ -255,7 +255,7 @@ class Regulator : public RingBuffer
     int mPcnt;
     std::vector<float> mTmpFloatBuf;
     std::vector<Channel*> mChanData;
-    BurgAlgorithm* ba;
+    BurgAlgorithm* ba = nullptr;
     int mUpToNow;
     int mBeyondNow;
     std::vector<float> mFadeUp;
@@ -269,15 +269,15 @@ class Regulator : public RingBuffer
     int mPeerBytes;
     double mLocalFPPdurMsec;
     double mPeerFPPdurMsec;
-    int8_t* mXfrBuffer;
-    int8_t* mXfrPullPtr;
-    int8_t* mBroadcastBuffer;
-    int8_t* mBroadcastPullPtr;
-    int8_t** mSlots;
-    int8_t* mSlotBuf;
+    int8_t* mXfrBuffer        = nullptr;
+    int8_t* mXfrPullPtr       = nullptr;
+    int8_t* mBroadcastBuffer  = nullptr;
+    int8_t* mBroadcastPullPtr = nullptr;
+    int8_t** mSlots           = nullptr;
+    int8_t* mSlotBuf          = nullptr;
     double mMsecTolerance;
-    StdDev* pushStat;
-    StdDev* pullStat;
+    StdDev* pushStat = nullptr;
+    StdDev* pullStat = nullptr;
     QElapsedTimer mIncomingTimer;
     std::atomic<int> mLastSeqNumIn;
     int mLastSeqNumOut;
@@ -292,7 +292,7 @@ class Regulator : public RingBuffer
     double mAutoHeadroom;
 
     /// Pointer for the Broadcast RingBuffer
-    RingBuffer* m_b_BroadcastRingBuffer;
+    RingBuffer* m_b_BroadcastRingBuffer = nullptr;
     int m_b_BroadcastQueueLength;
 };
 
