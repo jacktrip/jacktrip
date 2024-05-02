@@ -313,7 +313,8 @@ Regulator::Regulator(int rcvChannels, int bit_res, int localFPP, int qLen, int b
 
     mLocalFPPdurMsec = 1000.0 * mLocalFPP / mSampleRate;
     mLocalBytes      = mLocalFPP * mNumChannels * mBitResolutionMode;
-    mPhasor.resize(mNumChannels, 0.0);
+
+    //    mPhasor.resize(mNumChannels, 0.0);
 }
 
 Regulator::~Regulator()
@@ -601,8 +602,7 @@ void Regulator::processPacket(bool glitch)
 
     zeroTmpFloatBuf();  // ahead of either call to burg
     xfrBufferToFloatBuf();
-    //    sineToXfrBuffer();
-    burg(glitch);  // mPcnt % 2);
+    burg(glitch);
     if (glitch) {
         double tmp2 = (double)mIncomingTimer.nsecsElapsed() - tmp;
         tmp2 /= 1000000.0;
@@ -632,6 +632,7 @@ void Regulator::sampleToBits(sample_t sample, int ch, int frame)
         mBitResolutionMode);
 }
 
+/*
 void Regulator::sineToXfrBuffer()
 {
     for (int ch = 0; ch < mNumChannels; ch++)
@@ -640,6 +641,7 @@ void Regulator::sineToXfrBuffer()
             mPhasor[ch] += (!ch) ? 0.1 : 0.11;
         }
 };
+*/
 
 void Regulator::floatBufToXfrBuffer()
 {
@@ -835,7 +837,6 @@ void Regulator::readSlotNonBlocking(int8_t* ptrToReadSlot)
         // local FPP matches peer
         pullPacket();
         floatBufToXfrBuffer();
-        //    sineToXfrBuffer();
         memcpy(ptrToReadSlot, mXfrBuffer, mLocalBytes);
         return;
     }
