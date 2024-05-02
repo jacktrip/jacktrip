@@ -601,8 +601,8 @@ void Regulator::processPacket(bool glitch)
 
     zeroTmpFloatBuf();  // ahead of either call to burg
     xfrBufferToFloatBuf();
-    sineToXfrBuffer();
-    burg(mPcnt % 2);
+    //    sineToXfrBuffer();
+    burg(glitch);  // mPcnt % 2);
     if (glitch) {
         double tmp2 = (double)mIncomingTimer.nsecsElapsed() - tmp;
         tmp2 /= 1000000.0;
@@ -834,6 +834,8 @@ void Regulator::readSlotNonBlocking(int8_t* ptrToReadSlot)
     if (mFPPratioNumerator == mFPPratioDenominator) {
         // local FPP matches peer
         pullPacket();
+        floatBufToXfrBuffer();
+        //    sineToXfrBuffer();
         memcpy(ptrToReadSlot, mXfrBuffer, mLocalBytes);
         return;
     }
@@ -842,6 +844,7 @@ void Regulator::readSlotNonBlocking(int8_t* ptrToReadSlot)
         // 2/1, 4/1 peer FPP is lower, (local/peer)/1
         for (int i = 0; i < mFPPratioNumerator; i++) {
             pullPacket();
+            floatBufToXfrBuffer();
             memcpy(ptrToReadSlot, mXfrBuffer, mPeerBytes);
             ptrToReadSlot += mPeerBytes;
         }
@@ -853,6 +856,7 @@ void Regulator::readSlotNonBlocking(int8_t* ptrToReadSlot)
         pullPacket();
         mXfrPullPtr = mXfrBuffer;
     }
+    floatBufToXfrBuffer();
     memcpy(ptrToReadSlot, mXfrPullPtr, mLocalBytes);
     mXfrPullPtr += mLocalBytes;
 }
