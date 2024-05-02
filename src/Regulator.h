@@ -187,8 +187,6 @@ class Regulator : public RingBuffer
     // virtual destructor
     virtual ~Regulator();
 
-    Time* mTime = nullptr;
-
     // can hijack unused2 to propagate incoming seq num if needed
     // option is in UdpDataProtocol
     // if (!mJackTrip->writeAudioBuffer(src, host_buf_size, last_seq_num))
@@ -290,6 +288,7 @@ class Regulator : public RingBuffer
     int mLastGlitches;
     double mCurrentHeadroom;
     double mAutoHeadroom;
+    Time* mTime = nullptr;
 
     /// Pointer for the Broadcast RingBuffer
     RingBuffer* m_b_BroadcastRingBuffer = nullptr;
