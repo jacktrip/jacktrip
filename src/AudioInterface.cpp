@@ -819,15 +819,15 @@ void AudioInterface::setDevicesWarningMsg(warningMessageT msg)
         mWarningMsg =
             "The buffer size setting for your audio device will cause high latency "
             "or audio delay. Use an audio device that supports small buffer sizes "
-            "to reduce audio delays.";
-        mWarningHelpUrl  = "";
+            "to reduce audio delays. Click for more info.";
+        mWarningHelpUrl  = "https://support.jacktrip.com/recommended-audio-interfaces";
         mHighLatencyFlag = true;
         break;
     case DEVICE_WARN_ASIO_LATENCY:
         mWarningMsg =
             "You audio device drivers may cause high latency or audio delay. Install "
             "and use ASIO drivers provided by your device's manufacturer to reduce "
-            "audio delays.";
+            "audio delays. Click for more info.";
         mWarningHelpUrl =
             "https://support.jacktrip.com/troubleshooting-windows-drivers-and-asio";
         mHighLatencyFlag = true;

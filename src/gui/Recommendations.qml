@@ -153,6 +153,13 @@ Item {
             anchors.topMargin: 32 * virtualstudio.uiScale
         }
 
+        LearnMoreButton {
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: ethernetRecommendationSubheader1.bottom
+            anchors.topMargin: 32 * virtualstudio.uiScale
+            url: "https://support.jacktrip.com/wired-internet-versus-wi-fi"
+        }
+
         Button {
             id: okButtonEthernet
             background: Rectangle {
@@ -219,6 +226,12 @@ Item {
             anchors.topMargin: 32 * virtualstudio.uiScale
         }
 
+        LearnMoreButton {
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: fiberRecommendationSubheader.bottom
+            anchors.topMargin: 32 * virtualstudio.uiScale
+            url: "https://support.jacktrip.com/how-to-optimize-latency-when-using-jacktrip"
+        }
 
         Button {
             id: okButtonFiber
@@ -388,6 +401,15 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: audioInterfaceRecommendationHeaderWindows.bottom
             anchors.topMargin: 32 * virtualstudio.uiScale
+        }
+
+        LearnMoreButton {
+            width: 250 * virtualstudio.uiScale;
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: onWindows ? audioInterfaceRecommendationSubheaderWindows.bottom : audioInterfaceRecommendationSubheaderNonWindows.bottom
+            anchors.topMargin: 32 * virtualstudio.uiScale
+            buttonText: "See recommended devices"
+            url: "https://support.jacktrip.com/recommended-audio-interfaces"
         }
 
         Button {

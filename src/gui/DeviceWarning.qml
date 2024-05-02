@@ -43,9 +43,16 @@ Item {
         anchors.top: devicesWarningIcon.top
         anchors.bottom: devicesWarningIcon.bottom
         anchors.left: devicesWarningIcon.left
-        anchors.right: warningOrErrorText.right
+        anchors.right: devicesWarningTooltip.right
         hoverEnabled: true
         onEntered: devicesWarningTooltip.showToolTip = true
         onExited: devicesWarningTooltip.showToolTip = false
+        onClicked: {
+            if (Boolean(audio.devicesError) && audio.devicesErrorHelpUrl !== "") {
+                virtualstudio.openLink(audio.devicesErrorHelpUrl);
+            } else if (Boolean(audio.devicesWarning) && audio.devicesWarningHelpUrl !== "") {
+                virtualstudio.openLink(audio.devicesWarningHelpUrl);
+            }
+        }
     }
 }
