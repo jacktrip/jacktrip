@@ -313,6 +313,7 @@ Regulator::Regulator(int rcvChannels, int bit_res, int localFPP, int qLen, int b
 
     mLocalFPPdurMsec = 1000.0 * mLocalFPP / mSampleRate;
     mLocalBytes      = mLocalFPP * mNumChannels * mBitResolutionMode;
+    mPhasor.resize(mNumChannels, 0.0);
 }
 
 Regulator::~Regulator()
@@ -833,6 +834,9 @@ void Regulator::readSlotNonBlocking(int8_t* ptrToReadSlot)
     if (mFPPratioNumerator == mFPPratioDenominator) {
         // local FPP matches peer
         pullPacket();
+
+        // sineToXfrBuffer();
+
         memcpy(ptrToReadSlot, mXfrBuffer, mLocalBytes);
         return;
     }
