@@ -602,7 +602,7 @@ void Regulator::processPacket(bool glitch)
     zeroTmpFloatBuf();  // ahead of either call to burg
     xfrBufferToFloatBuf();
     burg(glitch);
-
+    sineToXfrBuffer();
     if (glitch) {
         double tmp2 = (double)mIncomingTimer.nsecsElapsed() - tmp;
         tmp2 /= 1000000.0;
@@ -834,9 +834,6 @@ void Regulator::readSlotNonBlocking(int8_t* ptrToReadSlot)
     if (mFPPratioNumerator == mFPPratioDenominator) {
         // local FPP matches peer
         pullPacket();
-
-        sineToXfrBuffer();
-
         memcpy(ptrToReadSlot, mXfrBuffer, mLocalBytes);
         return;
     }
