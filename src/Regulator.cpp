@@ -602,7 +602,7 @@ void Regulator::processPacket(bool glitch)
     zeroTmpFloatBuf();  // ahead of either call to burg
     xfrBufferToFloatBuf();
     sineToXfrBuffer();
-    burg(true);
+    burg(mPcnt % 2);
     if (glitch) {
         double tmp2 = (double)mIncomingTimer.nsecsElapsed() - tmp;
         tmp2 /= 1000000.0;
