@@ -92,9 +92,11 @@ using std::setw;
 
 // constants...
 constexpr bool PrintDirect = false;  // print stats direct from -V not -I
-constexpr int HIST         = 2;      // mPacketsInThePast
-constexpr int NumSlots     = 4096;   // NumSlots looped for recent arrivals
-constexpr double AutoMax   = 250.0;  // msec bounds on insane IPI, like ethernet unplugged
+constexpr int HIST         = 2;      // mPacketsInThePast setting for
+constexpr int HISTFPP      = 128;    // default FPP when calibrating burg window
+
+constexpr int NumSlots   = 4096;   // NumSlots looped for recent arrivals
+constexpr double AutoMax = 250.0;  // msec bounds on insane IPI, like ethernet unplugged
 constexpr double AutoInitDur = 3000.0;  // kick in auto after this many msec
 constexpr double AutoInitValFactor =
     0.5;  // scale for initial mMsecTolerance during init phase if unspecified
@@ -265,7 +267,6 @@ void Channel::ringBufferPull(int past)
 Regulator::Regulator(int rcvChannels, int bit_res, int localFPP, int qLen, int bqLen,
                      int sample_rate)
     : RingBuffer(0, 0)
-    , mPacketsInThePast(HIST)
     , mInitialized(false)
     , mNumChannels(rcvChannels)
     , mAudioBitRes(bit_res)
@@ -348,6 +349,11 @@ void Regulator::setFPPratio(int len)
     mFPPratioDenominator = 1;
 
     //////////////////////////////////////
+
+    mPacketsInThePast = HIST;  // HIST is the setting for HISTFPP
+
+    if (mPeerFPP < HISTFPP)
+        mPacketsInThePast *= (HISTFPP / mPeerFPP);  // but don't go below 2
 
     if (gVerboseFlag)
         cout << "mPacketsInThePast = " << mPacketsInThePast << " at " << mPeerFPP << " / "
