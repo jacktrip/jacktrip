@@ -905,7 +905,7 @@ void Regulator::burg(bool glitch)
         Channel* c = mChanData[ch];
         //////////////////////////////////////
         if (glitch)
-            mTime->trigger();
+            mTime->trigger(ch);  // if ch == 0, incr glitchCnt
 
         for (int s = 0; s < mPeerFPP; s++)
             c->realNowPacket[s] = (!glitch) ? c->mTmpFloatBuf[s] : 0.0;

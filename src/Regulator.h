@@ -101,10 +101,11 @@ class Time
         return tmp;
     }
     void start() { mCallbackTimer.start(); }
-    void trigger()
+    void trigger(int ch)
     {
         tmpTime = mCallbackTimer.nsecsElapsed();
-        glitchCnt++;
+        if (!ch)
+            glitchCnt++;
     }
     int glitches()
     {
