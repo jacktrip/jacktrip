@@ -57,7 +57,7 @@
 #include <QStandardPaths>
 #include <QTextStream>
 // TODO: Add support for QtWebView
-//#include <QtWebView>
+// #include <QtWebView>
 #include <QtWebEngineQuick/qtwebenginequickglobal.h>
 
 #include "JTApplication.h"

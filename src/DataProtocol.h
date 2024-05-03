@@ -47,7 +47,7 @@
 #include <arpa/inet.h>  //inet(3) functions
 #include <netdb.h>
 #include <netinet/in.h>  //sockaddr_in{} and other Internet defns
-//#include <tr1/memory> //for shared_ptr
+// #include <tr1/memory> //for shared_ptr
 #endif
 
 #include <QHostAddress>

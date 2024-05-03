@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2021 Juan-Pablo Caceres, Chris Chafe.
+  Copyright (c) 2024 Juan-Pablo Caceres, Chris Chafe.
   SoundWIRE group at CCRMA, Stanford University.
 
   Permission is hereby granted, free of charge, to any person
@@ -32,7 +32,7 @@
 /**
  * \file Regulator.h
  * \author Chris Chafe
- * \date May 2021
+ * \date May 2021 - May 2024
  */
 
 // Initial references and starter code to bring up Burg's recursion
@@ -48,43 +48,97 @@
 #include <QElapsedTimer>
 #include <atomic>
 #include <cstring>
+#include <vector>
 
 #include "AudioInterface.h"
 #include "RingBuffer.h"
-#include "WaitFreeFrameBuffer.h"
 #include "jacktrip_globals.h"
 
 class BurgAlgorithm
 {
    public:
-    bool classify(double d);
-    void train(std::vector<double>& coeffs, const std::vector<double>& x);
-    void predict(std::vector<double>& coeffs, std::vector<double>& tail);
+    BurgAlgorithm(int size);
+    void train(std::vector<float>& coeffs, const std::vector<float>& x, int size);
+    void predict(std::vector<float>& coeffs, std::vector<float>& predicted, int size);
 
    private:
-    // the following are class members to minimize heap memory allocations
-    std::vector<double> Ak;
-    std::vector<double> f;
-    std::vector<double> b;
+    int m;
+    int N;
+    int size;
+    std::vector<float> Ak;
+    std::vector<float> AkReset;
+    std::vector<float> f;
+    std::vector<float> b;
 };
 
-class ChanData
+class Time
+{
+    double accum   = 0.0;
+    int cnt        = 0;
+    int glitchCnt  = 0;
+    double tmpTime = 0.0;
+
+   public:
+    QElapsedTimer mCallbackTimer;  // for rcvElapsedTime
+    void collect()
+    {
+        double tmp = (mCallbackTimer.nsecsElapsed() - tmpTime) / 1000000.0;
+        accum += tmp;
+        cnt++;
+    }
+    double instantElapsed()
+    {
+        return (mCallbackTimer.nsecsElapsed() - tmpTime) / 1000000.0;
+    }
+    double instantAbsolute() { return (mCallbackTimer.nsecsElapsed()) / 1000000.0; }
+    double avg()
+    {
+        if (!cnt)
+            return 0.0;
+        double tmp = accum / (double)cnt;
+        accum      = 0.0;
+        cnt        = 0;
+        return tmp;
+    }
+    void start() { mCallbackTimer.start(); }
+    void trigger(int ch)
+    {
+        tmpTime = mCallbackTimer.nsecsElapsed();
+        if (!ch)
+            glitchCnt++;
+    }
+    int glitches()
+    {
+        int tmp   = glitchCnt;
+        glitchCnt = 0;
+        return tmp;
+    }
+};
+
+class Channel
 {
    public:
-    ChanData(int i, int FPP, int hist);
-    int ch;
-    int trainSamps;
-    std::vector<sample_t> mTruth;
-    std::vector<double> mTrain;
-    std::vector<double> mTail;
-    std::vector<sample_t> mPrediction;  // ORDER
-    std::vector<double> mCoeffs;
-    std::vector<sample_t> mXfadedPred;
-    std::vector<sample_t> mLastPred;
-    std::vector<std::vector<sample_t>> mLastPackets;
-    std::vector<sample_t> mCrossFadeDown;
-    std::vector<sample_t> mCrossFadeUp;
-    std::vector<sample_t> mCrossfade;
+    Channel(int fpp, int upToNow, int packetsInThePast);
+    void ringBufferPush();
+    void ringBufferPull(int past);
+    std::vector<float>
+        mTmpFloatBuf;  // one bufferfull of audio, used for rcv and send operations
+    std::vector<float> prediction;
+    std::vector<float> predictedNowPacket;
+    std::vector<float> realNowPacket;
+    std::vector<float> outputNowPacket;
+    std::vector<float> futurePredictedPacket;
+    std::vector<float> realPast;
+    std::vector<float> zeroPast;
+    std::vector<std::vector<float>> predictedPast;
+    std::vector<float> coeffs;
+    std::vector<std::vector<float>> mPacketRing;
+    int mWptr;
+    int mRing;
+    std::vector<float> mZeros;
+    bool lastWasGlitch;
+    int mCoeffsSize;
+    int mTailSize;
 };
 
 class StdDev
@@ -114,7 +168,7 @@ class StdDev
    private:
     double smooth(double avg, double current);
     void reset();
-    QElapsedTimer* mTimer;
+    QElapsedTimer* mTimer = nullptr;
     std::vector<double> data;
     double mean;
     int window;
@@ -128,7 +182,7 @@ class Regulator : public RingBuffer
 {
    public:
     /// construct a new regulator
-    Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
+    Regulator(int rcvChannels, int bit_res, int localFPP, int qLen, int bqLen,
               int sample_rate);
 
     // virtual destructor
@@ -161,10 +215,10 @@ class Regulator : public RingBuffer
     inline int getSampleRate() const { return mSampleRate; }
 
     /// @brief returns number of bytes in an audio "packet"
-    inline int getPacketSize() const { return mBytes; }
+    inline int getPacketSize() const { return mLocalBytes; }
 
     /// @brief returns number of samples, or frames per callback period
-    inline int getBufferSizeInSamples() const { return mFPP; }
+    inline int getBufferSizeInSamples() const { return mLocalFPP; }
 
     /// @brief returns time taken for last PLC prediction, in milliseconds
     inline double getLastDspElapsed() const
@@ -176,48 +230,62 @@ class Regulator : public RingBuffer
     virtual bool getStats(IOStat* stat, bool reset);
 
    private:
-    void shimFPP(const int8_t* buf, int seq_num);
     void pushPacket(const int8_t* buf, int seq_num);
     void updatePushStats(int seq_num);
     void pullPacket();
     void updateTolerance();
     void setFPPratio(int len);
     void processPacket(bool glitch);
-    void processChannel(int ch, bool glitch, int packetCnt, bool lastWasGlitch);
+    void burg(bool glitch);
+    sample_t bitsToSample(int ch, int frame);
+    void sampleToBits(sample_t sample, int ch, int frame);
+    void floatBufToXfrBuffer();
+    void xfrBufferToFloatBuf();
+    void toFloatBuf(qint16* in);
+    void fromFloatBuf(qint16* out);
+    void zeroTmpFloatBuf();
 
+    /*
+       void sineToXfrBuffer(); // keep this around, handy for signal test points
+        std::vector<double> mPhasor;
+        */
+
+    int mPacketsInThePast;
     bool mInitialized;
     int mNumChannels;
     int mAudioBitRes;
-    int mFPP;
+    int mLocalFPP;
     int mPeerFPP;
     int mSampleRate;
+    int mPcnt;
+    std::vector<float> mTmpFloatBuf;
+    std::vector<Channel*> mChanData;
+    BurgAlgorithm* ba = nullptr;
+    int mUpToNow;
+    int mBeyondNow;
+    std::vector<float> mFadeUp;
+    std::vector<float> mFadeDown;
+    float mScale;
+    float mInvScale;
+    int mNotTrained;
     uint32_t mLastLostCount;
-    int mNumSlots;
-    int mHist;
     AudioInterface::audioBitResolutionT mBitResolutionMode;
-    BurgAlgorithm ba;
-    int mBytes;
+    int mLocalBytes;
     int mPeerBytes;
-    int8_t* mXfrBuffer;
-    int8_t* mXfrPullPtr;
-    int8_t* mBroadcastBuffer;
-    int8_t* mBroadcastPullPtr;
-    int mPacketCnt;
-    sample_t bitsToSample(int ch, int frame);
-    void sampleToBits(sample_t sample, int ch, int frame);
-    std::vector<sample_t> mFadeUp;
-    std::vector<sample_t> mFadeDown;
-    bool mLastWasGlitch;
-    int8_t** mSlots;
-    int8_t* mSlotBuf;
+    double mLocalFPPdurMsec;
+    double mPeerFPPdurMsec;
+    int8_t* mXfrBuffer        = nullptr;
+    int8_t* mXfrPullPtr       = nullptr;
+    int8_t* mBroadcastBuffer  = nullptr;
+    int8_t* mBroadcastPullPtr = nullptr;
+    int8_t** mSlots           = nullptr;
+    int8_t* mSlotBuf          = nullptr;
     double mMsecTolerance;
-    std::vector<ChanData*> mChanData;
-    StdDev* pushStat;
-    StdDev* pullStat;
+    StdDev* pushStat = nullptr;
+    StdDev* pullStat = nullptr;
     QElapsedTimer mIncomingTimer;
     std::atomic<int> mLastSeqNumIn;
     int mLastSeqNumOut;
-    std::vector<double> mPhasor;
     std::vector<double> mIncomingTiming;
     int mSkip;
     int mFPPratioNumerator;
@@ -227,15 +295,10 @@ class Regulator : public RingBuffer
     int mLastGlitches;
     double mCurrentHeadroom;
     double mAutoHeadroom;
-    double mFPPdurMsec;
-    double mPeerFPPdurMsec;
-    void changeGlobal(double);
-    void changeGlobal_2(int);
-    void changeGlobal_3(int);
-    void printParams();
+    Time* mTime = nullptr;
 
     /// Pointer for the Broadcast RingBuffer
-    RingBuffer* m_b_BroadcastRingBuffer;
+    RingBuffer* m_b_BroadcastRingBuffer = nullptr;
     int m_b_BroadcastQueueLength;
 };
 

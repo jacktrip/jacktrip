@@ -98,10 +98,10 @@ JMess::~JMess()
 
 ///////////////////////////////
 // test NUC as server
-//#define HARDWIRED_AUDIO_PROCESS_ON_SERVER "par20straightWire"
-//#define ENUMERATE ""
-//#define HARDWIRED_AUDIO_PROCESS_ON_SERVER_IN ":in_"
-//#define HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT ":out_"
+// #define HARDWIRED_AUDIO_PROCESS_ON_SERVER "par20straightWire"
+// #define ENUMERATE ""
+// #define HARDWIRED_AUDIO_PROCESS_ON_SERVER_IN ":in_"
+// #define HARDWIRED_AUDIO_PROCESS_ON_SERVER_OUT ":out_"
 
 ///////////////////////////////
 // test Riviera as server

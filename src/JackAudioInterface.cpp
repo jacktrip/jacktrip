@@ -46,9 +46,9 @@
 #include "jacktrip_globals.h"
 
 ///************PROTORYPE FOR CELT**************************
-//#include <celt/celt.h>
-//#include <celt/celt_header.h>
-//#include <celt/celt_types.h>
+// #include <celt/celt.h>
+// #include <celt/celt_header.h>
+// #include <celt/celt_types.h>
 ///********************************************************
 
 #include <QMutexLocker>
@@ -125,12 +125,12 @@ void JackAudioInterface::setupClient()
         QMutexLocker locker(&sJackMutex);
         // TODO: this needs a timeout because it will hang indefinitely
         // if the Jack server is not running
-//#ifndef WAIR // WAIR
-//        mClient = jack_client_open (client_name, options, &status, server_name);
-//#else
-//        mClient = jack_client_open (client_name, JackUseExactName, &status,
-//        server_name);
-//#endif // endwhere
+// #ifndef WAIR // WAIR
+//         mClient = jack_client_open (client_name, options, &status, server_name);
+// #else
+//         mClient = jack_client_open (client_name, JackUseExactName, &status,
+//         server_name);
+// #endif // endwhere
 #ifndef WAIR  // WAIR
         mClient = jack_client_open(clientName.constData(), options, &status);
 #else
