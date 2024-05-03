@@ -102,9 +102,8 @@ constexpr double AutoInitValFactor =
     0.5;  // scale for initial mMsecTolerance during init phase if unspecified
 
 // tweak
-constexpr int WindowDivisor   = 8;     // for faster auto tracking
-constexpr int MaxFPP          = 1024;  // tested up to this FPP
-constexpr int MaxAutoHeadroom = 5;     // maximum auto headroom in milliseconds
+constexpr int WindowDivisor   = 8;  // for faster auto tracking
+constexpr int MaxAutoHeadroom = 5;  // maximum auto headroom in milliseconds
 constexpr double AutoHeadroomGlitchTolerance =
     0.007;  // Acceptable rate of glitches before auto headroom is increased (0.7%)
 constexpr double AutoHistoryWindow =
@@ -610,6 +609,7 @@ void Regulator::processPacket(bool glitch)
     zeroTmpFloatBuf();  // ahead of either call to burg
     xfrBufferToFloatBuf();
     burg(glitch);
+    floatBufToXfrBuffer();
     if (glitch) {
         double tmp2 = (double)mIncomingTimer.nsecsElapsed() - tmp;
         tmp2 /= 1000000.0;
@@ -843,7 +843,6 @@ void Regulator::readSlotNonBlocking(int8_t* ptrToReadSlot)
     if (mFPPratioNumerator == mFPPratioDenominator) {
         // local FPP matches peer
         pullPacket();
-        floatBufToXfrBuffer();
         memcpy(ptrToReadSlot, mXfrBuffer, mLocalBytes);
         return;
     }
@@ -852,7 +851,6 @@ void Regulator::readSlotNonBlocking(int8_t* ptrToReadSlot)
         // 2/1, 4/1 peer FPP is lower, (local/peer)/1
         for (int i = 0; i < mFPPratioNumerator; i++) {
             pullPacket();
-            floatBufToXfrBuffer();
             memcpy(ptrToReadSlot, mXfrBuffer, mPeerBytes);
             ptrToReadSlot += mPeerBytes;
         }
@@ -864,7 +862,6 @@ void Regulator::readSlotNonBlocking(int8_t* ptrToReadSlot)
         pullPacket();
         mXfrPullPtr = mXfrBuffer;
     }
-    floatBufToXfrBuffer();
     memcpy(ptrToReadSlot, mXfrPullPtr, mLocalBytes);
     mXfrPullPtr += mLocalBytes;
 }
