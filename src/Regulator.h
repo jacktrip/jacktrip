@@ -267,7 +267,6 @@ class Regulator : public RingBuffer
     std::vector<float> mFadeDown;
     float mScale;
     float mInvScale;
-    int mNotTrained;
     uint32_t mLastLostCount;
     AudioInterface::audioBitResolutionT mBitResolutionMode;
     int mLocalBytes;
