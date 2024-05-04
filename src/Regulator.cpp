@@ -103,7 +103,6 @@ constexpr double AutoInitValFactor =
 
 // tweak
 constexpr int WindowDivisor   = 8;  // for faster auto tracking
-constexpr int MaxAutoHeadroom = 5;  // maximum auto headroom in milliseconds
 constexpr double AutoHistoryWindow =
     60;  // rolling window of time (in seconds) over which auto tolerance roughly adjusts
 constexpr double AutoSmoothingFactor =
@@ -460,8 +459,9 @@ void Regulator::updateTolerance(int glitches, int skipped)
     double newTolerance = std::max<double>(pushStatTol + mCurrentHeadroom, pullStatTol);
     if (mAutoHeadroom < 0) {
         // require two consecutive periods of glitches exceeding allowed threshold
-        // and only increase headroom if we skipped valid packets
-        if (glitches > 0 && skipped > 0 && mCurrentHeadroom < MaxAutoHeadroom) {
+        // only increase headroom if we skipped valid packets
+        // set max headroom to rolling average of max
+        if (glitches > 0 && skipped > 0 && mCurrentHeadroom < pushStat->longTermMax) {
             if (mSkipAutoHeadroom) {
                 mSkipAutoHeadroom = false;
             } else {
