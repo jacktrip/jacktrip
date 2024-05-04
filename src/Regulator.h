@@ -157,7 +157,7 @@ class StdDev
     double lastMax;
     int lastPlcOverruns;
     int lastPlcUnderruns;
-    double lastPLCdspElapsed;
+    double maxPLCdspElapsed;
     double lastStdDev;
     double longTermStdDev;
     double longTermStdDevAcc;
@@ -219,12 +219,6 @@ class Regulator : public RingBuffer
 
     /// @brief returns number of samples, or frames per callback period
     inline int getBufferSizeInSamples() const { return mLocalFPP; }
-
-    /// @brief returns time taken for last PLC prediction, in milliseconds
-    inline double getLastDspElapsed() const
-    {
-        return pullStat == nullptr ? 0 : pullStat->lastPLCdspElapsed;
-    }
 
     //    virtual QString getStats(uint32_t statCount, uint32_t lostCount);
     virtual bool getStats(IOStat* stat, bool reset);

@@ -613,7 +613,8 @@ void Regulator::processPacket(bool glitch)
     if (glitch) {
         double tmp2 = (double)mIncomingTimer.nsecsElapsed() - tmp;
         tmp2 /= 1000000.0;
-        pullStat->lastPLCdspElapsed = tmp2;
+        if (tmp2 > pullStat->maxPLCdspElapsed)
+            pullStat->maxPLCdspElapsed = tmp2;
     }
 }
 
@@ -712,7 +713,7 @@ StdDev::StdDev(int id, QElapsedTimer* timer, int w) : mId(id), mTimer(timer), wi
     longTermMax       = 0.0;
     longTermMaxAcc    = 0.0;
     lastTime          = 0.0;
-    lastPLCdspElapsed = 0.0;
+    maxPLCdspElapsed  = 0.0;
     lastPlcOverruns   = 0;
     lastPlcUnderruns  = 0;
     plcOverruns       = 0;
@@ -1005,14 +1006,15 @@ bool Regulator::getStats(RingBuffer::IOStat* stat, bool reset)
     stat->skew_raw  = FLOATFACTOR * pushStat->lastMin;
     stat->level     = FLOATFACTOR * pushStat->lastMax;
     //    stat->level              = FLOATFACTOR * pushStat->longTermMax;
-    stat->buf_dec_overflows  = FLOATFACTOR * pushStat->lastStdDev;
-    stat->autoq_corr         = FLOATFACTOR * mMsecTolerance;
-    stat->buf_dec_pktloss    = FLOATFACTOR * pullStat->longTermStdDev;
-    stat->buf_inc_underrun   = FLOATFACTOR * pullStat->lastMean;
-    stat->buf_inc_compensate = FLOATFACTOR * pullStat->lastMin;
-    stat->broadcast_skew     = FLOATFACTOR * pullStat->lastMax;
-    stat->broadcast_delta    = FLOATFACTOR * pullStat->lastStdDev;
-    stat->autoq_rate         = FLOATFACTOR * pullStat->lastPLCdspElapsed;
+    stat->buf_dec_overflows    = FLOATFACTOR * pushStat->lastStdDev;
+    stat->autoq_corr           = FLOATFACTOR * mMsecTolerance;
+    stat->buf_dec_pktloss      = FLOATFACTOR * pullStat->longTermStdDev;
+    stat->buf_inc_underrun     = FLOATFACTOR * pullStat->lastMean;
+    stat->buf_inc_compensate   = FLOATFACTOR * pullStat->lastMin;
+    stat->broadcast_skew       = FLOATFACTOR * pullStat->lastMax;
+    stat->broadcast_delta      = FLOATFACTOR * pullStat->lastStdDev;
+    stat->autoq_rate           = FLOATFACTOR * pullStat->maxPLCdspElapsed;
+    pullStat->maxPLCdspElapsed = 0.0;
     // none are unused
     return true;
 }

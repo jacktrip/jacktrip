@@ -770,7 +770,7 @@ void JackTrip::onStatTimer()
             //                     pkt_stat.lost << "/"
             //                     << pkt_stat.outOfOrder << "/" << pkt_stat.revived
             << " \n tot: " << pkt_stat.tot << " \t tol: " << setw(5)
-            << INVFLOATFACTOR * recv_io_stat.autoq_corr << " \t dsp (last): " << setw(5)
+            << INVFLOATFACTOR * recv_io_stat.autoq_corr << " \t dsp (max): " << setw(5)
             << INVFLOATFACTOR * recv_io_stat.autoq_rate
             //                     << " sync: " << recv_io_stat.level << "/"
             //                     << recv_io_stat.buf_inc_underrun << "/"

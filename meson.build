@@ -31,9 +31,10 @@ defines = ['-DWAIRTOHUB']
 c_defines = []
 incdirs = []
 
-if get_option('buildtype') == 'release'
-	defines += ['-DNDEBUG']
-	c_defines += ['-DNDEBUG']
+if get_option('debug') == false
+	defines += ['-DNDEBUG', '-DQT_NO_DEBUG']
+	c_defines += ['-DNDEBUG', '-DQT_NO_DEBUG']
+	add_project_arguments('-fvisibility=hidden', '-fvisibility-inlines-hidden', '-fno-PIC', language : 'cpp')
 endif
 
 build_info = get_option('buildinfo')
