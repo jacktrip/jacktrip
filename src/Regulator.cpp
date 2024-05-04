@@ -455,6 +455,7 @@ void Regulator::updateTolerance()
     // pulls happen when our audio interface triggers a callback
     const double pushStatTol = pushStat->calcAuto();
     const double pullStatTol = pullStat->calcAuto();
+    double newTolerance = std::max<double>(pushStatTol + mCurrentHeadroom, pullStatTol);
     if (mAutoHeadroom < 0) {
         // auto headroom calculation: use value calculated by pullStats
         // because that is where it counts glitches in the incoming peer stream
@@ -464,7 +465,9 @@ void Regulator::updateTolerance()
         const int newGlitches   = totalGlitches - mLastGlitches;
         mLastGlitches           = totalGlitches;
         // require two consecutive periods of glitches exceeding allowed threshold
-        if (newGlitches > glitchesAllowed && mCurrentHeadroom < MaxAutoHeadroom) {
+        // only increase headroom if new tolerance would be <= max pushStat
+        if (newGlitches > glitchesAllowed && mCurrentHeadroom < MaxAutoHeadroom
+            && newTolerance+1 <= pushStats->lastMax) {
             if (mSkipAutoHeadroom) {
                 mSkipAutoHeadroom = false;
             } else {
@@ -480,14 +483,14 @@ void Regulator::updateTolerance()
     } else {
         mCurrentHeadroom = mAutoHeadroom;
     }
-    double tmp = std::max<double>(pushStatTol + mCurrentHeadroom, pullStatTol);
-    if (tmp > AutoMax)
-        tmp = AutoMax;
-    if (tmp < mLocalFPPdurMsec)
-        tmp = mLocalFPPdurMsec;
-    if (tmp < mPeerFPPdurMsec)
-        tmp = mPeerFPPdurMsec;
-    mMsecTolerance = tmp;
+    newTolerance = std::max<double>(pushStatTol + mCurrentHeadroom, pullStatTol);
+    if (newTolerance > AutoMax)
+        newTolerance = AutoMax;
+    if (newTolerance < mLocalFPPdurMsec)
+        newTolerance = mLocalFPPdurMsec;
+    if (newTolerance < mPeerFPPdurMsec)
+        newTolerance = mPeerFPPdurMsec;
+    mMsecTolerance = newTolerance;
 }
 
 //*******************************************************************************
@@ -509,6 +512,8 @@ void Regulator::updatePushStats(int seq_num)
         && pushStat->longTermCnt % WindowDivisor == 0) {
         // after AutoInitDur: update auto tolerance once per second
         updateTolerance();
+        pushStat->lastMax = 0.0;
+        pushStat->lastMin = 0.0;
     }
 }
 
@@ -823,9 +828,11 @@ bool StdDev::tick(double prevTime, double curTime)
 
     longTermCnt++;
     lastMean   = mean;
-    lastMin    = min;
-    lastMax    = max;
     lastStdDev = stdDevTmp;
+    if (lastMin == 0.0 || min < lastMin)
+        lastMin = min;
+    if (lastMax == 0.0 || max > lastMax)
+        lastMax = max;
     reset();
     return true;
 }
@@ -1006,14 +1013,15 @@ bool Regulator::getStats(RingBuffer::IOStat* stat, bool reset)
     stat->skew_raw  = FLOATFACTOR * pushStat->lastMin;
     stat->level     = FLOATFACTOR * pushStat->lastMax;
     //    stat->level              = FLOATFACTOR * pushStat->longTermMax;
-    stat->buf_dec_overflows    = FLOATFACTOR * pushStat->lastStdDev;
-    stat->autoq_corr           = FLOATFACTOR * mMsecTolerance;
-    stat->buf_dec_pktloss      = FLOATFACTOR * pullStat->longTermStdDev;
-    stat->buf_inc_underrun     = FLOATFACTOR * pullStat->lastMean;
-    stat->buf_inc_compensate   = FLOATFACTOR * pullStat->lastMin;
-    stat->broadcast_skew       = FLOATFACTOR * pullStat->lastMax;
-    stat->broadcast_delta      = FLOATFACTOR * pullStat->lastStdDev;
-    stat->autoq_rate           = FLOATFACTOR * pullStat->maxPLCdspElapsed;
+    stat->buf_dec_overflows  = FLOATFACTOR * pushStat->lastStdDev;
+    stat->autoq_corr         = FLOATFACTOR * mMsecTolerance;
+    stat->buf_dec_pktloss    = FLOATFACTOR * pullStat->longTermStdDev;
+    stat->buf_inc_underrun   = FLOATFACTOR * pullStat->lastMean;
+    stat->buf_inc_compensate = FLOATFACTOR * pullStat->lastMin;
+    stat->broadcast_skew     = FLOATFACTOR * pullStat->lastMax;
+    stat->broadcast_delta    = FLOATFACTOR * pullStat->lastStdDev;
+    stat->autoq_rate         = FLOATFACTOR * pullStat->maxPLCdspElapsed;
+    // reset a few stats for next time
     pullStat->maxPLCdspElapsed = 0.0;
     // none are unused
     return true;
