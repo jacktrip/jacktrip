@@ -155,9 +155,6 @@ class StdDev
     double lastMean;
     double lastMin;
     double lastMax;
-    int lastPlcOverruns;
-    int lastPlcUnderruns;
-    double maxPLCdspElapsed;
     double lastStdDev;
     double longTermStdDev;
     double longTermStdDevAcc;
@@ -227,7 +224,7 @@ class Regulator : public RingBuffer
     void pushPacket(const int8_t* buf, int seq_num);
     void updatePushStats(int seq_num);
     void pullPacket();
-    void updateTolerance();
+    void updateTolerance(int glitches, int skipped);
     void setFPPratio(int len);
     void processPacket(bool glitch);
     void burg(bool glitch);
@@ -284,7 +281,11 @@ class Regulator : public RingBuffer
     int mFPPratioDenominator;
     bool mAuto;
     bool mSkipAutoHeadroom;
+    int mSkipped;
+    int mLastSkipped;
     int mLastGlitches;
+    int mStatsGlitches;
+    double mStatsMaxPLCdspElapsed;
     double mCurrentHeadroom;
     double mAutoHeadroom;
     Time* mTime = nullptr;

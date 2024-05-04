@@ -104,8 +104,6 @@ constexpr double AutoInitValFactor =
 // tweak
 constexpr int WindowDivisor   = 8;  // for faster auto tracking
 constexpr int MaxAutoHeadroom = 5;  // maximum auto headroom in milliseconds
-constexpr double AutoHeadroomGlitchTolerance =
-    0.007;  // Acceptable rate of glitches before auto headroom is increased (0.7%)
 constexpr double AutoHistoryWindow =
     60;  // rolling window of time (in seconds) over which auto tolerance roughly adjusts
 constexpr double AutoSmoothingFactor =
@@ -281,7 +279,11 @@ Regulator::Regulator(int rcvChannels, int bit_res, int localFPP, int qLen, int b
     , pullStat(NULL)
     , mAuto(false)
     , mSkipAutoHeadroom(true)
+    , mSkipped(0)
+    , mLastSkipped(0)
     , mLastGlitches(0)
+    , mStatsGlitches(0)
+    , mStatsMaxPLCdspElapsed(0)
     , mCurrentHeadroom(0)
     , m_b_BroadcastRingBuffer(NULL)
     , m_b_BroadcastQueueLength(bqLen)
@@ -449,7 +451,7 @@ void Regulator::setFPPratio(int len)
     mInitialized = true;
 }
 //*******************************************************************************
-void Regulator::updateTolerance()
+void Regulator::updateTolerance(int glitches, int skipped)
 {
     // pushes happen when we have new packets received from peer
     // pulls happen when our audio interface triggers a callback
@@ -457,24 +459,16 @@ void Regulator::updateTolerance()
     const double pullStatTol = pullStat->calcAuto();
     double newTolerance = std::max<double>(pushStatTol + mCurrentHeadroom, pullStatTol);
     if (mAutoHeadroom < 0) {
-        // auto headroom calculation: use value calculated by pullStats
-        // because that is where it counts glitches in the incoming peer stream
-        const int glitchesAllowed =
-            static_cast<int>(AutoHeadroomGlitchTolerance * mSampleRate / mPeerFPP);
-        const int totalGlitches = pullStat->plcUnderruns + pullStat->plcOverruns;
-        const int newGlitches   = totalGlitches - mLastGlitches;
-        mLastGlitches           = totalGlitches;
         // require two consecutive periods of glitches exceeding allowed threshold
-        // only increase headroom if new tolerance would be <= max pushStat
-        if (newGlitches > glitchesAllowed && mCurrentHeadroom < MaxAutoHeadroom
-            && newTolerance+1 <= pushStat->lastMax) {
+        // and only increase headroom if we skipped valid packets
+        if (glitches > 0 && skipped > 0 && mCurrentHeadroom < MaxAutoHeadroom) {
             if (mSkipAutoHeadroom) {
                 mSkipAutoHeadroom = false;
             } else {
                 mSkipAutoHeadroom = true;
                 ++mCurrentHeadroom;
-                cout << "PLC " << newGlitches << " glitches"
-                     << " > " << glitchesAllowed << " allowed: Increasing headroom to "
+                cout << "PLC " << glitches << " glitches, " << skipped
+                     << " skipped: Increasing headroom to "
                      << mCurrentHeadroom << endl;
             }
         } else {
@@ -508,10 +502,17 @@ void Regulator::updatePushStats(int seq_num)
 
     // update push stats
     bool pushStatsUpdated = pushStat->tick(prev_time, mIncomingTiming[seq_num]);
-    if (mAuto && pushStatsUpdated && (pushStat->lastTime > AutoInitDur)
-        && pushStat->longTermCnt % WindowDivisor == 0) {
-        // after AutoInitDur: update auto tolerance once per second
-        updateTolerance();
+    if (pushStatsUpdated && pushStat->longTermCnt % WindowDivisor == 0) {
+        // once per second
+        const int totalGlitches = pullStat->plcUnderruns + pullStat->plcOverruns;
+        const int newGlitches = totalGlitches - mLastGlitches;
+        const int newSkipped = mSkipped - mLastSkipped;
+        mLastGlitches = totalGlitches;
+        mLastSkipped = mSkipped;
+        if (mAuto && pushStat->lastTime > AutoInitDur) {
+            // after AutoInitDur: update auto tolerance once per second
+            updateTolerance(newGlitches, newSkipped);
+        }
     }
 }
 
@@ -569,6 +570,8 @@ void Regulator::pullPacket()
                 memcpy(mXfrBuffer, mSlots[mLastSeqNumOut], mPeerBytes);
                 goto PACKETOK;
             }
+            // track how many good packets we've skipped due to tolerance
+            ++mSkipped;
         }
 
         // no viable candidate
@@ -616,8 +619,8 @@ void Regulator::processPacket(bool glitch)
     if (glitch) {
         double tmp2 = (double)mIncomingTimer.nsecsElapsed() - tmp;
         tmp2 /= 1000000.0;
-        if (tmp2 > pullStat->maxPLCdspElapsed)
-            pullStat->maxPLCdspElapsed = tmp2;
+        if (tmp2 > mStatsMaxPLCdspElapsed)
+            mStatsMaxPLCdspElapsed = tmp2;
     }
 }
 
@@ -716,9 +719,6 @@ StdDev::StdDev(int id, QElapsedTimer* timer, int w) : mId(id), mTimer(timer), wi
     longTermMax       = 0.0;
     longTermMaxAcc    = 0.0;
     lastTime          = 0.0;
-    maxPLCdspElapsed  = 0.0;
-    lastPlcOverruns   = 0;
-    lastPlcUnderruns  = 0;
     plcOverruns       = 0;
     plcUnderruns      = 0;
     data.resize(w, 0.0);
@@ -973,9 +973,9 @@ void Regulator::burg(bool glitch)
     }
 
     if ((!(mPcnt % 300)) && (gVerboseFlag))
-        cout << "avg " << mTime->avg() << " glitches " << mTime->glitches()
-             << " headroom " << mCurrentHeadroom << " tolerance "
-             << mMsecTolerance << "\n";
+        cout << "PLC avg " << mTime->avg() << " glitches " << mTime->glitches()
+             << " headroom " << mCurrentHeadroom
+             << " tolerance " << mMsecTolerance << "\n";
     mPcnt++;
     // 32 bit is good for days:  (/ (* (- (expt 2 32) 1) (/ 32 48000.0)) (* 60 60 24))
 }
@@ -1000,10 +1000,7 @@ bool Regulator::getStats(RingBuffer::IOStat* stat, bool reset)
     }
 
     // hijack  of  struct IOStat {
-    stat->underruns = (pullStat->plcUnderruns - pullStat->lastPlcUnderruns)
-                      + (pullStat->plcOverruns - pullStat->lastPlcOverruns);
-    pullStat->lastPlcUnderruns = pullStat->plcUnderruns;
-    pullStat->lastPlcOverruns  = pullStat->plcOverruns;
+    stat->underruns = mLastGlitches - mStatsGlitches;
 #define FLOATFACTOR 1000.0
     stat->overflows = FLOATFACTOR * pushStat->longTermStdDev;
     stat->skew      = FLOATFACTOR * pushStat->lastMean;
@@ -1017,9 +1014,10 @@ bool Regulator::getStats(RingBuffer::IOStat* stat, bool reset)
     stat->buf_inc_compensate = FLOATFACTOR * pullStat->lastMin;
     stat->broadcast_skew     = FLOATFACTOR * pullStat->lastMax;
     stat->broadcast_delta    = FLOATFACTOR * pullStat->lastStdDev;
-    stat->autoq_rate         = FLOATFACTOR * pullStat->maxPLCdspElapsed;
+    stat->autoq_rate         = FLOATFACTOR * mStatsMaxPLCdspElapsed;
     // reset a few stats for next time
-    pullStat->maxPLCdspElapsed = 0.0;
+    mStatsGlitches = mLastGlitches;
+    mStatsMaxPLCdspElapsed = 0.0;
     // none are unused
     return true;
 }
