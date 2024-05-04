@@ -280,7 +280,6 @@ class Regulator : public RingBuffer
     std::atomic<int> mLastSeqNumIn;
     int mLastSeqNumOut;
     std::vector<double> mIncomingTiming;
-    int mSkip;
     int mFPPratioNumerator;
     int mFPPratioDenominator;
     bool mAuto;

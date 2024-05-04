@@ -523,7 +523,7 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
     seq_num %= NumSlots;
     // if (seq_num==0) return;   // impose regular loss
     mIncomingTiming[seq_num] =
-        mMsecTolerance + (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
+        (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
     memcpy(mSlots[seq_num], buf, mPeerBytes);
     mLastSeqNumIn.store(seq_num, std::memory_order_release);
 };
@@ -533,7 +533,7 @@ void Regulator::pullPacket()
 {
     const double now       = (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
     const int lastSeqNumIn = mLastSeqNumIn.load(std::memory_order_acquire);
-    mSkip                  = 0;
+    int skipped            = 0;
 
     if ((lastSeqNumIn == -1) || (!mInitialized)) {
         goto ZERO_OUTPUT;
@@ -557,14 +557,14 @@ void Regulator::pullPacket()
                     continue;
                 updatePushStats(next);
                 // count how many we have skipped
-                mSkip = next - mLastSeqNumOut - 1;
-                if (mSkip < 0)
-                    mSkip += NumSlots;
+                skipped = next - mLastSeqNumOut - 1;
+                if (skipped < 0)
+                    skipped += NumSlots;
             }
             // set next as the best candidate
             mLastSeqNumOut = next;
-            // if next timestamp < now, it is too old based upon tolerance
-            if (mIncomingTiming[mLastSeqNumOut] >= now) {
+            // if next timestamp + tolerance < now, it is too old
+            if (mIncomingTiming[mLastSeqNumOut] + mMsecTolerance >= now) {
                 // next is the best candidate
                 memcpy(mXfrBuffer, mSlots[mLastSeqNumOut], mPeerBytes);
                 goto PACKETOK;
@@ -576,9 +576,9 @@ void Regulator::pullPacket()
     }
 
 PACKETOK : {
-    if (mSkip) {
+    if (skipped) {
         processPacket(true);
-        pullStat->plcOverruns += mSkip;
+        pullStat->plcOverruns += skipped;
     } else
         processPacket(false);
     goto OUTPUT;
