@@ -385,10 +385,10 @@ void Regulator::setFPPratio(int len)
         // use mMsecTolerance to set headroom
         if (mMsecTolerance == -500.0) {
             mAutoHeadroom = -1;
-            cout << "PLC is in auto mode and has been set with variable headroom \n";
+            cout << "PLC is in auto mode and has been set with variable headroom\n";
         } else {
-            mAutoHeadroom = -mMsecTolerance;
-            cout << "PLC is in auto mode and has been set with" << mAutoHeadroom
+            mAutoHeadroom = std::abs(mMsecTolerance);
+            cout << "PLC is in auto mode and has been set with " << mAutoHeadroom
                  << "ms headroom \n";
             if (mAutoHeadroom > 50.0)
                 cout << "That's a very large value and should be less than, "
@@ -435,7 +435,7 @@ void Regulator::setFPPratio(int len)
         m_b_BroadcastRingBuffer =
             new JitterBuffer(mPeerFPP, 10, mSampleRate, 1, m_b_BroadcastQueueLength,
                              mNumChannels, mAudioBitRes);
-        cout << "Broadcast started in Regulator with packet queue of"
+        cout << "Broadcast started in Regulator with packet queue of "
              << m_b_BroadcastQueueLength << endl;
         // have not implemented the mJackTrip->queueLengthChanged functionality
     }
@@ -473,8 +473,8 @@ void Regulator::updateTolerance()
             } else {
                 mSkipAutoHeadroom = true;
                 ++mCurrentHeadroom;
-                cout << "PLC" << newGlitches << "glitches"
-                     << ">" << glitchesAllowed << "allowed: Increasing headroom to "
+                cout << "PLC " << newGlitches << " glitches"
+                     << " > " << glitchesAllowed << " allowed: Increasing headroom to "
                      << mCurrentHeadroom << endl;
             }
         } else {
@@ -512,8 +512,6 @@ void Regulator::updatePushStats(int seq_num)
         && pushStat->longTermCnt % WindowDivisor == 0) {
         // after AutoInitDur: update auto tolerance once per second
         updateTolerance();
-        pushStat->lastMax = 0.0;
-        pushStat->lastMin = 0.0;
     }
 }
 
@@ -766,24 +764,24 @@ bool StdDev::tick(double prevTime, double curTime)
     if (msElapsed > gUdpWaitTimeout)
         return false;
 
-    if (ctr != window) {
-        data[ctr] = msElapsed;
-        if (msElapsed < min)
-            min = msElapsed;
-        else if (msElapsed > max)
-            max = msElapsed;
-        acc += msElapsed;
-        ctr++;
-        /*
-        // for debugging startup issues -- you'll see a bunch of pushes
-        // UDPDataProtocol all at once, which I imagine were queued up
-        // in the kernel's stack
-        if (gVerboseFlag && longTermCnt == 0) {
-            std::cout << setw(10) << msElapsed << " " << mId << endl;
-        }
-        */
-        return false;
+    data[ctr] = msElapsed;
+    if (msElapsed < min)
+        min = msElapsed;
+    else if (msElapsed > max)
+        max = msElapsed;
+    acc += msElapsed;
+    if (ctr == 0 && longTermCnt % WindowDivisor == 0) {
+        lastMin = msElapsed;
+        lastMax = msElapsed;
+    } else {
+        if (msElapsed < lastMin)
+            lastMin = msElapsed;
+        if (msElapsed > lastMax)
+            lastMax = msElapsed;
     }
+    if (++ctr < window)
+        return false;
+    ctr = 0;
 
     // calculate mean and standard deviation
     mean       = (double)acc / (double)window;
@@ -829,11 +827,8 @@ bool StdDev::tick(double prevTime, double curTime)
     longTermCnt++;
     lastMean   = mean;
     lastStdDev = stdDevTmp;
-    if (lastMin == 0.0 || min < lastMin)
-        lastMin = min;
-    if (lastMax == 0.0 || max > lastMax)
-        lastMax = max;
     reset();
+
     return true;
 }
 
@@ -978,7 +973,9 @@ void Regulator::burg(bool glitch)
     }
 
     if ((!(mPcnt % 300)) && (gVerboseFlag))
-        cout << "avg " << mTime->avg() << " glitches " << mTime->glitches() << " \n";
+        cout << "avg " << mTime->avg() << " glitches " << mTime->glitches()
+             << " headroom " << mCurrentHeadroom << " tolerance "
+             << mMsecTolerance << "\n";
     mPcnt++;
     // 32 bit is good for days:  (/ (* (- (expt 2 32) 1) (/ 32 48000.0)) (* 60 60 24))
 }
