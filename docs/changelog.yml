@@ -5,10 +5,10 @@
   - (updated) Improved PLC performance and quality
   - (updated) Improved auto latency adjustments for PLC
   - (updated) Removed worker thread for PLC buffer strategies
-  - (updated) VS Mode help links go to support.jacktrip.com
-  - (updated) VS Mode manage button goes to new studio dashboard
+  - (updated) VS Mode help links now go to support.jacktrip.com
+  - (updated) VS Mode manage button now goes to new studio dashboard
   - (fixed) PLC degradation when peer != local buffer sizes
-  - (fixed) VS Mode trunction of invite copied tooltip message
+  - (fixed) VS Mode truncation of invite copied tooltip message
 - Version: "2.2.5"
   Date: 2024-03-28
   Description:
