@@ -467,7 +467,7 @@ void Regulator::updateTolerance()
         // require two consecutive periods of glitches exceeding allowed threshold
         // only increase headroom if new tolerance would be <= max pushStat
         if (newGlitches > glitchesAllowed && mCurrentHeadroom < MaxAutoHeadroom
-            && newTolerance+1 <= pushStats->lastMax) {
+            && newTolerance+1 <= pushStat->lastMax) {
             if (mSkipAutoHeadroom) {
                 mSkipAutoHeadroom = false;
             } else {
