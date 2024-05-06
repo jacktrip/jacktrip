@@ -46,13 +46,18 @@
 
 #include <QDebug>
 #include <QElapsedTimer>
+#include <QThread>
 #include <atomic>
 #include <cstring>
 #include <vector>
 
 #include "AudioInterface.h"
 #include "RingBuffer.h"
+#include "WaitFreeFrameBuffer.h"
 #include "jacktrip_globals.h"
+
+// forward declaration
+class RegulatorWorker;
 
 class BurgAlgorithm
 {
@@ -217,6 +222,12 @@ class Regulator : public RingBuffer
     /// @brief returns number of samples, or frames per callback period
     inline int getBufferSizeInSamples() const { return mLocalFPP; }
 
+    /// @brief returns time taken for last PLC prediction, in milliseconds
+    inline double getLastDspElapsed() const { return mStatsMaxPLCdspElapsed; }
+
+    /// @brief returns true if worker thread & queue is enabled
+    inline bool isWorkerEnabled() const { return mWorkerThreadPtr != nullptr; }
+
     //    virtual QString getStats(uint32_t statCount, uint32_t lostCount);
     virtual bool getStats(IOStat* stat, bool reset);
 
@@ -258,7 +269,7 @@ class Regulator : public RingBuffer
     std::vector<float> mFadeDown;
     float mScale;
     float mInvScale;
-    uint32_t mLastLostCount;
+    uint32_t mLastLostCount = 0;
     AudioInterface::audioBitResolutionT mBitResolutionMode;
     int mLocalBytes;
     int mPeerBytes;
@@ -270,29 +281,164 @@ class Regulator : public RingBuffer
     int8_t* mBroadcastPullPtr = nullptr;
     int8_t** mSlots           = nullptr;
     int8_t* mSlotBuf          = nullptr;
-    double mMsecTolerance;
-    StdDev* pushStat = nullptr;
-    StdDev* pullStat = nullptr;
-    QElapsedTimer mIncomingTimer;
+    StdDev* pushStat          = nullptr;
+    StdDev* pullStat          = nullptr;
+    double mMsecTolerance     = 64;
+    int mLastSeqNumOut        = -1;
     std::atomic<int> mLastSeqNumIn;
-    int mLastSeqNumOut;
+    QElapsedTimer mIncomingTimer;
     std::vector<double> mIncomingTiming;
     int mFPPratioNumerator;
     int mFPPratioDenominator;
-    bool mAuto;
-    bool mSkipAutoHeadroom;
-    int mSkipped;
-    int mLastSkipped;
-    int mLastGlitches;
-    int mStatsGlitches;
-    double mStatsMaxPLCdspElapsed;
-    double mCurrentHeadroom;
-    double mAutoHeadroom;
-    Time* mTime = nullptr;
+    bool mAuto                    = false;
+    bool mSkipAutoHeadroom        = true;
+    int mSkipped                  = 0;
+    int mLastSkipped              = 0;
+    int mLastGlitches             = 0;
+    int mStatsGlitches            = 0;
+    double mStatsMaxPLCdspElapsed = 0;
+    double mCurrentHeadroom       = 0;
+    double mAutoHeadroom          = -1;
+    Time* mTime                   = nullptr;
 
     /// Pointer for the Broadcast RingBuffer
     RingBuffer* m_b_BroadcastRingBuffer = nullptr;
     int m_b_BroadcastQueueLength;
+
+    /// worker thread used to manage queue
+    int8_t* mWorkerBuffer                = nullptr;
+    QThread* mWorkerThreadPtr            = nullptr;
+    RegulatorWorker* mRegulatorWorkerPtr = nullptr;
+    friend class RegulatorWorker;
+};
+
+class RegulatorWorker : public QObject
+{
+    Q_OBJECT;
+
+   public:
+    RegulatorWorker(Regulator* rPtr)
+        : mRegulatorPtr(rPtr)
+        , mPacketQueue(rPtr->getPacketSize())
+        , mPacketQueueTarget(1)
+        , mLastUnderrun(0)
+        , mSkipQueueUpdate(true)
+        , mUnderrun(false)
+        , mStarted(false)
+    {
+        // wire up signals
+        QObject::connect(this, &RegulatorWorker::startup, this,
+                         &RegulatorWorker::setRealtimePriority, Qt::QueuedConnection);
+        QObject::connect(this, &RegulatorWorker::signalPullPacket, this,
+                         &RegulatorWorker::pullPacket, Qt::QueuedConnection);
+        // set thread to realtime priority
+        emit startup();
+    }
+
+    virtual ~RegulatorWorker() {}
+
+    bool pop(int8_t* pktPtr)
+    {
+        // start pulling more packets to maintain target
+        emit signalPullPacket();
+
+        if (mPacketQueue.pop(pktPtr))
+            return true;
+
+        // use silence for underruns
+        ::memset(pktPtr, 0, mPacketQueue.getBytesPerFrame());
+
+        // trigger underrun to re-evaluate queue target
+        mUnderrun.store(true, std::memory_order_relaxed);
+
+        return false;
+    }
+
+    void getStats()
+    {
+        std::cout << "PLC worker queue: size=" << mPacketQueue.size()
+                  << " target=" << mPacketQueueTarget
+                  << " underruns=" << mPacketQueue.getUnderruns()
+                  << " overruns=" << mPacketQueue.getOverruns() << std::endl;
+        mPacketQueue.clearStats();
+    }
+
+   signals:
+    void signalPullPacket();
+    void signalMaxQueueSize();
+    void startup();
+
+   public slots:
+    void pullPacket()
+    {
+        if (mUnderrun.load(std::memory_order_relaxed)) {
+            if (mStarted) {
+                double now =
+                    (double)mRegulatorPtr->mIncomingTimer.nsecsElapsed() / 1000000.0;
+                // only adjust target at most once per 1.0 seconds
+                if (now - mLastUnderrun >= 1000.0) {
+                    if (mSkipQueueUpdate) {
+                        // require consecutive underruns periods to bump target
+                        mSkipQueueUpdate = false;
+                    } else if (now - mLastUnderrun < 2000.0) {
+                        // previous period had underruns
+                        updateQueueTarget();
+                        mSkipQueueUpdate = true;
+                    }  // else, skip this period but not the next one
+                    mLastUnderrun = now;
+                }
+                mUnderrun.store(false, std::memory_order_relaxed);
+            } else {
+                mStarted = true;
+            }
+        }
+        std::size_t qSize = mPacketQueue.size();
+        while (qSize < mPacketQueueTarget) {
+            mRegulatorPtr->pullPacket();
+            qSize = mPacketQueue.push(mRegulatorPtr->mXfrBuffer);
+        }
+    }
+    void setRealtimePriority() { setRealtimeProcessPriority(); }
+
+   private:
+    void updateQueueTarget()
+    {
+        // sanity check
+        const std::size_t maxPackets = mPacketQueue.capacity() / 2;
+        if (mPacketQueueTarget > maxPackets)
+            return;
+        // adjust queue target
+        ++mPacketQueueTarget;
+        std::cout << "PLC worker queue: adjusting target=" << mPacketQueueTarget
+                  << " (max=" << maxPackets
+                  << ", lastDspElapsed=" << mRegulatorPtr->getLastDspElapsed() << ")"
+                  << std::endl;
+        if (mPacketQueueTarget == maxPackets) {
+            emit signalMaxQueueSize();
+            std::cout << "PLC worker queue: reached MAX target!" << std::endl;
+        }
+    }
+
+    /// pointer to Regulator for pulling packets
+    Regulator* mRegulatorPtr;
+
+    /// queue of ready packets (if mBufferStrategy==3)
+    WaitFreeFrameBuffer<> mPacketQueue;
+
+    /// target size for the packet queue
+    std::size_t mPacketQueueTarget;
+
+    /// time of last underrun, in milliseconds
+    double mLastUnderrun;
+
+    /// true if the next packet queue update should be skipped
+    bool mSkipQueueUpdate;
+
+    /// last value of packet queue underruns
+    std::atomic<bool> mUnderrun;
+
+    /// will be true after first packet is pushed
+    bool mStarted;
 };
 
 #endif  //__REGULATOR_H__

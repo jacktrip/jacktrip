@@ -108,7 +108,6 @@ JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
 #endif  // endwhere
     , mBufferQueueLength(BufferQueueLength)
     , mBufferStrategy(1)
-    , mRegulatorThreadPtr(NULL)
     , mBroadcastQueueLength(0)
     , mSampleRate(gDefaultSampleRate)
     , mDeviceID(gDefaultDeviceID)
