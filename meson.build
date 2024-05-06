@@ -237,19 +237,30 @@ else
 	endif
 endif
 
-if qt_version == '6' and get_option('default_library') == 'static'
+if get_option('default_library') == 'static'
 	if (host_machine.system() == 'linux')
-		# BundledZLIB required on linux
-		deps += dependency('qt6', modules: ['BundledLibpng', 'BundledPcre2', 'BundledHarfbuzz', 'BundledZLIB'], include_type: 'system')
-		deps += compiler.find_library('ssl', required : true)
-		deps += compiler.find_library('crypto', required : true)
-		deps += compiler.find_library('dl', required : true)
-		deps += compiler.find_library('glib-2.0', required : true)
-		deps += compiler.find_library('qopensslbackend', required : true)
-		src += ['src/QtStaticPlugins.cpp']
+		if qt_version == '6'
+			# BundledZLIB required on linux
+			deps += dependency('qt6', modules: ['BundledLibpng', 'BundledPcre2', 'BundledHarfbuzz', 'BundledZLIB'], include_type: 'system')
+			deps += compiler.find_library('ssl', required : true)
+			deps += compiler.find_library('crypto', required : true)
+			deps += compiler.find_library('dl', required : true)
+			deps += compiler.find_library('glib-2.0', required : true)
+			deps += compiler.find_library('qopensslbackend', required : true)
+			src += ['src/QtStaticPlugins.cpp']
+		else
+			# -ldl required on linux
+			deps += compiler.find_library('qtpcre2', required : true)
+			deps += compiler.find_library('ssl', required : true)
+			deps += compiler.find_library('crypto', required : true)
+			deps += compiler.find_library('dl', required : true)
+			deps += compiler.find_library('glib-2.0', required : true)
+		endif
 	else
-		# BundledZLIB not found on windows
-		deps += dependency('qt6', modules: ['BundledLibpng', 'BundledPcre2', 'BundledHarfbuzz'], include_type: 'system')
+		if qt_version == '6'
+			# BundledZLIB not found on windows or osx
+			deps += dependency('qt6', modules: ['BundledLibpng', 'BundledPcre2', 'BundledHarfbuzz'], include_type: 'system')
+		endif
 	endif
 endif
 
