@@ -104,7 +104,7 @@ constexpr double AutoInitValFactor =
 // tweak
 constexpr int WindowDivisor = 8;  // for faster auto tracking
 constexpr double AutoHeadroomGlitchTolerance =
-    0.007;  // Acceptable rate of glitches before auto headroom is increased (0.7%)
+    0.02;  // Acceptable rate of skips before auto headroom is increased (2.0%)
 constexpr double AutoHistoryWindow =
     60;  // rolling window of time (in seconds) over which auto tolerance roughly adjusts
 constexpr double AutoSmoothingFactor =
@@ -457,23 +457,22 @@ void Regulator::updateTolerance(int glitches, int skipped)
 {
     // update headroom
     if (mAutoHeadroom < 0) {
-        // variable headroom: increase to minimize glitch counts
-        // require two consecutive periods of glitches exceeding allowed threshold
-        // only increase headroom if glitches were caused by skipping valid packets
-        // prevent headroom from growing beyond rolling average of max
-        const int glitchesAllowed =
+        // variable headroom: automatically increase to minimize glitch counts
+        // only increase headroom if doing so would have reduced the number of
+        // glitches that occured over the past two seconds by 2% or more.
+        // prevent headroom from growing beyond rolling average of max.
+        const int skipsAllowed =
             static_cast<int>(AutoHeadroomGlitchTolerance * mSampleRate / mPeerFPP);
-        if (glitches > glitchesAllowed && skipped > 0
+        if (glitches > 0 && skipped > skipsAllowed
             && mCurrentHeadroom + 1 <= pushStat->longTermMax) {
             if (mSkipAutoHeadroom) {
                 mSkipAutoHeadroom = false;
             } else {
                 mSkipAutoHeadroom = true;
                 ++mCurrentHeadroom;
-                cout << "PLC glitches=" << glitches << ">" << glitchesAllowed
-                     << " skipped=" << skipped << ", increasing headroom to "
-                     << mCurrentHeadroom << " (max=" << pushStat->longTermMax << ")"
-                     << endl;
+                cout << "PLC glitches=" << glitches << " skipped=" << skipped << ">"
+                     << skipsAllowed << ", increasing headroom to " << mCurrentHeadroom
+                     << " (max=" << pushStat->longTermMax << ")" << endl;
             }
         } else {
             mSkipAutoHeadroom = true;
@@ -515,10 +514,11 @@ void Regulator::updatePushStats(int seq_num)
     if (pushStatsUpdated && pushStat->longTermCnt % WindowDivisor == 0) {
         // once per second
         const int totalGlitches = pullStat->plcUnderruns + pullStat->plcOverruns;
+        const int totalSkipped  = mSkipped;
         const int newGlitches   = totalGlitches - mLastGlitches;
-        const int newSkipped    = mSkipped - mLastSkipped;
+        const int newSkipped    = totalSkipped - mLastSkipped;
         mLastGlitches           = totalGlitches;
-        mLastSkipped            = mSkipped;
+        mLastSkipped            = totalSkipped;
         if (mAuto && pushStat->lastTime > AutoInitDur) {
             // after AutoInitDur: update auto tolerance once per second
             updateTolerance(newGlitches, newSkipped);
@@ -982,8 +982,8 @@ void Regulator::burg(bool glitch)
 
     if ((!(mPcnt % 300)) && (gVerboseFlag))
         cout << "PLC avg " << mTime->avg() << " glitches " << mTime->glitches()
-             << " tolerance " << (mMsecTolerance - mCurrentHeadroom) << " +"
-             << mCurrentHeadroom << endl;
+             << " skipped " << (mSkipped - mLastSkipped) << " tolerance "
+             << (mMsecTolerance - mCurrentHeadroom) << " +" << mCurrentHeadroom << endl;
     mPcnt++;
     // 32 bit is good for days:  (/ (* (- (expt 2 32) 1) (/ 32 48000.0)) (* 60 60 24))
 }
