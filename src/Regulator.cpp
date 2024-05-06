@@ -103,6 +103,8 @@ constexpr double AutoInitValFactor =
 
 // tweak
 constexpr int WindowDivisor = 8;  // for faster auto tracking
+constexpr double AutoHeadroomGlitchTolerance =
+    0.007;  // Acceptable rate of glitches before auto headroom is increased (0.7%)
 constexpr double AutoHistoryWindow =
     60;  // rolling window of time (in seconds) over which auto tolerance roughly adjusts
 constexpr double AutoSmoothingFactor =
@@ -453,31 +455,39 @@ void Regulator::setFPPratio(int len)
 //*******************************************************************************
 void Regulator::updateTolerance(int glitches, int skipped)
 {
-    // pushes happen when we have new packets received from peer
-    // pulls happen when our audio interface triggers a callback
-    const double pushStatTol = pushStat->calcAuto();
-    const double pullStatTol = pullStat->calcAuto();
-    double newTolerance = std::max<double>(pushStatTol + mCurrentHeadroom, pullStatTol);
+    // update headroom
     if (mAutoHeadroom < 0) {
+        // variable headroom: increase to minimize glitch counts
         // require two consecutive periods of glitches exceeding allowed threshold
-        // only increase headroom if we skipped valid packets
-        // set max headroom to rolling average of max
-        if (glitches > 0 && skipped > 0 && mCurrentHeadroom < pushStat->longTermMax) {
+        // only increase headroom if glitches were caused by skipping valid packets
+        // prevent headroom from growing beyond rolling average of max
+        const int glitchesAllowed =
+            static_cast<int>(AutoHeadroomGlitchTolerance * mSampleRate / mPeerFPP);
+        if (glitches > glitchesAllowed && skipped > 0
+            && mCurrentHeadroom + 1 <= pushStat->longTermMax) {
             if (mSkipAutoHeadroom) {
                 mSkipAutoHeadroom = false;
             } else {
                 mSkipAutoHeadroom = true;
                 ++mCurrentHeadroom;
-                cout << "PLC " << glitches << " glitches, " << skipped
-                     << " skipped: Increasing headroom to " << mCurrentHeadroom << endl;
+                cout << "PLC glitches=" << glitches << ">" << glitchesAllowed
+                     << " skipped=" << skipped << ", increasing headroom to "
+                     << mCurrentHeadroom << " (max=" << pushStat->longTermMax << ")"
+                     << endl;
             }
         } else {
             mSkipAutoHeadroom = true;
         }
     } else {
+        // fixed headroom
         mCurrentHeadroom = mAutoHeadroom;
     }
-    newTolerance = std::max<double>(pushStatTol + mCurrentHeadroom, pullStatTol);
+
+    // pushes happen when we have new packets received from peer
+    // pulls happen when our audio interface triggers a callback
+    const double pushStatTol = pushStat->calcAuto();
+    const double pullStatTol = pullStat->calcAuto();
+    double newTolerance = std::max<double>(pushStatTol + mCurrentHeadroom, pullStatTol);
     if (newTolerance > AutoMax)
         newTolerance = AutoMax;
     if (newTolerance < mLocalFPPdurMsec)
