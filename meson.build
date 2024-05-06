@@ -245,6 +245,8 @@ if qt_version == '6' and get_option('default_library') == 'static'
 		deps += compiler.find_library('crypto', required : true)
 		deps += compiler.find_library('dl', required : true)
 		deps += compiler.find_library('glib-2.0', required : true)
+		deps += compiler.find_library('qopensslbackend', required : true)
+		src += ['src/QtStaticPlugins.cpp']
 	else
 		# BundledZLIB not found on windows
 		deps += dependency('qt6', modules: ['BundledLibpng', 'BundledPcre2', 'BundledHarfbuzz'], include_type: 'system')

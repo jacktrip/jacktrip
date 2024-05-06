@@ -32,7 +32,7 @@ COPY . /root
 RUN cd /root \
 	&& export QT_PATH=/opt/qt-${QT_VERSION}-static \
 	&& export PATH=${QT_PATH}/bin:${PATH} \
-	&& export LDFLAGS=-L${QT_PATH}/lib \
+	&& export LDFLAGS="-L${QT_PATH}/lib -L${QT_PATH}/plugins/tls" \
 	&& meson setup -Ddefault_library=static -Dnogui=true --buildtype release builddir \
 	&& meson compile -C builddir
 
