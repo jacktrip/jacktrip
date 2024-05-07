@@ -857,7 +857,7 @@ jobs:
     name: 'deploy container'
     env:
       REGISTRY_IMAGE: jacktrip/jacktrip
-      JACK_VERSION: 1.9.22-20240224
+      JACK_VERSION: 1.9.22-20240505
     steps:
       - uses: actions/checkout@v3
         with:
