@@ -257,7 +257,7 @@ if get_option('default_library') == 'static'
 		deps += compiler.find_library('glib-2.0', required : true)
 		if qt_version == '6'
 			# we need a Q_IMPORT_LIBRARY for the openssl backend on linux
-			deps += compiler.find_library('qopensslbackend', required : true, dirs : [qt_plugindir])
+			deps += compiler.find_library('qopensslbackend', required : true, dirs : [qt_plugindir+'/tls'])
 			src += ['src/QtStaticPlugins.cpp']
 		endif
 	else

@@ -74,6 +74,7 @@ jobs:
             # static-analysis: true # run clang-tidy static analysis (meson/Linux only)
             qt-version: '5.15.13'
             qt-type: 'static'
+            qt-arch: 'amd64'
 
           - name: Linux-x64-meson-gcc-shared-nortaudio # meson shared build without rtaudio
             runs-on: ubuntu-22.04
@@ -100,6 +101,7 @@ jobs:
             meson-library-type: static
             qt-version: '5.15.13'
             qt-type: 'static'
+            qt-arch: 'amd64'
 
           - name: Linux-x64-meson-gcc-shared
             release-name: Linux-x64 # specify a separate name for all builds that should be included in releases
@@ -327,7 +329,10 @@ jobs:
             if [[ -n "${{ matrix.qt-download-commit }}" ]]; then
               QT_DOWNLOAD_COMMIT="${{ matrix.qt-download-commit }}"
             fi
-            QT_DOWNLOAD_URL="$QT_DOWNLOAD_BASE_URL/qt-${{ matrix.qt-version }}-${{ matrix.qt-type }}-$QT_DOWNLOAD_OS-$QT_DOWNLOAD_COMMIT.$QT_DOWNLOAD_EXT"
+            if [[ -n "${{ matrix.qt-arch }}" ]]; then
+              QT_DOWNLOAD_ARCH="-${{ matrix.qt-arch }}"
+            fi
+            QT_DOWNLOAD_URL="$QT_DOWNLOAD_BASE_URL/qt-${{ matrix.qt-version }}-${{ matrix.qt-type }}-${QT_DOWNLOAD_OS}${QT_DOWNLOAD_ARCH}-$QT_DOWNLOAD_COMMIT.$QT_DOWNLOAD_EXT"
           fi
           mkdir -p $QT_INSTALL_PATH
           cd $QT_INSTALL_PATH
@@ -540,7 +545,7 @@ jobs:
           NAME=JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}
           ZIPFILE=$BUILD_PATH/${{ matrix.binary-path }}/$NAME-binary.zip
           mkdir -p $BUILD_PATH/${{ matrix.binary-path }}
-          if [[ "${{ runner.os }}" == "Windows" ]]; then
+          if [[ "${{ runner.os }}" == "Windows" && -n "${{ matrix.installer-path }}" ]]; then
             cd win
             mv deploy $NAME
             7z a $ZIPFILE -tzip $NAME
