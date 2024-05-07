@@ -238,28 +238,40 @@ else
 endif
 
 if get_option('default_library') == 'static'
+	# use qmake to get paths for qt libraries and plugins
+	# seems like qt module should have a method for this, but it doesn't
+	qmake = find_program('qmake', required: true)
+	qt_libdir = run_command(qmake, '-query', 'QT_INSTALL_LIBS').stdout().strip()
+	qt_plugindir = run_command(qmake, '-query', 'QT_INSTALL_PLUGINS').stdout().strip()
+	if qt_version == '6'
+		# qt6 requires "Bundled*" modules for linking
+		deps += dependency('qt6', modules: ['BundledLibpng', 'BundledPcre2', 'BundledHarfbuzz', 'BundledZLIB'], include_type: 'system')
+	else
+		deps += compiler.find_library('qtpcre2', required : true, dirs : [qt_libdir])
+	endif
 	if (host_machine.system() == 'linux')
+		# linux static
+		deps += compiler.find_library('ssl', required : true, dirs : [qt_libdir])
+		deps += compiler.find_library('crypto', required : true, dirs : [qt_libdir])
+		deps += compiler.find_library('dl', required : true)
+		deps += compiler.find_library('glib-2.0', required : true)
 		if qt_version == '6'
-			# BundledZLIB required on linux
-			deps += dependency('qt6', modules: ['BundledLibpng', 'BundledPcre2', 'BundledHarfbuzz', 'BundledZLIB'], include_type: 'system')
-			deps += compiler.find_library('ssl', required : true)
-			deps += compiler.find_library('crypto', required : true)
-			deps += compiler.find_library('dl', required : true)
-			deps += compiler.find_library('glib-2.0', required : true)
-			deps += compiler.find_library('qopensslbackend', required : true)
+			# we need a Q_IMPORT_LIBRARY for the openssl backend on linux
+			deps += compiler.find_library('qopensslbackend', required : true, dirs : [qt_plugindir])
 			src += ['src/QtStaticPlugins.cpp']
-		else
-			# -ldl required on linux
-			deps += compiler.find_library('qtpcre2', required : true)
-			deps += compiler.find_library('ssl', required : true)
-			deps += compiler.find_library('crypto', required : true)
-			deps += compiler.find_library('dl', required : true)
-			deps += compiler.find_library('glib-2.0', required : true)
 		endif
 	else
-		if qt_version == '6'
-			# BundledZLIB not found on windows or osx
-			deps += dependency('qt6', modules: ['BundledLibpng', 'BundledPcre2', 'BundledHarfbuzz'], include_type: 'system')
+		if (host_machine.system() == 'windows')
+			# windows static
+			deps += compiler.find_library('bcrypt', required : true)
+			deps += compiler.find_library('winmm', required : true)
+			deps += compiler.find_library('Crypt32', required : true)
+			if qt_version == '6'
+				deps += compiler.find_library('Authz', required : true)
+			endif
+		else
+			# mac static
+			# TODO
 		endif
 	endif
 endif
