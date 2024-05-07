@@ -241,8 +241,8 @@ if get_option('default_library') == 'static'
 	# use qmake to get paths for qt libraries and plugins
 	# seems like qt module should have a method for this, but it doesn't
 	qmake = find_program('qmake', required: true)
-	qt_libdir = run_command(qmake, '-query', 'QT_INSTALL_LIBS').stdout().strip()
-	qt_plugindir = run_command(qmake, '-query', 'QT_INSTALL_PLUGINS').stdout().strip()
+	qt_libdir = run_command(qmake, '-query', 'QT_INSTALL_LIBS', check : true).stdout().strip()
+	qt_plugindir = run_command(qmake, '-query', 'QT_INSTALL_PLUGINS', check : true).stdout().strip()
 	if qt_version == '6'
 		# qt6 requires "Bundled*" modules for linking
 		deps += dependency('qt6', modules: ['BundledLibpng', 'BundledPcre2', 'BundledHarfbuzz', 'BundledZLIB'], include_type: 'system')
@@ -271,7 +271,16 @@ if get_option('default_library') == 'static'
 			endif
 		else
 			# mac static
-			# TODO
+			# this approach fails for universal builds, so we have to just append to link_args
+			#deps += dependency('CoreServices', required : true)
+			link_args += ['-framework', 'CoreServices']
+			link_args += ['-framework', 'CFNetwork']
+			link_args += ['-framework', 'AppKit']
+			link_args += ['-framework', 'IOKit']
+			link_args += ['-framework', 'Security']
+			link_args += ['-framework', 'GSS']
+			link_args += ['-framework', 'SystemConfiguration']
+			deps += dependency('zlib', required : true)
 		endif
 	endif
 endif
