@@ -222,11 +222,8 @@ class Regulator : public RingBuffer
     /// @brief returns number of samples, or frames per callback period
     inline int getBufferSizeInSamples() const { return mLocalFPP; }
 
-    /// @brief returns time taken for last PLC prediction, in milliseconds
-    inline double getLastDspElapsed() const { return mStatsMaxPLCdspElapsed; }
-
     /// @brief returns true if worker thread & queue is enabled
-    inline bool isWorkerEnabled() const { return mWorkerThreadPtr != nullptr; }
+    inline bool isWorkerEnabled() const { return mWorkerEnabled; }
 
     //    virtual QString getStats(uint32_t statCount, uint32_t lostCount);
     virtual bool getStats(IOStat* stat, bool reset);
@@ -234,7 +231,8 @@ class Regulator : public RingBuffer
    private:
     void pushPacket(const int8_t* buf, int seq_num);
     void updatePushStats(int seq_num);
-    void pullPacket();
+    bool pullPacket();    // returns true if PLC prediction
+    bool enableWorker();  // returns true if worker was enabled
     void updateTolerance(int glitches, int skipped);
     void setFPPratio(int len);
     void processPacket(bool glitch);
@@ -309,6 +307,7 @@ class Regulator : public RingBuffer
     int8_t* mWorkerBuffer                = nullptr;
     QThread* mWorkerThreadPtr            = nullptr;
     RegulatorWorker* mRegulatorWorkerPtr = nullptr;
+    bool mWorkerEnabled                  = false;
     friend class RegulatorWorker;
 };
 
@@ -319,7 +318,7 @@ class RegulatorWorker : public QObject
    public:
     RegulatorWorker(Regulator* rPtr)
         : mRegulatorPtr(rPtr)
-        , mPacketQueue(rPtr->getPacketSize())
+        , mPacketQueue(rPtr->mPeerBytes)
         , mPacketQueueTarget(1)
         , mLastUnderrun(0)
         , mSkipQueueUpdate(true)
@@ -411,7 +410,7 @@ class RegulatorWorker : public QObject
         ++mPacketQueueTarget;
         std::cout << "PLC worker queue: adjusting target=" << mPacketQueueTarget
                   << " (max=" << maxPackets
-                  << ", lastDspElapsed=" << mRegulatorPtr->getLastDspElapsed() << ")"
+                  << ", lastDspElapsed=" << mRegulatorPtr->mStatsMaxPLCdspElapsed << ")"
                   << std::endl;
         if (mPacketQueueTarget == maxPackets) {
             emit signalMaxQueueSize();

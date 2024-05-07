@@ -445,6 +445,27 @@ void Regulator::setFPPratio(int len)
 }
 
 //*******************************************************************************
+bool Regulator::enableWorker()
+{
+    // enable worker thread & queue if a prediction takes longer than
+    // our local audio callback interval (too slow to keep up)
+    const double maxPLCdspAllowed = mLocalFPPdurMsec * 0.7;  // 70%
+    if (mStatsMaxPLCdspElapsed >= maxPLCdspAllowed && !isWorkerEnabled()) {
+        cout << "PLC dsp " << mStatsMaxPLCdspElapsed
+             << " is too slow (max=" << maxPLCdspAllowed << "), enabling worker" << endl;
+        mWorkerBuffer = new int8_t[mPeerBytes];
+        memset(mWorkerBuffer, 0, mPeerBytes);
+        mWorkerThreadPtr = new QThread();
+        mWorkerThreadPtr->setObjectName("RegulatorThread");
+        mWorkerThreadPtr->start();
+        mRegulatorWorkerPtr = new RegulatorWorker(this);
+        mRegulatorWorkerPtr->moveToThread(mWorkerThreadPtr);
+        mWorkerEnabled = true;
+    }
+    return mWorkerEnabled;
+}
+
+//*******************************************************************************
 void Regulator::updateTolerance(int glitches, int skipped)
 {
     // update headroom
@@ -531,7 +552,7 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
 };
 
 //*******************************************************************************
-void Regulator::pullPacket()
+bool Regulator::pullPacket()
 {
     const double now       = (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
     const int lastSeqNumIn = mLastSeqNumIn.load(std::memory_order_acquire);
@@ -583,6 +604,7 @@ PACKETOK : {
     if (skipped) {
         processPacket(true);
         pullStat->plcOverruns += skipped;
+        return true;
     } else
         processPacket(false);
     goto OUTPUT;
@@ -596,14 +618,14 @@ UNDERRUN : {
     }
     // "good underrun", not a stuck client
     processPacket(true);
-    goto OUTPUT;
+    return true;
 }
 
 ZERO_OUTPUT:
     memset(mXfrBuffer, 0, mPeerBytes);
 
 OUTPUT:
-    return;
+    return false;
 };
 
 //*******************************************************************************
@@ -621,24 +643,8 @@ void Regulator::processPacket(bool glitch)
     if (glitch) {
         double tmp2 = (double)mIncomingTimer.nsecsElapsed() - tmp;
         tmp2 /= 1000000.0;
-        if (tmp2 > mStatsMaxPLCdspElapsed) {
+        if (tmp2 > mStatsMaxPLCdspElapsed)
             mStatsMaxPLCdspElapsed = tmp2;
-            // enable worker thread & queue if a prediction takes longer than
-            // our local audio callback interval (too slow to keep up)
-            const double maxPLCdspAllowed = mLocalFPPdurMsec * 0.7;  // 70%
-            if (mStatsMaxPLCdspElapsed >= maxPLCdspAllowed && !isWorkerEnabled()) {
-                cout << "PLC dsp " << mStatsMaxPLCdspElapsed
-                     << " is too slow (max=" << maxPLCdspAllowed << "), enabling worker"
-                     << endl;
-                mWorkerBuffer = new int8_t[mPeerBytes];
-                memset(mWorkerBuffer, 0, mPeerBytes);
-                mWorkerThreadPtr = new QThread();
-                mWorkerThreadPtr->setObjectName("RegulatorThread");
-                mWorkerThreadPtr->start();
-                mRegulatorWorkerPtr = new RegulatorWorker(this);
-                mRegulatorWorkerPtr->moveToThread(mWorkerThreadPtr);
-            }
-        }
     }
 }
 
@@ -860,6 +866,7 @@ void Regulator::readSlotNonBlocking(int8_t* ptrToReadSlot)
 
     pullStat->tick();
 
+    bool prediction = false;
     if (mFPPratioNumerator == mFPPratioDenominator) {
         // local FPP matches peer
         if (isWorkerEnabled()) {
@@ -868,24 +875,33 @@ void Regulator::readSlotNonBlocking(int8_t* ptrToReadSlot)
             mRegulatorWorkerPtr->pop(mWorkerBuffer);
             memcpy(ptrToReadSlot, mWorkerBuffer, mLocalBytes);
         } else {
-            pullPacket();
+            prediction = pullPacket();
             memcpy(ptrToReadSlot, mXfrBuffer, mLocalBytes);
+            if (prediction)
+                enableWorker();
+            // nothing special to do if enabled
         }
         return;
     }
 
     if (mFPPratioNumerator > 1) {
         // 2/1, 4/1 peer FPP is lower, (local/peer)/1
-        for (int i = 0; i < mFPPratioNumerator; i++) {
-            if (isWorkerEnabled()) {
+        if (isWorkerEnabled()) {
+            for (int i = 0; i < mFPPratioNumerator; i++) {
                 mRegulatorWorkerPtr->pop(mWorkerBuffer);
                 memcpy(ptrToReadSlot, mWorkerBuffer, mPeerBytes);
                 ptrToReadSlot += mPeerBytes;
-            } else {
-                pullPacket();
+            }
+        } else {
+            for (int i = 0; i < mFPPratioNumerator; i++) {
+                if (pullPacket())
+                    prediction = true;
                 memcpy(ptrToReadSlot, mXfrBuffer, mPeerBytes);
                 ptrToReadSlot += mPeerBytes;
             }
+            if (prediction)
+                enableWorker();
+            // nothing special to do if enabled
         }
         return;
     }
@@ -898,10 +914,18 @@ void Regulator::readSlotNonBlocking(int8_t* ptrToReadSlot)
         }
     } else {
         if (mXfrPullPtr == NULL || mXfrPullPtr >= (mXfrBuffer + mPeerBytes)) {
-            pullPacket();
+            prediction  = pullPacket();
             mXfrPullPtr = mXfrBuffer;
+            if (prediction) {
+                if (enableWorker()) {
+                    // copy result to worker buffer
+                    memcpy(mWorkerBuffer, mXfrBuffer, mPeerBytes);
+                    mXfrPullPtr = mWorkerBuffer;
+                }
+            }
         }
     }
+
     memcpy(ptrToReadSlot, mXfrPullPtr, mLocalBytes);
     mXfrPullPtr += mLocalBytes;
 }
