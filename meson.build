@@ -31,9 +31,9 @@ defines = ['-DWAIRTOHUB']
 c_defines = []
 incdirs = []
 
-if get_option('buildtype') == 'release'
-	defines += ['-DNDEBUG']
-	c_defines += ['-DNDEBUG']
+if get_option('debug') == false
+	defines += ['-DNDEBUG', '-DQT_NO_DEBUG']
+	c_defines += ['-DNDEBUG', '-DQT_NO_DEBUG']
 endif
 
 build_info = get_option('buildinfo')

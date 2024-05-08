@@ -1,5 +1,5 @@
 - Version: "2.3.0-beta2"
-  Date: 2024-05-07
+  Date: 2024-05-08
   Description:
   - (added) Static Qt 5.15.13 nogui (CLI) builds for all platforms
   - (updated) Builds now use Qt 6.2.8 for OSX and 5.15.13 for Linux
@@ -17,7 +17,7 @@
   - (updated) VS Mode help links go to support.jacktrip.com
   - (updated) VS Mode manage button goes to new studio dashboard
   - (fixed) PLC degradation when peer != local buffer sizes
-  - (fixed) VS Mode trunction of invite copied tooltip message
+  - (fixed) VS Mode truncation of invite copied tooltip message
 - Version: "2.2.5"
   Date: 2024-03-28
   Description:

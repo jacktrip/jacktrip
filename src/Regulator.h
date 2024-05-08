@@ -155,9 +155,6 @@ class StdDev
     double lastMean;
     double lastMin;
     double lastMax;
-    int lastPlcOverruns;
-    int lastPlcUnderruns;
-    double lastPLCdspElapsed;
     double lastStdDev;
     double longTermStdDev;
     double longTermStdDevAcc;
@@ -220,12 +217,6 @@ class Regulator : public RingBuffer
     /// @brief returns number of samples, or frames per callback period
     inline int getBufferSizeInSamples() const { return mLocalFPP; }
 
-    /// @brief returns time taken for last PLC prediction, in milliseconds
-    inline double getLastDspElapsed() const
-    {
-        return pullStat == nullptr ? 0 : pullStat->lastPLCdspElapsed;
-    }
-
     //    virtual QString getStats(uint32_t statCount, uint32_t lostCount);
     virtual bool getStats(IOStat* stat, bool reset);
 
@@ -233,7 +224,7 @@ class Regulator : public RingBuffer
     void pushPacket(const int8_t* buf, int seq_num);
     void updatePushStats(int seq_num);
     void pullPacket();
-    void updateTolerance();
+    void updateTolerance(int glitches, int skipped);
     void setFPPratio(int len);
     void processPacket(bool glitch);
     void burg(bool glitch);
@@ -286,12 +277,15 @@ class Regulator : public RingBuffer
     std::atomic<int> mLastSeqNumIn;
     int mLastSeqNumOut;
     std::vector<double> mIncomingTiming;
-    int mSkip;
     int mFPPratioNumerator;
     int mFPPratioDenominator;
     bool mAuto;
     bool mSkipAutoHeadroom;
+    int mSkipped;
+    int mLastSkipped;
     int mLastGlitches;
+    int mStatsGlitches;
+    double mStatsMaxPLCdspElapsed;
     double mCurrentHeadroom;
     double mAutoHeadroom;
     Time* mTime = nullptr;
