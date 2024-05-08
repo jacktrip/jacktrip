@@ -72,24 +72,38 @@ jobs:
             build-system: qmake # qmake, meson, cmake (todo)
             # meson-library-type: shared # shared, static, both
             # static-analysis: true # run clang-tidy static analysis (meson/Linux only)
-            qt-version: '5.15.10'
+            qt-version: '5.15.13'
             qt-type: 'static'
+            qt-arch: 'amd64'
 
-          - name: Linux-x64-qmake-gcc-static-nogui
+          - name: Linux-x64-meson-gcc-shared-nortaudio # meson shared build without rtaudio
+            runs-on: ubuntu-22.04
+            system-rtaudio: false
+            bundled-rtaudio: false
+            nogui: false
+            weakjack: false
+            # jacktrip-path: jacktrip
+            # binary-path: binary
+            build-system: meson
+            meson-library-type: shared
+
+          - name: Linux-x64-meson-gcc-static
             release-name: Linux-x64-nogui
             runs-on: ubuntu-20.04
             system-rtaudio: false
-            bundled-rtaudio: false
+            bundled-rtaudio: true
             nogui: true
             novs: true
             weakjack: false
             jacktrip-path: jacktrip
             binary-path: binary
-            build-system: qmake
-            qt-version: '5.15.10'
+            build-system: meson
+            meson-library-type: static
+            qt-version: '5.15.13'
             qt-type: 'static'
+            qt-arch: 'amd64'
 
-          - name: Linux-x64-meson-gcc-shared-bundled_rtaudio
+          - name: Linux-x64-meson-gcc-shared
             release-name: Linux-x64 # specify a separate name for all builds that should be included in releases
             runs-on: ubuntu-22.04
             system-rtaudio: false
@@ -102,36 +116,25 @@ jobs:
             meson-library-type: shared
             static-analysis: true
 
-          - name: Linux-x64-meson-gcc-shared # meson shared build without rtaudio
-            runs-on: ubuntu-22.04
-            system-rtaudio: false
-            bundled-rtaudio: false
-            nogui: false
-            weakjack: false
-            # jacktrip-path: jacktrip
-            # binary-path: binary
-            build-system: meson
-            meson-library-type: shared
-
-          - name: macOS-x64-qmake-clang-static-bundled_rtaudio
+          - name: macOS-x64-meson-clang-static
+            release-name: macOS-x64-nogui
             runs-on: macos-12
             system-rtaudio: false
             bundled-rtaudio: true
-            nogui: false
+            nogui: true
             novs: true
             weakjack: true
-            macosx-deployment-target: 10.13
-            macosx-architectures: 'x86_64 arm64'
-            xcode-directory: /Applications/Xcode_14.0.1.app # uses SDK macOS 12.3 which is latest supported by qt5
-            # jacktrip-path: jacktrip
-            # binary-path: binary
-            # bundle-path: bundle
-            # installer-path: installer
-            build-system: qmake
-            qt-version: '5.15.10'
+            jacktrip-path: jacktrip
+            binary-path: binary
+            build-system: meson
+            meson-library-type: static
+            qt-version: '5.15.13'
             qt-type: 'static'
+            macosx-architectures: 'x86_64;arm64'
+            macosx-deployment-target: 10.13
+            xcode-directory: /Applications/Xcode_14.2.app
 
-          - name: macOS-x64-meson-clang-shared-bundled_rtaudio
+          - name: macOS-x64-meson-clang-shared
             release-name: macOS-x64
             runs-on: macos-12
             system-rtaudio: false
@@ -145,27 +148,28 @@ jobs:
             installer-path: installer
             build-system: meson
             meson-library-type: both
-            qt-version: '6.2.6'
+            qt-version: '6.2.8'
             qt-type: 'dynamic'
             macosx-architectures: 'x86_64;arm64'
             macosx-deployment-target: 10.14
             xcode-directory: /Applications/Xcode_14.2.app
 
           - name: Windows-x64-meson-msvc-static
+            release-name: Windows-x64-nogui
             runs-on: windows-2019
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: true
             novs: true
             weakjack: true
-            qt-version: '6.2.6'
+            qt-version: '5.15.13'
             qt-type: 'static'
-            # jacktrip-path: jacktrip.exe
-            # binary-path: binary
+            jacktrip-path: jacktrip.exe
+            binary-path: binary
             build-system: meson
             meson-library-type: static
 
-          - name: Windows-x64-meson-msvc-qt6
+          - name: Windows-x64-meson-msvc-shared
             release-name: Windows-x64
             runs-on: windows-2019
             system-rtaudio: false
@@ -186,7 +190,7 @@ jobs:
       CLANG_TIDY_NAME: clang-tidy-result
       CLANG_TIDY_PATH: ${{ github.workspace }}/clang-tidy-result
       QT_DOWNLOAD_BASE_URL: 'https://files.jacktrip.org/contrib/qt'
-      QT_DOWNLOAD_COMMIT: 'b09fbe4'
+      QT_DOWNLOAD_COMMIT: 'f82eab7'
 
     steps:
       - uses: actions/checkout@v3
@@ -325,7 +329,10 @@ jobs:
             if [[ -n "${{ matrix.qt-download-commit }}" ]]; then
               QT_DOWNLOAD_COMMIT="${{ matrix.qt-download-commit }}"
             fi
-            QT_DOWNLOAD_URL="$QT_DOWNLOAD_BASE_URL/qt-${{ matrix.qt-version }}-${{ matrix.qt-type }}-$QT_DOWNLOAD_OS-$QT_DOWNLOAD_COMMIT.$QT_DOWNLOAD_EXT"
+            if [[ -n "${{ matrix.qt-arch }}" ]]; then
+              QT_DOWNLOAD_ARCH="-${{ matrix.qt-arch }}"
+            fi
+            QT_DOWNLOAD_URL="$QT_DOWNLOAD_BASE_URL/qt-${{ matrix.qt-version }}-${{ matrix.qt-type }}-${QT_DOWNLOAD_OS}${QT_DOWNLOAD_ARCH}-$QT_DOWNLOAD_COMMIT.$QT_DOWNLOAD_EXT"
           fi
           mkdir -p $QT_INSTALL_PATH
           cd $QT_INSTALL_PATH
@@ -538,7 +545,7 @@ jobs:
           NAME=JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}
           ZIPFILE=$BUILD_PATH/${{ matrix.binary-path }}/$NAME-binary.zip
           mkdir -p $BUILD_PATH/${{ matrix.binary-path }}
-          if [[ "${{ runner.os }}" == "Windows" ]]; then
+          if [[ "${{ runner.os }}" == "Windows" && -n "${{ matrix.installer-path }}" ]]; then
             cd win
             mv deploy $NAME
             7z a $ZIPFILE -tzip $NAME
