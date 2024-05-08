@@ -1398,22 +1398,22 @@ for better quality at the expense of latency.</string>
           </property>
           <item>
            <property name="text">
-            <string>1</string>
+            <string>1 (adaptable latency)</string>
            </property>
           </item>
           <item>
            <property name="text">
-            <string>2</string>
+            <string>2 (stable latency)</string>
            </property>
           </item>
           <item>
            <property name="text">
-            <string>3 (experimental - in own thread) </string>
+            <string>3 (loss concealment)</string>
            </property>
           </item>
           <item>
            <property name="text">
-            <string>4 (experimental - in callback)</string>
+            <string>4 (same as 3)</string>
            </property>
           </item>
          </widget>
