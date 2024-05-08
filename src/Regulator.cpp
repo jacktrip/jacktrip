@@ -576,7 +576,9 @@ bool Regulator::pullPacket()
                 next += NumSlots;
             if (mLastSeqNumOut != -1) {
                 // account for missing packets
-                if (mIncomingTiming[next] < mIncomingTiming[mLastSeqNumOut])
+                if (mIncomingTiming[next] < mIncomingTiming[mLastSeqNumOut]
+                    && mIncomingTiming[mLastSeqNumOut] - mIncomingTiming[next]
+                           > mMsecTolerance)
                     continue;
                 updatePushStats(next);
                 // count how many we have skipped
