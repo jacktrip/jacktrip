@@ -80,7 +80,6 @@ UdpHubListener::UdpHubListener(int server_port, int server_udp_port, QObject* pa
            "client fan out/in, including server", "full mix, including server"})
     , m_connectDefaultAudioPorts(false)
     , mIOStatTimeout(0)
-    , mRegulatorThreadPtr(NULL)
 {
     // Register JackTripWorker with the hub listener
     // mJTWorker = new JackTripWorker(this);
@@ -124,11 +123,6 @@ UdpHubListener::~UdpHubListener()
 {
     mStopCheckTimer.stop();
     QMutexLocker lock(&mMutex);
-    if (mRegulatorThreadPtr != NULL) {
-        mRegulatorThreadPtr->quit();
-        mRegulatorThreadPtr->wait();
-        delete mRegulatorThreadPtr;
-    }
     // delete mJTWorker;
     for (int i = 0; i < gMaxThreads; i++) {
         delete mJTWorkers->at(i);
@@ -237,17 +231,6 @@ void UdpHubListener::start()
     mStopCheckTimer.setInterval(200);
     connect(&mStopCheckTimer, &QTimer::timeout, this, &UdpHubListener::stopCheck);
     mStopCheckTimer.start();
-
-#ifdef REGULATOR_SHARED_WORKER_THREAD
-    // Start regulator thread if bufstrategy == 3
-    if (mBufferStrategy == 3) {
-        // create shared regulator thread
-        mRegulatorThreadPtr = new QThread();
-        mRegulatorThreadPtr->setObjectName("RegulatorThread");
-        mRegulatorThreadPtr->start();
-    }
-#endif
-
     emit signalStarted();
 }
 
@@ -364,7 +347,6 @@ void UdpHubListener::receivedClientInfo(QSslSocket* clientConnection)
         mJTWorkers->at(id)->setIOStatStream(mIOStatStream);
     }
     mJTWorkers->at(id)->setBufferStrategy(mBufferStrategy);
-    mJTWorkers->at(id)->setRegulatorThread(mRegulatorThreadPtr);
     mJTWorkers->at(id)->setNetIssuesSimulation(mSimulatedLossRate, mSimulatedJitterRate,
                                                mSimulatedDelayRel);
     mJTWorkers->at(id)->setBroadcast(mBroadcastQueue);
@@ -687,11 +669,6 @@ void UdpHubListener::stopAllThreads()
         } else {
             iterator.next();
         }
-    }
-    if (mRegulatorThreadPtr != nullptr) {
-        // Stop the Regulator thread
-        mRegulatorThreadPtr->quit();
-        mRegulatorThreadPtr->wait();
     }
 }
 // TODO:
