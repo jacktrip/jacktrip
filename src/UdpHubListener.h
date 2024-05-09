@@ -190,9 +190,6 @@ class UdpHubListener : public QObject
     int mIOStatTimeout;
     QSharedPointer<std::ostream> mIOStatStream;
 
-    /// thread used to pull packets from Regulator (if mBufferStrategy==3)
-    QThread* mRegulatorThreadPtr;
-
     int mBufferStrategy;
     int mBroadcastQueue;
     double mSimulatedLossRate;
