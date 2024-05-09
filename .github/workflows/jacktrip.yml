@@ -619,7 +619,7 @@ jobs:
         include:
           - name: Sign Windows artifacts
             release-name: Windows-x64
-            build-job-name: Windows-x64-meson-msvc-qt6
+            build-job-name: Windows-x64-meson-msvc-shared
             runs-on: ubuntu-latest
             binary-path: binary
             installer-path: installer
@@ -716,7 +716,7 @@ jobs:
             if: needs.check-secrets.outputs.should_run == 'true'
             platform-name: win
             release-name: Windows-x64
-            build-job-name: Windows-x64-meson-msvc-qt6
+            build-job-name: Windows-x64-meson-msvc-shared
             runs-on: ubuntu-latest
           - name: Update Mac manifests
             if: needs.check-secrets.outputs.should_run == 'true'
