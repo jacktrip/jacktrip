@@ -216,6 +216,11 @@ void qtMessageHandler([[maybe_unused]] QtMsgType type,
 #endif  // NO_GUI
 }
 
+void outputError(const QString& msg)
+{
+    std::cerr << "Error: " << msg.toStdString() << std::endl;
+}
+
 #ifndef _WIN32
 static int setupUnixSignalHandler(void (*handler)(int))
 {
@@ -478,6 +483,7 @@ int main(int argc, char* argv[])
                 QObject::connect(udpHub.data(), &UdpHubListener::signalStopped,
                                  app.data(), &QCoreApplication::quit,
                                  Qt::QueuedConnection);
+                QObject::connect(udpHub.data(), &UdpHubListener::signalError, outputError);
                 QObject::connect(udpHub.data(), &UdpHubListener::signalError, app.data(),
                                  &QCoreApplication::quit, Qt::QueuedConnection);
 #ifndef _WIN32
@@ -495,6 +501,7 @@ int main(int argc, char* argv[])
                 QObject::connect(jackTrip.data(), &JackTrip::signalProcessesStopped,
                                  app.data(), &QCoreApplication::quit,
                                  Qt::QueuedConnection);
+                QObject::connect(jackTrip.data(), &JackTrip::signalError, outputError);
                 QObject::connect(jackTrip.data(), &JackTrip::signalError, app.data(),
                                  &QCoreApplication::quit, Qt::QueuedConnection);
 #ifndef _WIN32
