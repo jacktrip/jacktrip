@@ -467,12 +467,15 @@ int main(int argc, char* argv[])
     } else {
 #endif  // NO_GUI
         // Otherwise use the non-GUI version, and parse our command line.
-#ifndef PSI
-        QLoggingCategory::setFilterRules(QStringLiteral("*.debug=true"));
-#endif
         try {
             Settings settings;
             settings.parseInput(argc, argv);
+
+#ifndef PSI
+            if (gVerboseFlag) {
+                QLoggingCategory::setFilterRules(QStringLiteral("*.debug=true"));
+            }
+#endif
 
             // Either start our hub server or our jacktrip process as appropriate.
             if (settings.isHubServer()) {
