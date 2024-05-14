@@ -486,7 +486,8 @@ int main(int argc, char* argv[])
                 QObject::connect(udpHub.data(), &UdpHubListener::signalStopped,
                                  app.data(), &QCoreApplication::quit,
                                  Qt::QueuedConnection);
-                QObject::connect(udpHub.data(), &UdpHubListener::signalError, outputError);
+                QObject::connect(udpHub.data(), &UdpHubListener::signalError,
+                                 outputError);
                 QObject::connect(udpHub.data(), &UdpHubListener::signalError, app.data(),
                                  &QCoreApplication::quit, Qt::QueuedConnection);
 #ifndef _WIN32
