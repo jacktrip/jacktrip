@@ -216,6 +216,11 @@ void qtMessageHandler([[maybe_unused]] QtMsgType type,
 #endif  // NO_GUI
 }
 
+void outputError(const QString& msg)
+{
+    std::cerr << "Error: " << msg.toStdString() << std::endl;
+}
+
 #ifndef _WIN32
 static int setupUnixSignalHandler(void (*handler)(int))
 {
@@ -462,12 +467,15 @@ int main(int argc, char* argv[])
     } else {
 #endif  // NO_GUI
         // Otherwise use the non-GUI version, and parse our command line.
-#ifndef PSI
-        QLoggingCategory::setFilterRules(QStringLiteral("*.debug=true"));
-#endif
         try {
             Settings settings;
             settings.parseInput(argc, argv);
+
+#ifndef PSI
+            if (gVerboseFlag) {
+                QLoggingCategory::setFilterRules(QStringLiteral("*.debug=true"));
+            }
+#endif
 
             // Either start our hub server or our jacktrip process as appropriate.
             if (settings.isHubServer()) {
@@ -478,6 +486,7 @@ int main(int argc, char* argv[])
                 QObject::connect(udpHub.data(), &UdpHubListener::signalStopped,
                                  app.data(), &QCoreApplication::quit,
                                  Qt::QueuedConnection);
+                QObject::connect(udpHub.data(), &UdpHubListener::signalError, outputError);
                 QObject::connect(udpHub.data(), &UdpHubListener::signalError, app.data(),
                                  &QCoreApplication::quit, Qt::QueuedConnection);
 #ifndef _WIN32
@@ -495,6 +504,7 @@ int main(int argc, char* argv[])
                 QObject::connect(jackTrip.data(), &JackTrip::signalProcessesStopped,
                                  app.data(), &QCoreApplication::quit,
                                  Qt::QueuedConnection);
+                QObject::connect(jackTrip.data(), &JackTrip::signalError, outputError);
                 QObject::connect(jackTrip.data(), &JackTrip::signalError, app.data(),
                                  &QCoreApplication::quit, Qt::QueuedConnection);
 #ifndef _WIN32

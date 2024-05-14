@@ -147,7 +147,6 @@ void UdpHubListener::start()
         QString error_message = QStringLiteral("TCP Socket Server on Port %1 ERROR: %2")
                                     .arg(mServerPort)
                                     .arg(mTcpServer.errorString());
-        std::cerr << error_message.toStdString() << endl;
         emit signalError(error_message);
         return;
     }
@@ -215,7 +214,6 @@ void UdpHubListener::start()
         }
 
         if (error) {
-            std::cerr << "ERROR: " << error_message.toStdString() << endl;
             emit signalError(error_message);
             return;
         }
