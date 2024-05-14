@@ -349,6 +349,8 @@ void Regulator::setFPPratio(int len)
 
     if (mPeerFPP < HISTFPP)
         mPacketsInThePast *= (HISTFPP / mPeerFPP);  // but don't go below 2
+    else if (mPeerFPP > (HISTFPP * 2))
+        mPacketsInThePast = 1;  // 1 is enough history @ 512 or greater
 
     if (gVerboseFlag)
         cout << "mPacketsInThePast = " << mPacketsInThePast << " at " << mPeerFPP << " / "
