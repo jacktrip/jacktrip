@@ -1,22 +1,19 @@
-- Version: "2.3.0-beta2"
-  Date: 2024-05-08
+- Version: "2.3.0"
+  Date: 2024-05-15
   Description:
   - (added) Static Qt 5.15.13 nogui (CLI) builds for all platforms
-  - (updated) Builds now use Qt 6.2.8 for OSX and 5.15.13 for Linux
-  - (updated) Linux containers now use static builds with Qt 6.5.3
-  - (updated) Automatically start PLC worker for slower predictions
-  - (updated) Additional PLC quality and latency improvements
-  - (fixed) Classic mode options for PLC strategy consolidation
-- Version: "2.3.0-beta1"
-  Date: 2024-05-03
-  Description:
   - (added) VS Mode learn more buttons and warning links
   - (updated) Significant PLC performance and quality improvements
   - (updated) Reduced amount of latency added for PLC strategy
   - (updated) Merged PLC buffer strategies (3 is now identical to 4)
+  - (updated) Automatically start PLC worker for slower predictions
+  - (updated) Builds now use Qt 6.2.8 for OSX and 5.15.13 for Linux
+  - (updated) Linux containers now use static builds with Qt 6.5.3
   - (updated) VS Mode help links go to support.jacktrip.com
   - (updated) VS Mode manage button goes to new studio dashboard
   - (fixed) PLC degradation when peer != local buffer sizes
+  - (fixed) Port binding on machines that don't support IPv6
+  - (fixed) Command line interface debug logging improvements
   - (fixed) VS Mode truncation of invite copied tooltip message
 - Version: "2.2.5"
   Date: 2024-03-28
