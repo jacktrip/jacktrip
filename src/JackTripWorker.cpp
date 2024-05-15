@@ -45,7 +45,7 @@
 
 #include "JackTrip.h"
 #include "UdpHubListener.h"
-//#include "NetKS.h"
+// #include "NetKS.h"
 #include "LoopBack.h"
 #include "Settings.h"
 #ifdef WAIR  // wair
@@ -194,7 +194,6 @@ void JackTripWorker::start()
     mJackTrip->setBindPorts(mServerPort);
     // jacktrip.setPeerPorts(mClientPort);
     mJackTrip->setBufferStrategy(mBufferStrategy);
-    mJackTrip->setRegulatorThread(mRegulatorThreadPtr);
     mJackTrip->setNetIssuesSimulation(mSimulatedLossRate, mSimulatedJitterRate,
                                       mSimulatedDelayRel);
     mJackTrip->setBroadcast(mBroadcastQueue);

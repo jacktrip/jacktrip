@@ -42,7 +42,7 @@
 #ifndef __LIMITER_H__
 #define __LIMITER_H__
 
-//#define SINE_TEST
+// #define SINE_TEST
 
 #ifdef SINE_TEST
 #include "limitertest.h"

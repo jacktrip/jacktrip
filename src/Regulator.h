@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2021 Juan-Pablo Caceres, Chris Chafe.
+  Copyright (c) 2024 Juan-Pablo Caceres, Chris Chafe.
   SoundWIRE group at CCRMA, Stanford University.
 
   Permission is hereby granted, free of charge, to any person
@@ -32,7 +32,7 @@
 /**
  * \file Regulator.h
  * \author Chris Chafe
- * \date May 2021
+ * \date May 2021 - May 2024
  */
 
 // Initial references and starter code to bring up Burg's recursion
@@ -42,14 +42,14 @@
 #ifndef __REGULATOR_H__
 #define __REGULATOR_H__
 
-//#define REGULATOR_SHARED_WORKER_THREAD
-
 #include <math.h>
 
 #include <QDebug>
 #include <QElapsedTimer>
+#include <QThread>
 #include <atomic>
 #include <cstring>
+#include <vector>
 
 #include "AudioInterface.h"
 #include "RingBuffer.h"
@@ -62,41 +62,96 @@ class RegulatorWorker;
 class BurgAlgorithm
 {
    public:
-    bool classify(double d);
-    void train(std::vector<double>& coeffs, const std::vector<double>& x);
-    void predict(std::vector<double>& coeffs, std::vector<double>& tail);
+    BurgAlgorithm(int size);
+    void train(std::vector<float>& coeffs, const std::vector<float>& x, int size);
+    void predict(std::vector<float>& coeffs, std::vector<float>& predicted, int size);
 
    private:
-    // the following are class members to minimize heap memory allocations
-    std::vector<double> Ak;
-    std::vector<double> f;
-    std::vector<double> b;
+    int m;
+    int N;
+    int size;
+    std::vector<float> Ak;
+    std::vector<float> AkReset;
+    std::vector<float> f;
+    std::vector<float> b;
 };
 
-class ChanData
+class Time
+{
+    double accum   = 0.0;
+    int cnt        = 0;
+    int glitchCnt  = 0;
+    double tmpTime = 0.0;
+
+   public:
+    QElapsedTimer mCallbackTimer;  // for rcvElapsedTime
+    void collect()
+    {
+        double tmp = (mCallbackTimer.nsecsElapsed() - tmpTime) / 1000000.0;
+        accum += tmp;
+        cnt++;
+    }
+    double instantElapsed()
+    {
+        return (mCallbackTimer.nsecsElapsed() - tmpTime) / 1000000.0;
+    }
+    double instantAbsolute() { return (mCallbackTimer.nsecsElapsed()) / 1000000.0; }
+    double avg()
+    {
+        if (!cnt)
+            return 0.0;
+        double tmp = accum / (double)cnt;
+        accum      = 0.0;
+        cnt        = 0;
+        return tmp;
+    }
+    void start() { mCallbackTimer.start(); }
+    void trigger(int ch)
+    {
+        tmpTime = mCallbackTimer.nsecsElapsed();
+        if (!ch)
+            glitchCnt++;
+    }
+    int glitches()
+    {
+        int tmp   = glitchCnt;
+        glitchCnt = 0;
+        return tmp;
+    }
+};
+
+class Channel
 {
    public:
-    ChanData(int i, int FPP, int hist);
-    int ch;
-    int trainSamps;
-    std::vector<sample_t> mTruth;
-    std::vector<double> mTrain;
-    std::vector<double> mTail;
-    std::vector<sample_t> mPrediction;  // ORDER
-    std::vector<double> mCoeffs;
-    std::vector<sample_t> mXfadedPred;
-    std::vector<sample_t> mLastPred;
-    std::vector<std::vector<sample_t>> mLastPackets;
-    std::vector<sample_t> mCrossFadeDown;
-    std::vector<sample_t> mCrossFadeUp;
-    std::vector<sample_t> mCrossfade;
+    Channel(int fpp, int upToNow, int packetsInThePast);
+    void ringBufferPush();
+    void ringBufferPull(int past);
+    std::vector<float>
+        mTmpFloatBuf;  // one bufferfull of audio, used for rcv and send operations
+    std::vector<float> prediction;
+    std::vector<float> predictedNowPacket;
+    std::vector<float> realNowPacket;
+    std::vector<float> outputNowPacket;
+    std::vector<float> futurePredictedPacket;
+    std::vector<float> realPast;
+    std::vector<float> zeroPast;
+    std::vector<std::vector<float>> predictedPast;
+    std::vector<float> coeffs;
+    std::vector<std::vector<float>> mPacketRing;
+    int mWptr;
+    int mRing;
+    std::vector<float> mZeros;
+    bool lastWasGlitch;
+    int mCoeffsSize;
+    int mTailSize;
 };
 
 class StdDev
 {
    public:
     StdDev(int id, QElapsedTimer* timer, int w);
-    bool tick();  // returns true if stats were updated
+    bool tick(double prevTime = 0,
+              double curTime  = 0);  // returns true if stats were updated
     double calcAuto();
     int mId;
     int plcOverruns;
@@ -105,9 +160,6 @@ class StdDev
     double lastMean;
     double lastMin;
     double lastMax;
-    int lastPlcOverruns;
-    int lastPlcUnderruns;
-    double lastPLCdspElapsed;
     double lastStdDev;
     double longTermStdDev;
     double longTermStdDevAcc;
@@ -118,7 +170,7 @@ class StdDev
    private:
     double smooth(double avg, double current);
     void reset();
-    QElapsedTimer* mTimer;
+    QElapsedTimer* mTimer = nullptr;
     std::vector<double> data;
     double mean;
     int window;
@@ -132,15 +184,11 @@ class Regulator : public RingBuffer
 {
    public:
     /// construct a new regulator
-    Regulator(int rcvChannels, int bit_res, int FPP, int qLen, int bqLen,
+    Regulator(int rcvChannels, int bit_res, int localFPP, int qLen, int bqLen,
               int sample_rate);
 
     // virtual destructor
     virtual ~Regulator();
-
-    /// @brief enables use of a separate worker thread for pulling packets
-    /// @param thread_ptr pointer to shared thread; if null, a unique one will be used
-    void enableWorkerThread(QThread* thread_ptr = nullptr);
 
     // can hijack unused2 to propagate incoming seq num if needed
     // option is in UdpDataProtocol
@@ -150,7 +198,10 @@ class Regulator : public RingBuffer
     virtual bool insertSlotNonBlocking(const int8_t* ptrToSlot, int len,
                                        [[maybe_unused]] int lostLen, int seq_num)
     {
-        shimFPP(ptrToSlot, len, seq_num);
+        if (seq_num == -1)
+            return true;
+        setFPPratio(len);
+        pushPacket(ptrToSlot, seq_num);
         return (true);
     }
 
@@ -160,98 +211,103 @@ class Regulator : public RingBuffer
 
     /// @brief called by broadcast ports to get the next buffer of samples
     /// @param ptrToReadSlot new samples will be copied to this memory block
-    virtual void readBroadcastSlot(int8_t* ptrToReadSlot)
-    {
-        m_b_BroadcastRingBuffer->readBroadcastSlot(ptrToReadSlot);
-    }
+    virtual void readBroadcastSlot(int8_t* ptrToReadSlot);
 
     /// @brief returns sample rate
     inline int getSampleRate() const { return mSampleRate; }
 
     /// @brief returns number of bytes in an audio "packet"
-    inline int getPacketSize() const { return mBytes; }
+    inline int getPacketSize() const { return mLocalBytes; }
 
     /// @brief returns number of samples, or frames per callback period
-    inline int getBufferSizeInSamples() const { return mFPP; }
+    inline int getBufferSizeInSamples() const { return mLocalFPP; }
 
-    /// @brief returns time taken for last PLC prediction, in milliseconds
-    inline double getLastDspElapsed() const
-    {
-        return pullStat == nullptr ? 0 : pullStat->lastPLCdspElapsed;
-    }
+    /// @brief returns true if worker thread & queue is enabled
+    inline bool isWorkerEnabled() const { return mWorkerEnabled; }
 
     //    virtual QString getStats(uint32_t statCount, uint32_t lostCount);
     virtual bool getStats(IOStat* stat, bool reset);
 
    private:
-    void shimFPP(const int8_t* buf, int len, int seq_num);
     void pushPacket(const int8_t* buf, int seq_num);
-    void assemblePacket(const int8_t* buf, int peer_seq_num);
-    void pullPacket();
-    void updateTolerance();
-    void setFPPratio();
+    void updatePushStats(int seq_num);
+    bool pullPacket();    // returns true if PLC prediction
+    bool enableWorker();  // returns true if worker was enabled
+    void updateTolerance(int glitches, int skipped);
+    void setFPPratio(int len);
     void processPacket(bool glitch);
-    void processChannel(int ch, bool glitch, int packetCnt, bool lastWasGlitch);
-
-    bool mFPPratioIsSet;
-    int mNumChannels;
-    int mAudioBitRes;
-    int mFPP;
-    int mPeerFPP;
-    int mSampleRate;
-    uint32_t mLastLostCount;
-    int mNumSlots;
-    int mHist;
-    AudioInterface::audioBitResolutionT mBitResolutionMode;
-    BurgAlgorithm ba;
-    int mBytes;
-    int mBytesPeerPacket;
-    int8_t* mXfrBuffer;
-    int8_t* mAssembledPacket;
-    int mPacketCnt;
+    void burg(bool glitch);
     sample_t bitsToSample(int ch, int frame);
     void sampleToBits(sample_t sample, int ch, int frame);
-    std::vector<sample_t> mFadeUp;
-    std::vector<sample_t> mFadeDown;
-    bool mLastWasGlitch;
-    std::vector<int8_t*> mSlots;
-    int8_t* mZeros;
-    double mMsecTolerance;
-    std::vector<ChanData*> mChanData;
-    StdDev* pushStat;
-    StdDev* pullStat;
-    QElapsedTimer mIncomingTimer;
+    void floatBufToXfrBuffer();
+    void xfrBufferToFloatBuf();
+    void toFloatBuf(qint16* in);
+    void fromFloatBuf(qint16* out);
+    void zeroTmpFloatBuf();
+
+    /*
+       void sineToXfrBuffer(); // keep this around, handy for signal test points
+        std::vector<double> mPhasor;
+        */
+
+    int mPacketsInThePast;
+    bool mInitialized;
+    int mNumChannels;
+    int mAudioBitRes;
+    int mLocalFPP;
+    int mPeerFPP;
+    int mSampleRate;
+    int mPcnt;
+    std::vector<float> mTmpFloatBuf;
+    std::vector<Channel*> mChanData;
+    BurgAlgorithm* ba = nullptr;
+    int mUpToNow;
+    int mBeyondNow;
+    std::vector<float> mFadeUp;
+    std::vector<float> mFadeDown;
+    float mScale;
+    float mInvScale;
+    uint32_t mLastLostCount = 0;
+    AudioInterface::audioBitResolutionT mBitResolutionMode;
+    int mLocalBytes;
+    int mPeerBytes;
+    double mLocalFPPdurMsec;
+    double mPeerFPPdurMsec;
+    int8_t* mXfrBuffer        = nullptr;
+    int8_t* mXfrPullPtr       = nullptr;
+    int8_t* mBroadcastBuffer  = nullptr;
+    int8_t* mBroadcastPullPtr = nullptr;
+    int8_t** mSlots           = nullptr;
+    int8_t* mSlotBuf          = nullptr;
+    StdDev* pushStat          = nullptr;
+    StdDev* pullStat          = nullptr;
+    double mMsecTolerance     = 64;
+    int mLastSeqNumOut        = -1;
     std::atomic<int> mLastSeqNumIn;
-    int mLastSeqNumOut;
-    std::vector<double> mPhasor;
+    QElapsedTimer mIncomingTimer;
     std::vector<double> mIncomingTiming;
-    std::vector<int> mAssemblyCounts;
-    int mSkip;
     int mFPPratioNumerator;
     int mFPPratioDenominator;
-    bool mAuto;
-    bool mSkipAutoHeadroom;
-    int mLastGlitches;
-    double mCurrentHeadroom;
-    double mAutoHeadroom;
-    double mFPPdurMsec;
-    double mPeerFPPdurMsec;
-    bool mUseWorkerThread;
-    void changeGlobal(double);
-    void changeGlobal_2(int);
-    void changeGlobal_3(int);
-    void printParams();
+    bool mAuto                    = false;
+    bool mSkipAutoHeadroom        = true;
+    int mSkipped                  = 0;
+    int mLastSkipped              = 0;
+    int mLastGlitches             = 0;
+    int mStatsGlitches            = 0;
+    double mStatsMaxPLCdspElapsed = 0;
+    double mCurrentHeadroom       = 0;
+    double mAutoHeadroom          = -1;
+    Time* mTime                   = nullptr;
 
     /// Pointer for the Broadcast RingBuffer
-    RingBuffer* m_b_BroadcastRingBuffer;
+    RingBuffer* m_b_BroadcastRingBuffer = nullptr;
     int m_b_BroadcastQueueLength;
 
-    /// thread used to pull packets from Regulator (if mBufferStrategy==3)
-    QThread* mRegulatorThreadPtr;
-
-    /// worker used to pull packets from Regulator (if mBufferStrategy==3)
-    RegulatorWorker* mRegulatorWorkerPtr;
-
+    /// worker thread used to manage queue
+    int8_t* mWorkerBuffer                = nullptr;
+    QThread* mWorkerThreadPtr            = nullptr;
+    RegulatorWorker* mRegulatorWorkerPtr = nullptr;
+    bool mWorkerEnabled                  = false;
     friend class RegulatorWorker;
 };
 
@@ -262,7 +318,7 @@ class RegulatorWorker : public QObject
    public:
     RegulatorWorker(Regulator* rPtr)
         : mRegulatorPtr(rPtr)
-        , mPacketQueue(rPtr->getPacketSize())
+        , mPacketQueue(rPtr->mPeerBytes)
         , mPacketQueueTarget(1)
         , mLastUnderrun(0)
         , mSkipQueueUpdate(true)
@@ -354,7 +410,7 @@ class RegulatorWorker : public QObject
         ++mPacketQueueTarget;
         std::cout << "PLC worker queue: adjusting target=" << mPacketQueueTarget
                   << " (max=" << maxPackets
-                  << ", lastDspElapsed=" << mRegulatorPtr->getLastDspElapsed() << ")"
+                  << ", lastDspElapsed=" << mRegulatorPtr->mStatsMaxPLCdspElapsed << ")"
                   << std::endl;
         if (mPacketQueueTarget == maxPackets) {
             emit signalMaxQueueSize();

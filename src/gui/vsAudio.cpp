@@ -532,7 +532,10 @@ void VsAudio::loadSettings()
     }
 
     setBufferSize(settings.value(QStringLiteral("BufferSize"), 128).toInt());
-    setBufferStrategy(settings.value(QStringLiteral("BufferStrategy"), 2).toInt());
+    int buffer_strategy = settings.value(QStringLiteral("BufferStrategy"), 2).toInt();
+    if (buffer_strategy == 3 || buffer_strategy == 4)
+        buffer_strategy = 2;
+    setBufferStrategy(buffer_strategy);
     setFeedbackDetectionEnabled(
         settings.value(QStringLiteral("FeedbackDetectionEnabled"), true).toBool());
     settings.endGroup();

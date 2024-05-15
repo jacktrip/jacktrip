@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2008-2021 Juan-Pablo Caceres, Chris Chafe.
+  Copyright (c) 2008-2024 Juan-Pablo Caceres, Chris Chafe.
   SoundWIRE group at CCRMA, Stanford University.
 
   Permission is hereby granted, free of charge, to any person
@@ -227,7 +227,6 @@ class JackTrip : public QObject
     {
         mBufferStrategy = BufferStrategy;
     }
-    void setRegulatorThread(QThread* ptr) { mRegulatorThreadPtr = ptr; }
     /// \brief Sets (override) Audio Bit Resolution after construction
     virtual void setAudioBitResolution(
         AudioInterface::audioBitResolutionT AudioBitResolution)
@@ -665,7 +664,6 @@ class JackTrip : public QObject
 #endif                       // endwhere
     int mBufferQueueLength;  ///< Audio Buffer from network queue length
     int mBufferStrategy;
-    QThread* mRegulatorThreadPtr;
     int mBroadcastQueueLength;
     uint32_t mSampleRate;                             ///< Sample Rate
     uint32_t mDeviceID;                               ///< RTAudio DeviceID

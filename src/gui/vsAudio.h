@@ -387,8 +387,7 @@ class VsAudio : public QObject
     QStringList m_feedbackDetectionComboModel = {"Enabled", "Disabled"};
     QStringList m_bufferSizeComboModel = {"16", "32", "64", "128", "256", "512", "1024"};
     QStringList m_bufferStrategyComboModel = {
-        "Minimal Latency", "Stable Latency", "Loss Concealment (Auto)",
-        "Loss Concealment (No Worker)", "Loss Concealment (Use Worker)"};
+        "Adaptable Latency (Old)", "Stable Latency (Old)", "Loss Concealment (Default)"};
 
     friend class VsAudioWorker;
 };

@@ -35,7 +35,7 @@
  * \date June 2008
  */
 
-//#define MANUAL_POLL
+// #define MANUAL_POLL
 
 #include "UdpDataProtocol.h"
 
@@ -49,7 +49,7 @@
 #include "JackTrip.h"
 #include "jacktrip_globals.h"
 #ifdef _WIN32
-//#include <winsock.h>
+// #include <winsock.h>
 #include <stdio.h>
 #include <winsock2.h>  //cc need SD_SEND
 #pragma comment(lib, "ws2_32.lib")
@@ -397,7 +397,7 @@ functions. DWORD n_bytes; WSABUF buffer; int error; buffer.len = n; buffer.buf =
                            sizeof(mPeerAddr));
     }
     return n_bytes;
-    //#endif
+    // #endif
 }
 
 //*******************************************************************************

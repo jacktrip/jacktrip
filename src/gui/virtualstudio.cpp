@@ -241,7 +241,7 @@ void VirtualStudio::show()
             "Click \"OK\" to proceed to classic mode.\n\n"
             "Details: JackTrip failed to load the QML view. "
             "This is likely caused by missing QML plugins. "
-            "Please consult help.jacktrip.org for possible solutions.");
+            "Please consult support.jacktrip.com for possible solutions.");
         msgBox.setWindowTitle(QStringLiteral("JackTrip Is Missing QML Modules"));
         connect(&msgBox, &QMessageBox::finished, this, &VirtualStudio::toStandard,
                 Qt::QueuedConnection);
@@ -639,7 +639,6 @@ void VirtualStudio::joinStudio()
     // pop studioToJoin
     const QString targetId = m_studioToJoin;
     setStudioToJoin("");
-    emit studioToJoinChanged();
 
     // stop audio if already running (settings or setup windows)
     m_audioConfigPtr->stopAudio(true);
@@ -741,7 +740,7 @@ void VirtualStudio::logout()
     }
 
     logoutURL.setQuery(query);
-    launchBrowser(logoutURL);
+    QDesktopServices::openUrl(logoutURL);
 
     m_auth->logout();
 
@@ -896,27 +895,8 @@ void VirtualStudio::completeConnection()
         // increment buffer_strategy by 1 for array-index mapping
         int buffer_strategy = m_audioConfigPtr->getBufferStrategy() + 1;
         // adjust buffer_strategy for PLC "auto" mode menu item
-        if (buffer_strategy == 3) {
-            // run PLC without worker (4)
-            buffer_strategy = 4;
-            /*
-            // I don't believe this is still necessary,
-            // after splitting the input and output RtAudio streams
-            // See https://github.com/jacktrip/jacktrip/pull/1235
-            if (useRtAudio) {
-                // if same device for input and output,
-                // run PLC without worker (4)
-                if (input == output)
-                    buffer_strategy = 4;
-                // else run PLC with worker (3)
-                // to reduce crackles
-            } else {
-                // run PLC without worker (4)
-                buffer_strategy = 4;
-            }
-            */
-        } else if (buffer_strategy == 5) {
-            buffer_strategy = 3;  // run PLC with worker (3)
+        if (buffer_strategy == 4 || buffer_strategy == 5) {
+            buffer_strategy = 3;
         }
 
         // create a new JackTrip instance
@@ -1046,63 +1026,6 @@ void VirtualStudio::disconnect()
 #ifdef __APPLE__
     m_noNap.enableNap();
 #endif
-}
-
-void VirtualStudio::manageStudio(const QString& studioId, bool start)
-{
-    if (studioId.isEmpty()) {
-        processError("Manage requires a unique studio identifier");
-        return;
-    }
-    QUrl url;
-    if (!start) {
-        url = QUrl(
-            QStringLiteral("https://%1/studios/%2").arg(m_api->getApiHost(), studioId));
-    } else {
-        QString expiration =
-            QDateTime::currentDateTimeUtc().addSecs(60 * 30).toString(Qt::ISODate);
-        QJsonObject json      = {{QLatin1String("enabled"), true},
-                            {QLatin1String("expiresAt"), expiration}};
-        QJsonDocument request = QJsonDocument(json);
-
-        QNetworkReply* reply = m_api->updateServer(studioId, request.toJson());
-        connect(reply, &QNetworkReply::finished, this, [&, reply]() {
-            if (reply->error() != QNetworkReply::NoError) {
-                m_connectionState      = QStringLiteral("Unable to Start Studio");
-                QJsonDocument errorDoc = QJsonDocument::fromJson(reply->readAll());
-                if (!errorDoc.isNull()) {
-                    QJsonObject errorObj = errorDoc.object();
-                    if (errorObj.contains("error")) {
-                        QString errorMessage = errorObj.value("error").toString();
-                        if (errorMessage.contains(
-                                "Only one studio may be running at a time")) {
-                            setConnectedErrorMsg("one-studio-limit-reached");
-                        }
-                    }
-                }
-                emit connectionStateChanged();
-            } else {
-                setConnectedErrorMsg("");
-                QByteArray response       = reply->readAll();
-                QJsonDocument serverState = QJsonDocument::fromJson(response);
-                if (serverState.object()[QStringLiteral("status")].toString()
-                    == QLatin1String("Starting")) {}
-            }
-            reply->deleteLater();
-        });
-    }
-    QDesktopServices::openUrl(url);
-}
-
-void VirtualStudio::launchVideo(const QString& studioId)
-{
-    if (studioId.isEmpty()) {
-        processError("Manage requires a unique studio identifier");
-        return;
-    }
-    QUrl url = QUrl(
-        QStringLiteral("https://%1/studios/%2/live").arg(m_api->getApiHost(), studioId));
-    QDesktopServices::openUrl(url);
 }
 
 void VirtualStudio::createStudio()
@@ -1391,17 +1314,6 @@ void VirtualStudio::restartStudioSocket()
     }
 }
 
-void VirtualStudio::launchBrowser(const QUrl& url)
-{
-    std::cout << "Launching Browser" << std::endl;
-    bool success = QDesktopServices::openUrl(url);
-    if (success) {
-        std::cout << "Success" << std::endl;
-    } else {
-        std::cout << "Unable to open URL" << std::endl;
-    }
-}
-
 void VirtualStudio::updatedStats(const QJsonObject& stats)
 {
     QJsonObject newStats;
@@ -1523,6 +1435,8 @@ void VirtualStudio::getServerList(bool signalRefresh, int index)
                     serverInfo->setId(servers.at(i)[QStringLiteral("id")].toString());
                     serverInfo->setSessionId(
                         servers.at(i)[QStringLiteral("sessionId")].toString());
+                    serverInfo->setStreamId(
+                        servers.at(i)[QStringLiteral("streamId")].toString());
                     serverInfo->setInviteKey(
                         servers.at(i)[QStringLiteral("inviteKey")].toString());
                     serverInfo->setCloudId(

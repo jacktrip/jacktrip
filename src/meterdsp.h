@@ -1133,8 +1133,8 @@ class FAUST_API AccUpDownConverter : public UpdatableValueConverter
     Interpolator fF2A;
 
    public:
-    AccUpDownConverter(double amin, double amid, double amax, double fmin, double /*fmid*/,
-                       double fmax)
+    AccUpDownConverter(double amin, double amid, double amax, double fmin,
+                       double /*fmid*/, double fmax)
         : fA2F(amin, amid, amax, fmin, fmax, fmin)
         , fF2A(fmin, fmax, amin,
                amax)  // Special, pseudo inverse of a non monotonic function
@@ -1170,8 +1170,8 @@ class FAUST_API AccDownUpConverter : public UpdatableValueConverter
     Interpolator fF2A;
 
    public:
-    AccDownUpConverter(double amin, double amid, double amax, double fmin, double /*fmid*/,
-                       double fmax)
+    AccDownUpConverter(double amin, double amid, double amax, double fmin,
+                       double /*fmid*/, double fmax)
         : fA2F(amin, amid, amax, fmax, fmin, fmax)
         , fF2A(fmin, fmax, amin,
                amax)  // Special, pseudo inverse of a non monotonic function
@@ -1210,8 +1210,9 @@ class FAUST_API ZoneControl
 
     virtual void update(double /*v*/) const {}
 
-    virtual void setMappingValues(int /*curve*/, double /*amin*/, double /*amid*/, double /*amax*/,
-                                  double /*min*/, double /*init*/, double /*max*/)
+    virtual void setMappingValues(int /*curve*/, double /*amin*/, double /*amid*/,
+                                  double /*amax*/, double /*min*/, double /*init*/,
+                                  double /*max*/)
     {
     }
     virtual void getMappingValues(double& /*amin*/, double& /*amid*/, double& /*amax*/) {}
@@ -1704,7 +1705,7 @@ class APIUI
         std::string path = std::string(path_aux);
         auto it          = find_if(fItems.begin(), fItems.end(), [=](const Item& it) {
             return (it.fLabel == path) || (it.fShortname == path) || (it.fPath == path);
-                 });
+        });
         return (it != fItems.end()) ? int(it - fItems.begin()) : -1;
     }
 
@@ -2051,9 +2052,9 @@ class meterdsp : public dsp
                                              std::max<float>(9.99999975e-05f, fTemp0)));
             float fTemp2 = 100.0f * float(copysignf(float(fTemp1), 1.0f));
             output0[i0]  = FAUSTFLOAT(float(copysignf(
-                 float(0.00999999978f
+                float(0.00999999978f
                       * float(int(fTemp2) + (fTemp2 - std::floor(fTemp2) >= 0.5f))),
-                 float(fTemp1))));
+                float(fTemp1))));
         }
     }
 };

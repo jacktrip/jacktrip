@@ -31,9 +31,9 @@ defines = ['-DWAIRTOHUB']
 c_defines = []
 incdirs = []
 
-if get_option('buildtype') == 'release'
-	defines += ['-DNDEBUG']
-	c_defines += ['-DNDEBUG']
+if get_option('debug') == false
+	defines += ['-DNDEBUG', '-DQT_NO_DEBUG']
+	c_defines += ['-DNDEBUG', '-DQT_NO_DEBUG']
 endif
 
 build_info = get_option('buildinfo')
@@ -238,8 +238,52 @@ else
 	endif
 endif
 
-if qt_version == '6' and get_option('default_library') == 'static'
-	deps += dependency('qt6', modules: ['BundledLibpng', 'BundledPcre2', 'BundledHarfbuzz'], include_type: 'system')
+if get_option('default_library') == 'static'
+	# use qmake to get paths for qt libraries and plugins
+	# seems like qt module should have a method for this, but it doesn't
+	qmake = find_program('qmake', required: true)
+	qt_libdir = run_command(qmake, '-query', 'QT_INSTALL_LIBS', check : true).stdout().strip()
+	qt_plugindir = run_command(qmake, '-query', 'QT_INSTALL_PLUGINS', check : true).stdout().strip()
+	if qt_version == '6'
+		# qt6 requires "Bundled*" modules for linking
+		deps += dependency('qt6', modules: ['BundledLibpng', 'BundledPcre2', 'BundledHarfbuzz', 'BundledZLIB'], include_type: 'system')
+	else
+		deps += compiler.find_library('qtpcre2', required : true, dirs : [qt_libdir])
+	endif
+	if (host_machine.system() == 'linux')
+		# linux static
+		deps += compiler.find_library('ssl', required : true, dirs : [qt_libdir])
+		deps += compiler.find_library('crypto', required : true, dirs : [qt_libdir])
+		deps += compiler.find_library('dl', required : true)
+		deps += compiler.find_library('glib-2.0', required : true)
+		if qt_version == '6'
+			# we need a Q_IMPORT_LIBRARY for the openssl backend on linux
+			deps += compiler.find_library('qopensslbackend', required : true, dirs : [qt_plugindir+'/tls'])
+			src += ['src/QtStaticPlugins.cpp']
+		endif
+	else
+		if (host_machine.system() == 'windows')
+			# windows static
+			deps += compiler.find_library('bcrypt', required : true)
+			deps += compiler.find_library('winmm', required : true)
+			deps += compiler.find_library('Crypt32', required : true)
+			if qt_version == '6'
+				deps += compiler.find_library('Authz', required : true)
+			endif
+		else
+			# mac static
+			# this approach fails for universal builds, so we have to just append to link_args
+			#deps += dependency('CoreServices', required : true)
+			link_args += ['-framework', 'CoreServices']
+			link_args += ['-framework', 'CFNetwork']
+			link_args += ['-framework', 'AppKit']
+			link_args += ['-framework', 'IOKit']
+			link_args += ['-framework', 'Security']
+			link_args += ['-framework', 'GSS']
+			link_args += ['-framework', 'SystemConfiguration']
+			deps += dependency('zlib', required : true)
+		endif
+	endif
 endif
 
 # TODO: QT_OPENSOURCE should only be defined for open source Qt distribution

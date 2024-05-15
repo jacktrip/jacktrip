@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2008-2021 Juan-Pablo Caceres, Chris Chafe.
+  Copyright (c) 2008-2024 Juan-Pablo Caceres, Chris Chafe.
   SoundWIRE group at CCRMA, Stanford University.
 
   Permission is hereby granted, free of charge, to any person
@@ -108,7 +108,6 @@ JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
 #endif  // endwhere
     , mBufferQueueLength(BufferQueueLength)
     , mBufferStrategy(1)
-    , mRegulatorThreadPtr(NULL)
     , mBroadcastQueueLength(0)
     , mSampleRate(gDefaultSampleRate)
     , mDeviceID(gDefaultDeviceID)
@@ -423,21 +422,12 @@ void JackTrip::setupRingBuffers()
                 new RingBuffer(audio_output_slot_size, mBufferQueueLength);
             mPacketHeader->setBufferRequiresSameSettings(true);
         } else if ((mBufferStrategy == 3) || (mBufferStrategy == 4)) {
-            bool use_worker_thread = (mBufferStrategy == 3);
             cout << "Using experimental buffer strategy " << mBufferStrategy
-                 << "-- Regulator with PLC (worker="
-                 << (use_worker_thread ? "true" : "false") << ")" << endl;
+                 << "-- Regulator with PLC" << endl;
             Regulator* regulator_ptr =
                 new Regulator(mNumAudioChansOut, mAudioBitResolution, mAudioBufferSize,
                               mBufferQueueLength, mBroadcastQueueLength, mSampleRate);
             mReceiveRingBuffer = regulator_ptr;
-            if (use_worker_thread) {
-#ifdef REGULATOR_SHARED_WORKER_THREAD
-                regulator_ptr->enableWorkerThread(mRegulatorThreadPtr);
-#else
-                regulator_ptr->enableWorkerThread();
-#endif
-            }
             // bufStrategy 3 or 4, mBufferQueueLength is in integer msec not packets
 
             mPacketHeader->setBufferRequiresSameSettings(false);  // = asym is default
@@ -779,7 +769,7 @@ void JackTrip::onStatTimer()
             //                     pkt_stat.lost << "/"
             //                     << pkt_stat.outOfOrder << "/" << pkt_stat.revived
             << " \n tot: " << pkt_stat.tot << " \t tol: " << setw(5)
-            << INVFLOATFACTOR * recv_io_stat.autoq_corr << " \t dsp (last): " << setw(5)
+            << INVFLOATFACTOR * recv_io_stat.autoq_corr << " \t dsp (max): " << setw(5)
             << INVFLOATFACTOR * recv_io_stat.autoq_rate
             //                     << " sync: " << recv_io_stat.level << "/"
             //                     << recv_io_stat.buf_inc_underrun << "/"
@@ -1582,11 +1572,11 @@ bool JackTrip::checkIfPortIsBinded(int port)
     std::map<std::string, QHostAddress::SpecialAddress>::iterator it;
     for (it = interfaces.begin(); it != interfaces.end(); it++) {
         bool binded = UdpSockTemp.bind(it->second, port, QUdpSocket::DontShareAddress);
-        if (!binded) {
-            UdpSockTemp.close();  // close the socket
+        QUdpSocket::SocketError err = UdpSockTemp.error();
+        UdpSockTemp.close();
+        if (!binded && err != QUdpSocket::UnsupportedSocketOperationError) {
             return true;
         }
-        UdpSockTemp.close();
     }
     return false;
 }

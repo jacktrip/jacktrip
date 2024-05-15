@@ -13,6 +13,7 @@ Rectangle {
     property string hostname: "app.jacktrip.com"
     property string studioName: "Test Studio"
     property string studioId: ""
+    property string streamId: ""
     property string inviteKeyString: ""
     property int sampleRate: 48000
     property bool publicStudio: false
@@ -33,8 +34,10 @@ Rectangle {
     property string backgroundColour: virtualstudio.darkMode ? "#494646" : "#F4F6F6"
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
     property string shadowColour: virtualstudio.darkMode ? "#40000000" : "#80A1A1A1"
-    property string toolTipBackgroundColour: inviteCopied ? "#57B147" : (virtualstudio.darkMode ? "#323232" : "#F3F3F3")
-    property string toolTipTextColour: inviteCopied ? "#FAFBFB" : textColour
+    property string inviteToolTipBackgroundColour: virtualstudio.darkMode ? "#323232" : "#F3F3F3"
+    property string inviteToolTipTextColour: textColour
+    property string inviteCopiedBackgroundColour: "#57B147"
+    property string inviteCopiedTextColour: "#FAFBFB"
     property string tooltipStroke: virtualstudio.darkMode ? "#80827D7D" : "#34979797"
 
     property string baseButtonColour: virtualstudio.darkMode ? "#F0F1F1" : "#EAEBEB"
@@ -259,7 +262,7 @@ Rectangle {
         }
         Timer {
             id: copiedResetTimer
-            interval: 2000; running: false; repeat: false
+            interval: 3000; running: false; repeat: false
             onTriggered: inviteCopied = false;
         }
         onClicked: {
@@ -286,12 +289,12 @@ Rectangle {
         }
         ToolTip {
             parent: inviteButton
-            visible: inviteButton.hovered || inviteCopied
+            visible: !inviteCopied && inviteButton.hovered
             bottomPadding: bottomToolTipMargin * virtualstudio.uiScale
             rightPadding: rightToolTipMargin * virtualstudio.uiScale
             delay: 100
             contentItem: Rectangle {
-                color: toolTipBackgroundColour
+                color: inviteToolTipBackgroundColour
                 radius: 3
                 anchors.fill: parent
                 anchors.bottomMargin: bottomToolTipMargin * virtualstudio.uiScale
@@ -303,8 +306,35 @@ Rectangle {
                 Text {
                     anchors.centerIn: parent
                     font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale}
-                    text: inviteCopied ?  qsTr("📋 Copied invitation link to Clipboard") : qsTr("Copy invite link for Studio")
-                    color: toolTipTextColour
+                    text: qsTr("Copy invite link for Studio")
+                    color: inviteToolTipTextColour
+                }
+            }
+            background: Rectangle {
+                color: "transparent"
+            }
+        }
+        ToolTip {
+            parent: inviteButton
+            visible: inviteCopied
+            bottomPadding: bottomToolTipMargin * virtualstudio.uiScale
+            rightPadding: rightToolTipMargin * virtualstudio.uiScale
+            delay: 100
+            contentItem: Rectangle {
+                color: inviteCopiedBackgroundColour
+                radius: 3
+                anchors.fill: parent
+                anchors.bottomMargin: bottomToolTipMargin * virtualstudio.uiScale
+                anchors.rightMargin: rightToolTipMargin * virtualstudio.uiScale
+                layer.enabled: true
+                border.width: 1
+                border.color: tooltipStroke
+
+                Text {
+                    anchors.centerIn: parent
+                    font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale}
+                    text: qsTr("📋 Copied invitation link to Clipboard")
+                    color: inviteCopiedTextColour
                 }
             }
             background: Rectangle {
@@ -323,28 +353,38 @@ Rectangle {
     }
 
     Button {
-        id: manageOrVideoButton
+        id: manageButton
         x: parent.width - (65 * virtualstudio.uiScale); y: topMargin * virtualstudio.uiScale
         width: 40 * virtualstudio.uiScale; height: width
         background: Rectangle {
             radius: width / 2
-            color: manageOrVideoButton.down ? managePressedColour : (manageOrVideoButton.hovered ? manageHoverColour : manageColour)
-            border.width:  manageOrVideoButton.down ? 1 : 0
+            color: manageButton.down ? managePressedColour : (manageButton.hovered ? manageHoverColour : manageColour)
+            border.width:  manageButton.down ? 1 : 0
             border.color: manageStroke
         }
         onClicked: {
-            if (connected) {
-                virtualstudio.launchVideo(studioId)
+            var url = "";
+            if (streamId === "") {
+                if (virtualstudio.testMode) {
+                    url = "https://test.jacktrip.com/studios/" + studioId;
+                } else {
+                    url = "https://app.jacktrip.com/studios/" + studioId;
+                }
             } else {
-                virtualstudio.manageStudio(studioId);
+                if (virtualstudio.testMode) {
+                    url = "https://next-test.jacktrip.com/@" + streamId + "/dashboard";
+                } else {
+                    url = "https://www.jacktrip.com/@" + streamId + "/dashboard";
+                }
             }
+            virtualstudio.openLink(qsTr(url));
         }
         visible: admin || connected
         Image {
             id: manageImg
             width: 20 * virtualstudio.uiScale; height: width
             anchors { verticalCenter: parent.verticalCenter; horizontalCenter: parent.horizontalCenter }
-            source: connected ? "video.svg" : "manage.svg"
+            source: "manage.svg"
             sourceSize: Qt.size(manageImg.width,manageImg.height)
             fillMode: Image.PreserveAspectFit
             smooth: true
@@ -352,9 +392,9 @@ Rectangle {
     }
 
     Text {
-        anchors.horizontalCenter: manageOrVideoButton.horizontalCenter
+        anchors.horizontalCenter: manageButton.horizontalCenter
         y: 56 * virtualstudio.uiScale
-        text: connected ? "Video" : "Manage"
+        text: "Manage"
         font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
         visible: admin || connected
         color: textColour

@@ -375,7 +375,7 @@ void AudioInterface::audioOutputCallback(QVarLengthArray<sample_t*>& out_buffer,
                                                    out_buffer.data());
         // compute ap2 into aob2
 
-        //#define ADD_DIRECT
+        // #define ADD_DIRECT
 #ifdef ADD_DIRECT
         for (int i = 0; i < nChansIn; i++) {
             sample_t* mix_sample = out_buffer[i];
@@ -819,16 +819,17 @@ void AudioInterface::setDevicesWarningMsg(warningMessageT msg)
         mWarningMsg =
             "The buffer size setting for your audio device will cause high latency "
             "or audio delay. Use an audio device that supports small buffer sizes "
-            "to reduce audio delays.";
-        mWarningHelpUrl  = "";
+            "to reduce audio delays. Click for more info.";
+        mWarningHelpUrl  = "https://support.jacktrip.com/recommended-audio-interfaces";
         mHighLatencyFlag = true;
         break;
     case DEVICE_WARN_ASIO_LATENCY:
         mWarningMsg =
             "You audio device drivers may cause high latency or audio delay. Install "
             "and use ASIO drivers provided by your device's manufacturer to reduce "
-            "audio delays.";
-        mWarningHelpUrl  = "https://help.jacktrip.org/hc/en-us/articles/4409919243155";
+            "audio delays. Click for more info.";
+        mWarningHelpUrl =
+            "https://support.jacktrip.com/troubleshooting-windows-drivers-and-asio";
         mHighLatencyFlag = true;
         break;
     case DEVICE_WARN_ALSA_LATENCY:
@@ -856,7 +857,8 @@ void AudioInterface::setDevicesErrorMsg(errorMessageT msg)
             "The two devices you have selected are not compatible. Please select a "
             "different pair of devices.";
 #ifdef _WIN32
-        mErrorHelpUrl = "https://help.jacktrip.org/hc/en-us/articles/4409919243155";
+        mErrorHelpUrl =
+            "https://support.jacktrip.com/troubleshooting-windows-drivers-and-asio";
 #else
         mErrorHelpUrl = "";
 #endif
@@ -877,7 +879,8 @@ void AudioInterface::setDevicesErrorMsg(errorMessageT msg)
     case DEVICE_ERR_SAME_ASIO:
         mErrorMsg =
             "When using ASIO, please select the same device for your input and output.";
-        mErrorHelpUrl = "https://help.jacktrip.org/hc/en-us/articles/4409919243155";
+        mErrorHelpUrl =
+            "https://support.jacktrip.com/troubleshooting-windows-drivers-and-asio";
         break;
 #endif
     default:

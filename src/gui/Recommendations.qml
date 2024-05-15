@@ -121,7 +121,7 @@ Item {
 
         AppIcon {
             id: ethernetRecommendationLogo
-            y: 120
+            y: 90
             anchors.horizontalCenter: parent.horizontalCenter
             width: 179
             height: 128
@@ -145,12 +145,19 @@ Item {
                 + "WiFi works OK for some people, but generates significantly more latency and audio glitches."
             font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
-            width: 560
+            width: 600
             wrapMode: Text.Wrap
             horizontalAlignment: Text.AlignHCenter
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: ethernetRecommendationHeader1.bottom
             anchors.topMargin: 32 * virtualstudio.uiScale
+        }
+
+        LearnMoreButton {
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: ethernetRecommendationSubheader1.bottom
+            anchors.topMargin: 32 * virtualstudio.uiScale
+            url: "https://support.jacktrip.com/wired-internet-versus-wi-fi"
         }
 
         Button {
@@ -187,7 +194,7 @@ Item {
 
         AppIcon {
             id: fiberRecommendationLogo
-            y: 120
+            y: 90
             anchors.horizontalCenter: parent.horizontalCenter
             width: 179
             height: 128
@@ -211,7 +218,7 @@ Item {
                 + "It's OK to use JackTrip with Cable and DSL, but these types of Internet connections introduce significantly more latency."
             font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
-            width: 560
+            width: 600
             wrapMode: Text.Wrap
             horizontalAlignment: Text.AlignHCenter
             anchors.horizontalCenter: parent.horizontalCenter
@@ -219,6 +226,12 @@ Item {
             anchors.topMargin: 32 * virtualstudio.uiScale
         }
 
+        LearnMoreButton {
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: fiberRecommendationSubheader.bottom
+            anchors.topMargin: 32 * virtualstudio.uiScale
+            url: "https://support.jacktrip.com/how-to-optimize-latency-when-using-jacktrip"
+        }
 
         Button {
             id: okButtonFiber
@@ -254,7 +267,7 @@ Item {
 
         AppIcon {
             id: headphoneWarningLogo
-            y: 120
+            y: 90
             anchors.horizontalCenter: parent.horizontalCenter
             width: 118
             height: 128
@@ -280,7 +293,7 @@ Item {
                 + "Wireless and bluetooth headphones introduce higher latency."
             font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
-            width: 560
+            width: 600
             wrapMode: Text.Wrap
             horizontalAlignment: Text.AlignHCenter
             anchors.horizontalCenter: parent.horizontalCenter
@@ -324,7 +337,7 @@ Item {
 
         AppIcon {
             id: audioInterfaceRecommendationLogo
-            y: 120
+            y: 90
             anchors.horizontalCenter: parent.horizontalCenter
             width: 118
             height: 128
@@ -351,7 +364,7 @@ Item {
                 + "Thunderbolt audio interfaces will usually produce better quality and lower latency."
             font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
-            width: 560
+            width: 600
             wrapMode: Text.Wrap
             horizontalAlignment: Text.AlignHCenter
             anchors.horizontalCenter: parent.horizontalCenter
@@ -375,19 +388,27 @@ Item {
             visible: onWindows
             text: "Your audio device controls the quality of sound, and can also have a big impact on latency."
                 + "<br/><br/>"
-                + "Additionally, low latency on Windows requires the use of ASIO drivers. "
-                + "Beware that using ASIO drivers which are not made specifically for your device can cause crashes."
+                + "ASIO drivers are required for low latency on Windows. "
                 + "<br/><br/>"
                 + "It's OK to use the audio device that is built into your computer, but external USB and "
-                + "Thunderbolt audio interfaces that provide ASIO drivers will produce better quality and much lower latency."
+                + "Thunderbolt devices will produce better quality and much lower latency."
             font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
-            width: 560
+            width: 600
             wrapMode: Text.Wrap
             horizontalAlignment: Text.AlignHCenter
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: audioInterfaceRecommendationHeaderWindows.bottom
             anchors.topMargin: 32 * virtualstudio.uiScale
+        }
+
+        LearnMoreButton {
+            width: 250 * virtualstudio.uiScale;
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: onWindows ? audioInterfaceRecommendationSubheaderWindows.bottom : audioInterfaceRecommendationSubheaderNonWindows.bottom
+            anchors.topMargin: 32 * virtualstudio.uiScale
+            buttonText: "See recommended devices"
+            url: "https://support.jacktrip.com/recommended-audio-interfaces"
         }
 
         Button {
@@ -439,7 +460,7 @@ Item {
             text: "Would you like to review the getting started recommendations again the next time you start JackTrip?"
             font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
-            width: 560
+            width: 600
             wrapMode: Text.Wrap
             horizontalAlignment: Text.AlignHCenter
             anchors.horizontalCenter: parent.horizontalCenter
@@ -532,7 +553,7 @@ Item {
             text: "You can change this setting at any time under <b>Settings > Advanced</b>"
             font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
-            width: 560
+            width: 600
             wrapMode: Text.Wrap
             horizontalAlignment: Text.AlignHCenter
             anchors.horizontalCenter: parent.horizontalCenter

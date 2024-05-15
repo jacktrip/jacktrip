@@ -193,8 +193,6 @@ class VirtualStudio : public QObject
     void loadSettings();
     void saveSettings();
     void triggerReconnect(bool refresh);
-    void manageStudio(const QString& studioId, bool start = false);
-    void launchVideo(const QString& studioId);
     void createStudio();
     void editProfile();
     void showAbout();
@@ -249,7 +247,6 @@ class VirtualStudio : public QObject
     void receivedConnectionFromPeer();
     void handleWebsocketMessage(const QString& msg);
     void restartStudioSocket();
-    void launchBrowser(const QUrl& url);
     void updatedStats(const QJsonObject& stats);
     void processError(const QString& errorMessage);
     void detectedFeedbackLoop();

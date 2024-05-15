@@ -85,6 +85,7 @@ Item {
             available: modelData.canConnect
             connected: false
             studioId: modelData.id ? modelData.id : ""
+            streamId: modelData.streamId ? modelData.streamId : ""
             inviteKeyString: modelData.inviteKey ? modelData.inviteKey : ""
             sampleRate: modelData.sampleRate
         }
