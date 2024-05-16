@@ -2,6 +2,36 @@
   "app_name": "JackTrip",
   "releases": [
     {
+      "version": "2.3.0",
+      "changelog": "Full changelog at https://github.com/jacktrip/jacktrip/releases/tag/v2.3.0",
+      "download": {
+        "date": "2024-05-15T00:00:00Z",
+        "url": "https://files.jacktrip.org/app-builds/JackTrip-v2.3.0-Windows-x64-signed-installer.msi",
+        "downloadSize": "116105216",
+        "sha256": "0ec59f472224cbe7fe33fc5818525a931509d7588af6aae613e738196c77e4b1"
+      }
+    },
+    {
+      "version": "2.3.0-beta2",
+      "changelog": "Full changelog at https://github.com/jacktrip/jacktrip/releases/tag/v2.3.0-beta2",
+      "download": {
+        "date": "2024-05-09T00:00:00Z",
+        "url": "https://files.jacktrip.org/app-builds/JackTrip-v2.3.0-beta2-Windows-x64-signed-installer.msi",
+        "downloadSize": "116101120",
+        "sha256": "2c6a3a16066b25a0f541c1c7fdc8a63c29e8437053301adf325d3ca6f42bf8cf"
+      }
+    },
+    {
+      "version": "2.3.0-beta1",
+      "changelog": "Full changelog at https://github.com/jacktrip/jacktrip/releases/tag/v2.3.0-beta1",
+      "download": {
+        "date": "2024-05-04T00:00:00Z",
+        "url": "https://files.jacktrip.org/app-builds/JackTrip-v2.3.0-beta1-Windows-x64-signed-installer.msi",
+        "downloadSize": "116215808",
+        "sha256": "c75903089415487e983a80de0d780979815fcaa2c66020af67a2ed0a1bc0e904"
+      }
+    },
+    {
       "version": "2.2.5",
       "changelog": "Full changelog at https://github.com/jacktrip/jacktrip/releases/tag/v2.2.5",
       "download": {
