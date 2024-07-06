@@ -29,55 +29,22 @@
 //*****************************************************************
 
 /**
- * \file Monitor.h
- * \author Dominick Hing
- * \date May 2023
- * \license MIT
+ * \file vsConstants.h
+ * \author Nelson Wang
+ * \date Oct 2022
  */
 
-#ifndef __MONITOR_H__
-#define __MONITOR_H__
+#ifndef VSCONSTANTS_H
+#define VSCONSTANTS_H
 
-#include <QObject>
-#include <vector>
+#include <QString>
 
-#include "ProcessPlugin.h"
+const QString AUTH_AUTHORIZE_URI = QStringLiteral("https://auth.jacktrip.org/authorize");
+const QString AUTH_TOKEN_URI   = QStringLiteral("https://auth.jacktrip.org/oauth/token");
+const QString AUTH_AUDIENCE    = QStringLiteral("https://api.jacktrip.org");
+const QString AUTH_CLIENT_ID   = QStringLiteral("cROUJag0UVKDaJ6jRAKRzlVjKVFNU39I");
+const QString PROD_API_HOST    = QStringLiteral("app.jacktrip.com");
+const QString TEST_API_HOST    = QStringLiteral("test.jacktrip.com");
+const QString AUTH_SERVER_HOST = QStringLiteral("auth.jacktrip.org");
 
-/** \brief The Monitor plugin adds a portion of the input signal multiplied by a
- *  constant factor to the output signal
- */
-class Monitor : public ProcessPlugin
-{
-    Q_OBJECT;
-
-   public:
-    /// \brief The class constructor sets the number of channels to use
-    Monitor(int numchans, bool verboseFlag = false);
-
-    /// \brief The class destructor
-    virtual ~Monitor();
-
-    void init(int samplingRate, int bufferSize) override;
-    int getNumInputs() override { return (mNumChannels); }
-    int getNumOutputs() override { return (mNumChannels); }
-    void compute(int nframes, float** inputs, float** outputs) override;
-    const char* getName() const override { return "Monitor"; };
-
-    void updateNumChannels(int nChansIn, int nChansOut) override;
-
-   public slots:
-    void volumeUpdated(float multiplier);
-
-   private:
-    std::vector<void*> monitorP;
-    std::vector<void*> monitorUIP;
-    float fs;
-    int mNumChannels;
-    float mVolMultiplier = 0.0;
-
-    float* mOutBufferInput = nullptr;
-    float* mInBufferInput  = nullptr;
-    int mBufSize           = 0;
-};
-
-#endif
+#endif  // VSCONSTANTS_H

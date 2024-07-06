@@ -29,55 +29,52 @@
 //*****************************************************************
 
 /**
- * \file Monitor.h
- * \author Dominick Hing
- * \date May 2023
- * \license MIT
+ * \file vsWebSocket.h
+ * \author Matt Horton
+ * \date June 2022
  */
 
-#ifndef __MONITOR_H__
-#define __MONITOR_H__
+#ifndef VSWEBSOCKET_H
+#define VSWEBSOCKET_H
 
+#include <QList>
 #include <QObject>
-#include <vector>
+#include <QScopedPointer>
+#include <QSslError>
+#include <QString>
+#include <QUrl>
+#include <QtWebSockets>
 
-#include "ProcessPlugin.h"
-
-/** \brief The Monitor plugin adds a portion of the input signal multiplied by a
- *  constant factor to the output signal
- */
-class Monitor : public ProcessPlugin
+class VsWebSocket : public QObject
 {
-    Q_OBJECT;
+    Q_OBJECT
 
    public:
-    /// \brief The class constructor sets the number of channels to use
-    Monitor(int numchans, bool verboseFlag = false);
+    // Constructor
+    explicit VsWebSocket(const QUrl& url, QString token, QString apiPrefix,
+                         QString apiSecret, QObject* parent = nullptr);
+    virtual ~VsWebSocket();
 
-    /// \brief The class destructor
-    virtual ~Monitor();
+    // Public functions
+    void openSocket();
+    void closeSocket();
+    void sendMessage(const QByteArray& message);
+    bool isValid();
 
-    void init(int samplingRate, int bufferSize) override;
-    int getNumInputs() override { return (mNumChannels); }
-    int getNumOutputs() override { return (mNumChannels); }
-    void compute(int nframes, float** inputs, float** outputs) override;
-    const char* getName() const override { return "Monitor"; };
+   signals:
+    void textMessageReceived(const QString& message);
+    void disconnected();
 
-    void updateNumChannels(int nChansIn, int nChansOut) override;
-
-   public slots:
-    void volumeUpdated(float multiplier);
+   private slots:
+    void onError(QAbstractSocket::SocketError error);
+    void onSslErrors(const QList<QSslError>& errors);
 
    private:
-    std::vector<void*> monitorP;
-    std::vector<void*> monitorUIP;
-    float fs;
-    int mNumChannels;
-    float mVolMultiplier = 0.0;
-
-    float* mOutBufferInput = nullptr;
-    float* mInBufferInput  = nullptr;
-    int mBufSize           = 0;
+    QScopedPointer<QWebSocket> m_webSocket;
+    QUrl m_url;
+    QString m_token;
+    QString m_apiPrefix;
+    QString m_apiSecret;
 };
 
-#endif
+#endif  // VSWEBSOCKET_H

@@ -87,7 +87,7 @@ About::About(QWidget* parent) : QDialog(parent), m_ui(new Ui::About)
         m_ui->aboutLabel->text().replace(QLatin1String("%BUILD%"), buildString));
 
 #ifdef __APPLE__
-    m_ui->aboutImage->setPixmap(QPixmap(":/qjacktrip/about@2x.png"));
+    m_ui->aboutImage->setPixmap(QPixmap(":/images/icon_256.png"));
 #endif
 
     aboutText.setHtml(m_ui->aboutLabel->text());

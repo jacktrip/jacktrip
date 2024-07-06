@@ -29,70 +29,55 @@
 //*****************************************************************
 
 /**
- * \file Meter.h
+ * \file vsPing.h
  * \author Dominick Hing
- * \date August 2022
- * \license MIT
+ * \date July 2022
  */
 
-#ifndef __METER_H__
-#define __METER_H__
+#ifndef VSPING_H
+#define VSPING_H
 
+#include <QAbstractSocket>
+#include <QDateTime>
 #include <QObject>
 #include <QTimer>
-#include <vector>
+#include <QtWebSockets>
+#include <stdexcept>
 
-#include "ProcessPlugin.h"
-
-/** \brief The Meter class measures the live audio loudness level
+/** \brief A helper class for VsPinger
+ *
  */
-class Meter : public ProcessPlugin
+class VsPing : public QObject
 {
     Q_OBJECT;
 
    public:
-    /// \brief The class constructor sets the number of channels to measure
-    Meter(int numchans, bool verboseFlag = false);
+    explicit VsPing(uint32_t pingNum, uint32_t timeout_msec);
+    virtual ~VsPing() { mTimer.stop(); }
+    uint32_t pingNumber() { return mPingNumber; }
 
-    /// \brief The class destructor
-    virtual ~Meter();
+    QDateTime sentTimestamp() { return mSent; }
+    QDateTime receivedTimestamp() { return mReceived; }
+    bool receivedReply() { return mReceivedReply; }
+    bool timedOut() { return mTimedOut; }
 
-    void init(int samplingRate, int bufferSize) override;
-    int getNumInputs() override { return (mNumChannels); }
-    int getNumOutputs() override { return (mNumChannels); }
-    void compute(int nframes, float** inputs, float** outputs) override;
-    const char* getName() const override { return "VU Meter"; };
-
-    void updateNumChannels(int nChansIn, int nChansOut) override;
-
-    void setIsMonitoringMeter(bool isMonitoringMeter)
-    {
-        mIsMonitoringMeter = isMonitoringMeter;
-    };
-    bool getIsMonitoringMeter() { return mIsMonitoringMeter; };
+    void send();
+    void receive();
 
    private:
-    void setupValues();
-
-    float fs;
-    bool mIsMonitoringMeter = false;
-
-    int mNumChannels;
-    float threshold = -80.0;
-    std::vector<void*> meterP;
-    bool hasProcessedAudio = false;
+    uint32_t mPingNumber;
+    QDateTime mSent;
+    QDateTime mReceived;
 
     QTimer mTimer;
-    float* mValues    = nullptr;
-    float* mOutValues = nullptr;
-    float* mBuffer    = nullptr;
-    int mBufSize      = 0;
+    bool mTimedOut      = false;
+    bool mReceivedReply = false;
 
-   private slots:
-    void onTick();
+   public slots:
+    void onTimeout();
 
    signals:
-    void onComputedVolumeMeasurements(float* values, int n);
+    void timeout(uint32_t pingNum);
 };
 
-#endif
+#endif  // VSPING_H
