@@ -499,7 +499,7 @@ void UdpDataProtocol::run()
 
     if (full_redundant_packet_size > 0x10000) {
         throw std::runtime_error(
-            "Maximum UDP packet size exceed! Either reduce your "
+            "Maximum UDP packet size exceeded! Either reduce your "
             "Jack period size, the number of send channels or "
             "the packet redundancy.");
     }
