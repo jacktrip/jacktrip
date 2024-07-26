@@ -1,3 +1,9 @@
+- Version: "2.3.1"
+  Date: 2024-07-26
+  Description:
+  - (updated) VS Mode stronger recommendations for audio devices
+  - (updated) Reverting OSX builds from Qt 6.2.8 back to 6.2.6
+  - (fixed) Screen sharing on OSX freezes when window is hidden
 - Version: "2.3.0"
   Date: 2024-05-15
   Description:
