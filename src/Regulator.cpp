@@ -307,17 +307,20 @@ Regulator::Regulator(int rcvChannels, int bit_res, int localFPP, int qLen, int b
 
 Regulator::~Regulator()
 {
-    delete[] mXfrBuffer;
-    delete[] mBroadcastBuffer;
-    delete[] mSlotBuf;
-    delete pushStat;
-    delete pullStat;
-    for (int i = 0; i < mNumChannels; i++)
-        delete mChanData[i];
+    if (mInitialized) {
+        delete[] mXfrBuffer;
+        delete[] mBroadcastBuffer;
+        delete[] mSlotBuf;
+        delete[] mSlots;
+        delete pushStat;
+        delete pullStat;
+        delete mTime;
+        delete ba;
+        for (int i = 0; i < mNumChannels; i++)
+            delete mChanData[i];
+    }
     if (m_b_BroadcastRingBuffer)
         delete m_b_BroadcastRingBuffer;
-    delete mTime;
-    delete ba;
     if (mWorkerThreadPtr != nullptr) {
         mWorkerThreadPtr->quit();
         mWorkerThreadPtr->wait();

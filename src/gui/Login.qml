@@ -101,7 +101,7 @@ Item {
 
         Text {
             id: deviceVerificationExplanation
-            text: `Please sign in and confirm the following code using your web browser. Return here when you are done.`
+            text: `To get started, please sign in and confirm the following code using your web browser. Return here when you are done.`
             font.family: "Poppins"
             font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
             anchors.horizontalCenter: parent.horizontalCenter
@@ -239,7 +239,6 @@ Item {
             height: 48 * virtualstudio.uiScale
 
             property bool showBackButton: !virtualstudio.vsFtux
-            property bool showClassicModeButton: virtualstudio.vsFtux
 
             Item {
                 id: backButton
@@ -264,31 +263,9 @@ Item {
             }
 
             Item {
-                id: classicModeButton
-                visible: parent.showClassicModeButton
-                anchors.verticalCenter: parent.verticalCenter
-                x: (parent.x + parent.width / 2) - classicModeButton.width - 8 * virtualstudio.uiScale
-                width: 160 * virtualstudio.uiScale; height: 32 * virtualstudio.uiScale
-                Text {
-                    text: "Use Classic Mode"
-                    font.underline: true
-                    font.family: "Poppins"
-                    font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.verticalCenter: parent.verticalCenter
-                    color: textColour
-                }
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: () => { virtualstudio.windowState = "login"; virtualstudio.toStandard(); }
-                    cursorShape: Qt.PointingHandCursor
-                }
-            }
-
-            Item {
                 id: resetCodeButton
                 visible: true
-                x: (parent.showBackButton || parent.showClassicModeButton) ? (parent.x + parent.width / 2) + 8 * virtualstudio.uiScale : (parent.x + parent.width / 2) - resetCodeButton.width / 2
+                x: parent.showBackButton ? (parent.x + parent.width / 2) + 8 * virtualstudio.uiScale : (parent.x + parent.width / 2) - resetCodeButton.width / 2
                 anchors.verticalCenter: parent.verticalCenter
                 width: 144 * virtualstudio.uiScale; height: 32 * virtualstudio.uiScale
                 Text {

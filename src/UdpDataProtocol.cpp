@@ -497,6 +497,13 @@ void UdpDataProtocol::run()
     int full_redundant_packet_size = full_packet_size * mUdpRedundancyFactor;
     int8_t* full_redundant_packet  = NULL;
 
+    if (full_redundant_packet_size > 0x10000) {
+        throw std::runtime_error(
+            "Maximum UDP packet size exceeded! Either reduce your "
+            "Jack period size, the number of send channels or "
+            "the packet redundancy.");
+    }
+
     // Set realtime priority (function in jacktrip_globals.h)
     if (gVerboseFlag)
         std::cout << "    UdpDataProtocol:run" << mRunMode
