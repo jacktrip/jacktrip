@@ -347,7 +347,7 @@ Item {
         Text {
             id: audioInterfaceRecommendationHeaderNonWindows
             visible: !onWindows
-            text: "External Audio Device Recommended"
+            text: "Use Recommended Audio Devices"
             font { family: "Poppins"; weight: Font.Bold; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
             anchors.horizontalCenter: parent.horizontalCenter
@@ -358,10 +358,10 @@ Item {
         Text {
             id: audioInterfaceRecommendationSubheaderNonWindows
             visible: !onWindows
-            text: "Your audio device controls the quality of sound, and can also have a big impact on latency."
+            text: "Many audio devices are too slow to work well with JackTrip."
                 + "<br/><br/>"
-                + "It's OK to use the audio device that is built into your computer, but external USB and "
-                + "Thunderbolt audio interfaces will usually produce better quality and lower latency."
+                + "We recommend external USB or Thunderbolt interfaces released within the past "
+                + "few years for the best quality, low latency and glitch-free sound."
             font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
             width: 600
@@ -375,7 +375,7 @@ Item {
         Text {
             id: audioInterfaceRecommendationHeaderWindows
             visible: onWindows
-            text: "External Audio Device Recommended"
+            text: "Use Recommended Audio Devices"
             font { family: "Poppins"; weight: Font.Bold; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
             anchors.horizontalCenter: parent.horizontalCenter
@@ -386,12 +386,12 @@ Item {
         Text {
             id: audioInterfaceRecommendationSubheaderWindows
             visible: onWindows
-            text: "Your audio device controls the quality of sound, and can also have a big impact on latency."
-                + "<br/><br/>"
+            text: "Many audio devices are too slow to work well with JackTrip."
+                + "<br/>"
                 + "ASIO drivers are required for low latency on Windows. "
                 + "<br/><br/>"
-                + "It's OK to use the audio device that is built into your computer, but external USB and "
-                + "Thunderbolt devices will produce better quality and much lower latency."
+                + "We recommend external USB or Thunderbolt interfaces released within the past "
+                + "few years for the best quality, low latency and glitch-free sound."
             font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
             width: 600
