@@ -553,7 +553,7 @@ jobs:
           else
             strip $BINFILE
             zip -j $ZIPFILE $BINFILE
-            if [[ "${{ matrix.name }}" == "Linux-x64-meson-gcc-shared-bundled_rtaudio" ]]; then
+            if [[ "${{ matrix.name }}" == "Linux-x64-meson-gcc-shared" ]]; then
               cp $GITHUB_WORKSPACE/linux/icons/jacktrip.svg $BUILD_PATH/org.jacktrip.JackTrip.svg
               cp $GITHUB_WORKSPACE/linux/icons/jacktrip_48x48.png $BUILD_PATH/org.jacktrip.JackTrip.png
               zip -j $ZIPFILE $DESKTOP_FILE_PATH $BUILD_PATH/jacktrip.1.gz $BUILD_PATH/org.jacktrip.JackTrip.svg $BUILD_PATH/org.jacktrip.JackTrip.png $GITHUB_WORKSPACE/linux/README.md
@@ -723,13 +723,13 @@ jobs:
             if: needs.check-secrets.outputs.should_run == 'true'
             platform-name: mac
             release-name: macOS-x64
-            build-job-name: macOS-x64-meson-clang-shared-bundled_rtaudio
+            build-job-name: macOS-x64-meson-clang-shared
             runs-on: ubuntu-latest
           - name: Update Linux manifests
             if: needs.check-secrets.outputs.should_run == 'true'
             platform-name: linux
             release-name: Linux-x64
-            build-job-name: Linux-x64-meson-gcc-shared-bundled_rtaudio
+            build-job-name: Linux-x64-meson-gcc-shared
             runs-on: ubuntu-latest
     permissions:
       contents: "read"
