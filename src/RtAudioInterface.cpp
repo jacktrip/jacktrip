@@ -258,6 +258,14 @@ void RtAudioInterface::setup(bool verbose)
         throw std::runtime_error(errorMsg.toStdString());
     }
 
+    // provide warnings for common known failure cases
+    const QString out_device_lower_name =
+        QString::fromStdString(out_device.name).toLower();
+    if (out_device_lower_name.contains("speakers")
+        || out_device_lower_name.contains("lautsprecher")) {
+        AudioInterface::setDevicesWarningMsg(AudioInterface::DEVICE_WARN_SPEAKERS);
+    }
+
     if (in_device.api == out_device.api) {
 #ifdef _WIN32
         if (in_device.api != RtAudio::WINDOWS_ASIO) {

@@ -839,6 +839,13 @@ void AudioInterface::setDevicesWarningMsg(warningMessageT msg)
         mWarningHelpUrl  = "";
         mHighLatencyFlag = true;
         break;
+    case DEVICE_WARN_SPEAKERS:
+        mWarningMsg =
+            "You appear to have selected speakers for audio output. "
+            "Using speakers with microphones will likely cause a loud feedback "
+            "loop. We strongly recommend that you use wired headphones instead.";
+        mWarningHelpUrl = "https://support.jacktrip.com/recommended-audio-interfaces";
+        break;
     default:
         mWarningMsg      = "";
         mWarningHelpUrl  = "";
