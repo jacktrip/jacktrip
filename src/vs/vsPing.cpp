@@ -29,55 +29,53 @@
 //*****************************************************************
 
 /**
- * \file Monitor.h
+ * \file vsPinger.cpp
  * \author Dominick Hing
- * \date May 2023
- * \license MIT
+ * \date July 2022
  */
 
-#ifndef __MONITOR_H__
-#define __MONITOR_H__
+#include "vsPing.h"
 
-#include <QObject>
-#include <vector>
+#include <iostream>
 
-#include "ProcessPlugin.h"
+using std::cout;
+using std::endl;
 
-/** \brief The Monitor plugin adds a portion of the input signal multiplied by a
- *  constant factor to the output signal
- */
-class Monitor : public ProcessPlugin
+// NOTE: It's better not to use
+// using namespace std;
+// because some functions (like exit()) get confused with QT functions
+
+//*******************************************************************************
+VsPing::VsPing(uint32_t pingNum, uint32_t timeout_msec) : mPingNumber(pingNum)
 {
-    Q_OBJECT;
+    connect(&mTimer, &QTimer::timeout, this, &VsPing::onTimeout);
 
-   public:
-    /// \brief The class constructor sets the number of channels to use
-    Monitor(int numchans, bool verboseFlag = false);
+    mTimer.setTimerType(Qt::PreciseTimer);
+    mTimer.setSingleShot(true);
+    mTimer.setInterval(timeout_msec);
+    mTimer.start();
+}
 
-    /// \brief The class destructor
-    virtual ~Monitor();
+void VsPing::send()
+{
+    QDateTime now = QDateTime::currentDateTime();
+    mSent         = now;
+}
 
-    void init(int samplingRate, int bufferSize) override;
-    int getNumInputs() override { return (mNumChannels); }
-    int getNumOutputs() override { return (mNumChannels); }
-    void compute(int nframes, float** inputs, float** outputs) override;
-    const char* getName() const override { return "Monitor"; };
+void VsPing::receive()
+{
+    QDateTime now = QDateTime::currentDateTime();
+    if (!mTimedOut) {
+        mTimer.stop();
+        mReceivedReply = true;
+        mReceived      = now;
+    }
+}
 
-    void updateNumChannels(int nChansIn, int nChansOut) override;
-
-   public slots:
-    void volumeUpdated(float multiplier);
-
-   private:
-    std::vector<void*> monitorP;
-    std::vector<void*> monitorUIP;
-    float fs;
-    int mNumChannels;
-    float mVolMultiplier = 0.0;
-
-    float* mOutBufferInput = nullptr;
-    float* mInBufferInput  = nullptr;
-    int mBufSize           = 0;
-};
-
-#endif
+void VsPing::onTimeout()
+{
+    if (!mReceivedReply) {
+        mTimedOut = true;
+        emit timeout(mPingNumber);
+    }
+}

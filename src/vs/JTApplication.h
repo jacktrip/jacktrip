@@ -29,55 +29,37 @@
 //*****************************************************************
 
 /**
- * \file Monitor.h
- * \author Dominick Hing
- * \date May 2023
- * \license MIT
+ * \file JTApplication.h
+ * \author Matt Hortoon
+ * \date July 2022
  */
 
-#ifndef __MONITOR_H__
-#define __MONITOR_H__
+#ifndef JTAPPLICATION_H
+#define JTAPPLICATION_H
 
+#include <QApplication>
+#include <QDebug>
+#include <QDesktopServices>
+#include <QEvent>
+#include <QFileOpenEvent>
 #include <QObject>
-#include <vector>
 
-#include "ProcessPlugin.h"
-
-/** \brief The Monitor plugin adds a portion of the input signal multiplied by a
- *  constant factor to the output signal
- */
-class Monitor : public ProcessPlugin
+class JTApplication : public QApplication
 {
-    Q_OBJECT;
+    Q_OBJECT
 
    public:
-    /// \brief The class constructor sets the number of channels to use
-    Monitor(int numchans, bool verboseFlag = false);
+    JTApplication(int& argc, char** argv) : QApplication(argc, argv) {}
 
-    /// \brief The class destructor
-    virtual ~Monitor();
+    bool event(QEvent* event) override
+    {
+        if (event->type() == QEvent::FileOpen) {
+            QFileOpenEvent* openEvent = static_cast<QFileOpenEvent*>(event);
 
-    void init(int samplingRate, int bufferSize) override;
-    int getNumInputs() override { return (mNumChannels); }
-    int getNumOutputs() override { return (mNumChannels); }
-    void compute(int nframes, float** inputs, float** outputs) override;
-    const char* getName() const override { return "Monitor"; };
-
-    void updateNumChannels(int nChansIn, int nChansOut) override;
-
-   public slots:
-    void volumeUpdated(float multiplier);
-
-   private:
-    std::vector<void*> monitorP;
-    std::vector<void*> monitorUIP;
-    float fs;
-    int mNumChannels;
-    float mVolMultiplier = 0.0;
-
-    float* mOutBufferInput = nullptr;
-    float* mInBufferInput  = nullptr;
-    int mBufSize           = 0;
+            QDesktopServices::openUrl(openEvent->url());
+        }
+        return QApplication::event(event);
+    }
 };
 
-#endif
+#endif  // JTAPPLICATION_H

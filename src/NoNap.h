@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2022-2024 JackTrip Labs, Inc.
+  Copyright (c) 2020 Aaron Wyatt.
 
   Permission is hereby granted, free of charge, to any person
   obtaining a copy of this software and associated documentation
@@ -28,56 +28,23 @@
 */
 //*****************************************************************
 
-/**
- * \file Monitor.h
- * \author Dominick Hing
- * \date May 2023
- * \license MIT
- */
+#ifndef __NONAP_H__
+#define __NONAP_H__
 
-#ifndef __MONITOR_H__
-#define __MONITOR_H__
+#include <objc/objc.h>
 
-#include <QObject>
-#include <vector>
-
-#include "ProcessPlugin.h"
-
-/** \brief The Monitor plugin adds a portion of the input signal multiplied by a
- *  constant factor to the output signal
- */
-class Monitor : public ProcessPlugin
+class NoNap
 {
-    Q_OBJECT;
-
    public:
-    /// \brief The class constructor sets the number of channels to use
-    Monitor(int numchans, bool verboseFlag = false);
+    NoNap();
+    ~NoNap();
 
-    /// \brief The class destructor
-    virtual ~Monitor();
-
-    void init(int samplingRate, int bufferSize) override;
-    int getNumInputs() override { return (mNumChannels); }
-    int getNumOutputs() override { return (mNumChannels); }
-    void compute(int nframes, float** inputs, float** outputs) override;
-    const char* getName() const override { return "Monitor"; };
-
-    void updateNumChannels(int nChansIn, int nChansOut) override;
-
-   public slots:
-    void volumeUpdated(float multiplier);
+    void disableNap();
+    void enableNap();
 
    private:
-    std::vector<void*> monitorP;
-    std::vector<void*> monitorUIP;
-    float fs;
-    int mNumChannels;
-    float mVolMultiplier = 0.0;
-
-    float* mOutBufferInput = nullptr;
-    float* mInBufferInput  = nullptr;
-    int mBufSize           = 0;
+    id m_activity;
+    bool m_preventNap;
 };
 
-#endif
+#endif  // __NONAP_H__

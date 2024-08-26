@@ -27,57 +27,41 @@
   OTHER DEALINGS IN THE SOFTWARE.
 */
 //*****************************************************************
-
 /**
- * \file Monitor.h
- * \author Dominick Hing
- * \date May 2023
- * \license MIT
+ * \file vsPermissions.mm
+ * \author Matt Horton
+ * \date Oct 2022
  */
 
-#ifndef __MONITOR_H__
-#define __MONITOR_H__
+#include "vsPermissions.h"
 
-#include <QObject>
-#include <vector>
+#include <QDesktopServices>
+#include <QSettings>
+#include <QUrl>
 
-#include "ProcessPlugin.h"
-
-/** \brief The Monitor plugin adds a portion of the input signal multiplied by a
- *  constant factor to the output signal
- */
-class Monitor : public ProcessPlugin
+QString VsPermissions::micPermission()
 {
-    Q_OBJECT;
+    return m_micPermission;
+}
 
-   public:
-    /// \brief The class constructor sets the number of channels to use
-    Monitor(int numchans, bool verboseFlag = false);
+bool VsPermissions::micPermissionChecked()
+{
+    return m_micPermissionChecked;
+}
 
-    /// \brief The class destructor
-    virtual ~Monitor();
+void VsPermissions::getMicPermission()
+{
+    setMicPermission("granted");
+}
 
-    void init(int samplingRate, int bufferSize) override;
-    int getNumInputs() override { return (mNumChannels); }
-    int getNumOutputs() override { return (mNumChannels); }
-    void compute(int nframes, float** inputs, float** outputs) override;
-    const char* getName() const override { return "Monitor"; };
+void VsPermissions::setMicPermission(QString status)
+{
+    m_micPermission        = status;
+    m_micPermissionChecked = true;
+    emit micPermissionUpdated();
 
-    void updateNumChannels(int nChansIn, int nChansOut) override;
-
-   public slots:
-    void volumeUpdated(float multiplier);
-
-   private:
-    std::vector<void*> monitorP;
-    std::vector<void*> monitorUIP;
-    float fs;
-    int mNumChannels;
-    float mVolMultiplier = 0.0;
-
-    float* mOutBufferInput = nullptr;
-    float* mInBufferInput  = nullptr;
-    int mBufSize           = 0;
-};
-
-#endif
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("VirtualStudio"));
+    settings.setValue(QStringLiteral("MicPermissionChecked"), m_micPermissionChecked);
+    settings.endGroup();
+}

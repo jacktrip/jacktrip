@@ -29,52 +29,59 @@
 //*****************************************************************
 
 /**
- * \file Volume.h
+ * \file AudioInterfaceMode.h
  * \author Matt Horton
- * \date September 2022
- * \license MIT
+ * \date December 2022
  */
 
-#ifndef __VOLUME_H__
-#define __VOLUME_H__
+#ifndef AUDIOINTERFACEMODE_H
+#define AUDIOINTERFACEMODE_H
 
-#include <QObject>
-#include <vector>
-
-#include "ProcessPlugin.h"
-
-/** \brief The Volume plugin adjusts the level of the signal via multiplication
- */
-class Volume : public ProcessPlugin
-{
-    Q_OBJECT;
-
-   public:
-    /// \brief The class constructor sets the number of channels to measure
-    Volume(int numchans, bool verboseFlag = false);
-
-    /// \brief The class destructor
-    virtual ~Volume();
-
-    void init(int samplingRate, int bufferSize) override;
-    int getNumInputs() override { return (mNumChannels); }
-    int getNumOutputs() override { return (mNumChannels); }
-    void compute(int nframes, float** inputs, float** outputs) override;
-    const char* getName() const override { return "Volume"; };
-
-    void updateNumChannels(int nChansIn, int nChansOut) override;
-
-   public slots:
-    void volumeUpdated(float multiplier);
-    void muteUpdated(bool muted);
-
-   private:
-    std::vector<void*> volumeP;
-    std::vector<void*> volumeUIP;
-    float fs;
-    int mNumChannels;
-    float mVolMultiplier = 0.0;
-    bool isMuted         = false;
+enum class AudioInterfaceMode {
+    JACK,     ///< Jack Mode
+    RTAUDIO,  ///< RtAudio Mode
+    ALL,
+    NONE
 };
 
+#ifdef RT_AUDIO
+#ifndef NO_JACK
+constexpr AudioInterfaceMode mode = AudioInterfaceMode::ALL;
+#else
+constexpr AudioInterfaceMode mode = AudioInterfaceMode::RTAUDIO;
 #endif
+#else
+#ifndef NO_JACK
+constexpr AudioInterfaceMode mode = AudioInterfaceMode::JACK;
+#else
+constexpr AudioInterfaceMode mode = AudioInterfaceMode::NONE;
+#endif
+#endif
+
+template<AudioInterfaceMode backend>
+constexpr auto isBackendAvailable()
+{
+    if constexpr (backend == AudioInterfaceMode::RTAUDIO) {
+        if (mode == AudioInterfaceMode::RTAUDIO || mode == AudioInterfaceMode::ALL) {
+            return true;
+        } else {
+            return false;
+        }
+    } else if constexpr (backend == AudioInterfaceMode::JACK) {
+        if (mode == AudioInterfaceMode::JACK || mode == AudioInterfaceMode::ALL) {
+            return true;
+        } else {
+            return false;
+        }
+    } else if constexpr (backend == AudioInterfaceMode::ALL) {
+        if (mode == AudioInterfaceMode::ALL) {
+            return true;
+        } else {
+            return false;
+        }
+    } else {
+        return false;
+    }
+}
+
+#endif  // AUDIOINTERFACEMODE_H

@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2022-2024 JackTrip Labs, Inc.
+  Copyright (c) 2020 Aaron Wyatt.
 
   Permission is hereby granted, free of charge, to any person
   obtaining a copy of this software and associated documentation
@@ -28,53 +28,36 @@
 */
 //*****************************************************************
 
-/**
- * \file Volume.h
- * \author Matt Horton
- * \date September 2022
- * \license MIT
- */
+#include "NoNap.h"
+#include <Foundation/Foundation.h>
 
-#ifndef __VOLUME_H__
-#define __VOLUME_H__
+NoNap::NoNap() :
+    m_preventNap(false)
+{}
 
-#include <QObject>
-#include <vector>
-
-#include "ProcessPlugin.h"
-
-/** \brief The Volume plugin adjusts the level of the signal via multiplication
- */
-class Volume : public ProcessPlugin
+void NoNap::disableNap()
 {
-    Q_OBJECT;
+    if (m_preventNap) {
+        return;
+    }
+    m_preventNap = true;
+    m_activity = [[NSProcessInfo processInfo] beginActivityWithOptions:NSActivityLatencyCritical | NSActivityUserInitiated reason:@"Disable App Nap"];
+    [m_activity retain];
+}
 
-   public:
-    /// \brief The class constructor sets the number of channels to measure
-    Volume(int numchans, bool verboseFlag = false);
+void NoNap::enableNap()
+{
+    if (!m_preventNap) {
+        return;
+    }
+    m_preventNap = false;
+    [[NSProcessInfo processInfo] endActivity:m_activity];
+    [m_activity release];
+}
 
-    /// \brief The class destructor
-    virtual ~Volume();
-
-    void init(int samplingRate, int bufferSize) override;
-    int getNumInputs() override { return (mNumChannels); }
-    int getNumOutputs() override { return (mNumChannels); }
-    void compute(int nframes, float** inputs, float** outputs) override;
-    const char* getName() const override { return "Volume"; };
-
-    void updateNumChannels(int nChansIn, int nChansOut) override;
-
-   public slots:
-    void volumeUpdated(float multiplier);
-    void muteUpdated(bool muted);
-
-   private:
-    std::vector<void*> volumeP;
-    std::vector<void*> volumeUIP;
-    float fs;
-    int mNumChannels;
-    float mVolMultiplier = 0.0;
-    bool isMuted         = false;
-};
-
-#endif
+NoNap::~NoNap()
+{
+    if (m_preventNap) {
+        enableNap();
+    }
+}

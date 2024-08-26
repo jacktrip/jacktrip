@@ -35,9 +35,6 @@
 #include <ctime>
 
 #include "about.h"
-#ifndef NO_VS
-#include "virtualstudio.h"
-#endif
 #include "ui_qjacktrip.h"
 #ifdef USE_WEAK_JACK
 #include "weak_libjack.h"
@@ -54,9 +51,9 @@
 #include "../Meter.h"
 #include "../Reverb.h"
 
-QJackTrip::QJackTrip(QSharedPointer<Settings> settings, bool suppressCommandlineWarning,
-                     QWidget* parent)
+QJackTrip::QJackTrip(UserInterface& interface, QWidget* parent)
     : QMainWindow(parent)
+    , m_interface(interface)
     , m_ui(new Ui::QJackTrip)
     , m_netManager(new QNetworkAccessManager(this))
     , m_statsDialog(new MessageDialog(this, QStringLiteral("Stats")))
@@ -66,11 +63,9 @@ QJackTrip::QJackTrip(QSharedPointer<Settings> settings, bool suppressCommandline
     , m_jackTripRunning(false)
     , m_isExiting(false)
     , m_exitSent(false)
-    , m_suppressCommandlineWarning(suppressCommandlineWarning)
     , m_hideWarning(false)
 {
     m_ui->setupUi(this);
-    m_cliSettings = settings;
 
     // Set up our debug window, and relay everything to our real cout.
     std::cout.rdbuf(m_debugDialog->getOutputStream()->rdbuf());
@@ -109,9 +104,11 @@ QJackTrip::QJackTrip(QSharedPointer<Settings> settings, bool suppressCommandline
         QStringLiteral("(This is for JackTrip's inbuilt authentication system. To easily "
                        "connect to a Virtual Studio server, download a Virtual Studio "
                        "enabled version of JackTrip.)"));
+    m_ui->vsModeButton->setVisible(false);
 #else
     connect(m_ui->vsModeButton, &QPushButton::clicked, this,
             &QJackTrip::virtualStudioMode);
+    m_ui->vsModeButton->setVisible(true);
 #endif
     connect(m_ui->autoPatchComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, [=]() {
@@ -249,7 +246,6 @@ QJackTrip::QJackTrip(QSharedPointer<Settings> settings, bool suppressCommandline
     m_ui->autoPatchGroupBox->setVisible(false);
     m_ui->requireAuthGroupBox->setVisible(false);
     m_ui->backendWarningLabel->setVisible(false);
-    m_ui->vsModeButton->setVisible(false);
     m_ui->inputGroupBox->setVisible(false);
     m_ui->outputGroupBox->setVisible(false);
 
@@ -378,10 +374,10 @@ void QJackTrip::showEvent(QShowEvent* event)
     QMainWindow::showEvent(event);
     if (m_firstShow) {
         QSettings settings;
-        loadSettings(m_cliSettings.data());
+        loadSettings(&m_interface.getSettings());
 
         // Display a warning about any ignored command line options.
-        if (m_cliSettings->guiIgnoresArguments() && !m_suppressCommandlineWarning) {
+        if (m_interface.getSettings().guiIgnoresArguments()) {
             QMessageBox msgBox;
             msgBox.setText(
                 "You have supplied command line options that the GUI version of JackTrip "
@@ -484,14 +480,6 @@ void QJackTrip::showEvent(QShowEvent* event)
     }
 }
 
-#ifndef NO_VS
-void QJackTrip::setVs(QSharedPointer<VirtualStudio> vs)
-{
-    m_vs = vs;
-    m_ui->vsModeButton->setVisible(!m_vs.isNull());
-}
-#endif
-
 void QJackTrip::processFinished()
 {
     if (!m_jackTripRunning) {
@@ -499,9 +487,7 @@ void QJackTrip::processFinished()
         return;
     }
     m_jackTripRunning = false;
-#ifdef __APPLE__
-    m_noNap.enableNap();
-#endif
+    m_interface.enableNap();
     m_ui->disconnectButton->setEnabled(false);
     if (m_ui->typeComboBox->currentIndex() == HUB_SERVER) {
         m_udpHub.reset();
@@ -1058,9 +1044,7 @@ void QJackTrip::start()
     m_ui->addressComboBox->insertItem(0, serverAddress);
     m_ui->addressComboBox->setCurrentIndex(0);
 
-#ifdef __APPLE__
-    m_noNap.disableNap();
-#endif
+    m_interface.disableNap();
 }
 
 void QJackTrip::stop()
@@ -1123,9 +1107,9 @@ void QJackTrip::updatedOutputMeasurements(const float* valuesInDb, int numChanne
 #ifndef NO_VS
 void QJackTrip::virtualStudioMode()
 {
-    this->hide();
-    m_vs->show();
-    m_vs->toVirtualStudio();
+    m_interface.setMode(UserInterface::MODE_VS);
+    QSettings settings;
+    settings.setValue(QStringLiteral("UiMode"), UserInterface::MODE_VS);
 }
 #endif
 
@@ -2043,4 +2027,25 @@ QJackTrip::~QJackTrip()
     // Restore cout. (Stops a crash on exit.)
     std::cout.rdbuf(m_realCout.rdbuf());
     std::cerr.rdbuf(m_realCerr.rdbuf());
+}
+
+QCoreApplication* QJackTrip::createApplication(int& argc, char* argv[])
+{
+    // Turn on high DPI support.
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+#endif
+
+    // Fix for display scaling like 125% or 150% on Windows
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
+#if defined(NO_VS) && defined(_WIN32)
+    QGuiApplication::setHighDpiScaleFactorRoundingPolicy(
+        Qt::HighDpiScaleFactorRoundingPolicy::RoundPreferFloor);
+#else
+    QGuiApplication::setHighDpiScaleFactorRoundingPolicy(
+        Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
+#endif  // NO_VS
+#endif  // QT_VERSION
+
+    return new QApplication(argc, argv);
 }

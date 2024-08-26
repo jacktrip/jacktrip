@@ -27,57 +27,43 @@
   OTHER DEALINGS IN THE SOFTWARE.
 */
 //*****************************************************************
-
 /**
- * \file Monitor.h
- * \author Dominick Hing
- * \date May 2023
- * \license MIT
+ * \file vsPermissions.h
+ * \author Matt Horton
+ * \date Nov 2022
  */
 
-#ifndef __MONITOR_H__
-#define __MONITOR_H__
+#ifndef __VSPERMISSIONS_H__
+#define __VSPERMISSIONS_H__
 
+#include <QDebug>
 #include <QObject>
-#include <vector>
+#include <QString>
 
-#include "ProcessPlugin.h"
-
-/** \brief The Monitor plugin adds a portion of the input signal multiplied by a
- *  constant factor to the output signal
- */
-class Monitor : public ProcessPlugin
+class VsPermissions : public QObject
 {
-    Q_OBJECT;
+    Q_OBJECT
+    Q_PROPERTY(QString micPermission READ micPermission NOTIFY micPermissionUpdated)
 
    public:
-    /// \brief The class constructor sets the number of channels to use
-    Monitor(int numchans, bool verboseFlag = false);
+    VsPermissions() = default;  // define here and there
 
-    /// \brief The class destructor
-    virtual ~Monitor();
+    QString micPermission();              // define here
+    virtual bool micPermissionChecked();  // define here and there
+    Q_INVOKABLE virtual void getMicPermission();
+    void setMicPermission(QString status);  // define here
 
-    void init(int samplingRate, int bufferSize) override;
-    int getNumInputs() override { return (mNumChannels); }
-    int getNumOutputs() override { return (mNumChannels); }
-    void compute(int nframes, float** inputs, float** outputs) override;
-    const char* getName() const override { return "Monitor"; };
+   signals:
+    void micPermissionUpdated();  // leave here
 
-    void updateNumChannels(int nChansIn, int nChansOut) override;
-
-   public slots:
-    void volumeUpdated(float multiplier);
-
-   private:
-    std::vector<void*> monitorP;
-    std::vector<void*> monitorUIP;
-    float fs;
-    int mNumChannels;
-    float mVolMultiplier = 0.0;
-
-    float* mOutBufferInput = nullptr;
-    float* mInBufferInput  = nullptr;
-    int mBufSize           = 0;
+   protected:
+#if __APPLE__
+    QString m_micPermission     = "unknown";
+    bool m_micPermissionChecked = false;
+#else
+    QString m_micPermission     = "granted";
+    bool m_micPermissionChecked = true;
+#endif
 };
 
-#endif
+#endif  // __VSPERMISSIONS_H__

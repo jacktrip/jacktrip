@@ -4,6 +4,7 @@ option('jack', type : 'feature', value : 'auto', description: 'Build with JACK B
 option('weakjack', type : 'boolean', value : false, description: 'Weak link JACK library')
 option('nogui', type : 'boolean', value : false, description: 'Build without graphical user interface')
 option('novs', type : 'boolean', value : false, description: 'Build without Virtual Studio support')
+option('noclassic', type : 'boolean', value : false, description: 'Build without classic mode support')
 option('vsftux', type : 'boolean', value : false, description: 'Build with Virtual Studio first launch experience')
 option('noupdater', type : 'boolean', value : false, description: 'Build without auto-update support')
 option('nofeedback', type : 'boolean', value : false, description: 'Build without feedback detection')
