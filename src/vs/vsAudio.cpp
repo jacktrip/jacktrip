@@ -1113,7 +1113,9 @@ void VsAudioWorker::getDeviceList(const QVector<RtAudioDevice>& devices,
         }
 
         // Skip blacklisted devices
-        if (blacklisted_devices.contains(deviceName)) {
+        const bool iPhoneMic = deviceName.startsWith("Apple Inc.:")
+                               && deviceName.endsWith("Phone Microphone");
+        if (blacklisted_devices.contains(deviceName) || iPhoneMic) {
             std::cout << "RTAudio: blacklisted " << (isInput ? "input" : "output")
                       << " device: " << devices[n].name << std::endl;
             continue;
