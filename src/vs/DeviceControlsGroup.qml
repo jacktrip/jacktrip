@@ -4,7 +4,7 @@ import QtQuick.Layouts
 
 Rectangle {
     property string disabledButtonText: "#D3D4D4"
-    property string saveButtonText: "#DB0A0A"
+    property string saveButtonText: "#000000"
     property int fullHeight: 88 * virtualstudio.uiScale
     property int minimumHeight: 48 * virtualstudio.uiScale
 

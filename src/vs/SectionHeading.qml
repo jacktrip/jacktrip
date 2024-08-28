@@ -38,11 +38,11 @@ Rectangle {
       anchors.verticalCenter: sectionText.verticalCenter
       width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
       Text {
-          text: "Create a Studio"
+          text: "Create Studio"
           font.family: "Poppins"
           font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
           font.weight: Font.Bold
-          color: "#DB0A0A"
+          color: "#000000"
           anchors.horizontalCenter: parent.horizontalCenter
           anchors.verticalCenter: parent.verticalCenter
       }

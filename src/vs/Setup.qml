@@ -25,7 +25,7 @@ Item {
     property string saveButtonPressedColour: "#E7E8E8"	
     property string saveButtonStroke: "#EAEBEB"
     property string saveButtonPressedStroke: "#B0B5B5"
-    property string saveButtonText: "#DB0A0A"
+    property string saveButtonText: "#000000"
     property string checkboxStroke: "#0062cc"
     property string checkboxPressedStroke: "#007AFF"
     property string disabledButtonText: virtualstudio.darkMode ? "#827D7D" : "#BABCBC"
@@ -136,19 +136,23 @@ Item {
                 }
                 enabled: !Boolean(audio.devicesError) && audio.backendAvailable && audio.audioReady
                 onClicked: {
-                    audio.stopAudio(true);
-                    virtualstudio.studioToJoin = virtualstudio.currentStudio.id;
-                    virtualstudio.windowState = "connected";
-                    virtualstudio.saveSettings();
-                    virtualstudio.joinStudio();
+                    if (Boolean(audio.devicesWarning)) {
+                        deviceWarningModal.open();
+                    } else {
+                        audio.stopAudio(true);
+                        virtualstudio.studioToJoin = virtualstudio.currentStudio.id;
+                        virtualstudio.windowState = "connected";
+                        virtualstudio.saveSettings();
+                        virtualstudio.joinStudio();
+                    }
                 }
                 anchors.right: parent.right
                 anchors.rightMargin: rightMargin * virtualstudio.uiScale
                 anchors.bottomMargin: rightMargin * virtualstudio.uiScale
                 anchors.bottom: parent.bottom
-                width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+                width: 160 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
                 Text {
-                    text: "Connect to Studio"
+                    text: "Connect to Session"
                     font.family: "Poppins"
                     font.pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale
                     font.weight: Font.Bold
@@ -196,6 +200,10 @@ Item {
                     color: textColour
                 }
             }
+        }
+
+        DeviceWarningModal {
+            id: deviceWarningModal
         }
     }
 }
