@@ -1116,7 +1116,10 @@ void VirtualStudio::createStudio()
 
 void VirtualStudio::editProfile()
 {
-    QUrl url = QUrl(QStringLiteral("https://%1/profile").arg(m_api->getApiHost()));
+    QUrl url = QUrl(QStringLiteral("https://www.jacktrip.com/profile"));
+    if (testMode()) {
+        url = QUrl(QStringLiteral("https://next-test.jacktrip.com/profile"));
+    }
     QDesktopServices::openUrl(url);
 }
 
