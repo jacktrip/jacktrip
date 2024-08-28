@@ -5,6 +5,22 @@ Item {
     height: 28 * virtualstudio.uiScale
     property string devicesWarningColour: "#F21B1B"
 
+    function getTooltip () {
+        var result = "";
+        if (Boolean(audio.devicesError)) {
+            result = audio.devicesError;
+            if (audio.devicesErrorHelpUrl) {
+                result += " Click for more info."
+            }
+        } else if (Boolean(audio.devicesWarning)) {
+            result = audio.devicesWarning;
+            if (audio.devicesWarningHelpUrl) {
+                result += " Click for more info."
+            }
+        }
+        return result;
+    }
+
     AppIcon {
         id: devicesWarningIcon
         anchors.left: parent.left
@@ -32,7 +48,7 @@ Item {
         anchors.left: warningOrErrorText.right
         anchors.leftMargin: 2 * virtualstudio.uiScale
         anchors.top: devicesWarningIcon.top
-        content: qsTr(audio.devicesError || audio.devicesWarning)
+        content: getTooltip()
         iconColor: devicesWarningColour
         size: 16 * virtualstudio.uiScale
         visible: Boolean(audio.devicesError) || Boolean(audio.devicesWarning)

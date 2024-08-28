@@ -60,7 +60,7 @@ Item {
             font.family: "Poppins"
             font.pixelSize: 18 * virtualstudio.fontScale * virtualstudio.uiScale
             font.weight: Font.Bold
-            color: "#DB0A0A"
+            color: "#000000"
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.verticalCenter: parent.verticalCenter
         }
@@ -101,7 +101,7 @@ Item {
             font.family: "Poppins"
             font.pixelSize: 18 * virtualstudio.fontScale * virtualstudio.uiScale
             font.weight: Font.Bold
-            color: "#DB0A0A"
+            color: "#000000"
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.verticalCenter: parent.verticalCenter
         }

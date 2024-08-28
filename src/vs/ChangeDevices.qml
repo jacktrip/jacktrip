@@ -15,7 +15,7 @@ Rectangle {
     property int bottomToolTipMargin: 8
     property int rightToolTipMargin: 4
 
-    property string saveButtonText: "#DB0A0A"
+    property string saveButtonText: "#000000"
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
     property string meterColor: virtualstudio.darkMode ? "gray" : "#E0E0E0"
     property real muteButtonLightnessValue: virtualstudio.darkMode ? 1.0 : 0.0

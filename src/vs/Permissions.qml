@@ -14,7 +14,7 @@ Item {
     property string saveButtonPressedStroke: "#B0B5B5"
     property string saveButtonBackgroundColour: "#F2F3F3"
     property string saveButtonStroke: "#EAEBEB"
-    property string saveButtonText: "#DB0A0A"
+    property string saveButtonText: "#000000"
 
     Item {
         id: requestMicPermissionsItem

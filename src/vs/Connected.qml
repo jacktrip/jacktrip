@@ -39,7 +39,7 @@ Item {
     property string saveButtonPressedColour: "#E7E8E8"
     property string saveButtonStroke: "#EAEBEB"
     property string saveButtonPressedStroke: "#B0B5B5"
-    property string saveButtonText: "#DB0A0A"
+    property string saveButtonText: "#000000"
 
     property string muteButtonMutedColor: "#FCB6B6"
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
