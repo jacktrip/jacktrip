@@ -191,9 +191,8 @@ VirtualStudio::VirtualStudio(UserInterface& parent)
     m_view->resize(800 * m_uiScale, 640 * m_uiScale);
 
     // Connect our timers
-    connect(&m_refreshTimer, &QTimer::timeout, this, [&]() {
-        emit periodicRefresh();
-    });
+    connect(this, &VirtualStudio::scheduleStudioRefresh, this,
+            &VirtualStudio::refreshStudios, Qt::QueuedConnection);
     connect(&m_heartbeatTimer, &QTimer::timeout, this, &VirtualStudio::sendHeartbeat,
             Qt::QueuedConnection);
 
@@ -494,6 +493,13 @@ void VirtualStudio::setWindowState(QString state)
     if (m_windowState == state)
         return;
     m_windowState = state;
+    // refresh studio list if navigating to browse window
+    // only if user id is empty (edge case for when logging in)
+    if (m_windowState == "browse" && !m_userId.isEmpty()) {
+        // schedule studio refresh instead of doing it now
+        // just to reduce risk of running into a deadlock
+        emit scheduleStudioRefresh(-1, false);
+    }
     emit windowStateUpdated();
 }
 
@@ -520,9 +526,17 @@ bool VirtualStudio::isExiting()
     return m_isExiting;
 }
 
-bool VirtualStudio::isRefreshingStudios()
+bool VirtualStudio::refreshInProgress()
 {
     return m_refreshInProgress;
+}
+
+void VirtualStudio::setRefreshInProgress(bool b)
+{
+    if (m_refreshInProgress == b)
+        return;
+    m_refreshInProgress = b;
+    emit refreshInProgressChanged();
 }
 
 void VirtualStudio::collectFeedbackSurvey(QString serverId, int rating, QString message)
@@ -883,8 +897,6 @@ void VirtualStudio::saveSettings()
 
 void VirtualStudio::connectToStudio()
 {
-    m_refreshTimer.stop();
-
     m_networkStats = QJsonObject();
     emit networkStatsChanged();
 
@@ -1067,9 +1079,6 @@ void VirtualStudio::disconnect()
     if (m_onConnectedScreen) {
         m_onConnectedScreen = false;
         emit disconnected();
-        // Refresh studios and restart timer
-        refreshStudios(0, true);
-        m_refreshTimer.start();
     }
 
     if (!m_jackTripRunning) {
@@ -1404,7 +1413,6 @@ void VirtualStudio::sendHeartbeat()
 void VirtualStudio::resetState()
 {
     m_webChannelServer->close();
-    m_refreshTimer.stop();
     m_heartbeatTimer.stop();
     m_startTimer.stop();
     m_networkOutageTimer.stop();
@@ -1413,8 +1421,9 @@ void VirtualStudio::resetState()
 
 void VirtualStudio::refreshStudios(int index, bool signalRefresh)
 {
+    // user id is required for retrieval of subscriptions
     if (m_userId.isEmpty()) {
-        qDebug() << "Invalid user ID";
+        std::cerr << "refresh cancelled due to empty user id" << std::endl;
         return;
     }
 
@@ -1422,10 +1431,11 @@ void VirtualStudio::refreshStudios(int index, bool signalRefresh)
     QMutexLocker refreshLock(&m_refreshMutex);
     if (m_refreshInProgress)
         return;
-    m_refreshInProgress = true;
-    emit isRefreshingStudiosChanged();
+    std::cout << "Refreshing list of studios" << std::endl;
+    setRefreshInProgress(true);
     refreshLock.unlock();
 
+    // get subscriptions first; this is required for studio groupings
     QNetworkReply* reply = m_api->getSubscriptions(m_userId);
     connect(reply, &QNetworkReply::finished, this, [&, reply, signalRefresh, index]() {
         if (reply->error() != QNetworkReply::NoError) {
@@ -1449,6 +1459,7 @@ void VirtualStudio::refreshStudios(int index, bool signalRefresh)
         }
         reply->deleteLater();
 
+        // done getting subscriptions; get list of servers next
         QNetworkReply* serversReply = m_api->getServers();
         connect(serversReply, &QNetworkReply::finished, this,
                 [&, serversReply, signalRefresh, index]() {
@@ -1467,8 +1478,7 @@ void VirtualStudio::handleServerUpdate(QNetworkReply* reply, bool signalRefresh,
         std::cerr << "Error: " << reply->errorString().toStdString() << std::endl;
         reply->deleteLater();
         QMutexLocker refreshLock(&m_refreshMutex);
-        m_refreshInProgress = false;
-        emit isRefreshingStudiosChanged();
+        setRefreshInProgress(false);
         return;
     }
 
@@ -1487,8 +1497,7 @@ void VirtualStudio::handleServerUpdate(QNetworkReply* reply, bool signalRefresh,
         }
         std::cerr << "Error: Not an array" << std::endl;
         QMutexLocker refreshLock(&m_refreshMutex);
-        m_refreshInProgress = false;
-        emit isRefreshingStudiosChanged();
+        setRefreshInProgress(false);
         return;
     }
 
@@ -1607,14 +1616,11 @@ void VirtualStudio::handleServerUpdate(QNetworkReply* reply, bool signalRefresh,
     }
 
     if (m_firstRefresh) {
-        m_refreshTimer.setInterval(5000);
-        m_refreshTimer.start();
         m_heartbeatTimer.setInterval(5000);
         m_heartbeatTimer.start();
         m_firstRefresh = false;
     }
-    m_refreshInProgress = false;
-    emit isRefreshingStudiosChanged();
+    setRefreshInProgress(false);
     if (signalRefresh) {
         emit refreshFinished(index);
     }

@@ -108,8 +108,8 @@ class VirtualStudio : public QObject
     Q_PROPERTY(bool showWarnings READ showWarnings WRITE setShowWarnings NOTIFY
                    showWarningsChanged)
     Q_PROPERTY(bool isExiting READ isExiting NOTIFY isExitingChanged)
-    Q_PROPERTY(bool isRefreshingStudios READ isRefreshingStudios NOTIFY
-                   isRefreshingStudiosChanged)
+    Q_PROPERTY(
+        bool refreshInProgress READ refreshInProgress NOTIFY refreshInProgressChanged)
     Q_PROPERTY(bool noUpdater READ noUpdater CONSTANT)
     Q_PROPERTY(bool psiBuild READ psiBuild CONSTANT)
     Q_PROPERTY(QString failedMessage READ failedMessage NOTIFY failedMessageChanged)
@@ -175,7 +175,8 @@ class VirtualStudio : public QObject
     bool vsFtux();
     bool hasClassicMode();
     bool isExiting();
-    bool isRefreshingStudios();
+    bool refreshInProgress();
+    void setRefreshInProgress(bool b);
 
     static QApplication* createApplication(int& argc, char* argv[]);
 
@@ -229,13 +230,13 @@ class VirtualStudio : public QObject
     void darkModeChanged();
     void testModeChanged();
     void signalExit();
-    void periodicRefresh();
     void failedMessageChanged();
     void studioToJoinChanged();
     void updatedNetworkOutage(bool outage);
     void windowStateUpdated();
     void isExitingChanged();
-    void isRefreshingStudiosChanged();
+    void scheduleStudioRefresh(int index, bool signalRefresh);
+    void refreshInProgressChanged();
     void apiHostChanged();
     void feedbackDetected();
     void openFeedbackSurveyModal(QString serverId);
@@ -289,7 +290,6 @@ class VirtualStudio : public QObject
     QJsonObject m_userMetadata;
     QJsonObject m_networkStats;
     QTimer m_startTimer;
-    QTimer m_refreshTimer;
     QTimer m_heartbeatTimer;
     QTimer m_networkOutageTimer;
     QMutex m_refreshMutex;
