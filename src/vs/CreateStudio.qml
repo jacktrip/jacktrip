@@ -87,6 +87,7 @@ Item {
         RowLayout {
             id: layout
             anchors.fill: parent
+            visible: virtualstudio.serverModel.length > 0
 
             Item {
                 Layout.fillHeight: true

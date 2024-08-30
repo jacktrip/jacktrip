@@ -32,7 +32,7 @@ Rectangle {
           border.color: createButton.down ? "#B0B5B5" : "#EAEBEB"
           layer.enabled: createButton.hovered && !createButton.down
       }
-      onClicked: { virtualstudio.createStudio(); }
+      onClicked: { virtualstudio.windowState = "create_studio"; }
       anchors.right: filterButton.left
       anchors.rightMargin: 16
       anchors.verticalCenter: sectionText.verticalCenter

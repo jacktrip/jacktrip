@@ -471,19 +471,6 @@ void VirtualStudio::setShowSelfHosted(bool selfHosted)
     settings.endGroup();
 }
 
-bool VirtualStudio::showCreateStudio()
-{
-    return m_showCreateStudio;
-}
-
-void VirtualStudio::setShowCreateStudio(bool createStudio)
-{
-    if (m_showCreateStudio == createStudio)
-        return;
-    m_showCreateStudio = createStudio;
-    emit showCreateStudioChanged();
-}
-
 bool VirtualStudio::showDeviceSetup()
 {
     return m_showDeviceSetup;
@@ -531,6 +518,11 @@ bool VirtualStudio::vsFtux()
 bool VirtualStudio::isExiting()
 {
     return m_isExiting;
+}
+
+bool VirtualStudio::isRefreshingStudios()
+{
+    return m_refreshInProgress;
 }
 
 void VirtualStudio::collectFeedbackSurvey(QString serverId, int rating, QString message)
@@ -719,10 +711,10 @@ void VirtualStudio::joinStudio()
     QMutexLocker locker(&m_refreshMutex);
     if (m_servers.isEmpty()) {
         // No servers yet. Making sure we have them.
-        // getServerList emits refreshFinished which
+        // refreshStudios emits refreshFinished which
         // will come back to this function.
         locker.unlock();
-        getServerList(true);
+        refreshStudios(-1, true);
         return;
     }
 
@@ -851,12 +843,6 @@ void VirtualStudio::logout()
     login();  // called to retrieve new code flow token
 }
 
-void VirtualStudio::refreshStudios(int index, bool signalRefresh)
-{
-    getSubscriptions();
-    getServerList(signalRefresh, index);
-}
-
 void VirtualStudio::loadSettings()
 {
     QSettings settings;
@@ -868,7 +854,7 @@ void VirtualStudio::loadSettings()
     m_userId         = settings.value(QStringLiteral("UserId"), "").toString();
     m_testMode       = settings.value(QStringLiteral("TestMode"), false).toBool();
     m_showInactive   = settings.value(QStringLiteral("ShowInactive"), true).toBool();
-    m_showSelfHosted = settings.value(QStringLiteral("ShowSelfHosted"), false).toBool();
+    m_showSelfHosted = settings.value(QStringLiteral("ShowSelfHosted"), true).toBool();
 
     // use setters to emit signals for these if they change; otherwise, the
     // user interface will not revert back after cancelling settings changes
@@ -1109,11 +1095,6 @@ void VirtualStudio::disconnect()
     m_interface.enableNap();
 }
 
-void VirtualStudio::createStudio()
-{
-    setWindowState(QStringLiteral("create_studio"));
-}
-
 void VirtualStudio::editProfile()
 {
     QUrl url = QUrl(QStringLiteral("https://www.jacktrip.com/profile"));
@@ -1267,9 +1248,7 @@ void VirtualStudio::slotAuthSucceeded()
     std::cout << "QWebChannel listening on port: " << m_webChannelPort << std::endl;
 
     getRegions();
-    getUserMetadata();
-    getSubscriptions();
-    getServerList(false);
+    getUserMetadata();  // calls refreshStudios(-1, false)
 }
 
 void VirtualStudio::connectionFinished()
@@ -1432,213 +1411,23 @@ void VirtualStudio::resetState()
     m_firstRefresh = true;
 }
 
-void VirtualStudio::getServerList(bool signalRefresh, int index)
-{
-    // only allow one thread to refresh at a time
-    QMutexLocker refreshLock(&m_refreshMutex);
-    if (m_refreshInProgress)
-        return;
-    m_refreshInProgress = true;
-    refreshLock.unlock();
-
-    // Get the serverId of the server at the top of our screen if we know it
-    QString topServerId;
-    if (index >= 0 && index < m_serverModel.count()) {
-        topServerId = m_serverModel.at(index)->id();
-    }
-
-    QNetworkReply* reply = m_api->getServers();
-    connect(
-        reply, &QNetworkReply::finished, this, [&, reply, topServerId, signalRefresh]() {
-            if (reply->error() != QNetworkReply::NoError) {
-                if (signalRefresh) {
-                    emit refreshFinished(index);
-                }
-                std::cerr << "Error: " << reply->errorString().toStdString() << std::endl;
-                reply->deleteLater();
-                QMutexLocker refreshLock(&m_refreshMutex);
-                m_refreshInProgress = false;
-                return;
-            }
-
-            QByteArray response      = reply->readAll();
-            QJsonDocument serverList = QJsonDocument::fromJson(response);
-            reply->deleteLater();
-            if (!serverList.isArray()) {
-                if (signalRefresh) {
-                    emit refreshFinished(index);
-                }
-                std::cerr << "Error: Not an array" << std::endl;
-                QMutexLocker refreshLock(&m_refreshMutex);
-                m_refreshInProgress = false;
-                return;
-            }
-
-            QJsonArray servers = serverList.array();
-            // Divide our servers by category initially so that they're easier to sort
-            QVector<VsServerInfoPointer> yourServers;
-            QVector<VsServerInfoPointer> subServers;
-            QVector<VsServerInfoPointer> pubServers;
-            int skippedStudios = 0;
-
-            QMutexLocker refreshLock(&m_refreshMutex);  // protect m_servers
-            m_servers.clear();
-            for (int i = 0; i < servers.count(); i++) {
-                if (servers.at(i)[QStringLiteral("type")].toString().contains(
-                        QStringLiteral("JackTrip"))) {
-                    QSharedPointer<VsServerInfo> serverInfo(new VsServerInfo(this));
-                    serverInfo->setIsAdmin(
-                        servers.at(i)[QStringLiteral("admin")].toBool());
-                    serverInfo->setName(servers.at(i)[QStringLiteral("name")].toString());
-                    serverInfo->setHost(
-                        servers.at(i)[QStringLiteral("serverHost")].toString());
-                    serverInfo->setIsManaged(
-                        servers.at(i)[QStringLiteral("managed")].toBool());
-                    serverInfo->setStatus(
-                        servers.at(i)[QStringLiteral("status")].toString());
-                    serverInfo->setPort(
-                        servers.at(i)[QStringLiteral("serverPort")].toInt());
-                    serverInfo->setIsPublic(
-                        servers.at(i)[QStringLiteral("public")].toBool());
-                    serverInfo->setRegion(
-                        servers.at(i)[QStringLiteral("region")].toString());
-                    serverInfo->setPeriod(
-                        servers.at(i)[QStringLiteral("period")].toInt());
-                    serverInfo->setSampleRate(
-                        servers.at(i)[QStringLiteral("sampleRate")].toInt());
-                    serverInfo->setQueueBuffer(
-                        servers.at(i)[QStringLiteral("queueBuffer")].toInt());
-                    serverInfo->setBannerURL(
-                        servers.at(i)[QStringLiteral("bannerURL")].toString());
-                    serverInfo->setId(servers.at(i)[QStringLiteral("id")].toString());
-                    serverInfo->setSessionId(
-                        servers.at(i)[QStringLiteral("sessionId")].toString());
-                    serverInfo->setStreamId(
-                        servers.at(i)[QStringLiteral("streamId")].toString());
-                    serverInfo->setInviteKey(
-                        servers.at(i)[QStringLiteral("inviteKey")].toString());
-                    serverInfo->setCloudId(
-                        servers.at(i)[QStringLiteral("cloudId")].toString());
-                    serverInfo->setEnabled(
-                        servers.at(i)[QStringLiteral("enabled")].toBool());
-                    serverInfo->setIsOwner(
-                        servers.at(i)[QStringLiteral("owner")].toBool());
-
-                    // Always add servers to m_servers
-                    m_servers.append(serverInfo);
-
-                    // Only add servers to the model that we want to show
-                    if (serverInfo->isAdmin() || serverInfo->isOwner()) {
-                        if (filterStudio(*serverInfo)) {
-                            ++skippedStudios;
-                        } else {
-                            yourServers.append(serverInfo);
-                            serverInfo->setSection(VsServerInfo::YOUR_STUDIOS);
-                        }
-                    } else if (m_subscribedServers.contains(serverInfo->id())) {
-                        if (filterStudio(*serverInfo)) {
-                            ++skippedStudios;
-                        } else {
-                            subServers.append(serverInfo);
-                            serverInfo->setSection(VsServerInfo::SUBSCRIBED_STUDIOS);
-                        }
-                    } else {
-                        if (!filterStudio(*serverInfo)) {
-                            pubServers.append(serverInfo);
-                            serverInfo->setSection(VsServerInfo::PUBLIC_STUDIOS);
-                        }
-                        // don't count public studios in skipped count
-                    }
-                }
-            }
-            refreshLock.unlock();
-
-            // sort studios in each section by name
-            auto serverSorter = [](VsServerInfoPointer first,
-                                   VsServerInfoPointer second) {
-                return *first < *second;
-            };
-            std::sort(yourServers.begin(), yourServers.end(), serverSorter);
-            std::sort(subServers.begin(), subServers.end(), serverSorter);
-            std::sort(pubServers.begin(), pubServers.end(), serverSorter);
-
-            // If we don't have any owned servers, move the JackTrip logo to an
-            // appropriate section header.
-            if (yourServers.isEmpty()) {
-                if (subServers.isEmpty()) {
-                    m_logoSection = QStringLiteral("Public Studios");
-
-                    if (skippedStudios == 0) {
-                        // This is a new user
-                        setShowCreateStudio(true);
-                    } else {
-                        // This is not a new user. One or more studios were filtered.
-                        setShowCreateStudio(false);
-                    }
-                } else {
-                    m_logoSection = QStringLiteral("Subscribed Studios");
-                }
-            } else {
-                m_logoSection = QStringLiteral("Your Studios");
-            }
-            emit logoSectionChanged();
-
-            m_serverModel.clear();
-            for (const VsServerInfoPointer& s : yourServers) {
-                m_serverModel.append(s.get());
-            }
-            for (const VsServerInfoPointer& s : subServers) {
-                m_serverModel.append(s.get());
-            }
-            for (const VsServerInfoPointer& s : pubServers) {
-                m_serverModel.append(s.get());
-            }
-            emit serverModelChanged();
-            int index = -1;
-            if (!topServerId.isEmpty()) {
-                for (int i = 0; i < m_serverModel.count(); i++) {
-                    if (m_serverModel.at(i)->id() == topServerId) {
-                        index = i;
-                        break;
-                    }
-                }
-            }
-            if (m_firstRefresh) {
-                m_refreshTimer.setInterval(5000);
-                m_refreshTimer.start();
-                m_heartbeatTimer.setInterval(5000);
-                m_heartbeatTimer.start();
-                m_firstRefresh = false;
-            }
-            m_refreshInProgress = false;
-            if (signalRefresh) {
-                emit refreshFinished(index);
-            }
-        });
-}
-
-bool VirtualStudio::filterStudio(const VsServerInfo& serverInfo) const
-{
-    // Return true if we want to filter the studio out of the display model
-    bool activeStudio = serverInfo.status() == QLatin1String("Ready");
-    bool hostedStudio = serverInfo.isManaged();
-    if (!m_showSelfHosted && !hostedStudio) {
-        return true;
-    }
-    if (!m_showInactive && !activeStudio) {
-        return true;
-    }
-    return false;
-}
-
-void VirtualStudio::getSubscriptions()
+void VirtualStudio::refreshStudios(int index, bool signalRefresh)
 {
     if (m_userId.isEmpty()) {
         qDebug() << "Invalid user ID";
         return;
     }
+
+    // only allow one thread to refresh at a time
+    QMutexLocker refreshLock(&m_refreshMutex);
+    if (m_refreshInProgress)
+        return;
+    m_refreshInProgress = true;
+    emit isRefreshingStudiosChanged();
+    refreshLock.unlock();
+
     QNetworkReply* reply = m_api->getSubscriptions(m_userId);
-    connect(reply, &QNetworkReply::finished, this, [&, reply]() {
+    connect(reply, &QNetworkReply::finished, this, [&, reply, signalRefresh, index]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
             reply->deleteLater();
@@ -1659,7 +1448,190 @@ void VirtualStudio::getSubscriptions()
                 subscriptions.at(i)[QStringLiteral("serverId")].toString(), true);
         }
         reply->deleteLater();
+
+        QNetworkReply* serversReply = m_api->getServers();
+        connect(serversReply, &QNetworkReply::finished, this,
+                [&, serversReply, signalRefresh, index]() {
+                    handleServerUpdate(serversReply, signalRefresh, index);
+                });
     });
+}
+
+void VirtualStudio::handleServerUpdate(QNetworkReply* reply, bool signalRefresh,
+                                       int index)
+{
+    if (reply->error() != QNetworkReply::NoError) {
+        if (signalRefresh) {
+            emit refreshFinished(index);
+        }
+        std::cerr << "Error: " << reply->errorString().toStdString() << std::endl;
+        reply->deleteLater();
+        QMutexLocker refreshLock(&m_refreshMutex);
+        m_refreshInProgress = false;
+        emit isRefreshingStudiosChanged();
+        return;
+    }
+
+    // Get the serverId of the server at the top of our screen if we know it
+    QString topServerId;
+    if (index >= 0 && index < m_serverModel.count()) {
+        topServerId = m_serverModel.at(index)->id();
+    }
+
+    QByteArray response      = reply->readAll();
+    QJsonDocument serverList = QJsonDocument::fromJson(response);
+    reply->deleteLater();
+    if (!serverList.isArray()) {
+        if (signalRefresh) {
+            emit refreshFinished(index);
+        }
+        std::cerr << "Error: Not an array" << std::endl;
+        QMutexLocker refreshLock(&m_refreshMutex);
+        m_refreshInProgress = false;
+        emit isRefreshingStudiosChanged();
+        return;
+    }
+
+    QJsonArray servers = serverList.array();
+    // Divide our servers by category initially so that they're easier to sort
+    QVector<VsServerInfoPointer> yourServers;
+    QVector<VsServerInfoPointer> subServers;
+    QVector<VsServerInfoPointer> pubServers;
+    int skippedStudios = 0;
+
+    QMutexLocker refreshLock(&m_refreshMutex);  // protect m_servers
+    m_servers.clear();
+    for (int i = 0; i < servers.count(); i++) {
+        if (servers.at(i)[QStringLiteral("type")].toString().contains(
+                QStringLiteral("JackTrip"))) {
+            QSharedPointer<VsServerInfo> serverInfo(new VsServerInfo(this));
+            serverInfo->setIsAdmin(servers.at(i)[QStringLiteral("admin")].toBool());
+            serverInfo->setName(servers.at(i)[QStringLiteral("name")].toString());
+            serverInfo->setHost(servers.at(i)[QStringLiteral("serverHost")].toString());
+            serverInfo->setIsManaged(servers.at(i)[QStringLiteral("managed")].toBool());
+            serverInfo->setStatus(servers.at(i)[QStringLiteral("status")].toString());
+            serverInfo->setPort(servers.at(i)[QStringLiteral("serverPort")].toInt());
+            serverInfo->setIsPublic(servers.at(i)[QStringLiteral("public")].toBool());
+            serverInfo->setRegion(servers.at(i)[QStringLiteral("region")].toString());
+            serverInfo->setPeriod(servers.at(i)[QStringLiteral("period")].toInt());
+            serverInfo->setSampleRate(
+                servers.at(i)[QStringLiteral("sampleRate")].toInt());
+            serverInfo->setQueueBuffer(
+                servers.at(i)[QStringLiteral("queueBuffer")].toInt());
+            serverInfo->setBannerURL(
+                servers.at(i)[QStringLiteral("bannerURL")].toString());
+            serverInfo->setId(servers.at(i)[QStringLiteral("id")].toString());
+            serverInfo->setSessionId(
+                servers.at(i)[QStringLiteral("sessionId")].toString());
+            serverInfo->setStreamId(servers.at(i)[QStringLiteral("streamId")].toString());
+            serverInfo->setInviteKey(
+                servers.at(i)[QStringLiteral("inviteKey")].toString());
+            serverInfo->setCloudId(servers.at(i)[QStringLiteral("cloudId")].toString());
+            serverInfo->setEnabled(servers.at(i)[QStringLiteral("enabled")].toBool());
+            serverInfo->setIsOwner(servers.at(i)[QStringLiteral("owner")].toBool());
+
+            // Always add servers to m_servers
+            m_servers.append(serverInfo);
+
+            // Only add servers to the model that we want to show
+            if (serverInfo->isAdmin() || serverInfo->isOwner()) {
+                if (filterStudio(*serverInfo)) {
+                    ++skippedStudios;
+                } else {
+                    yourServers.append(serverInfo);
+                    serverInfo->setSection(VsServerInfo::YOUR_STUDIOS);
+                }
+            } else if (m_subscribedServers.contains(serverInfo->id())) {
+                if (filterStudio(*serverInfo)) {
+                    ++skippedStudios;
+                } else {
+                    subServers.append(serverInfo);
+                    serverInfo->setSection(VsServerInfo::SUBSCRIBED_STUDIOS);
+                }
+            } else {
+                if (!filterStudio(*serverInfo) && serverInfo->enabled()) {
+                    pubServers.append(serverInfo);
+                    serverInfo->setSection(VsServerInfo::PUBLIC_STUDIOS);
+                }
+                // don't count public studios in skipped count
+            }
+        }
+    }
+    refreshLock.unlock();
+
+    // sort studios in each section by name
+    auto serverSorter = [](VsServerInfoPointer first, VsServerInfoPointer second) {
+        return *first < *second;
+    };
+    std::sort(yourServers.begin(), yourServers.end(), serverSorter);
+    std::sort(subServers.begin(), subServers.end(), serverSorter);
+    std::sort(pubServers.begin(), pubServers.end(), serverSorter);
+
+    // If we don't have any owned servers, move the JackTrip logo to an
+    // appropriate section header.
+    if (yourServers.isEmpty()) {
+        if (subServers.isEmpty()) {
+            m_logoSection = QStringLiteral("Public Studios");
+            if (skippedStudios == 0 && m_windowState == "browse") {
+                // Transition to create studio page
+                setWindowState("create_studio");
+            }
+        } else {
+            m_logoSection = QStringLiteral("Subscribed Studios");
+        }
+    } else {
+        m_logoSection = QStringLiteral("Your Studios");
+    }
+    emit logoSectionChanged();
+
+    m_serverModel.clear();
+    for (const VsServerInfoPointer& s : yourServers) {
+        m_serverModel.append(s.get());
+    }
+    for (const VsServerInfoPointer& s : subServers) {
+        m_serverModel.append(s.get());
+    }
+    for (const VsServerInfoPointer& s : pubServers) {
+        m_serverModel.append(s.get());
+    }
+    emit serverModelChanged();
+
+    index = -1;
+    if (!topServerId.isEmpty()) {
+        for (int i = 0; i < m_serverModel.count(); i++) {
+            if (m_serverModel.at(i)->id() == topServerId) {
+                index = i;
+                break;
+            }
+        }
+    }
+
+    if (m_firstRefresh) {
+        m_refreshTimer.setInterval(5000);
+        m_refreshTimer.start();
+        m_heartbeatTimer.setInterval(5000);
+        m_heartbeatTimer.start();
+        m_firstRefresh = false;
+    }
+    m_refreshInProgress = false;
+    emit isRefreshingStudiosChanged();
+    if (signalRefresh) {
+        emit refreshFinished(index);
+    }
+}
+
+bool VirtualStudio::filterStudio(const VsServerInfo& serverInfo) const
+{
+    // Return true if we want to filter the studio out of the display model
+    bool activeStudio = serverInfo.status() == QLatin1String("Ready");
+    bool hostedStudio = serverInfo.isManaged();
+    if (!m_showSelfHosted && !hostedStudio) {
+        return true;
+    }
+    if (!m_showInactive && !activeStudio) {
+        return true;
+    }
+    return false;
 }
 
 void VirtualStudio::getRegions()
@@ -1691,6 +1663,7 @@ void VirtualStudio::getUserMetadata()
         m_userMetadata = QJsonDocument::fromJson(reply->readAll()).object();
         emit userMetadataChanged();
         reply->deleteLater();
+        refreshStudios(-1, false);
     });
 }
 
