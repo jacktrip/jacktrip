@@ -91,8 +91,6 @@ class VirtualStudio : public QObject
                    showInactiveChanged)
     Q_PROPERTY(bool showSelfHosted READ showSelfHosted WRITE setShowSelfHosted NOTIFY
                    showSelfHostedChanged)
-    Q_PROPERTY(bool showCreateStudio READ showCreateStudio WRITE setShowCreateStudio
-                   NOTIFY showCreateStudioChanged)
     Q_PROPERTY(QString connectionState READ connectionState NOTIFY connectionStateChanged)
     Q_PROPERTY(QJsonObject networkStats READ networkStats NOTIFY networkStatsChanged)
     Q_PROPERTY(bool networkOutage READ networkOutage NOTIFY updatedNetworkOutage)
@@ -110,6 +108,8 @@ class VirtualStudio : public QObject
     Q_PROPERTY(bool showWarnings READ showWarnings WRITE setShowWarnings NOTIFY
                    showWarningsChanged)
     Q_PROPERTY(bool isExiting READ isExiting NOTIFY isExitingChanged)
+    Q_PROPERTY(bool isRefreshingStudios READ isRefreshingStudios NOTIFY
+                   isRefreshingStudiosChanged)
     Q_PROPERTY(bool noUpdater READ noUpdater CONSTANT)
     Q_PROPERTY(bool psiBuild READ psiBuild CONSTANT)
     Q_PROPERTY(QString failedMessage READ failedMessage NOTIFY failedMessageChanged)
@@ -149,8 +149,6 @@ class VirtualStudio : public QObject
     void setShowInactive(bool inactive);
     bool showSelfHosted();
     void setShowSelfHosted(bool selfHosted);
-    bool showCreateStudio();
-    void setShowCreateStudio(bool createStudio);
     float fontScale();
     float uiScale();
     void setUiScale(float scale);
@@ -177,6 +175,7 @@ class VirtualStudio : public QObject
     bool vsFtux();
     bool hasClassicMode();
     bool isExiting();
+    bool isRefreshingStudios();
 
     static QApplication* createApplication(int& argc, char* argv[]);
 
@@ -194,7 +193,6 @@ class VirtualStudio : public QObject
     void loadSettings();
     void saveSettings();
     void triggerReconnect(bool refresh);
-    void createStudio();
     void editProfile();
     void showAbout();
     void openLink(const QString& url);
@@ -220,7 +218,6 @@ class VirtualStudio : public QObject
     void userMetadataChanged();
     void showInactiveChanged();
     void showSelfHostedChanged();
-    void showCreateStudioChanged();
     void connectionStateChanged();
     void networkStatsChanged();
     void updateChannelChanged();
@@ -238,6 +235,7 @@ class VirtualStudio : public QObject
     void updatedNetworkOutage(bool outage);
     void windowStateUpdated();
     void isExitingChanged();
+    void isRefreshingStudiosChanged();
     void apiHostChanged();
     void feedbackDetected();
     void openFeedbackSurveyModal(QString serverId);
@@ -257,9 +255,8 @@ class VirtualStudio : public QObject
 
    private:
     void resetState();
-    void getServerList(bool signalRefresh = false, int index = -1);
+    void handleServerUpdate(QNetworkReply* reply, bool signalRefresh, int index);
     bool filterStudio(const VsServerInfo& serverInfo) const;
-    void getSubscriptions();
     void getRegions();
     void getUserMetadata();
     bool readyToJoin();
@@ -310,8 +307,7 @@ class VirtualStudio : public QObject
     bool m_onConnectedScreen      = false;
     bool m_isExiting              = false;
     bool m_showInactive           = true;
-    bool m_showSelfHosted         = false;
-    bool m_showCreateStudio       = false;
+    bool m_showSelfHosted         = true;
     bool m_showDeviceSetup        = true;
     bool m_showWarnings           = true;
     bool m_darkMode               = false;

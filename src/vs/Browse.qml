@@ -96,13 +96,13 @@ Item {
         SectionHeading {
             id: emptyListSectionHeading
             listIsEmpty: true
-            visible: parent.count == 0 && !virtualstudio.showCreateStudio
+            visible: parent.count == 0
         }
 
         Text {
             id: emptyListMessage
-            visible: parent.count == 0 && !virtualstudio.showCreateStudio
-            text: "No studios found that match your filter criteria."
+            visible: parent.count == 0
+            text: virtualstudio.isRefreshingStudios ? "Loading Studios..." : "No studios found that match your filter criteria."
             font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
             width: emptyListMessageWidth
@@ -120,9 +120,9 @@ Item {
                 border.width: 1
                 border.color: resetFiltersButton.down ? buttonPressedStroke : (resetFiltersButton.hovered ? buttonHoverStroke : buttonStroke)
             }
-            visible: parent.count == 0 && !virtualstudio.showCreateStudio
+            visible: parent.count == 0
             onClicked: {
-                virtualstudio.showSelfHosted = false;
+                virtualstudio.showSelfHosted = true;
                 virtualstudio.showInactive = true;
                 refreshing = true;
                 refresh();
@@ -136,71 +136,6 @@ Item {
                 font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
                 anchors {horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
                 color: textColour
-            }
-        }
-
-        Rectangle {
-            id: newUserEmptyList
-            anchors.fill: parent
-            color: "transparent"
-            visible: parent.count == 0 && virtualstudio.showCreateStudio
-
-            Rectangle {
-                color: "transparent"
-                width: emptyListMessageWidth
-                height: createButton.height + createStudioMessage.height + welcomeMessage.height + createButtonTopMargin + createMessageTopMargin
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.verticalCenter: parent.verticalCenter
-
-                Text {
-                    id: welcomeMessage
-                    text: "Welcome"
-                    font { family: "Poppins"; pixelSize: fontBig * virtualstudio.fontScale * virtualstudio.uiScale; weight: Font.Bold }
-                    color: textColour
-                    width: emptyListMessageWidth
-                    wrapMode: Text.Wrap
-                    horizontalAlignment: Text.AlignHCenter
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.top: parent.top
-                }
-
-                Text {
-                    id: createStudioMessage
-                    text: "Looks like you're not a member of any studios!\nHave the studio owner send you an invite link, or create your own studio to invite others."
-                    font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-                    color: textColour
-                    width: emptyListMessageWidth
-                    wrapMode: Text.Wrap
-                    horizontalAlignment: Text.AlignHCenter
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.top: welcomeMessage.bottom
-                    anchors.topMargin: createMessageTopMargin
-                }
-
-                Button {
-                    id: createButton
-                    background: Rectangle {
-                        radius: 6 * virtualstudio.uiScale
-                        color: createButton.down ? "#E7E8E8" : "#F2F3F3"
-                        border.width: 1
-                        border.color: createButton.down ? "#B0B5B5" : createButtonStroke
-                        layer.enabled: createButton.hovered && !createButton.down
-                    }
-                    onClicked: { virtualstudio.createStudio(); }
-                    anchors.top: createStudioMessage.bottom
-                    anchors.topMargin: createButtonTopMargin
-                    anchors.horizontalCenter: createStudioMessage.horizontalCenter
-                    width: 210 * virtualstudio.uiScale; height: 45 * virtualstudio.uiScale
-                    Text {
-                        text: "Create a Studio"
-                        font.family: "Poppins"
-                        font.pixelSize: 18 * virtualstudio.fontScale * virtualstudio.uiScale
-                        font.weight: Font.Bold
-                        color: "#000000"
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
-                }
             }
         }
 
