@@ -10,8 +10,6 @@ Item {
         color: backgroundColour
     }
 
-    property bool refreshing: false
-
     property int buttonHeight: 25
     property int buttonWidth: 103
     property int extraSettingsButtonWidth: 16
@@ -40,19 +38,6 @@ Item {
             currentIndex = studioListView.indexAt(16 * virtualstudio.uiScale, studioListView.contentY + (16 * virtualstudio.uiScale));
         }
         virtualstudio.refreshStudios(currentIndex, true)
-    }
-
-    Rectangle {
-        z: 1
-        width: parent.width; height: parent.height
-        color: "#40000000"
-        visible: refreshing
-        MouseArea {
-            anchors.fill: parent
-            propagateComposedEvents: false
-            hoverEnabled: true
-            preventStealing: true
-        }
     }
 
     Component {
@@ -102,7 +87,7 @@ Item {
         Text {
             id: emptyListMessage
             visible: parent.count == 0
-            text: virtualstudio.isRefreshingStudios ? "Loading Studios..." : "No studios found that match your filter criteria."
+            text: virtualstudio.refreshInProgress ? "Loading Studios..." : "No studios found that match your filter criteria."
             font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
             width: emptyListMessageWidth
@@ -124,7 +109,6 @@ Item {
             onClicked: {
                 virtualstudio.showSelfHosted = true;
                 virtualstudio.showInactive = true;
-                refreshing = true;
                 refresh();
             }
             anchors.top: emptyListMessage.bottom
@@ -178,7 +162,7 @@ Item {
                 border.width: 1
                 border.color: refreshButton.down ? buttonPressedStroke : (refreshButton.hovered ? buttonHoverStroke : buttonStroke)
             }
-            onClicked: { refreshing = true; refresh() }
+            onClicked: { refresh() }
             anchors.verticalCenter: parent.verticalCenter
             x: 16 * virtualstudio.uiScale
             width: buttonWidth * virtualstudio.uiScale; height: buttonHeight * virtualstudio.uiScale
@@ -254,13 +238,11 @@ Item {
             scrollY = studioListView.contentY;
         }
         function onRefreshFinished(index) {
-            refreshing = false;
             if (index == -1) {
                 studioListView.contentY = scrollY
             } else {
                 studioListView.positionViewAtIndex(index, ListView.Beginning);
             }
         }
-        function onPeriodicRefresh() { refresh() }
     }
 }
