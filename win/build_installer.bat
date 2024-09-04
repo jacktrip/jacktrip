@@ -55,9 +55,11 @@ if defined DYNAMIC_QT (
 	echo Including Qt%QTVERSION% Files
 	for /f "tokens=*" %%a in ('objdump -p jacktrip.exe ^| findstr Qt%QTVERSION%Qml.dll') do set VS=%%a
 	if defined VS (
-		windeployqt -release --qmldir ..\..\src\gui jacktrip.exe
+		echo Including QML files
+		windeployqt -release --qmldir ..\..\src\vs jacktrip.exe
 		set WIXDEFINES=%WIXDEFINES% -dvs
 	) else (
+		echo Not including QML files
 		windeployqt -release jacktrip.exe
 	)
 	set WIXDEFINES=!WIXDEFINES! -ddynamic -dqt%QTVERSION%
