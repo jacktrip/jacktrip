@@ -420,6 +420,12 @@ jobs:
             CONFIG_STRING="-Drtaudio:jack=disabled -Drtaudio:default_library=static $CONFIG_STRING"
             if [[ "${{ runner.os }}" == 'Windows' ]]; then 
               CONFIG_STRING="-Drtaudio:wasapi=enabled $CONFIG_STRING"
+              # ASIO builds require Steinberg license; disable it if not CLI or signed builds from JackTrip Labs
+              if [[ "${{ matrix.nogui }}" == true ]] || [[ "${{ needs.check-secrets.outputs.should_run }}" == "true" ]]; then
+                CONFIG_STRING="-Drtaudio:asio=enabled $CONFIG_STRING"
+              else
+                CONFIG_STRING="-Drtaudio:asio=disabled $CONFIG_STRING"
+              fi
             elif [[ "${{ runner.os }}" == 'Linux' ]]; then
               CONFIG_STRING="-Drtaudio:alsa=enabled -Drtaudio:pulse=enabled -Drtaudio:werror=false $CONFIG_STRING"
             fi
@@ -432,9 +438,14 @@ jobs:
           fi
           if [[ "${{ matrix.novs }}" == true ]]; then 
             CONFIG_STRING="-Dnovs=true $CONFIG_STRING"
-          fi
-          if [[ "${{ needs.check-secrets.outputs.should_run }}" == "true" ]]; then 
-            CONFIG_STRING="-Dvsftux=true $CONFIG_STRING"
+          elif [[ "${{ needs.check-secrets.outputs.should_run }}" == "true" ]]; then
+            if [[ "${{ runner.os }}" == 'Windows' ]] || [[ "${{ runner.os }}" == 'macOS' ]]; then
+              # do not include classic mode interface in signed JackTrip Labs builds
+              CONFIG_STRING="-Dnoclassic=true $CONFIG_STRING"
+            else
+              # prefer virtual studio interface for JackTrip Labs builds on Linux
+              CONFIG_STRING="-Dvsftux=true $CONFIG_STRING"
+            fi
           fi
           if [[ "${{ matrix.weakjack }}" == true ]]; then 
             CONFIG_STRING="-Dweakjack=true $CONFIG_STRING"
