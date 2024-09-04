@@ -10,4 +10,5 @@ option('noupdater', type : 'boolean', value : false, description: 'Build without
 option('nofeedback', type : 'boolean', value : false, description: 'Build without feedback detection')
 option('profile', type: 'combo', choices: ['default', 'development'], value: 'default', description: 'Choose build profile / Sets desktop id accordingly')
 option('qtversion', type : 'combo', choices: ['', '5', '6'], description: 'Choose to build with either Qt5 or Qt6')
+option('qtedition', type : 'combo', choices: ['opensource', 'commercial'], description: 'Choose license edition for Qt')
 option('buildinfo', type : 'string', value : '', yield : true, description: 'Additional info used to describe the build')

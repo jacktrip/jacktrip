@@ -294,9 +294,10 @@ if get_option('default_library') == 'static'
 	endif
 endif
 
-# TODO: QT_OPENSOURCE should only be defined for open source Qt distribution
-# in QMake this can be checked with QT_EDITION == 'OpenSource'
-defines += '-DQT_OPENSOURCE'
+# QT_OPENSOURCE should only be defined for open source Qt distribution
+if get_option('qtedition') != 'commercial'
+	defines += '-DQT_OPENSOURCE'
+endif
 
 rtaudio_dep = dependency('rtaudio', required: get_option('rtaudio'))
 if rtaudio_dep.found() == true

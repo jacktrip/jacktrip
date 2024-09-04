@@ -435,11 +435,12 @@ jobs:
           fi
           if [[ "${{ matrix.nogui }}" == true ]]; then 
             CONFIG_STRING="-Dnogui=true $CONFIG_STRING"
-          fi
-          if [[ "${{ matrix.novs }}" == true ]]; then 
+          elif [[ "${{ matrix.novs }}" == true ]]; then
             CONFIG_STRING="-Dnovs=true $CONFIG_STRING"
           elif [[ "${{ needs.check-secrets.outputs.should_run }}" == "true" ]]; then
             if [[ "${{ runner.os }}" == 'Windows' ]] || [[ "${{ runner.os }}" == 'macOS' ]]; then
+              # signed JTL builds for Windows and MacOS use Qt commercial license
+              CONFIG_STRING="-Dqtedition=commercial $CONFIG_STRING"
               # do not include classic mode interface in signed JackTrip Labs builds
               CONFIG_STRING="-Dnoclassic=true $CONFIG_STRING"
             else

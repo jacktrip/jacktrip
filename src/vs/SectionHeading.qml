@@ -92,7 +92,6 @@ Rectangle {
                   text: qsTr("Show my inactive Studios")
                   checkState: virtualstudio.showInactive ? Qt.Checked : Qt.Unchecked
                   onClicked: { virtualstudio.showInactive = inactiveCheckbox.checkState == Qt.Checked;
-                      refreshing = true;
                       refresh();
                   }
                   indicator: Rectangle {
@@ -127,7 +126,6 @@ Rectangle {
                   text: qsTr("Show self-hosted Studios")
                   checkState: virtualstudio.showSelfHosted ? Qt.Checked : Qt.Unchecked
                   onClicked: { virtualstudio.showSelfHosted = selfHostedCheckbox.checkState == Qt.Checked;
-                      refreshing = true;
                       refresh();
                   }
                   indicator: Rectangle {

@@ -339,13 +339,20 @@ QString VirtualStudio::buildString()
 QString VirtualStudio::copyrightString()
 {
     QString result;
+    bool gplLicense = false;
+#ifdef QT_OPENSOURCE
+    gplLicense = true;
+#endif
+
     result +=
         "Copyright &copy; 2008-2024 Juan-Pablo Caceres, Chris Chafe, et al. SoundWIRE "
         "group at CCRMA, Stanford University.<br/><br/>\n";
     result +=
         "Virtual Studio interface and integration Copyright &copy; 2022-2024 JackTrip "
         "Labs, Inc.<br/><br/>\n";
+
     if (hasClassicMode()) {
+        gplLicense = true;
         result +=
             "Classic mode graphical user interface component originally released as "
             "QJackTrip, Copyright &copy; 2020 Aaron Wyatt.<br/><br/>\n";
@@ -357,23 +364,11 @@ QString VirtualStudio::copyrightString()
         "software of Steinberg Media Technologies GmbH.<br/><br/>";
 #endif
 
-    result += "JackTrip source code is released under MIT and GPL licenses.\n";
-#ifdef QT_OPENSOURCE
-#ifdef NO_CLASSIC
-    result += "This build of JackTrip is subject to LGPL license.\n";
-#else
-    result += "This build of JackTrip is subject to GPL and LGPL licenses.\n";
-#endif  // NO_CLASSIC
-#else   // not QT_OPENSOURCE (commercial license)
-#ifndef NO_CLASSIC
-    result += "This build of JackTrip is subject to GPL license.\n";
-#endif  // NO_CLASSIC
-#endif  // QT_OPENSOURCE
-    result += "See LICENSE.md file for more information.<br/><br/>\n";
-
     result +=
-        "This is free software and is provided &quot;as is&quot;, without warranty of "
-        "any kind.<br/>\n";
+        "This app is free and open source software provided &quot;as is&quot; under the ";
+    result += (gplLicense ? "GPL" : "MIT");
+    result += " license, without warranty of any kind.\n";
+    result += "See the included LICENSE.md file for more information.<br/><br/>\n";
 
     return result;
 }
@@ -1423,7 +1418,7 @@ void VirtualStudio::refreshStudios(int index, bool signalRefresh)
 {
     // user id is required for retrieval of subscriptions
     if (m_userId.isEmpty()) {
-        std::cerr << "refresh cancelled due to empty user id" << std::endl;
+        std::cerr << "Studio refresh cancelled due to empty user id" << std::endl;
         return;
     }
 
