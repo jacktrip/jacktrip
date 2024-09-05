@@ -41,7 +41,7 @@ Item {
             settings.javascriptCanPaste: true
             settings.screenCaptureEnabled: true
             profile.httpUserAgent: `JackTrip/${virtualstudio.versionString}`
-            url: `https://${virtualstudio.apiHost}/qt/create?accessToken=${accessToken}`
+            url: `https://${virtualstudio.apiHost === "test.jacktrip.com" ? "next-test.jacktrip.com" : "jacktrip.com"}/app/studios/create?accessToken=${accessToken}&userId=${auth.userId}`
 
             onContextMenuRequested: function(request) {
                 // this disables the default context menu: https://doc.qt.io/qt-6.2/qml-qtwebengine-contextmenurequest.html#accepted-prop
