@@ -9,6 +9,7 @@
   - (updated) VS Mode removed button click to create first studio
   - (updated) VS Mode updated to new link to edit user profile
   - (updated) VS Mode changed red text color for buttons to black
+  - (updated) VS Mode improved error handling for login screen
   - (updated) VS Mode improved messaging while loading studios
   - (fixed) VS Mode possible failures when loading studios
   - (fixed) VS Mode studio refresh updated to avoid jumpiness

@@ -90,7 +90,7 @@ void VsAuth::fetchUserInfo(QString accessToken)
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "VsAuth::fetchUserInfo Error: "
                       << reply->errorString().toStdString() << std::endl;
-            handleAuthFailed();  // handle failure
+            handleAuthFailed(reply->errorString());  // handle failure
             emit fetchUserInfoFailed();
             reply->deleteLater();
             return;
@@ -104,7 +104,7 @@ void VsAuth::fetchUserInfo(QString accessToken)
 
         if (userId.isEmpty()) {
             std::cout << "VsAuth::fetchUserInfo Error: empty userId" << std::endl;
-            handleAuthFailed();  // handle failure
+            handleAuthFailed("empty userId");  // handle failure
             emit fetchUserInfoFailed();
             return;
         }
@@ -135,10 +135,11 @@ void VsAuth::refreshAccessToken(QString refreshToken)
         QByteArray buffer = reply->readAll();
 
         // Error: failed to get device code
-        if (reply->error()) {
-            std::cout << "Failed to get new access token: " << buffer.toStdString()
-                      << std::endl;
-            handleAuthFailed();  // handle failure
+        QNetworkReply::NetworkError err = reply->error();
+        if (err != QNetworkReply::NoError) {
+            std::cout << "Failed to get new access token: "
+                      << reply->errorString().toStdString() << std::endl;
+            handleAuthFailed(reply->errorString());  // handle failure
             emit refreshTokenFailed();
             reply->deleteLater();
             return;
@@ -150,7 +151,7 @@ void VsAuth::refreshAccessToken(QString refreshToken)
         if (parseError.error) {
             std::cout << "Error parsing JSON for Access Token: "
                       << parseError.errorString().toStdString() << std::endl;
-            handleAuthFailed();  // handle failure
+            handleAuthFailed("error parsing access token");  // handle failure
             emit refreshTokenFailed();
             reply->deleteLater();
             return;
@@ -195,9 +196,11 @@ void VsAuth::handleRefreshSucceeded(QString accessToken)
 
     m_accessToken            = accessToken;
     m_authenticationStage    = QStringLiteral("success");
+    m_errorMessage           = QStringLiteral("");
     m_attemptingRefreshToken = false;
 
     emit updatedAuthenticationStage(m_authenticationStage);
+    emit updatedErrorMessage(m_errorMessage);
     emit updatedVerificationCode(m_verificationCode);
     emit updatedAttemptingRefreshToken(m_attemptingRefreshToken);
 }
@@ -219,11 +222,13 @@ void VsAuth::handleAuthSucceeded(QString userId, QString accessToken)
     m_verificationCode       = QStringLiteral("");
     m_accessToken            = accessToken;
     m_authenticationStage    = QStringLiteral("success");
+    m_errorMessage           = QStringLiteral("");
     m_attemptingRefreshToken = false;
     m_isAuthenticated        = true;
 
     emit updatedUserId(m_userId);
     emit updatedAuthenticationStage(m_authenticationStage);
+    emit updatedErrorMessage(m_errorMessage);
     emit updatedVerificationCode(m_verificationCode);
     emit updatedIsAuthenticated(m_isAuthenticated);
     emit updatedAttemptingRefreshToken(m_attemptingRefreshToken);
@@ -233,7 +238,7 @@ void VsAuth::handleAuthSucceeded(QString userId, QString accessToken)
     emit authSucceeded();
 }
 
-void VsAuth::handleAuthFailed()
+void VsAuth::handleAuthFailed(QString errorMessage)
 {
     // this might get called because there was an error getting the access token,
     // or there was an issue fetching the user ID. We need both to say
@@ -244,12 +249,14 @@ void VsAuth::handleAuthFailed()
     m_verificationCode       = QStringLiteral("");
     m_accessToken            = QStringLiteral("");
     m_authenticationStage    = QStringLiteral("failed");
+    m_errorMessage           = errorMessage;
     m_authenticationMethod   = QStringLiteral("");
     m_attemptingRefreshToken = false;
     m_isAuthenticated        = false;
 
     emit updatedUserId(m_userId);
     emit updatedAuthenticationStage(m_authenticationStage);
+    emit updatedErrorMessage(m_errorMessage);
     emit updatedVerificationCode(m_verificationCode);
     emit updatedIsAuthenticated(m_isAuthenticated);
     emit updatedAttemptingRefreshToken(m_attemptingRefreshToken);
@@ -268,10 +275,12 @@ void VsAuth::cancelAuthenticationFlow()
     m_verificationCode    = QStringLiteral("");
     m_accessToken         = QStringLiteral("");
     m_authenticationStage = QStringLiteral("unauthenticated");
+    m_errorMessage        = QStringLiteral("cancelled");
     m_isAuthenticated     = false;
 
     emit updatedUserId(m_userId);
     emit updatedAuthenticationStage(m_authenticationStage);
+    emit updatedErrorMessage(m_errorMessage);
     emit updatedVerificationCode(m_verificationCode);
     emit updatedIsAuthenticated(m_isAuthenticated);
 }
@@ -288,10 +297,12 @@ void VsAuth::logout()
     m_verificationCode    = QStringLiteral("");
     m_accessToken         = QStringLiteral("");
     m_authenticationStage = QStringLiteral("unauthenticated");
+    m_errorMessage        = QStringLiteral("");
     m_isAuthenticated     = false;
 
     emit updatedUserId(m_userId);
     emit updatedAuthenticationStage(m_authenticationStage);
+    emit updatedErrorMessage(m_errorMessage);
     emit updatedVerificationCode(m_verificationCode);
     emit updatedIsAuthenticated(m_isAuthenticated);
 }
