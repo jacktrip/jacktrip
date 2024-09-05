@@ -7,7 +7,7 @@ Window {
     visible: false
 
     width: 600 * virtualstudio.uiScale
-    height: 600 * virtualstudio.uiScale
+    height: 570 * virtualstudio.uiScale
 
     property int fontTitle: 20
     property int fontMedium: 12

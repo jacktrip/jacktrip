@@ -155,7 +155,7 @@ if [ -n "$DYNAMIC_QT" ]; then
     fi
     DEPLOY_OPTS="-executable=$APPNAME.app/Contents/MacOS/jacktrip -libpath=$QT_PATH/lib"
     if [ -n "$DYNAMIC_VS" ]; then
-        DEPLOY_OPTS="$DEPLOY_OPTS -qmldir=../src/gui"
+        DEPLOY_OPTS="$DEPLOY_OPTS -qmldir=../src/vs"
     fi
     $DEPLOY_CMD "$APPNAME.app" $DEPLOY_OPTS
 
