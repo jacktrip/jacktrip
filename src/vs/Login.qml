@@ -59,6 +59,23 @@ Item {
         id: clipboard
     }
 
+    function getVerificationCodeText() {
+        if (Boolean(auth.verificationCode)) {
+            return auth.verificationCode;
+        }
+        if (numFailures < 5) {
+            return "Loading...";
+        }
+        var result;
+        if (auth.errorMessage.startsWith("Host") && auth.errorMessage.endsWith("not found")) {
+            result = "Your Internet connection is offline.";
+        } else {
+            result = "There was an error trying to sign in.";
+        }
+        result += "<br/> Please try again.";
+        return result;
+    }
+
     Item {
         id: loginScreenHeader
         anchors.horizontalCenter: parent.horizontalCenter
@@ -107,7 +124,7 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
             y: 128 * virtualstudio.uiScale
             width: 500 * virtualstudio.uiScale;
-            visible: true
+            visible: Boolean(auth.verificationCode)
             color: textColour
             wrapMode: Text.WordWrap
             horizontalAlignment: Text.AlignHCenter
@@ -133,13 +150,13 @@ Item {
 
         Text {
             id: deviceVerificationCode
-            text: auth.verificationCode || ((numFailures >= 5) ? "Error" : "Loading...");
+            text: getVerificationCodeText()
             font.family: "Poppins"
             font.pixelSize: 20 * virtualstudio.fontScale * virtualstudio.uiScale
             font.letterSpacing: Boolean(auth.verificationCode) ? 8 : 1
             anchors.horizontalCenter: parent.horizontalCenter
             y: 196 * virtualstudio.uiScale
-            width: 360 * virtualstudio.uiScale;
+            width: 540 * virtualstudio.uiScale;
             visible: !auth.isAuthenticated
             color: Boolean(auth.verificationCode) ? textColour : disabledButtonText
             wrapMode: Text.WordWrap
@@ -215,18 +232,19 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
                 color: loginButton.down ? buttonTextPressed : (loginButton.hovered ? buttonTextHover : buttonTextColour)
             }
-            visible: !auth.isAuthenticated
+            visible: !auth.isAuthenticated && Boolean(auth.verificationCode)
         }
 
         Text {
             id: authFailedText
-            text: "There was an error trying to sign in. Please try again."
+            text: auth.errorMessage
             font.family: "Poppins"
             font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
+            horizontalAlignment: Text.AlignHCenter
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.bottom: loginScreenFooter.top
             anchors.bottomMargin: 16 * virtualstudio.uiScale
-            visible: (loginScreen.state === "failed" || numFailures > 0) && loginScreen.state !== "success"
+            visible: (loginScreen.state === "failed" && numFailures >= 5) && loginScreen.state !== "success"
             color: errorTextColour
         }
 
@@ -264,12 +282,12 @@ Item {
 
             Item {
                 id: resetCodeButton
-                visible: true
+                visible: loginScreen.state == "failed" || (!auth.isAuthenticated && auth.verificationCode)
                 x: parent.showBackButton ? (parent.x + parent.width / 2) + 8 * virtualstudio.uiScale : (parent.x + parent.width / 2) - resetCodeButton.width / 2
                 anchors.verticalCenter: parent.verticalCenter
                 width: 144 * virtualstudio.uiScale; height: 32 * virtualstudio.uiScale
                 Text {
-                    text: "Reset Code"
+                    text: auth.verificationCode ? "Reset Code" : "Retry"
                     font.family: "Poppins"
                     font.underline: true
                     font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
@@ -280,8 +298,11 @@ Item {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: () => {
-                        if (auth.verificationCode && auth.verificationUrl) {
+                        if (auth.verificationCode) {
                             auth.resetCode();
+                        } else {
+                            numFailures = 0;
+                            virtualstudio.login();
                         }
                     }
                     cursorShape: Qt.PointingHandCursor
@@ -310,14 +331,22 @@ Item {
         }
     }
 
+    Timer {
+        id: retryTimer
+        running: false
+        repeat: false
+        interval: 300
+        onTriggered: { virtualstudio.login(); }
+    }
+
     Connections {
         target: auth
         function onUpdatedAuthenticationStage (stage) {
             loginScreen.state = stage;
             if (stage === "failed") {
                 numFailures = numFailures + 1;
-                if (numFailures < 5 && !virtualstudio.hasRefreshToken) {
-                    virtualstudio.login();
+                if (numFailures < 5) {
+                    retryTimer.restart();
                 }
             }
             if (stage === "success") {

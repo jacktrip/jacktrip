@@ -64,6 +64,8 @@ void VsDeviceCodeFlow::grant()
 
 void VsDeviceCodeFlow::initDeviceAuthorizationCodeFlow()
 {
+    m_authenticationError = false;
+
     // form initial request for device authorization code
     QNetworkRequest request = QNetworkRequest(
         QUrl(QString("https://%1/oauth/device/code").arg(m_authorizationServerHost)));
@@ -86,7 +88,7 @@ void VsDeviceCodeFlow::initDeviceAuthorizationCodeFlow()
             emit deviceCodeFlowInitialized(m_userCode, m_verificationUriComplete);
         } else if (m_authenticationError) {
             // notify failure
-            emit deviceCodeFlowError();
+            emit deviceCodeFlowError(reply->errorString());
         }
         reply->deleteLater();
     });
@@ -138,7 +140,7 @@ void VsDeviceCodeFlow::onPollingTimerTick()
         bool success = processPollingOAuthTokenNetworkReply(reply);
         if (m_authenticationError) {
             // shouldn't happen
-            emit deviceCodeFlowError();
+            emit deviceCodeFlowError(reply->errorString());
         } else if (success) {
             // flow successfully completed
             emit onCompletedCodeFlow(m_accessToken, m_refreshToken);
@@ -171,7 +173,8 @@ bool VsDeviceCodeFlow::processDeviceCodeNetworkReply(QNetworkReply* reply)
 
     // Error: failed to get device code
     if (reply->error()) {
-        std::cout << "Failed to get device code: " << buffer.toStdString() << std::endl;
+        std::cout << "Failed to get device code: " << reply->errorString().toStdString()
+                  << std::endl;
         m_authenticationError = true;
         return false;
     }
