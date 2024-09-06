@@ -306,6 +306,8 @@ JackTrip* VsDevice::initJackTrip(
     m_jackTrip->setRemoteClientName(m_appID);
     m_jackTrip->setBufferStrategy(bufferStrategy);
     m_jackTrip->setBufferQueueLength(-500);  // use -q auto
+    m_jackTrip->setUseRtUdpPriority(
+        true);  // rt udp priority reduces glitches on desktops
     m_jackTrip->setPeerAddress(studioInfo->host());
     m_jackTrip->setPeerPorts(studioInfo->port());
     m_jackTrip->setPeerHandshakePort(studioInfo->port());
