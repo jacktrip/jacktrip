@@ -325,16 +325,15 @@ bool UdpDataProtocol::setSocketQos(socket_type& sock_fd)
     // https://learn.microsoft.com/en-us/previous-versions/windows/desktop/qos/qwave-api-reference
 
     // Initialize the QoS version parameter.
-    QOS_VERSION    Version;
+    QOS_VERSION Version;
     Version.MajorVersion = 1;
     Version.MinorVersion = 0;
 
     // Get a handle to the QoS subsystem.
     HANDLE QoSHandle = NULL;
-    BOOL   QoSResult = QOSCreateHandle(&Version, &QoSHandle);
+    BOOL QoSResult   = QOSCreateHandle(&Version, &QoSHandle);
     if (QoSResult != TRUE) {
-        std::cerr << "QOSCreateHandle failed. Error: "
-                  << WSAGetLastError() << std::endl;
+        std::cerr << "QOSCreateHandle failed. Error: " << WSAGetLastError() << std::endl;
         return false;
     }
 
@@ -348,13 +347,8 @@ bool UdpDataProtocol::setSocketQos(socket_type& sock_fd)
     }
     // Note: QOSTrafficTypeVoice sets DSCP to 56 (high VO for WMM)
     // without having to call QOSSetFlow(). This is best for voice.
-    QoSResult = QOSAddSocketToFlow(
-        QoSHandle,
-        sock_fd,
-        pSockAddr,
-        QOSTrafficTypeVoice,
-        QOS_NON_ADAPTIVE_FLOW,
-        &QoSFlowId);
+    QoSResult = QOSAddSocketToFlow(QoSHandle, sock_fd, pSockAddr, QOSTrafficTypeVoice,
+                                   QOS_NON_ADAPTIVE_FLOW, &QoSFlowId);
     if (QoSResult != TRUE) {
         std::cerr << "QOSAddSocketToFlow failed. Error: ";
         std::cerr << WSAGetLastError() << std::endl;
@@ -365,7 +359,8 @@ bool UdpDataProtocol::setSocketQos(socket_type& sock_fd)
     // TODO: this is supposed to be the right thing to do on OSX, but doesn't seem to do
     // anything
     const int val = NET_SERVICE_TYPE_VO;
-    int result = ::setsockopt(sock_fd, SOL_SOCKET, SO_NET_SERVICE_TYPE, &val, sizeof(val));
+    int result =
+        ::setsockopt(sock_fd, SOL_SOCKET, SO_NET_SERVICE_TYPE, &val, sizeof(val));
     if (result != 0) {
         std::cerr << "setsockopt failed. Error: " << errno << std::endl;
         return false;
