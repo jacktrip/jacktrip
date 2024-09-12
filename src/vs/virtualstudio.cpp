@@ -970,18 +970,11 @@ void VirtualStudio::completeConnection()
         }
 #endif
 
-        // increment buffer_strategy by 1 for array-index mapping
-        int buffer_strategy = m_audioConfigPtr->getBufferStrategy() + 1;
-        // adjust buffer_strategy for PLC "auto" mode menu item
-        if (buffer_strategy == 4 || buffer_strategy == 5) {
-            buffer_strategy = 3;
-        }
-
         // create a new JackTrip instance
         JackTrip* jackTrip = m_devicePtr->initJackTrip(
             useRtAudio, input, output, baseInputChannel, numInputChannels,
             baseOutputChannel, numOutputChannels, inputMixMode, buffer_size,
-            buffer_strategy, &m_currentStudio);
+            m_audioConfigPtr->getQueueBuffer(), &m_currentStudio);
         if (jackTrip == 0) {
             processError("Could not bind port");
             return;
