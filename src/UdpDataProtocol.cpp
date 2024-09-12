@@ -50,6 +50,7 @@
 #include "jacktrip_globals.h"
 #ifdef _WIN32
 // #include <winsock.h>
+#include <qos2.h>
 #include <stdio.h>
 #include <winsock2.h>  //cc need SD_SEND
 #pragma comment(lib, "ws2_32.lib")
@@ -195,11 +196,7 @@ void UdpDataProtocol::setPeerAddress(const char* peerHostOrIP)
     }
 }
 
-#if defined(_WIN32)
-void UdpDataProtocol::setSocket(SOCKET& socket)
-#else
-void UdpDataProtocol::setSocket(int& socket)
-#endif
+void UdpDataProtocol::setSocket(socket_type& socket)
 {
     // If we haven't been passed a valid socket, then we should bind one.
 #if defined(_WIN32)
@@ -221,11 +218,7 @@ void UdpDataProtocol::setSocket(int& socket)
 }
 
 //*******************************************************************************
-#if defined(_WIN32)
-SOCKET UdpDataProtocol::bindSocket()
-#else
-int UdpDataProtocol::bindSocket()
-#endif
+socket_type UdpDataProtocol::bindSocket()
 {
     QMutexLocker locker(&sUdpMutex);
 
@@ -301,30 +294,12 @@ int UdpDataProtocol::bindSocket()
     ::setsockopt(sock_fd, SOL_SOCKET, SO_REUSEPORT, &one, sizeof(one));
 #endif
 
-#if defined(_WIN32)
-    // TODO: these don't seem to work on windows. we likely need to use qWAVE or qos2
-#elif defined(__APPLE__)
-    // set service type "Interactive Voice"
-    // TODO: this is supposed to be the right thing to do on OSX, but doesn't seem to do
-    // anything
-    const int val = NET_SERVICE_TYPE_VO;
-    ::setsockopt(sock_fd, SOL_SOCKET, SO_NET_SERVICE_TYPE, &val, sizeof(val));
-#else
-    // Set ToS to DSCP Expedited Forwarding (EF), recommended for Audio
-    // See RFC2474 https://datatracker.ietf.org/doc/html/rfc2474
-    // See also
-    // https://www.slashroot.in/understanding-differentiated-services-tos-field-internet-protocol-header
-    const char tos = 0xB8;  // 10111000
-    if (mIPv6) {
-        ::setsockopt(sock_fd, IPPROTO_IPV6, IPV6_TCLASS, &tos, sizeof(tos));
+    // set qos for windows after flow is established (requires peer address/port)
+    if (setSocketQos(sock_fd)) {
+        std::cout << "Set QoS for network socket" << std::endl;
     } else {
-        ::setsockopt(sock_fd, IPPROTO_IP, IP_TOS, &tos, sizeof(tos));
+        std::cerr << "Failed to set QoS for network socket" << std::endl;
     }
-
-    // Set 802.1q QoS priority
-    int priority = 6;
-    ::setsockopt(sock_fd, SOL_SOCKET, SO_PRIORITY, &priority, sizeof(priority));
-#endif
 
     // Bind the Socket
     if (mIPv6) {
@@ -340,6 +315,83 @@ int UdpDataProtocol::bindSocket()
     // Return our file descriptor so the socket can be shared for a
     // full duplex connection.
     return sock_fd;
+}
+
+bool UdpDataProtocol::setSocketQos(socket_type& sock_fd)
+{
+#if defined(_WIN32)
+    // Windows QoS (qWave) for audio traffic flows
+    // https://learn.microsoft.com/en-us/windows/win32/api/_qos/
+    // https://learn.microsoft.com/en-us/previous-versions/windows/desktop/qos/qwave-api-reference
+
+    // Initialize the QoS version parameter.
+    QOS_VERSION Version;
+    Version.MajorVersion = 1;
+    Version.MinorVersion = 0;
+
+    // Get a handle to the QoS subsystem.
+    HANDLE QoSHandle = NULL;
+    BOOL QoSResult   = QOSCreateHandle(&Version, &QoSHandle);
+    if (QoSResult != TRUE) {
+        std::cerr << "QOSCreateHandle failed. Error: " << WSAGetLastError() << std::endl;
+        return false;
+    }
+
+    // Add socket to flow.
+    QOS_FLOWID QoSFlowId = 0;  // Flow Id must be 0.
+    PSOCKADDR pSockAddr;
+    if (mIPv6) {
+        pSockAddr = reinterpret_cast<PSOCKADDR>(&mPeerAddr6);
+    } else {
+        pSockAddr = reinterpret_cast<PSOCKADDR>(&mPeerAddr);
+    }
+    // Note: QOSTrafficTypeVoice sets DSCP to 56 (high VO for WMM)
+    // without having to call QOSSetFlow(). This is best for voice.
+    QoSResult = QOSAddSocketToFlow(QoSHandle, sock_fd, pSockAddr, QOSTrafficTypeVoice,
+                                   QOS_NON_ADAPTIVE_FLOW, &QoSFlowId);
+    if (QoSResult != TRUE) {
+        std::cerr << "QOSAddSocketToFlow failed. Error: ";
+        std::cerr << WSAGetLastError() << std::endl;
+        return false;
+    }
+#elif defined(__APPLE__)
+    // set service type "Interactive Voice"
+    // TODO: this is supposed to be the right thing to do on OSX, but doesn't seem to do
+    // anything
+    const int val = NET_SERVICE_TYPE_VO;
+    int result =
+        ::setsockopt(sock_fd, SOL_SOCKET, SO_NET_SERVICE_TYPE, &val, sizeof(val));
+    if (result != 0) {
+        std::cerr << "setsockopt failed. Error: " << errno << std::endl;
+        return false;
+    }
+#else
+    // Set ToS to DSCP 56 (high VO for WMM), recommended for Audio
+    // See RFC2474 https://datatracker.ietf.org/doc/html/rfc2474
+    // See also
+    // https://www.slashroot.in/understanding-differentiated-services-tos-field-internet-protocol-header
+    const char tos = 0xE0;  // 11100000 (56 << 2)
+    int result;
+    if (mIPv6) {
+        result = ::setsockopt(sock_fd, IPPROTO_IPV6, IPV6_TCLASS, &tos, sizeof(tos));
+    } else {
+        result = ::setsockopt(sock_fd, IPPROTO_IP, IP_TOS, &tos, sizeof(tos));
+    }
+    if (result != 0) {
+        std::cerr << "setsockopt failed. Error: " << errno << std::endl;
+        return false;
+    }
+
+    // Set 802.1q QoS priority
+    int priority = 6;
+    result = ::setsockopt(sock_fd, SOL_SOCKET, SO_PRIORITY, &priority, sizeof(priority));
+    if (result != 0) {
+        std::cerr << "setsockopt failed. Error: " << errno << std::endl;
+        return false;
+    }
+#endif
+
+    return true;
 }
 
 void UdpDataProtocol::processControlPacket(const char* buf)

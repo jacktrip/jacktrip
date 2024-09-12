@@ -211,6 +211,15 @@ bool VsAudio::jackIsAvailable() const
     }
 }
 
+bool VsAudio::asioIsAvailable() const
+{
+#if defined(RT_AUDIO) && defined(_WIN32)
+    return RtAudio::getCompiledApiByName("asio") != RtAudio::UNSPECIFIED;
+#else
+    return false;
+#endif
+}
+
 void VsAudio::setAudioReady(bool ready)
 {
     if (ready == m_audioReady)

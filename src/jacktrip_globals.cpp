@@ -152,11 +152,70 @@ void setRealtimeProcessPriority(int bufferSize, int sampleRate)
 #elif defined(_WIN32)
 void setRealtimeProcessPriority()
 {
-    if (SetPriorityClass(GetCurrentProcess(), REALTIME_PRIORITY_CLASS) == 0) {
-        std::cerr << "Failed to set process priority class." << std::endl;
+    if (SetPriorityClass(GetCurrentProcess(), REALTIME_PRIORITY_CLASS) == 0
+        || GetPriorityClass(GetCurrentProcess()) != REALTIME_PRIORITY_CLASS) {
+        std::string priority = "unknown";
+        switch (GetPriorityClass(GetCurrentProcess())) {
+        case ABOVE_NORMAL_PRIORITY_CLASS:
+            priority = "above normal";
+            break;
+        case BELOW_NORMAL_PRIORITY_CLASS:
+            priority = "below normal";
+            break;
+        case HIGH_PRIORITY_CLASS:
+            priority = "high";
+            break;
+        case IDLE_PRIORITY_CLASS:
+            priority = "idle";
+            break;
+        case NORMAL_PRIORITY_CLASS:
+            priority = "high";
+            break;
+        case REALTIME_PRIORITY_CLASS:
+            priority = "realtime";
+            break;
+        }
+        std::cerr << "Failed to set process priority class (priority = " << priority
+                  << ")" << std::endl;
+    } else {
+        std::cout << "Set process priority class to realtime" << std::endl;
     }
-    if (SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL) == 0) {
-        std::cerr << "Failed to set thread priority." << std::endl;
+    if (SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL) == 0
+        || GetThreadPriority(GetCurrentThread()) != THREAD_PRIORITY_TIME_CRITICAL) {
+        std::string priority = "unknown";
+        switch (GetThreadPriority(GetCurrentThread())) {
+        case THREAD_MODE_BACKGROUND_BEGIN:
+            priority = "background begin";
+            break;
+        case THREAD_MODE_BACKGROUND_END:
+            priority = "background end";
+            break;
+        case THREAD_PRIORITY_ABOVE_NORMAL:
+            priority = "above normal";
+            break;
+        case THREAD_PRIORITY_BELOW_NORMAL:
+            priority = "below normal";
+            break;
+        case THREAD_PRIORITY_HIGHEST:
+            priority = "highest";
+            break;
+        case THREAD_PRIORITY_IDLE:
+            priority = "idle";
+            break;
+        case THREAD_PRIORITY_LOWEST:
+            priority = "lowest";
+            break;
+        case THREAD_PRIORITY_NORMAL:
+            priority = "normal";
+            break;
+        case THREAD_PRIORITY_TIME_CRITICAL:
+            priority = "time critical";
+            break;
+        }
+        std::cerr << "Failed to set thread priority (priority = " << priority << ")"
+                  << std::endl;
+    } else {
+        std::cout << "Set thread priority to time critical" << std::endl;
     }
 }
 #else

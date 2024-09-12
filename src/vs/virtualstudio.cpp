@@ -358,11 +358,11 @@ QString VirtualStudio::copyrightString()
             "QJackTrip, Copyright &copy; 2020 Aaron Wyatt.<br/><br/>\n";
     }
 
-#if defined(_WIN32) && defined(RT_AUDIO)
-    result +=
-        "This build of JackTrip includes support for ASIO. ASIO is a trademark and "
-        "software of Steinberg Media Technologies GmbH.<br/><br/>";
-#endif
+    if (m_audioConfigPtr->asioIsAvailable()) {
+        result +=
+            "This build of JackTrip includes support for ASIO. ASIO is a trademark and "
+            "software of Steinberg Media Technologies GmbH.<br/><br/>";
+    }
 
     result +=
         "This app is free and open source software provided &quot;as is&quot; under the ";

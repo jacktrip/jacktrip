@@ -160,6 +160,7 @@ class VsAudio : public QObject
     // getters for state shared with QML
     bool backendAvailable() const;
     bool jackIsAvailable() const;
+    bool asioIsAvailable() const;
     bool getAudioReady() const { return m_audioReady; }
     bool getScanningDevices() const { return m_scanningDevices; }
     bool getFeedbackDetectionEnabled() const { return m_feedbackDetectionEnabled; }
