@@ -277,7 +277,7 @@ JackTrip* VsDevice::initJackTrip(
     [[maybe_unused]] std::string output, [[maybe_unused]] int baseInputChannel,
     [[maybe_unused]] int numChannelsIn, [[maybe_unused]] int baseOutputChannel,
     [[maybe_unused]] int numChannelsOut, [[maybe_unused]] int inputMixMode,
-    [[maybe_unused]] int bufferSize, [[maybe_unused]] int bufferStrategy,
+    [[maybe_unused]] int bufferSize, [[maybe_unused]] int queueBuffer,
     VsServerInfo* studioInfo)
 {
     m_jackTrip.reset(
@@ -304,8 +304,8 @@ JackTrip* VsDevice::initJackTrip(
     }
     m_jackTrip->setBindPorts(bindPort);
     m_jackTrip->setRemoteClientName(m_appID);
-    m_jackTrip->setBufferStrategy(bufferStrategy);
-    m_jackTrip->setBufferQueueLength(-500);  // use -q auto
+    m_jackTrip->setBufferStrategy(3);  // PLC
+    m_jackTrip->setBufferQueueLength(queueBuffer);
     m_jackTrip->setUseRtUdpPriority(
         true);  // rt udp priority reduces glitches on desktops
     m_jackTrip->setPeerAddress(studioInfo->host());

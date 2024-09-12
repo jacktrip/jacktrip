@@ -72,7 +72,7 @@ class VsDevice : public QObject
     JackTrip* initJackTrip(bool useRtAudio, std::string input, std::string output,
                            int baseInputChannel, int numChannelsIn, int baseOutputChannel,
                            int numChannelsOut, int inputMixMode, int bufferSize,
-                           int bufferStrategy, VsServerInfo* studioInfo);
+                           int queueBuffer, VsServerInfo* studioInfo);
     void startJackTrip(const VsServerInfo& studioInfo);
     void stopJackTrip(bool isReconnecting = false);
     void reconcileAgentConfig(QJsonDocument newState);

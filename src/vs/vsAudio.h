@@ -81,8 +81,8 @@ class VsAudio : public QObject
         int sampleRate READ getSampleRate WRITE setSampleRate NOTIFY sampleRateChanged)
     Q_PROPERTY(
         int bufferSize READ getBufferSize WRITE setBufferSize NOTIFY bufferSizeChanged)
-    Q_PROPERTY(int bufferStrategy READ getBufferStrategy WRITE setBufferStrategy NOTIFY
-                   bufferStrategyChanged)
+    Q_PROPERTY(int queueBuffer READ getQueueBuffer WRITE setQueueBuffer NOTIFY
+                   queueBufferChanged)
     Q_PROPERTY(int numInputChannels READ getNumInputChannels WRITE setNumInputChannels
                    NOTIFY numInputChannelsChanged)
     Q_PROPERTY(int numOutputChannels READ getNumOutputChannels WRITE setNumOutputChannels
@@ -121,11 +121,8 @@ class VsAudio : public QObject
                    outputChannelsComboModelChanged)
     Q_PROPERTY(QJsonArray inputMixModeComboModel READ getInputMixModeComboModel NOTIFY
                    inputMixModeComboModelChanged)
-    Q_PROPERTY(QStringList feedbackDetectionComboModel READ getFeedbackDetectionComboModel
-                   CONSTANT)
     Q_PROPERTY(QStringList bufferSizeComboModel READ getBufferSizeComboModel CONSTANT)
-    Q_PROPERTY(
-        QStringList bufferStrategyComboModel READ getBufferStrategyComboModel CONSTANT)
+    Q_PROPERTY(QStringList queueTypeComboModel READ getQueueTypeComboModel CONSTANT)
     Q_PROPERTY(QStringList audioBackendComboModel READ getAudioBackendComboModel CONSTANT)
     Q_PROPERTY(
         QString devicesWarning READ getDevicesWarningMsg NOTIFY devicesWarningChanged)
@@ -172,7 +169,7 @@ class VsAudio : public QObject
     }
     int getSampleRate() const { return m_audioSampleRate; }
     int getBufferSize() const { return m_audioBufferSize; }
-    int getBufferStrategy() const { return m_bufferStrategy; }
+    int getQueueBuffer() const { return m_queueBuffer; }
     int getNumInputChannels() const { return getUseRtAudio() ? m_numInputChannels : 2; }
     int getNumOutputChannels() const { return getUseRtAudio() ? m_numOutputChannels : 2; }
     int getBaseInputChannel() const { return getUseRtAudio() ? m_baseInputChannel : 0; }
@@ -202,15 +199,8 @@ class VsAudio : public QObject
     {
         return m_inputMixModeComboModel;
     }
-    const QStringList& getFeedbackDetectionComboModel() const
-    {
-        return m_feedbackDetectionComboModel;
-    }
     const QStringList& getBufferSizeComboModel() const { return m_bufferSizeComboModel; }
-    const QStringList& getBufferStrategyComboModel() const
-    {
-        return m_bufferStrategyComboModel;
-    }
+    const QStringList& getQueueTypeComboModel() const { return m_queueTypeComboModel; }
     const QStringList& getAudioBackendComboModel() const
     {
         return m_audioBackendComboModel;
@@ -227,7 +217,7 @@ class VsAudio : public QObject
     void setAudioBackend(const QString& backend);
     void setSampleRate(int sampleRate);
     void setBufferSize(int bufSize);
-    void setBufferStrategy(int bufStrategy);
+    void setQueueBuffer(int queueBuffer);
     void setNumInputChannels(int numChannels);
     void setNumOutputChannels(int numChannels);
     void setBaseInputChannel(int baseChannel);
@@ -264,7 +254,7 @@ class VsAudio : public QObject
     void audioBackendChanged(bool useRtAudio);
     void sampleRateChanged();
     void bufferSizeChanged();
-    void bufferStrategyChanged();
+    void queueBufferChanged();
     void numInputChannelsChanged(int numChannels);
     void numOutputChannelsChanged(int numChannels);
     void baseInputChannelChanged(int baseChannel);
@@ -338,7 +328,7 @@ class VsAudio : public QObject
     int m_audioSampleRate           = gDefaultSampleRate;
     int m_audioBufferSize =
         gDefaultBufferSizeInSamples;  ///< Audio buffer size to process on each callback
-    int m_bufferStrategy    = 0;
+    int m_queueBuffer       = 0;
     int m_numInputChannels  = gDefaultNumInChannels;
     int m_numOutputChannels = gDefaultNumOutChannels;
     int m_baseInputChannel  = 0;
@@ -383,11 +373,11 @@ class VsAudio : public QObject
     Analyzer* m_outputAnalyzerPluginPtr;
 #endif
 
-    QStringList m_audioBackendComboModel      = {"JACK", "RtAudio"};
-    QStringList m_feedbackDetectionComboModel = {"Enabled", "Disabled"};
+    QStringList m_audioBackendComboModel = {"JACK", "RtAudio"};
     QStringList m_bufferSizeComboModel = {"16", "32", "64", "128", "256", "512", "1024"};
-    QStringList m_bufferStrategyComboModel = {
-        "Adaptable Latency (Old)", "Stable Latency (Old)", "Loss Concealment (Default)"};
+    QStringList m_queueTypeComboModel  = {"Auto Latency (Variable Headroom)",
+                                         "Auto Latency (Fixed Headroom)",
+                                         "Fixed Latency"};
 
     friend class VsAudioWorker;
 };

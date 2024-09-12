@@ -59,6 +59,25 @@ Item {
         return idx;
     }
 
+    function getCurrentQueueTypeIndex () {
+        if (audio.queueBuffer == -500) {
+            return 0;
+        }
+        if (audio.queueBuffer <= 0) {
+            return 1;
+        }
+        return 2;
+    }
+
+    function getQueueBufferString () {
+        if (queueTypeCombo.currentIndex == 0) {
+            return "auto";
+        }
+        let str = (audio.queueBuffer < 0) ? -1 * audio.queueBuffer : audio.queueBuffer;
+        str += " ms";
+        return str;
+    }
+
     Rectangle {
         id: audioSettingsView
         width: 0.8 * parent.width
@@ -474,43 +493,137 @@ Item {
         }
 
         ComboBox {
-            id: bufferStrategyCombo
-            x: updateChannelCombo.x; y: bufferCombo.y + (48 * virtualstudio.uiScale)
-            width: updateChannelCombo.width; height: updateChannelCombo.height
-            model: audio.bufferStrategyComboModel
-            currentIndex: audio.bufferStrategy
-            onActivated: { audio.bufferStrategy = currentIndex }
-            font.family: "Poppins"
-        }
-
-        Text {
-            anchors.verticalCenter: bufferStrategyCombo.verticalCenter
-            x: 48 * virtualstudio.uiScale
-            text: "Buffer Strategy"
-            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-            color: textColour
-        }
-
-        ComboBox {
-            id: feedbackDetectionCombo
-            x: updateChannelCombo.x; y: bufferStrategyCombo.y + (48 * virtualstudio.uiScale)
-            width: updateChannelCombo.width; height: updateChannelCombo.height
-            model: audio.feedbackDetectionComboModel
-            currentIndex: audio.feedbackDetectionEnabled ? 0 : 1
+            id: queueTypeCombo
+            x: 220 * virtualstudio.uiScale; y: bufferCombo.y + (48 * virtualstudio.uiScale)
+            width: bufferCombo.width; height: updateChannelCombo.height
+            model: audio.queueTypeComboModel
+            currentIndex: getCurrentQueueTypeIndex()
             onActivated: {
-                if (currentIndex === 1) {
-                    audio.feedbackDetectionEnabled = false;
+                if (currentIndex == 0) {
+                    audio.queueBuffer = -500;
+                } else if (currentIndex == 1) {
+                    audio.queueBuffer = 0;
                 } else {
-                    audio.feedbackDetectionEnabled = true;
+                    audio.queueBuffer = 10;
                 }
             }
             font.family: "Poppins"
         }
 
         Text {
-            anchors.verticalCenter: feedbackDetectionCombo.verticalCenter
+            anchors.verticalCenter: queueTypeCombo.verticalCenter
             x: 48 * virtualstudio.uiScale
-            text: "Feedback Detection"
+            text: "Queue Type"
+            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+        }
+
+        Text {
+            id: queueBufferText
+            width: (64 * virtualstudio.uiScale)
+            x: updateChannelCombo.x;
+            y: queueTypeCombo.y + (56 * virtualstudio.uiScale)
+            text: getQueueBufferString()
+            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+        }
+
+        Slider {
+            id: queueBufferSlider
+            value: queueTypeCombo.currentIndex == 0 ? 0 : (audio.queueBuffer < 0 ? -1 * audio.queueBuffer : audio.queueBuffer)
+            enabled: audio.queueBuffer != -500
+            onMoved: {
+                if (queueTypeCombo.currentIndex == 1) {
+                    audio.queueBuffer = -1 * value;
+                } else if (queueTypeCombo.currentIndex == 2) {
+                    let min = Math.ceil((audio.bufferSize * 1000) / audio.sampleRate);
+                    audio.queueBuffer = value < min ? min : value;
+                }
+            }
+            from: 0
+            to: 128
+            stepSize: 1
+            padding: 0
+            x: updateChannelCombo.x + queueBufferText.width
+            y: queueTypeCombo.y + (56 * virtualstudio.uiScale)
+            width: updateChannelCombo.width - queueBufferText.width
+
+            background: Rectangle {
+                x: queueBufferSlider.leftPadding
+                y: queueBufferSlider.topPadding + queueBufferSlider.availableHeight / 2 - height / 2
+                implicitWidth: parent.width
+                implicitHeight: 6
+                width: queueBufferSlider.availableWidth
+                height: implicitHeight
+                radius: 4
+                color: sliderTrackColour
+
+                Rectangle {
+                    width: queueBufferSlider.visualPosition * parent.width
+                    height: parent.height
+                    color: sliderActiveTrackColour
+                    radius: 4
+                }
+            }
+
+            handle: Rectangle {
+                x: queueBufferSlider.leftPadding + queueBufferSlider.visualPosition * (queueBufferSlider.availableWidth - width)
+                y: queueBufferSlider.topPadding + queueBufferSlider.availableHeight / 2 - height / 2
+                implicitWidth: 26 * virtualstudio.uiScale
+                implicitHeight: 26 * virtualstudio.uiScale
+                radius: 13 * virtualstudio.uiScale
+                color: queueBufferSlider.pressed ? sliderPressedColour : sliderColour
+                border.color: buttonStroke
+            }
+        }
+
+        Text {
+            anchors.verticalCenter: queueBufferSlider.verticalCenter
+            x: leftMargin * virtualstudio.uiScale
+            text: "Network Latency"
+            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+        }
+
+        CheckBox {
+            id: feedbackDetection
+            checked: audio.feedbackDetectionEnabled
+            text: qsTr("Automatically mute when feedback is detected")
+            x: updateChannelCombo.x; y: queueBufferSlider.y + (48 * virtualstudio.uiScale)
+            onClicked: { audio.feedbackDetectionEnabled = feedbackDetection.checkState == Qt.Checked; }
+            indicator: Rectangle {
+                implicitWidth: 16 * virtualstudio.uiScale
+                implicitHeight: 16 * virtualstudio.uiScale
+                x: feedbackDetection.leftPadding
+                y: parent.height / 2 - height / 2
+                radius: 3 * virtualstudio.uiScale
+                border.color: feedbackDetection.down || feedbackDetection.hovered ? checkboxPressedStroke : checkboxStroke
+
+                Rectangle {
+                    width: 10 * virtualstudio.uiScale
+                    height: 10 * virtualstudio.uiScale
+                    x: 3 * virtualstudio.uiScale
+                    y: 3 * virtualstudio.uiScale
+                    radius: 2 * virtualstudio.uiScale
+                    color: feedbackDetection.down || feedbackDetection.hovered ? checkboxPressedStroke : checkboxStroke
+                    visible: feedbackDetection.checked
+                }
+            }
+            contentItem: Text {
+                text: feedbackDetection.text
+                font.family: "Poppins"
+                font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.verticalCenter
+                leftPadding: feedbackDetection.indicator.width + feedbackDetection.spacing
+                color: textColour
+            }
+        }
+
+        Text {
+            anchors.verticalCenter: feedbackDetection.verticalCenter
+            x: 48 * virtualstudio.uiScale
+            text: "Detect Feedback"
             font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
         }
@@ -519,7 +632,7 @@ Item {
             id: showStartupSetup
             checked: virtualstudio.showDeviceSetup
             text: qsTr("Show device setup screen before connecting to a studio")
-            x: updateChannelCombo.x; y: feedbackDetectionCombo.y + (48 * virtualstudio.uiScale)
+            x: updateChannelCombo.x; y: feedbackDetection.y + (48 * virtualstudio.uiScale)
             onClicked: { virtualstudio.showDeviceSetup = showStartupSetup.checkState == Qt.Checked; }
             indicator: Rectangle {
                 implicitWidth: 16 * virtualstudio.uiScale
@@ -781,6 +894,9 @@ Item {
         }
         function onAudioBackendChanged() {
             backendCombo.currentIndex = getCurrentAudioBackendIndex();
+        }
+        function onQueueBufferChanged() {
+            queueTypeCombo.currentIndex = getCurrentQueueTypeIndex();
         }
     }
 }
