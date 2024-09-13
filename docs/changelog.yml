@@ -1,12 +1,15 @@
-- Version: "2.4.0-beta1"
-  Date: 2024-09-06
+- Version: "2.4.0"
+  Date: 2024-09-13
   Description:
+  - (addded) qWave Quality of Service for Windows users
   - (addded) VS Mode warning when speakers selected for output
   - (addded) VS Mode dialog when connecting with audio warning
   - (updated) PLC auto headroom tweaks to improve audio quality
+  - (updated) Increased UDP timeout from 30 to 50 milliseconds
   - (updated) MIT license for VS mode interface and integration
   - (updated) Removed classic mode from JackTrip Labs builds
   - (updated) ASIO is now only enabled for JackTrip Labs builds
+  - (updated) VS Mode now only supports buffer strategy 3 (PLC)
   - (updated) VS Mode removed button click to create first studio
   - (updated) VS Mode updated to use new studio creation interface
   - (updated) VS Mode updated to use new user profile interface
@@ -16,6 +19,7 @@
   - (fixed) VS Mode possible failures when loading studios
   - (fixed) VS Mode studio refresh updated to avoid jumpiness
   - (fixed) VS Mode blacklisted iPhone microphone device
+  - (fixed) Race condition in automatic patching for JACK
   - (fixed) Missing files in Linux binary zip file
 - Version: "2.3.1"
   Date: 2024-07-26
