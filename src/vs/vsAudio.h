@@ -122,7 +122,6 @@ class VsAudio : public QObject
     Q_PROPERTY(QJsonArray inputMixModeComboModel READ getInputMixModeComboModel NOTIFY
                    inputMixModeComboModelChanged)
     Q_PROPERTY(QStringList bufferSizeComboModel READ getBufferSizeComboModel CONSTANT)
-    Q_PROPERTY(QStringList queueTypeComboModel READ getQueueTypeComboModel CONSTANT)
     Q_PROPERTY(QStringList audioBackendComboModel READ getAudioBackendComboModel CONSTANT)
     Q_PROPERTY(
         QString devicesWarning READ getDevicesWarningMsg NOTIFY devicesWarningChanged)
@@ -200,7 +199,6 @@ class VsAudio : public QObject
         return m_inputMixModeComboModel;
     }
     const QStringList& getBufferSizeComboModel() const { return m_bufferSizeComboModel; }
-    const QStringList& getQueueTypeComboModel() const { return m_queueTypeComboModel; }
     const QStringList& getAudioBackendComboModel() const
     {
         return m_audioBackendComboModel;
@@ -375,9 +373,6 @@ class VsAudio : public QObject
 
     QStringList m_audioBackendComboModel = {"JACK", "RtAudio"};
     QStringList m_bufferSizeComboModel = {"16", "32", "64", "128", "256", "512", "1024"};
-    QStringList m_queueTypeComboModel  = {"Auto Latency (Variable Headroom)",
-                                         "Auto Latency (Fixed Headroom)",
-                                         "Fixed Latency"};
 
     friend class VsAudioWorker;
 };

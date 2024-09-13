@@ -59,23 +59,11 @@ Item {
         return idx;
     }
 
-    function getCurrentQueueTypeIndex () {
-        if (audio.queueBuffer == -500) {
-            return 0;
-        }
-        if (audio.queueBuffer <= 0) {
-            return 1;
-        }
-        return 2;
-    }
-
     function getQueueBufferString () {
-        if (queueTypeCombo.currentIndex == 0) {
+        if (audio.queueBuffer == 0) {
             return "auto";
         }
-        let str = (audio.queueBuffer < 0) ? -1 * audio.queueBuffer : audio.queueBuffer;
-        str += " ms";
-        return str;
+        return audio.queueBuffer + " ms";
     }
 
     Rectangle {
@@ -409,7 +397,7 @@ Item {
                 virtualstudio.toClassicMode();
             }
             x: 220 * virtualstudio.uiScale;
-            y: 100 * virtualstudio.uiScale
+            y: 48 * virtualstudio.uiScale
             width: 216 * virtualstudio.uiScale;
             height: 30 * virtualstudio.uiScale
             Text {
@@ -492,60 +480,18 @@ Item {
             color: textColour
         }
 
-        ComboBox {
-            id: queueTypeCombo
-            x: 220 * virtualstudio.uiScale; y: bufferCombo.y + (48 * virtualstudio.uiScale)
-            width: bufferCombo.width; height: updateChannelCombo.height
-            model: audio.queueTypeComboModel
-            currentIndex: getCurrentQueueTypeIndex()
-            onActivated: {
-                if (currentIndex == 0) {
-                    audio.queueBuffer = -500;
-                } else if (currentIndex == 1) {
-                    audio.queueBuffer = 0;
-                } else {
-                    audio.queueBuffer = 10;
-                }
-            }
-            font.family: "Poppins"
-        }
-
-        Text {
-            anchors.verticalCenter: queueTypeCombo.verticalCenter
-            x: 48 * virtualstudio.uiScale
-            text: "Queue Type"
-            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-            color: textColour
-        }
-
-        Text {
-            id: queueBufferText
-            width: (64 * virtualstudio.uiScale)
-            x: updateChannelCombo.x;
-            y: queueTypeCombo.y + (56 * virtualstudio.uiScale)
-            text: getQueueBufferString()
-            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-            color: textColour
-        }
-
         Slider {
             id: queueBufferSlider
-            value: queueTypeCombo.currentIndex == 0 ? 0 : (audio.queueBuffer < 0 ? -1 * audio.queueBuffer : audio.queueBuffer)
-            enabled: audio.queueBuffer != -500
+            value: audio.queueBuffer
             onMoved: {
-                if (queueTypeCombo.currentIndex == 1) {
-                    audio.queueBuffer = -1 * value;
-                } else if (queueTypeCombo.currentIndex == 2) {
-                    let min = Math.ceil((audio.bufferSize * 1000) / audio.sampleRate);
-                    audio.queueBuffer = value < min ? min : value;
-                }
+                audio.queueBuffer = value;
             }
             from: 0
             to: 128
             stepSize: 1
             padding: 0
             x: updateChannelCombo.x + queueBufferText.width
-            y: queueTypeCombo.y + (56 * virtualstudio.uiScale)
+            y: bufferCombo.y + (54 * virtualstudio.uiScale)
             width: updateChannelCombo.width - queueBufferText.width
 
             background: Rectangle {
@@ -578,18 +524,39 @@ Item {
         }
 
         Text {
+            id: queueBufferText
+            width: (64 * virtualstudio.uiScale)
+            x: updateChannelCombo.x;
             anchors.verticalCenter: queueBufferSlider.verticalCenter
-            x: leftMargin * virtualstudio.uiScale
-            text: "Network Latency"
+            text: getQueueBufferString()
             font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
+        }
+
+        Text {
+            id: queueBufferLabel
+            anchors.verticalCenter: queueBufferSlider.verticalCenter
+            x: leftMargin * virtualstudio.uiScale
+            text: "Adjust Latency"
+            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+        }
+
+        InfoTooltip {
+            id: tooltip
+            content: "JackTrip analyzes your Internet connection to find the best balance between audio latency and quality. Add additional latency to further improve quality."
+            size: 16
+            anchors.left: queueBufferLabel.right
+            anchors.leftMargin: 2 * virtualstudio.uiScale
+            anchors.verticalCenter: queueBufferSlider.verticalCenter
         }
 
         CheckBox {
             id: feedbackDetection
             checked: audio.feedbackDetectionEnabled
             text: qsTr("Automatically mute when feedback is detected")
-            x: updateChannelCombo.x; y: queueBufferSlider.y + (48 * virtualstudio.uiScale)
+            x: updateChannelCombo.x;
+            y: queueBufferSlider.y + (48 * virtualstudio.uiScale)
             onClicked: { audio.feedbackDetectionEnabled = feedbackDetection.checkState == Qt.Checked; }
             indicator: Rectangle {
                 implicitWidth: 16 * virtualstudio.uiScale
@@ -894,9 +861,6 @@ Item {
         }
         function onAudioBackendChanged() {
             backendCombo.currentIndex = getCurrentAudioBackendIndex();
-        }
-        function onQueueBufferChanged() {
-            queueTypeCombo.currentIndex = getCurrentQueueTypeIndex();
         }
     }
 }
