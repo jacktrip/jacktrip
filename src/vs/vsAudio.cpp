@@ -283,6 +283,8 @@ void VsAudio::setQueueBuffer(int queueBuffer)
 {
     if (m_queueBuffer == queueBuffer)
         return;
+    if (queueBuffer < 0)
+        queueBuffer = 0;
     m_queueBuffer = queueBuffer;
     emit queueBufferChanged();
 }
@@ -540,7 +542,7 @@ void VsAudio::loadSettings()
     }
 
     setBufferSize(settings.value(QStringLiteral("BufferSize"), 128).toInt());
-    setQueueBuffer(settings.value(QStringLiteral("QueueBuffer"), -500).toInt());
+    setQueueBuffer(settings.value(QStringLiteral("QueueBuffer"), 0).toInt());
     setFeedbackDetectionEnabled(
         settings.value(QStringLiteral("FeedbackDetectionEnabled"), true).toBool());
     settings.endGroup();

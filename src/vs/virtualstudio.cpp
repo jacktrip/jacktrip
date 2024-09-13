@@ -970,11 +970,19 @@ void VirtualStudio::completeConnection()
         }
 #endif
 
+        // adjust queueBuffer config setting to map to auto headroom
+        int queue_buffer = m_audioConfigPtr->getQueueBuffer();
+        if (queue_buffer <= 0) {
+            queue_buffer = -500;
+        } else {
+            queue_buffer *= -1;
+        }
+
         // create a new JackTrip instance
         JackTrip* jackTrip = m_devicePtr->initJackTrip(
             useRtAudio, input, output, baseInputChannel, numInputChannels,
-            baseOutputChannel, numOutputChannels, inputMixMode, buffer_size,
-            m_audioConfigPtr->getQueueBuffer(), &m_currentStudio);
+            baseOutputChannel, numOutputChannels, inputMixMode, buffer_size, queue_buffer,
+            &m_currentStudio);
         if (jackTrip == 0) {
             processError("Could not bind port");
             return;
