@@ -59,23 +59,17 @@ Item {
         return idx;
     }
 
-    function getCurrentQueueTypeIndex () {
-        if (audio.queueBuffer == -500) {
-            return 0;
-        }
-        if (audio.queueBuffer <= 0) {
-            return 1;
-        }
-        return 2;
-    }
-
     function getQueueBufferString () {
-        if (queueTypeCombo.currentIndex == 0) {
+        if (audio.queueBuffer == -500) {
             return "auto";
         }
         let str = (audio.queueBuffer < 0) ? -1 * audio.queueBuffer : audio.queueBuffer;
         str += " ms";
         return str;
+    }
+
+    function getMinLatency () {
+        return Math.ceil((audio.bufferSize * 1000) / audio.sampleRate);
     }
 
     Rectangle {
@@ -492,37 +486,11 @@ Item {
             color: textColour
         }
 
-        ComboBox {
-            id: queueTypeCombo
-            x: 220 * virtualstudio.uiScale; y: bufferCombo.y + (48 * virtualstudio.uiScale)
-            width: bufferCombo.width; height: updateChannelCombo.height
-            model: audio.queueTypeComboModel
-            currentIndex: getCurrentQueueTypeIndex()
-            onActivated: {
-                if (currentIndex == 0) {
-                    audio.queueBuffer = -500;
-                } else if (currentIndex == 1) {
-                    audio.queueBuffer = 0;
-                } else {
-                    audio.queueBuffer = 10;
-                }
-            }
-            font.family: "Poppins"
-        }
-
-        Text {
-            anchors.verticalCenter: queueTypeCombo.verticalCenter
-            x: 48 * virtualstudio.uiScale
-            text: "Queue Type"
-            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-            color: textColour
-        }
-
         Text {
             id: queueBufferText
             width: (64 * virtualstudio.uiScale)
             x: updateChannelCombo.x;
-            y: queueTypeCombo.y + (56 * virtualstudio.uiScale)
+            y: bufferCombo.y + (56 * virtualstudio.uiScale)
             text: getQueueBufferString()
             font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
@@ -530,22 +498,20 @@ Item {
 
         Slider {
             id: queueBufferSlider
-            value: queueTypeCombo.currentIndex == 0 ? 0 : (audio.queueBuffer < 0 ? -1 * audio.queueBuffer : audio.queueBuffer)
-            enabled: audio.queueBuffer != -500
+            value: audio.queueBuffer == -500 ? -1 : (audio.queueBuffer < 0 ? -1 * audio.queueBuffer : audio.queueBuffer)
             onMoved: {
-                if (queueTypeCombo.currentIndex == 1) {
-                    audio.queueBuffer = -1 * value;
-                } else if (queueTypeCombo.currentIndex == 2) {
-                    let min = Math.ceil((audio.bufferSize * 1000) / audio.sampleRate);
-                    audio.queueBuffer = value < min ? min : value;
+                if (autoLatency.checkState == Qt.Checked) {
+                    audio.queueBuffer = (value == -1) ? -500 : -1 * value;
+                } else {
+                    audio.queueBuffer = Math.max(getMinLatency(), value);
                 }
             }
-            from: 0
+            from: -1
             to: 128
             stepSize: 1
             padding: 0
             x: updateChannelCombo.x + queueBufferText.width
-            y: queueTypeCombo.y + (56 * virtualstudio.uiScale)
+            y: bufferCombo.y + (56 * virtualstudio.uiScale)
             width: updateChannelCombo.width - queueBufferText.width
 
             background: Rectangle {
@@ -580,6 +546,59 @@ Item {
         Text {
             anchors.verticalCenter: queueBufferSlider.verticalCenter
             x: leftMargin * virtualstudio.uiScale
+            text: audio.queueBuffer <= 0 ? "Extra Latency" : "Fixed Latency"
+            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+        }
+
+        CheckBox {
+            id: autoLatency
+            checked: audio.queueBuffer <= 0
+            text: qsTr("Automatically adjust network latency")
+            x: updateChannelCombo.x; y: queueBufferSlider.y + (48 * virtualstudio.uiScale)
+            onClicked: {
+                if (autoLatency.checkState == Qt.Checked) {
+                    audio.queueBuffer = -500;
+                } else {
+                    if (audio.queueBuffer == -500) {
+                        audio.queueBuffer = 10;
+                    } else if (audio.queueBuffer <= 0) {
+                        audio.queueBuffer = Math.max(getMinLatency(), audio.queueBuffer * -1);
+                    }
+                }
+            }
+            indicator: Rectangle {
+                implicitWidth: 16 * virtualstudio.uiScale
+                implicitHeight: 16 * virtualstudio.uiScale
+                x: autoLatency.leftPadding
+                y: parent.height / 2 - height / 2
+                radius: 3 * virtualstudio.uiScale
+                border.color: autoLatency.down || autoLatency.hovered ? checkboxPressedStroke : checkboxStroke
+
+                Rectangle {
+                    width: 10 * virtualstudio.uiScale
+                    height: 10 * virtualstudio.uiScale
+                    x: 3 * virtualstudio.uiScale
+                    y: 3 * virtualstudio.uiScale
+                    radius: 2 * virtualstudio.uiScale
+                    color: autoLatency.down || autoLatency.hovered ? checkboxPressedStroke : checkboxStroke
+                    visible: autoLatency.checked
+                }
+            }
+            contentItem: Text {
+                text: autoLatency.text
+                font.family: "Poppins"
+                font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.verticalCenter
+                leftPadding: autoLatency.indicator.width + autoLatency.spacing
+                color: textColour
+            }
+        }
+
+        Text {
+            anchors.verticalCenter: autoLatency.verticalCenter
+            x: 48 * virtualstudio.uiScale
             text: "Network Latency"
             font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
@@ -589,7 +608,7 @@ Item {
             id: feedbackDetection
             checked: audio.feedbackDetectionEnabled
             text: qsTr("Automatically mute when feedback is detected")
-            x: updateChannelCombo.x; y: queueBufferSlider.y + (48 * virtualstudio.uiScale)
+            x: updateChannelCombo.x; y: autoLatency.y + (48 * virtualstudio.uiScale)
             onClicked: { audio.feedbackDetectionEnabled = feedbackDetection.checkState == Qt.Checked; }
             indicator: Rectangle {
                 implicitWidth: 16 * virtualstudio.uiScale
@@ -894,9 +913,6 @@ Item {
         }
         function onAudioBackendChanged() {
             backendCombo.currentIndex = getCurrentAudioBackendIndex();
-        }
-        function onQueueBufferChanged() {
-            queueTypeCombo.currentIndex = getCurrentQueueTypeIndex();
         }
     }
 }
