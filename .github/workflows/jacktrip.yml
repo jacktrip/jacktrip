@@ -420,6 +420,12 @@ jobs:
             CONFIG_STRING="-Drtaudio:jack=disabled -Drtaudio:default_library=static $CONFIG_STRING"
             if [[ "${{ runner.os }}" == 'Windows' ]]; then 
               CONFIG_STRING="-Drtaudio:wasapi=enabled $CONFIG_STRING"
+              # ASIO builds require Steinberg license; disable it if not CLI or signed builds from JackTrip Labs
+              if [[ "${{ matrix.nogui }}" == true ]] || [[ "${{ needs.check-secrets.outputs.should_run }}" == "true" ]]; then
+                CONFIG_STRING="-Drtaudio:asio=enabled $CONFIG_STRING"
+              else
+                CONFIG_STRING="-Drtaudio:asio=disabled $CONFIG_STRING"
+              fi
             elif [[ "${{ runner.os }}" == 'Linux' ]]; then
               CONFIG_STRING="-Drtaudio:alsa=enabled -Drtaudio:pulse=enabled -Drtaudio:werror=false $CONFIG_STRING"
             fi
@@ -429,12 +435,18 @@ jobs:
           fi
           if [[ "${{ matrix.nogui }}" == true ]]; then 
             CONFIG_STRING="-Dnogui=true $CONFIG_STRING"
-          fi
-          if [[ "${{ matrix.novs }}" == true ]]; then 
+          elif [[ "${{ matrix.novs }}" == true ]]; then
             CONFIG_STRING="-Dnovs=true $CONFIG_STRING"
-          fi
-          if [[ "${{ needs.check-secrets.outputs.should_run }}" == "true" ]]; then 
-            CONFIG_STRING="-Dvsftux=true $CONFIG_STRING"
+          elif [[ "${{ needs.check-secrets.outputs.should_run }}" == "true" ]]; then
+            if [[ "${{ runner.os }}" == 'Windows' ]] || [[ "${{ runner.os }}" == 'macOS' ]]; then
+              # signed JTL builds for Windows and MacOS use Qt commercial license
+              CONFIG_STRING="-Dqtedition=commercial $CONFIG_STRING"
+              # do not include classic mode interface in signed JackTrip Labs builds
+              CONFIG_STRING="-Dnoclassic=true $CONFIG_STRING"
+            else
+              # prefer virtual studio interface for JackTrip Labs builds on Linux
+              CONFIG_STRING="-Dvsftux=true $CONFIG_STRING"
+            fi
           fi
           if [[ "${{ matrix.weakjack }}" == true ]]; then 
             CONFIG_STRING="-Dweakjack=true $CONFIG_STRING"
@@ -553,7 +565,7 @@ jobs:
           else
             strip $BINFILE
             zip -j $ZIPFILE $BINFILE
-            if [[ "${{ matrix.name }}" == "Linux-x64-meson-gcc-shared-bundled_rtaudio" ]]; then
+            if [[ "${{ matrix.name }}" == "Linux-x64-meson-gcc-shared" ]]; then
               cp $GITHUB_WORKSPACE/linux/icons/jacktrip.svg $BUILD_PATH/org.jacktrip.JackTrip.svg
               cp $GITHUB_WORKSPACE/linux/icons/jacktrip_48x48.png $BUILD_PATH/org.jacktrip.JackTrip.png
               zip -j $ZIPFILE $DESKTOP_FILE_PATH $BUILD_PATH/jacktrip.1.gz $BUILD_PATH/org.jacktrip.JackTrip.svg $BUILD_PATH/org.jacktrip.JackTrip.png $GITHUB_WORKSPACE/linux/README.md
@@ -562,31 +574,31 @@ jobs:
             zip -r $ZIPFILE LICENSE.md LICENSES
           fi
       - name: upload jacktrip binary
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: matrix.binary-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name))
         with:
           name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-binary
           path: ${{ env.BUILD_PATH }}/${{ matrix.binary-path }}
       - name: upload application bundle
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: matrix.bundle-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name)) &&  needs.check-secrets.outputs.should_run != 'true'
         with:
           name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-application
           path: ${{ env.BUILD_PATH }}/${{ matrix.bundle-path }}
       - name: upload signed application bundle
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: matrix.bundle-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name)) &&  needs.check-secrets.outputs.should_run == 'true'
         with:
           name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-application
           path: ${{ env.BUILD_PATH }}/${{ matrix.bundle-path }}
       - name: upload installer
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: matrix.installer-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name)) && ( needs.check-secrets.outputs.should_run != 'true' || runner.os == 'Windows')
         with:
           name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer
           path: ${{ env.BUILD_PATH }}/${{ matrix.installer-path }}
       - name: upload signed installer
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: matrix.installer-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name)) && needs.check-secrets.outputs.should_run == 'true' && runner.os != 'Windows'
         with:
           name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer
@@ -606,7 +618,7 @@ jobs:
           echo ${{ github.event.pull_request.head.ref }} > $CLANG_TIDY_PATH/pr-head-ref.txt
       - name: upload static analysis
         if: github.event_name == 'pull_request' && matrix.static-analysis == true
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.CLANG_TIDY_NAME }}
           path: ${{ env.CLANG_TIDY_PATH }}/
@@ -652,13 +664,13 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "name=$NAME" >> $GITHUB_OUTPUT
       - name: Retrieve binary artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         if: (matrix.binary-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name))) && needs.check-secrets.outputs.should_run == 'true'
         with:
           name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-binary
           path: ${{ env.BUILD_PATH }}/${{ matrix.binary-path }}
       - name: Retrieve Windows installer artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         if: (runner.os == 'Linux' && matrix.installer-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name))) && needs.check-secrets.outputs.should_run == 'true'
         with:
           name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer
@@ -679,7 +691,7 @@ jobs:
           cp signed/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer.msi
           rm $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi
       - name: upload installer
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: (matrix.installer-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name))) && needs.check-secrets.outputs.should_run == 'true'
         with:
           name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer
@@ -694,7 +706,7 @@ jobs:
       DOWNLOAD_PATH: ${{ github.workspace }}/Install
     steps:
       - name: download artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           path: ${{ env.DOWNLOAD_PATH }} # no "name" parameter - download all artifacts
       - name: upload to the release page
@@ -723,13 +735,13 @@ jobs:
             if: needs.check-secrets.outputs.should_run == 'true'
             platform-name: mac
             release-name: macOS-x64
-            build-job-name: macOS-x64-meson-clang-shared-bundled_rtaudio
+            build-job-name: macOS-x64-meson-clang-shared
             runs-on: ubuntu-latest
           - name: Update Linux manifests
             if: needs.check-secrets.outputs.should_run == 'true'
             platform-name: linux
             release-name: Linux-x64
-            build-job-name: Linux-x64-meson-gcc-shared-bundled_rtaudio
+            build-job-name: Linux-x64-meson-gcc-shared
             runs-on: ubuntu-latest
     permissions:
       contents: "read"
@@ -768,7 +780,7 @@ jobs:
           echo "extension=$EXTENSION" >> $GITHUB_OUTPUT
           echo "type=$TYPE" >> $GITHUB_OUTPUT
       - name: download artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           path: ${{ env.DOWNLOAD_PATH }}
           name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-${{ steps.set-version.outputs.type }}

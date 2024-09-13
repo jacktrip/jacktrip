@@ -31,11 +31,11 @@ if (psi)
   set(novs TRUE)
 endif ()
 
+set(QRC_FILE "src/images/images.qrc")
 if (novs)
   add_compile_definitions(NO_VS)
-  set(QRC_FILE "src/gui/qjacktrip_novs.qrc")
 else ()
-  set(QRC_FILE "src/gui/qjacktrip.qrc")
+  set(QRC_FILE "src/vs/vs.qrc")
 endif ()
 
 if (vsftux)
@@ -180,37 +180,39 @@ if (NOT nogui)
     src/gui/textbuf.cpp
     src/gui/vuMeter.cpp
     src/Meter.cpp
+    src/UserInterface.cpp
   )
   
   if (NOT novs)
     set (qjacktrip_SRC ${qjacktrip_SRC}
-      src/gui/virtualstudio.cpp
-      src/gui/vsApi.cpp
-      src/gui/vsAuth.cpp
-      src/gui/vsDeviceCodeFlow.cpp
-      src/gui/vsDeeplink.cpp
-      src/gui/vsQuickView.cpp
-      src/gui/vsServerInfo.cpp
-      src/gui/vsPing.cpp
-      src/gui/vsPinger.cpp
-      src/gui/vsDevice.cpp
-      src/gui/vsAudio.cpp
-      src/gui/vsWebSocket.cpp
-      src/gui/vsPermissions.cpp
-      src/gui/qjacktrip.qrc
+      src/vs/virtualstudio.cpp
+      src/vs/vsApi.cpp
+      src/vs/vsAuth.cpp
+      src/vs/vsDeviceCodeFlow.cpp
+      src/vs/vsDeeplink.cpp
+      src/vs/vsQuickView.cpp
+      src/vs/vsServerInfo.cpp
+      src/vs/vsPing.cpp
+      src/vs/vsPinger.cpp
+      src/vs/vsDevice.cpp
+      src/vs/vsAudio.cpp
+      src/vs/vsWebSocket.cpp
+      src/vs/vsPermissions.cpp
+      src/vs/vs.qrc
+      src/images/images.qrc
       src/Analyzer.cpp
       src/Monitor.cpp
       src/Volume.cpp
       src/Tone.cpp
       # Need to include this for AUTOMOC to do its thing
-      src/JTApplication.h
-      src/gui/vsQmlClipboard.h
+      src/vs/JTApplication.h
+      src/vs/vsQmlClipboard.h
     )
     if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-      set (qjacktrip_SRC ${qjacktrip_SRC} src/gui/vsMacPermissions.mm)
+      set (qjacktrip_SRC ${qjacktrip_SRC} src/vs/vsMacPermissions.mm)
     endif ()
   else ()
-    set (qjacktrip_SRC ${qjacktrip_SRC} src/gui/qjacktrip_novs.qrc)
+    set (qjacktrip_SRC ${qjacktrip_SRC} src/images/images.qrc)
   endif ()
   
   if (NOT noupdater)
@@ -232,7 +234,7 @@ if (NOT nogui)
     file(WRITE "win/qjacktrip.rc" "${RC_CONTENTS}")
     set (qjacktrip_SRC ${qjacktrip_SRC} win/qjacktrip.rc)
   elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    set (qjacktrip_SRC ${qjacktrip_SRC} src/gui/NoNap.mm)
+    set (qjacktrip_SRC ${qjacktrip_SRC} src/NoNap.mm)
     set (CMAKE_C_FLAGS "-x objective-c")
     set (CMAKE_EXE_LINKER_FLAGS "-framework Foundation")
     if (NOT novs)

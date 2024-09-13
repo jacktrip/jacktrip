@@ -819,7 +819,7 @@ void AudioInterface::setDevicesWarningMsg(warningMessageT msg)
         mWarningMsg =
             "The buffer size setting for your audio device will cause high latency "
             "or audio delay. Use an audio device that supports small buffer sizes "
-            "to reduce audio delays. Click for more info.";
+            "to reduce audio delays.";
         mWarningHelpUrl  = "https://support.jacktrip.com/recommended-audio-interfaces";
         mHighLatencyFlag = true;
         break;
@@ -827,7 +827,7 @@ void AudioInterface::setDevicesWarningMsg(warningMessageT msg)
         mWarningMsg =
             "You audio device drivers may cause high latency or audio delay. Install "
             "and use ASIO drivers provided by your device's manufacturer to reduce "
-            "audio delays. Click for more info.";
+            "audio delays.";
         mWarningHelpUrl =
             "https://support.jacktrip.com/troubleshooting-windows-drivers-and-asio";
         mHighLatencyFlag = true;
@@ -838,6 +838,13 @@ void AudioInterface::setDevicesWarningMsg(warningMessageT msg)
             "JACK backend or Linux ALSA drivers to reduce audio delays.";
         mWarningHelpUrl  = "";
         mHighLatencyFlag = true;
+        break;
+    case DEVICE_WARN_SPEAKERS:
+        mWarningMsg =
+            "You appear to have selected speakers for audio output. "
+            "Using speakers with microphones will likely cause a loud feedback "
+            "loop. We strongly recommend that you use wired headphones instead.";
+        mWarningHelpUrl = "https://support.jacktrip.com/recommended-audio-interfaces";
         break;
     default:
         mWarningMsg      = "";

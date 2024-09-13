@@ -128,88 +128,98 @@ else
 	endif
 endif
 
-if get_option('nogui') == true
-	defines += '-DNO_GUI'
-	if qt_version == '5'
-		deps += dependency('qt5', modules: ['Core', 'Network'], include_type: 'system')
-	else
-		deps += dependency('qt6', modules: ['Core', 'Network'], include_type: 'system')
-	endif
+if qt_version == '5'
+	deps += dependency('qt5', modules: ['Core', 'Network'], include_type: 'system')
 else
-	src += [
-		'src/gui/qjacktrip.cpp',
-		'src/gui/about.cpp',
-		'src/gui/messageDialog.cpp',
-		'src/gui/textbuf.cpp',
-		'src/gui/vuMeter.cpp'
-	]
-	moc_h += [
-		'src/gui/about.h',
-		'src/gui/qjacktrip.h',
-		'src/gui/messageDialog.h',
-		'src/gui/textbuf.h',
-		'src/gui/vuMeter.h'
-	]
-	ui_h += [
-		'src/gui/qjacktrip.ui',
-		'src/gui/messageDialog.ui',
-		'src/gui/about.ui'
-	]
+	deps += dependency('qt6', modules: ['Core', 'Network'], include_type: 'system')
+endif
+
+if get_option('nogui') == true or (get_option('noclassic') == true and get_option('novs') == true)
+	# command line only
+	defines += '-DNO_GUI'
+else
+	# include vs and/or classic gui
+	if qt_version == '5'
+		deps += dependency('qt5', modules: ['Gui', 'Widgets'], include_type: 'system')
+	else
+		deps += dependency('qt6', modules: ['Gui', 'Widgets'], include_type: 'system')
+	endif
+	qres = ['src/images/images.qrc']
+	src += 'src/UserInterface.cpp'
+
+	if get_option('noclassic') == true
+		defines += '-DNO_CLASSIC'
+	else
+		# support classic mode
+		src += [
+			'src/gui/qjacktrip.cpp',
+			'src/gui/about.cpp',
+			'src/gui/messageDialog.cpp',
+			'src/gui/textbuf.cpp',
+			'src/gui/vuMeter.cpp'
+		]
+		moc_h += [
+			'src/gui/about.h',
+			'src/gui/qjacktrip.h',
+			'src/gui/messageDialog.h',
+			'src/gui/textbuf.h',
+			'src/gui/vuMeter.h'
+		]
+		ui_h += [
+			'src/gui/qjacktrip.ui',
+			'src/gui/messageDialog.ui',
+			'src/gui/about.ui'
+		]
+	endif
 
 	if get_option('novs') == true
 		defines += '-DNO_VS'
-		if qt_version == '5'
-			deps += dependency('qt5', modules: ['Core', 'Gui', 'Network', 'Widgets'], include_type: 'system')
-		else
-			deps += dependency('qt6', modules: ['Core', 'Gui', 'Network', 'Widgets'], include_type: 'system')
-		endif
-		qres = ['src/gui/qjacktrip_novs.qrc']
 	else
 		src += [
-			'src/gui/virtualstudio.cpp',
-			'src/gui/vsAuth.cpp',
-			'src/gui/vsApi.cpp',
-			'src/gui/vsDeviceCodeFlow.cpp',
-			'src/gui/vsDeeplink.cpp',
-			'src/gui/vsDevice.cpp',
-			'src/gui/vsAudio.cpp',
-			'src/gui/vsServerInfo.cpp',
-			'src/gui/vsQuickView.cpp',
-			'src/gui/vsWebSocket.cpp',
-			'src/gui/vsPermissions.cpp',
-			'src/gui/vsPinger.cpp',
-			'src/gui/vsPing.cpp',
-			'src/gui/WebSocketTransport.cpp'
+			'src/vs/virtualstudio.cpp',
+			'src/vs/vsAuth.cpp',
+			'src/vs/vsApi.cpp',
+			'src/vs/vsDeviceCodeFlow.cpp',
+			'src/vs/vsDeeplink.cpp',
+			'src/vs/vsDevice.cpp',
+			'src/vs/vsAudio.cpp',
+			'src/vs/vsServerInfo.cpp',
+			'src/vs/vsQuickView.cpp',
+			'src/vs/vsWebSocket.cpp',
+			'src/vs/vsPermissions.cpp',
+			'src/vs/vsPinger.cpp',
+			'src/vs/vsPing.cpp',
+			'src/vs/WebSocketTransport.cpp'
 		]
 		moc_h += [
-			'src/gui/virtualstudio.h',
-			'src/gui/vsApi.h',
-			'src/gui/vsAuth.h',
-			'src/gui/vsDeviceCodeFlow.h',
-			'src/gui/vsDeeplink.h',
-			'src/gui/vsDevice.h',
-			'src/gui/vsAudio.h',
-			'src/gui/vsServerInfo.h',
-			'src/gui/vsQuickView.h',
-			'src/gui/vsWebSocket.h',
-			'src/gui/vsPermissions.h',
-			'src/gui/vsPinger.h',
-			'src/gui/vsPing.h',
-			'src/gui/vsQmlClipboard.h',
-			'src/JTApplication.h',
-			'src/gui/WebSocketTransport.h'
+			'src/vs/virtualstudio.h',
+			'src/vs/vsApi.h',
+			'src/vs/vsAuth.h',
+			'src/vs/vsDeviceCodeFlow.h',
+			'src/vs/vsDeeplink.h',
+			'src/vs/vsDevice.h',
+			'src/vs/vsAudio.h',
+			'src/vs/vsServerInfo.h',
+			'src/vs/vsQuickView.h',
+			'src/vs/vsWebSocket.h',
+			'src/vs/vsPermissions.h',
+			'src/vs/vsPinger.h',
+			'src/vs/vsPing.h',
+			'src/vs/vsQmlClipboard.h',
+			'src/vs/JTApplication.h',
+			'src/vs/WebSocketTransport.h'
 		]
 
 		if host_machine.system() == 'darwin'
-			moc_h += ['src/gui/vsMacPermissions.h']
+			moc_h += ['src/vs/vsMacPermissions.h']
 		endif
 
-		if get_option('vsftux') == true
+		if get_option('vsftux') == true or get_option('noclassic') == true
 			defines += '-DVS_FTUX'
 		endif
 
-		deps += dependency('qt6', modules: ['Core', 'Gui', 'Network', 'Widgets', 'Core5Compat', 'Quick', 'QuickControls2', 'Qml', 'ShaderTools', 'Svg', 'WebSockets', 'WebEngineCore', 'WebEngineQuick', 'WebChannel'], include_type: 'system')
-		qres = ['src/gui/qjacktrip.qrc']
+		deps += dependency('qt6', modules: ['Core5Compat', 'Quick', 'QuickControls2', 'Qml', 'ShaderTools', 'Svg', 'WebSockets', 'WebEngineCore', 'WebEngineQuick', 'WebChannel'], include_type: 'system')
+		qres += ['src/vs/vs.qrc']
 	endif
 
 	if get_option('noupdater') == true or host_machine.system() == 'linux'
@@ -223,8 +233,6 @@ else
 		]
 		moc_h += [
 			'src/dblsqd/feed.h',
-			'src/dblsqd/release.h',
-			'src/dblsqd/semver.h',
 			'src/dblsqd/update_dialog.h'
 		]
 		ui_h += ['src/dblsqd/update_dialog.ui']
@@ -286,9 +294,10 @@ if get_option('default_library') == 'static'
 	endif
 endif
 
-# TODO: QT_OPENSOURCE should only be defined for open source Qt distribution
-# in QMake this can be checked with QT_EDITION == 'OpenSource'
-defines += '-DQT_OPENSOURCE'
+# QT_OPENSOURCE should only be defined for open source Qt distribution
+if get_option('qtedition') != 'commercial'
+	defines += '-DQT_OPENSOURCE'
+endif
 
 rtaudio_dep = dependency('rtaudio', required: get_option('rtaudio'))
 if rtaudio_dep.found() == true
@@ -305,7 +314,7 @@ if rtaudio_dep.found() == false and jack_dep.found() == false
 endif
 
 if host_machine.system() == 'darwin'
-	src += ['src/gui/NoNap.mm']
+	src += ['src/NoNap.mm']
 	# Adding CoreAudio here is a workaround and should be removed
 	# when https://github.com/thestk/rtaudio/issues/302 is fixed
 	# and arrived in all common package managers
@@ -315,8 +324,8 @@ if host_machine.system() == 'darwin'
 	add_languages('objcpp')
 endif
 
-if host_machine.system() == 'darwin' and get_option('novs') == false
-	src += ['src/gui/vsMacPermissions.mm']
+if host_machine.system() == 'darwin' and get_option('novs') == false and get_option('nogui') == false
+	src += ['src/vs/vsMacPermissions.mm']
 	apple_av_dep = dependency('appleframeworks', modules : ['avfoundation', 'webkit'])
 	deps += apple_av_dep
 endif

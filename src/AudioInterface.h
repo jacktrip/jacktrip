@@ -84,7 +84,8 @@ class AudioInterface
         DEVICE_WARN_NONE,
         DEVICE_WARN_BUFFER_LATENCY,
         DEVICE_WARN_ASIO_LATENCY,
-        DEVICE_WARN_ALSA_LATENCY
+        DEVICE_WARN_ALSA_LATENCY,
+        DEVICE_WARN_SPEAKERS
     };
 
     enum errorMessageT {

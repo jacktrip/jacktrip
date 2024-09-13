@@ -40,7 +40,7 @@
 
 #include "AudioInterface.h"
 
-constexpr const char* const gVersion = "2.3.1";  ///< JackTrip version
+constexpr const char* const gVersion = "2.4.0";  ///< JackTrip version
 
 //*******************************************************************************
 /// \name Default Values
@@ -87,8 +87,7 @@ constexpr uint32_t gDefaultBufferSizeInSamples = 128;
 constexpr const char* gDefaultLocalAddress     = "";
 constexpr int gDefaultRedundancy               = 1;
 constexpr int gTimeOutMultiThreadedServer      = 10000;  // seconds
-constexpr int gWaitCounter                     = 60;
-constexpr int gUdpWaitTimeout                  = 30;  // milliseconds
+constexpr int gUdpWaitTimeout                  = 50;     // milliseconds
 //@}
 
 //*******************************************************************************

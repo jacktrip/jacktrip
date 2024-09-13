@@ -60,6 +60,13 @@ void Patcher::registerClient(const QString& clientName)
 {
     QMutexLocker locker(&m_connectionMutex);
 
+    // this works around a JACK timing bug found under pipewire
+    // if registerClient is called for a second (or subsequent) hub client
+    // jack_client won't have properly updated its ports
+    // the workaround is to sleep here and let JACK update
+    if (m_jackClient)
+        QThread::msleep(100);
+
     // If our jack client isn't running, start it.
     if (!m_jackClient) {
         m_jackClient = jack_client_open("jthubpatcher", JackNoStartServer, &m_status);

@@ -14,8 +14,8 @@
    <string>JackTrip</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="qjacktrip.qrc">
-    <normaloff>:/qjacktrip/icon.png</normaloff>:/qjacktrip/icon.png</iconset>
+   <iconset resource="images.qrc">
+    <normaloff>:/images/icon_32.png</normaloff>:/images/icon_32.png</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout">

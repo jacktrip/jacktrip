@@ -41,7 +41,7 @@ border: 4px solid black; </string>
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap resource="qjacktrip.qrc">:/qjacktrip/about.png</pixmap>
+        <pixmap resource="images.qrc">:/images/icon_128.png</pixmap>
        </property>
        <property name="scaledContents">
         <bool>true</bool>

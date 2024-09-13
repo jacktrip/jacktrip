@@ -31,6 +31,7 @@ if host_machine.system() == 'windows'
 		link_args += 'Winhttp.lib'
 		link_args += 'Dnsapi.lib'
 		link_args += 'Iphlpapi.lib'
+		link_args += 'Qwave.lib'
 	endif
 
 endif

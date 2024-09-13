@@ -41,12 +41,9 @@
 #include "../JackTrip.h"
 #include "../Settings.h"
 #include "../UdpHubListener.h"
+#include "../UserInterface.h"
 #include "messageDialog.h"
 #include "vuMeter.h"
-
-#ifdef __APPLE__
-#include "NoNap.h"
-#endif
 
 #ifdef RT_AUDIO
 #include <QComboBox>
@@ -57,28 +54,18 @@ namespace Ui
 class QJackTrip;
 }  // namespace Ui
 
-#ifndef NO_VS
-class VirtualStudio;
-#endif
-
 class QJackTrip : public QMainWindow
 {
     Q_OBJECT
 
    public:
-    explicit QJackTrip(QSharedPointer<Settings> settings,
-                       bool suppressCommandlineWarning = false,
-                       QWidget* parent                 = nullptr);
+    explicit QJackTrip(UserInterface& interface, QWidget* parent = nullptr);
     ~QJackTrip() override;
 
     void closeEvent(QCloseEvent* event) override;
     void resizeEvent(QResizeEvent* event) override;
     void showEvent(QShowEvent* event) override;
-
-#ifndef NO_VS
-    enum uiModeT { UNSET, VIRTUAL_STUDIO, STANDARD };
-    void setVs(QSharedPointer<VirtualStudio> vs);
-#endif
+    static QCoreApplication* createApplication(int& argc, char* argv[]);
 
    signals:
     void signalExit();
@@ -129,6 +116,7 @@ class QJackTrip : public QMainWindow
 
     JackTrip::hubConnectionModeT hubModeFromPatchType(patchTypeT patchType);
 
+    UserInterface& m_interface;
     QScopedPointer<Ui::QJackTrip> m_ui;
     QScopedPointer<UdpHubListener> m_udpHub;
     QScopedPointer<JackTrip> m_jackTrip;
@@ -144,7 +132,6 @@ class QJackTrip : public QMainWindow
     bool m_isExiting;
     bool m_exitSent;
 
-    QSharedPointer<Settings> m_cliSettings;
     bool m_suppressCommandlineWarning;
 
     float m_meterMax = 0.0;
@@ -164,13 +151,6 @@ class QJackTrip : public QMainWindow
     QLabel m_autoQueueIndicator;
     bool m_hideWarning;
     bool m_firstShow = true;
-
-#ifndef NO_VS
-    QSharedPointer<VirtualStudio> m_vs;
-#endif
-#ifdef __APPLE__
-    NoNap m_noNap;
-#endif
 };
 
 #endif  // QJACKTRIP_H

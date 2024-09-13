@@ -258,21 +258,21 @@ HEADERS += src/DataProtocol.h \
              src/gui/textbuf.h \
              src/gui/vuMeter.h
   !novs {
-    HEADERS += src/gui/virtualstudio.h \
-               src/gui/vsApi.h \
-               src/gui/vsAuth.h \
-               src/gui/vsDeviceCodeFlow.h \
-               src/gui/vsDeeplink.h \
-               src/gui/vsDevice.h \
-               src/gui/vsAudio.h \
-               src/gui/vsServerInfo.h \
-               src/gui/vsQuickView.h \
-               src/gui/vsWebSocket.h \
-               src/gui/vsPermissions.h \
-               src/gui/vsPinger.h \
-               src/gui/vsPing.h \
-               src/gui/vsQmlClipboard.h \
-               src/JTApplication.h
+    HEADERS += src/vs/virtualstudio.h \
+               src/vs/vsApi.h \
+               src/vs/vsAuth.h \
+               src/vs/vsDeviceCodeFlow.h \
+               src/vs/vsDeeplink.h \
+               src/vs/vsDevice.h \
+               src/vs/vsAudio.h \
+               src/vs/vsServerInfo.h \
+               src/vs/vsQuickView.h \
+               src/vs/vsWebSocket.h \
+               src/vs/vsPermissions.h \
+               src/vs/vsPinger.h \
+               src/vs/vsPing.h \
+               src/vs/vsQmlClipboard.h \
+               src/vs/JTApplication.h
   }
   !noupdater:!linux-g++:!linux-g++-64 {
     HEADERS += src/dblsqd/feed.h \
@@ -325,21 +325,22 @@ SOURCES += src/DataProtocol.cpp \
              src/gui/qjacktrip.cpp \
              src/gui/about.cpp \
              src/gui/textbuf.cpp \
-             src/gui/vuMeter.cpp
+             src/gui/vuMeter.cpp \
+             src/UserInterface.cpp
   !novs {
-    SOURCES += src/gui/virtualstudio.cpp \
-               src/gui/vsApi.cpp \
-               src/gui/vsAuth.cpp \
-               src/gui/vsDeviceCodeFlow.cpp \
-               src/gui/vsDeeplink.cpp \
-               src/gui/vsDevice.cpp \
-               src/gui/vsAudio.cpp \
-               src/gui/vsServerInfo.cpp \
-               src/gui/vsQuickView.cpp \
-               src/gui/vsWebSocket.cpp \
-               src/gui/vsPermissions.cpp \
-               src/gui/vsPinger.cpp \
-               src/gui/vsPing.cpp
+    SOURCES += src/vs/virtualstudio.cpp \
+               src/vs/vsApi.cpp \
+               src/vs/vsAuth.cpp \
+               src/vs/vsDeviceCodeFlow.cpp \
+               src/vs/vsDeeplink.cpp \
+               src/vs/vsDevice.cpp \
+               src/vs/vsAudio.cpp \
+               src/vs/vsServerInfo.cpp \
+               src/vs/vsQuickView.cpp \
+               src/vs/vsWebSocket.cpp \
+               src/vs/vsPermissions.cpp \
+               src/vs/vsPinger.cpp \
+               src/vs/vsPing.cpp
   }
   !noupdater:!linux-g++:!linux-g++-64 {
     SOURCES += src/dblsqd/feed.cpp \
@@ -351,20 +352,19 @@ SOURCES += src/DataProtocol.cpp \
 
 !nogui {
   macx {
-    HEADERS += src/gui/NoNap.h
-    OBJECTIVE_SOURCES += src/gui/NoNap.mm
+    HEADERS += src/NoNap.h
+    OBJECTIVE_SOURCES += src/NoNap.mm
     !novs {
-      HEADERS += src/gui/vsMacPermissions.h
-      OBJECTIVE_SOURCES += src/gui/vsMacPermissions.mm
+      HEADERS += src/vs/vsMacPermissions.h
+      OBJECTIVE_SOURCES += src/vs/vsMacPermissions.mm
     }
   }
   FORMS += src/gui/qjacktrip.ui \
            src/gui/about.ui \
            src/gui/messageDialog.ui
-  novs {
-    RESOURCES += src/gui/qjacktrip_novs.qrc
-  } else {
-    RESOURCES += src/gui/qjacktrip.qrc
+  RESOURCES += src/images/images.qrc
+  !novs {
+    RESOURCES += src/vs/vs.qrc
   }
   !noupdater:!linux-g++:!linux-g++-64 {
     FORMS += src/dblsqd/update_dialog.ui
