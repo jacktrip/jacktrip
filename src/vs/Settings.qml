@@ -397,7 +397,7 @@ Item {
                 virtualstudio.toClassicMode();
             }
             x: 220 * virtualstudio.uiScale;
-            y: 100 * virtualstudio.uiScale
+            y: 48 * virtualstudio.uiScale
             width: 216 * virtualstudio.uiScale;
             height: 30 * virtualstudio.uiScale
             Text {
