@@ -551,7 +551,16 @@ void Regulator::updatePushStats(int seq_num)
         mLastSkipped            = totalSkipped;
         if (mAuto && pushStat->lastTime > AutoInitDur) {
             // after AutoInitDur: update auto tolerance once per second
-            updateTolerance(newGlitches, newSkipped);
+            if (pushStat->lastTime <= (AutoInitDur + 3000)) {
+                // Ignore glitches and skips for the first 3 seconds after
+                // we have switched from using the startup tolerance to
+                // a calculated tolerance. Otherwise, the switch can
+                // sometimes cause it to bump headroom prematurely even
+                // though there are no real audio glitches.
+                updateTolerance(0, 0);
+            } else {
+                updateTolerance(newGlitches, newSkipped);
+            }
         }
     }
 }
@@ -575,7 +584,11 @@ bool Regulator::pullPacket()
     const int lastSeqNumIn = mLastSeqNumIn.load(std::memory_order_acquire);
     int skipped            = 0;
 
-    if ((lastSeqNumIn == -1) || (!mInitialized)) {
+    if ((lastSeqNumIn == -1) || (!mInitialized) || (now < mMsecTolerance)) {
+        // return silence during startup:
+        // * no packets arrived yet
+        // * not initialized
+        // * hasn't run long enough to meet tolerance
         goto ZERO_OUTPUT;
     } else if (lastSeqNumIn == mLastSeqNumOut) {
         goto UNDERRUN;
