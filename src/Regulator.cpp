@@ -481,8 +481,10 @@ void Regulator::updateTolerance(int glitches, int skipped)
         // prevent headroom from growing beyond rolling average of max.
         int skipsAllowed;
         if (mMsecTolerance >= (mPeerFPPdurMsec * 2)) {
-            // calculate skips allowed if tolerance if above or equal to duration of two packets
-            skipsAllowed = static_cast<int>(AutoHeadroomGlitchTolerance * mSampleRate / mPeerFPP);
+            // calculate skips allowed if tolerance if above or equal to duration of two
+            // packets
+            skipsAllowed =
+                static_cast<int>(AutoHeadroomGlitchTolerance * mSampleRate / mPeerFPP);
         } else {
             // zero skips allowed if tolerance is below duration of two packets
             skipsAllowed = 0;
