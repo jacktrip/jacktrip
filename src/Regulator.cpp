@@ -479,8 +479,16 @@ void Regulator::updateTolerance(int glitches, int skipped)
         // only increase headroom if doing so would have reduced the number of
         // glitches that occured over the past second by 1% or more.
         // prevent headroom from growing beyond rolling average of max.
-        const int skipsAllowed =
-            static_cast<int>(AutoHeadroomGlitchTolerance * mSampleRate / mPeerFPP);
+        int skipsAllowed;
+        if (mMsecTolerance >= (mPeerFPPdurMsec * 2)) {
+            // calculate skips allowed if tolerance if above or equal to duration of two packets
+            skipsAllowed = static_cast<int>(AutoHeadroomGlitchTolerance * mSampleRate / mPeerFPP);
+        } else {
+            // zero skips allowed if tolerance is below duration of two packets
+            skipsAllowed = 0;
+            // also don't require two intervals in a row (override)
+            mSkipAutoHeadroom = false;
+        }
         if (glitches > 0 && skipped > skipsAllowed
             && mCurrentHeadroom + 1 <= pushStat->longTermMax) {
             if (mSkipAutoHeadroom) {
@@ -494,8 +502,8 @@ void Regulator::updateTolerance(int glitches, int skipped)
                      << " (max=" << pushStat->longTermMax << ")" << endl;
             }
         } else {
-            // require 2 seconds in a row if headroom >= two packet intervals
-            mSkipAutoHeadroom = mMsecTolerance >= (mPeerFPPdurMsec * 2);
+            // thresholds not met: require 2 intervals in a row
+            mSkipAutoHeadroom = true;
         }
     } else {
         // fixed headroom
