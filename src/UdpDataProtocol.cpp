@@ -294,7 +294,7 @@ socket_type UdpDataProtocol::bindSocket()
     ::setsockopt(sock_fd, SOL_SOCKET, SO_REUSEPORT, &one, sizeof(one));
 #endif
 
-    // set qos for windows after flow is established (requires peer address/port)
+    // set quality of service for the UDP socket
     if (setSocketQos(sock_fd)) {
         std::cout << "Set QoS for network socket" << std::endl;
     } else {
@@ -323,6 +323,9 @@ bool UdpDataProtocol::setSocketQos(socket_type& sock_fd)
     // Windows QoS (qWave) for audio traffic flows
     // https://learn.microsoft.com/en-us/windows/win32/api/_qos/
     // https://learn.microsoft.com/en-us/previous-versions/windows/desktop/qos/qwave-api-reference
+
+#if 0
+    // DISABLED SINCE THIS CAUSES GARBLED AUDIO FOR SOME PEOPLE
 
     // Initialize the QoS version parameter.
     QOS_VERSION Version;
@@ -354,6 +357,8 @@ bool UdpDataProtocol::setSocketQos(socket_type& sock_fd)
         std::cerr << WSAGetLastError() << std::endl;
         return false;
     }
+#endif
+
 #elif defined(__APPLE__)
     // set service type "Interactive Voice"
     // TODO: this is supposed to be the right thing to do on OSX, but doesn't seem to do
