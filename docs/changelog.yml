@@ -1,3 +1,9 @@
+- Version: "2.4.1"
+  Date: 2024-09-27
+  Description:
+  - (fixed) Disabling qWave Quality of Service for Windows users
+  - (fixed) PLC occasional popping sound when you first connect
+  - (fixed) PLC auto headroom optimization for very low jitter
 - Version: "2.4.0"
   Date: 2024-09-13
   Description:
