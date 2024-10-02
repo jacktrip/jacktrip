@@ -85,11 +85,13 @@ void VsMacPermissions::getMicPermission()
             {
                 // The user has previously denied access.
                 setMicPermission(QStringLiteral("denied"));
+                break;
             }
             case AVAuthorizationStatusRestricted:
             {
                 // The user can't grant access due to restrictions.
                 setMicPermission(QStringLiteral("denied"));
+                break;
             }
         }
     } else {

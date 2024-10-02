@@ -793,10 +793,38 @@ Rectangle {
                 id: scanningDevicesLabel
                 x: 0; y: 0
                 width: parent.width - (16 * virtualstudio.uiScale)
-                text: "Scanning audio devices..."
+                text: (Qt.platform.os == "osx" && permissions.micPermission != "granted") ? "Microphone permissions not permitted" : "Scanning audio devices..."
                 font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
                 wrapMode: Text.WordWrap
                 color: textColour
+            }
+
+            Button {
+                id: openSettingsButton
+                visible: Qt.platform.os == "osx" && permissions.micPermission != "granted"
+                background: Rectangle {
+                    radius: 6 * virtualstudio.uiScale
+                    color: openSettingsButton.down ? buttonPressedColour : buttonColour
+                    border.width: 1
+                    border.color: openSettingsButton.down || openSettingsButton.hovered ? buttonPressedStroke : buttonStroke
+                    layer.enabled: openSettingsButton.hovered && !openSettingsButton.down
+                }
+                onClicked: {
+                    permissions.openSystemPrivacy();
+                }
+                anchors.top: scanningDevicesLabel.bottom
+                anchors.topMargin: 16 * virtualstudio.uiScale
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: 200 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
+                Text {
+                    text: "Open Privacy Settings"
+                    font.family: "Poppins"
+                    font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
+                    font.weight: Font.Bold
+                    color: textColour
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.verticalCenter: parent.verticalCenter
+                }
             }
         }
     }
