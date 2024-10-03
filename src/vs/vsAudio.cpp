@@ -176,6 +176,7 @@ VsAudio::VsAudio(QObject* parent)
 #else
     m_permissionsPtr.reset(new VsPermissions());
 #endif
+    qDebug() << "Microphone permissions: " << m_permissionsPtr->micPermission();
 }
 
 VsAudio::~VsAudio()
