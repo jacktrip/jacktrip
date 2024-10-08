@@ -158,9 +158,9 @@ class UdpHubListener : public QObject
     QVector<JackTripWorker*>* mJTWorkers;  ///< Vector of JackTripWorkers
 
     SslServer mTcpServer;
-    int mServerPort;     //< Server known port number
-    int mServerUdpPort;  //< Server udp base port number
-    QString mServerBindAddress; //< Server bind address
+    int mServerPort;             //< Server known port number
+    int mServerUdpPort;          //< Server udp base port number
+    QString mServerBindAddress;  //< Server bind address
     int mBasePort;
     // addressPortNameTriple mActiveAddress[gMaxThreads]; ///< Active address pool
     // addresses QHash<QString, uint16_t> mActiveAddressPortPair;

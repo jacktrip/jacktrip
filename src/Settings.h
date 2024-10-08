@@ -140,8 +140,8 @@ class Settings : public QObject
         gDefaultQueueLength;  ///< Audio Buffer from network queue length
     AudioInterface::audioBitResolutionT mAudioBitResolution = AudioInterface::BIT16;
     QString mPeerAddress;  ///< Peer Address to use in jacktripModeT::CLIENT Mode
-    int mBindPortNum      = gDefaultPort;  ///< Bind Port Number
-    QString mBindAddress; ///< Bind address
+    int mBindPortNum = gDefaultPort;       ///< Bind Port Number
+    QString mBindAddress;                  ///< Bind address
     int mPeerPortNum      = gDefaultPort;  ///< Peer Port Number
     int mServerUdpPortNum = 0;
     QString mClientName;  ///< JackClient Name

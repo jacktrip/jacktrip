@@ -142,7 +142,7 @@ void Settings::parseInput(int argc, char** argv)
          'C'},  // Run in ping to server mode, set server IP address
         {"portoffset", required_argument, NULL, 'o'},  // Port Offset from 4464
         {"bindport", required_argument, NULL, 'B'},    // Port Offset from 4464
-        {"bindaddress", no_argument, NULL, 'M'},    // Server bind address
+        {"bindaddress", no_argument, NULL, 'M'},       // Server bind address
         {"peerport", required_argument, NULL, 'P'},    // Port Offset from 4464
         {"udpbaseport", required_argument, NULL,
          'U'},  // Server udp base port (defaults to 61002)
@@ -1009,7 +1009,8 @@ UdpHubListener* Settings::getConfiguredHubServer()
 
     if (gVerboseFlag)
         std::cout << "JackTrip HUB SERVER TCP Bind Port: " << mBindPortNum << std::endl;
-    UdpHubListener* udpHub = new UdpHubListener(mBindPortNum, mServerUdpPortNum, mBindAddress);
+    UdpHubListener* udpHub =
+        new UdpHubListener(mBindPortNum, mServerUdpPortNum, mBindAddress);
     // udpHub->setSettings(this);
 #ifdef WAIR  // WAIR
     udpHub->setWAIR(mWAIR);

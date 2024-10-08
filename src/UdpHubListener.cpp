@@ -62,7 +62,8 @@ using std::endl;
 bool UdpHubListener::sSigInt = false;
 
 //*******************************************************************************
-UdpHubListener::UdpHubListener(int server_port, int server_udp_port, QString server_bind_address, QObject* parent)
+UdpHubListener::UdpHubListener(int server_port, int server_udp_port,
+                               QString server_bind_address, QObject* parent)
     : QObject(parent)
     , mTcpServer(this)
     , mServerPort(server_port)
