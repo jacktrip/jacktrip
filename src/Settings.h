@@ -93,6 +93,7 @@ class Settings : public QObject
     unsigned int getRedundancy() { return mRedundancy; }
     QString getPeerAddress() { return mPeerAddress; }
     int getBindPort() { return mBindPortNum; }
+    QString getBindAddress() { return mBindAddress; }
     int getPeerPort() { return mPeerPortNum; }
     int getServerUdpPort() { return mServerUdpPortNum; }
     AudioInterface::audioBitResolutionT getAudioBitResolution()
@@ -140,6 +141,7 @@ class Settings : public QObject
     AudioInterface::audioBitResolutionT mAudioBitResolution = AudioInterface::BIT16;
     QString mPeerAddress;  ///< Peer Address to use in jacktripModeT::CLIENT Mode
     int mBindPortNum      = gDefaultPort;  ///< Bind Port Number
+    QString mBindAddress; ///< Bind address
     int mPeerPortNum      = gDefaultPort;  ///< Peer Port Number
     int mServerUdpPortNum = 0;
     QString mClientName;  ///< JackClient Name

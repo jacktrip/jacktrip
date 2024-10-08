@@ -70,7 +70,7 @@ class UdpHubListener : public QObject
 
    public:
     UdpHubListener(int server_port = gServerUdpPort, int server_udp_port = 0,
-                   QObject* parent = nullptr);
+                   QString server_bind_address = "", QObject* parent = nullptr);
     virtual ~UdpHubListener();
 
     /// \brief Starts the TCP server
@@ -160,6 +160,7 @@ class UdpHubListener : public QObject
     SslServer mTcpServer;
     int mServerPort;     //< Server known port number
     int mServerUdpPort;  //< Server udp base port number
+    QString mServerBindAddress; //< Server bind address
     int mBasePort;
     // addressPortNameTriple mActiveAddress[gMaxThreads]; ///< Active address pool
     // addresses QHash<QString, uint16_t> mActiveAddressPortPair;

@@ -62,11 +62,12 @@ using std::endl;
 bool UdpHubListener::sSigInt = false;
 
 //*******************************************************************************
-UdpHubListener::UdpHubListener(int server_port, int server_udp_port, QObject* parent)
+UdpHubListener::UdpHubListener(int server_port, int server_udp_port, QString server_bind_address, QObject* parent)
     : QObject(parent)
     , mTcpServer(this)
     , mServerPort(server_port)
     , mServerUdpPort(server_udp_port)
+    , mServerBindAddress(server_bind_address)
     ,  // final udp base port number
     mRequireAuth(false)
     , mStopped(false)
@@ -143,7 +144,12 @@ void UdpHubListener::start()
     // ------------------------------
     QObject::connect(&mTcpServer, &SslServer::newConnection, this,
                      &UdpHubListener::receivedNewConnection);
-    if (!mTcpServer.listen(QHostAddress::Any, mServerPort)) {
+
+    QHostAddress addr = QHostAddress::Any;
+    if (!mServerBindAddress.isEmpty()) {
+        addr = QHostAddress(mServerBindAddress);
+    }
+    if (!mTcpServer.listen(addr, mServerPort)) {
         QString error_message = QStringLiteral("TCP Socket Server on Port %1 ERROR: %2")
                                     .arg(mServerPort)
                                     .arg(mTcpServer.errorString());
