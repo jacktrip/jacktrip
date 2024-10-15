@@ -497,7 +497,11 @@ void QJackTrip::processFinished()
 
     if (m_ui->disconnectScriptCheckBox->isChecked()) {
         QStringList arguments = m_ui->disconnectScriptEdit->text().split(
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
             QStringLiteral(" "), Qt::SkipEmptyParts);
+#else
+            QStringLiteral(" "), QString::SkipEmptyParts);
+#endif
         if (!arguments.isEmpty()) {
             QProcess disconnectScript;
             disconnectScript.setProgram(arguments.takeFirst());
@@ -547,7 +551,11 @@ void QJackTrip::receivedConnectionFromPeer()
     m_assignedClientName = m_jackTrip->getAssignedClientName();
     if (m_ui->connectScriptCheckBox->isChecked()) {
         QStringList arguments = m_ui->connectScriptEdit->text().split(QStringLiteral(" "),
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
                                                                       Qt::SkipEmptyParts);
+#else
+                                                                      QString::SkipEmptyParts); 
+#endif
         if (!arguments.isEmpty()) {
             QProcess connectScript;
             connectScript.setProgram(arguments.takeFirst());

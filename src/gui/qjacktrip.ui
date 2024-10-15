@@ -2000,7 +2000,7 @@ To connect to a hub server you need to run as a hub client.</string>
   <tabstop>disconnectScriptBrowse</tabstop>
  </tabstops>
  <resources>
-  <include location="qjacktrip.qrc"/>
+  <include location="../images/images.qrc"/>
  </resources>
  <connections/>
 </ui>
