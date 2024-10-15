@@ -554,7 +554,8 @@ void QJackTrip::receivedConnectionFromPeer()
 #if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
                                                                       Qt::SkipEmptyParts);
 #else
-                                                                      QString::SkipEmptyParts); 
+                                                                      QString::
+                                                                          SkipEmptyParts); 
 #endif
         if (!arguments.isEmpty()) {
             QProcess connectScript;
