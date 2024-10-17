@@ -118,7 +118,7 @@ jobs:
 
           - name: macOS-x64-meson-clang-static
             release-name: macOS-x64-nogui
-            runs-on: macos-12
+            runs-on: macos-13
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: true
@@ -136,7 +136,7 @@ jobs:
 
           - name: macOS-x64-meson-clang-shared
             release-name: macOS-x64
-            runs-on: macos-12
+            runs-on: macos-13
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
