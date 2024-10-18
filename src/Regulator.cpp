@@ -372,6 +372,9 @@ void Regulator::setFPPratio(int len)
     //////////////////////////////////////
 
     if (mPeerFPP != mLocalFPP) {
+        // adjust broadcast queue length so that time duration matches across all clients
+        if (m_b_BroadcastQueueLength)
+            m_b_BroadcastQueueLength = (m_b_BroadcastQueueLength * mLocalFPP) / mPeerFPP;
         if (mPeerFPP > mLocalFPP)
             mFPPratioDenominator = mPeerFPP / mLocalFPP;
         else
