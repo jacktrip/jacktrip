@@ -494,8 +494,8 @@ jobs:
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
 
           # import certificate and provisioning profile from secrets
-          echo -n "$APP_SIGNING_CERT_BASE64" | base64 --decode --output $CERTIFICATE_PATH
-          echo -n "$INSTALLER_SIGNING_CERT_BASE64" | base64 --decode --output $INSTALLER_CERT_PATH
+          echo -n "$APP_SIGNING_CERT_BASE64" | base64 -d -o $CERTIFICATE_PATH
+          echo -n "$INSTALLER_SIGNING_CERT_BASE64" | base64 -d -o $INSTALLER_CERT_PATH
 
           # create temporary keychain
           security create-keychain -p "$KEYCHAIN_PWD" $KEYCHAIN_PATH
@@ -891,6 +891,7 @@ jobs:
           images: ${{ env.REGISTRY_IMAGE }}
           tags: |
             type=edge,branch=dev
+            type=sha,branch=dev
             type=match,pattern=v(\d+.\d+)..*,group=1
             type=match,pattern=v(\d+.\d+.\d+).*,group=1,priority=950
             type=match,pattern=v(\d+.\d+.\d+-.*),group=1,priority=1000
