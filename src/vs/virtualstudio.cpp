@@ -495,6 +495,9 @@ void VirtualStudio::setWindowState(QString state)
         // just to reduce risk of running into a deadlock
         emit scheduleStudioRefresh(-1, false);
     }
+    if (m_windowState != "browse") {
+        emit closeFeedbackSurveyModal();
+    }
     emit windowStateUpdated();
 }
 

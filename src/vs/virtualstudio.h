@@ -240,6 +240,7 @@ class VirtualStudio : public QObject
     void apiHostChanged();
     void feedbackDetected();
     void openFeedbackSurveyModal(QString serverId);
+    void closeFeedbackSurveyModal();
     void openAboutWindow();
 
    private slots:
