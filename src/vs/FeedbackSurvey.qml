@@ -417,5 +417,9 @@ Item {
         userFeedbackSurvey.serverId = serverId;
         userFeedbackModal.open();
       }
+
+      function onCloseFeedbackSurveyModal() {
+        userFeedbackModal.close();
+      }
     }
 }
