@@ -540,7 +540,19 @@ void VirtualStudio::setRefreshInProgress(bool b)
 void VirtualStudio::collectFeedbackSurvey(QString serverId, int rating, QString message)
 {
     QJsonObject feedback;
+    feedback.insert(QStringLiteral("appVersion"), versionString());
 
+#if defined(Q_OS_WIN)
+    feedback.insert(QStringLiteral("platform"), "windows");
+#endif
+#if defined(Q_OS_MACOS)
+    feedback.insert(QStringLiteral("platform"), "macos");
+#endif
+#if defined(Q_OS_LINUX)
+    feedback.insert(QStringLiteral("platform"), "linux");
+#endif
+
+    feedback.insert(QStringLiteral("osVersion"), QSysInfo::prettyProductName());
     QString sysInfo = QString("[platform=%1").arg(QSysInfo::prettyProductName());
 #ifdef RT_AUDIO
     QString inputDevice =
@@ -561,6 +573,19 @@ void VirtualStudio::collectFeedbackSurvey(QString serverId, int rating, QString 
         feedback.insert(QStringLiteral("message"), sysInfo);
     } else {
         feedback.insert(QStringLiteral("message"), message + " " + sysInfo);
+    }
+
+    QString deviceIssues  = "";
+    QString deviceError   = m_audioConfigPtr->getDevicesErrorMsg();
+    QString deviceWarning = m_audioConfigPtr->getDevicesWarningMsg();
+    if (!deviceError.isEmpty()) {
+        deviceIssues.append(deviceError);
+    } else if (!deviceWarning.isEmpty()) {
+        deviceIssues.append(deviceWarning);
+    }
+    if (!deviceIssues.isEmpty()) {
+        feedback.insert(QStringLiteral("deviceIssues"), deviceIssues);
+        message.append(" (deviceIssues=" + deviceIssues + ")");
     }
 
     QJsonDocument data = QJsonDocument(feedback);
