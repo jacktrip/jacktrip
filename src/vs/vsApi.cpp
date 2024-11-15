@@ -48,7 +48,7 @@ QNetworkReply* VsApi::getAuth0UserInfo()
     // this function operates a little differently because it is made to
     // Auth0 directly rather than our own API server, which requires a specific
     // an Authorization header rather than a cookie
-    QUrl url = QUrl("https://auth.jacktrip.org/userinfo");
+    QUrl url                = QUrl("https://auth.jacktrip.org/userinfo");
     QNetworkRequest request = QNetworkRequest(url);
     request.setRawHeader(QByteArray("User-Agent"),
                          QString("JackTrip/%1 (Qt)").arg(gVersion).toUtf8());
@@ -127,10 +127,8 @@ QNetworkReply* VsApi::get(const QUrl& url)
                          QString("JackTrip/%1 (Qt)").arg(gVersion).toUtf8());
 
     QList<QNetworkCookie> cookies;
-    QNetworkCookie authCookie = QNetworkCookie(
-        QByteArray("auth_code"),
-        m_accessToken.toUtf8()
-    );
+    QNetworkCookie authCookie =
+        QNetworkCookie(QByteArray("auth_code"), m_accessToken.toUtf8());
     cookies.append(authCookie);
     request.setHeader(QNetworkRequest::CookieHeader, QVariant::fromValue(cookies));
     QNetworkReply* reply = m_networkAccessManager->get(request);
@@ -146,10 +144,8 @@ QNetworkReply* VsApi::post(const QUrl& url, const QByteArray& data)
                          QString("application/json").toUtf8());
 
     QList<QNetworkCookie> cookies;
-    QNetworkCookie authCookie = QNetworkCookie(
-        QByteArray("auth_code"),
-        m_accessToken.toUtf8()
-    );
+    QNetworkCookie authCookie =
+        QNetworkCookie(QByteArray("auth_code"), m_accessToken.toUtf8());
     cookies.append(authCookie);
     request.setHeader(QNetworkRequest::CookieHeader, QVariant::fromValue(cookies));
     QNetworkReply* reply = m_networkAccessManager->post(request, data);
@@ -165,10 +161,8 @@ QNetworkReply* VsApi::put(const QUrl& url, const QByteArray& data)
                          QString("application/json").toUtf8());
 
     QList<QNetworkCookie> cookies;
-    QNetworkCookie authCookie = QNetworkCookie(
-        QByteArray("auth_code"),
-        m_accessToken.toUtf8()
-    );
+    QNetworkCookie authCookie =
+        QNetworkCookie(QByteArray("auth_code"), m_accessToken.toUtf8());
     cookies.append(authCookie);
     request.setHeader(QNetworkRequest::CookieHeader, QVariant::fromValue(cookies));
     QNetworkReply* reply = m_networkAccessManager->put(request, data);
@@ -182,10 +176,8 @@ QNetworkReply* VsApi::deleteResource(const QUrl& url)
                          QString("JackTrip/%1 (Qt)").arg(gVersion).toUtf8());
 
     QList<QNetworkCookie> cookies;
-    QNetworkCookie authCookie = QNetworkCookie(
-        QByteArray("auth_code"),
-        m_accessToken.toUtf8()
-    );
+    QNetworkCookie authCookie =
+        QNetworkCookie(QByteArray("auth_code"), m_accessToken.toUtf8());
     cookies.append(authCookie);
     request.setHeader(QNetworkRequest::CookieHeader, QVariant::fromValue(cookies));
     QNetworkReply* reply = m_networkAccessManager->deleteResource(request);

@@ -38,14 +38,13 @@
 #define VSWEBSOCKET_H
 
 #include <QList>
+#include <QNetworkRequest>
 #include <QObject>
 #include <QScopedPointer>
 #include <QSslError>
 #include <QString>
 #include <QUrl>
 #include <QtWebSockets>
-#include <QNetworkRequest>
-#include <QList>
 
 class VsWebSocket : public QObject
 {

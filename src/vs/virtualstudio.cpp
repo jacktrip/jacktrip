@@ -925,10 +925,10 @@ void VirtualStudio::connectToStudio()
 
     m_onConnectedScreen = true;
 
-    m_studioSocketPtr.reset(new VsWebSocket(
-        QUrl(QStringLiteral("wss://%1/api/servers/%2")
-                 .arg(m_api->getApiHost(), m_currentStudio.id())),
-        m_auth->accessToken(), QString(), QString()));
+    m_studioSocketPtr.reset(
+        new VsWebSocket(QUrl(QStringLiteral("wss://%1/api/servers/%2")
+                                 .arg(m_api->getApiHost(), m_currentStudio.id())),
+                        m_auth->accessToken(), QString(), QString()));
     connect(m_studioSocketPtr.get(), &VsWebSocket::textMessageReceived, this,
             &VirtualStudio::handleWebsocketMessage);
     connect(m_studioSocketPtr.get(), &VsWebSocket::disconnected, this,

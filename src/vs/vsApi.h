@@ -39,15 +39,15 @@
 
 #include <QEventLoop>
 #include <QJsonParseError>
+#include <QList>
 #include <QMap>
 #include <QNetworkAccessManager>
+#include <QNetworkCookie>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QString>
 #include <QUrl>
 #include <QVariant>
-#include <QNetworkCookie>
-#include <QList>
 #include <iostream>
 
 class VsApi : public QObject

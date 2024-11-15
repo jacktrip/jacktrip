@@ -92,10 +92,7 @@ void VsWebSocket::openSocket()
     req.setRawHeader(QByteArray("APISecret"), m_apiSecret.toUtf8());
 
     QList<QNetworkCookie> cookies;
-    QNetworkCookie authCookie = QNetworkCookie(
-        QByteArray("auth_code"),
-        m_token.toUtf8()
-    );
+    QNetworkCookie authCookie = QNetworkCookie(QByteArray("auth_code"), m_token.toUtf8());
     cookies.append(authCookie);
     req.setHeader(QNetworkRequest::CookieHeader, QVariant::fromValue(cookies));
 

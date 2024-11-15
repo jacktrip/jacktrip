@@ -39,14 +39,14 @@
 
 #include <QAbstractSocket>
 #include <QDateTime>
+#include <QList>
+#include <QNetworkRequest>
 #include <QObject>
 #include <QTimer>
 #include <QUrl>
 #include <QtWebSockets>
 #include <stdexcept>
 #include <vector>
-#include <QNetworkRequest>
-#include <QList>
 
 #include "vsPing.h"
 
