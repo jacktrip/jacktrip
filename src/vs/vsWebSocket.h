@@ -44,6 +44,8 @@
 #include <QString>
 #include <QUrl>
 #include <QtWebSockets>
+#include <QNetworkRequest>
+#include <QList>
 
 class VsWebSocket : public QObject
 {

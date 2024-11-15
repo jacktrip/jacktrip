@@ -85,14 +85,19 @@ void VsWebSocket::openSocket()
     }
 
     QNetworkRequest req = QNetworkRequest(QUrl(m_url));
-    QString authVal     = "Bearer ";
-    authVal.append(m_token);
     req.setRawHeader(QByteArray("Upgrade"), QByteArray("websocket"));
     req.setRawHeader(QByteArray("Connection"), QByteArray("Upgrade"));
-    req.setRawHeader(QByteArray("Authorization"), authVal.toUtf8());
     req.setRawHeader(QByteArray("Origin"), QByteArray("http://jacktrip.local"));
     req.setRawHeader(QByteArray("APIPrefix"), m_apiPrefix.toUtf8());
     req.setRawHeader(QByteArray("APISecret"), m_apiSecret.toUtf8());
+
+    QList<QNetworkCookie> cookies;
+    QNetworkCookie authCookie = QNetworkCookie(
+        QByteArray("auth_code"),
+        m_token.toUtf8()
+    );
+    cookies.append(authCookie);
+    req.setHeader(QNetworkRequest::CookieHeader, QVariant::fromValue(cookies));
 
     if (!m_webSocket.isNull()) {
         m_webSocket->open(req);
@@ -114,7 +119,7 @@ void VsWebSocket::onError(QAbstractSocket::SocketError error)
     // RemoteHostClosedError may be expected due to finite connection durations
     // ConnectionRefusedError may be expected if the server-side endpoint is closed
     if (error != QAbstractSocket::RemoteHostClosedError) {
-        qDebug() << "Websocket error: " << error;
+        qDebug() << "Websocket error: " << m_url << " " << error;
     }
     if (!m_webSocket.isNull()) {
         m_webSocket->abort();
