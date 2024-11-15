@@ -45,7 +45,17 @@ VsApi::VsApi(QNetworkAccessManager* networkAccessManager)
 
 QNetworkReply* VsApi::getAuth0UserInfo()
 {
-    return get(QUrl("https://auth.jacktrip.org/userinfo"));
+    // this function operates a little differently because it is made to
+    // Auth0 directly rather than our own API server, which requires a specific
+    // an Authorization header rather than a cookie
+    QUrl url = QUrl("https://auth.jacktrip.org/userinfo");
+    QNetworkRequest request = QNetworkRequest(url);
+    request.setRawHeader(QByteArray("User-Agent"),
+                         QString("JackTrip/%1 (Qt)").arg(gVersion).toUtf8());
+    request.setRawHeader(QByteArray("Authorization"),
+                         QString("Bearer %1").arg(m_accessToken).toUtf8());
+    QNetworkReply* reply = m_networkAccessManager->get(request);
+    return reply;
 }
 
 QNetworkReply* VsApi::getUser(const QString& userId)
@@ -115,9 +125,14 @@ QNetworkReply* VsApi::get(const QUrl& url)
     QNetworkRequest request = QNetworkRequest(url);
     request.setRawHeader(QByteArray("User-Agent"),
                          QString("JackTrip/%1 (Qt)").arg(gVersion).toUtf8());
-    request.setRawHeader(QByteArray("Authorization"),
-                         QString("Bearer %1").arg(m_accessToken).toUtf8());
 
+    QList<QNetworkCookie> cookies;
+    QNetworkCookie authCookie = QNetworkCookie(
+        QByteArray("auth_code"),
+        m_accessToken.toUtf8()
+    );
+    cookies.append(authCookie);
+    request.setHeader(QNetworkRequest::CookieHeader, QVariant::fromValue(cookies));
     QNetworkReply* reply = m_networkAccessManager->get(request);
     return reply;
 }
@@ -127,11 +142,16 @@ QNetworkReply* VsApi::post(const QUrl& url, const QByteArray& data)
     QNetworkRequest request = QNetworkRequest(url);
     request.setRawHeader(QByteArray("User-Agent"),
                          QString("JackTrip/%1 (Qt)").arg(gVersion).toUtf8());
-    request.setRawHeader(QByteArray("Authorization"),
-                         QString("Bearer %1").arg(m_accessToken).toUtf8());
     request.setRawHeader(QByteArray("Content-Type"),
                          QString("application/json").toUtf8());
 
+    QList<QNetworkCookie> cookies;
+    QNetworkCookie authCookie = QNetworkCookie(
+        QByteArray("auth_code"),
+        m_accessToken.toUtf8()
+    );
+    cookies.append(authCookie);
+    request.setHeader(QNetworkRequest::CookieHeader, QVariant::fromValue(cookies));
     QNetworkReply* reply = m_networkAccessManager->post(request, data);
     return reply;
 }
@@ -140,11 +160,17 @@ QNetworkReply* VsApi::put(const QUrl& url, const QByteArray& data)
 {
     QNetworkRequest request = QNetworkRequest(url);
     request.setRawHeader(QByteArray("User-Agent"),
-                         QString("JackTrip/%1 (Qt)").arg(gVersion).toUtf8());
-    request.setRawHeader(QByteArray("Authorization"),
                          QString("Bearer %1").arg(m_accessToken).toUtf8());
     request.setRawHeader(QByteArray("Content-Type"),
                          QString("application/json").toUtf8());
+
+    QList<QNetworkCookie> cookies;
+    QNetworkCookie authCookie = QNetworkCookie(
+        QByteArray("auth_code"),
+        m_accessToken.toUtf8()
+    );
+    cookies.append(authCookie);
+    request.setHeader(QNetworkRequest::CookieHeader, QVariant::fromValue(cookies));
     QNetworkReply* reply = m_networkAccessManager->put(request, data);
     return reply;
 }
@@ -154,9 +180,14 @@ QNetworkReply* VsApi::deleteResource(const QUrl& url)
     QNetworkRequest request = QNetworkRequest(url);
     request.setRawHeader(QByteArray("User-Agent"),
                          QString("JackTrip/%1 (Qt)").arg(gVersion).toUtf8());
-    request.setRawHeader(QByteArray("Authorization"),
-                         QString("Bearer %1").arg(m_accessToken).toUtf8());
 
+    QList<QNetworkCookie> cookies;
+    QNetworkCookie authCookie = QNetworkCookie(
+        QByteArray("auth_code"),
+        m_accessToken.toUtf8()
+    );
+    cookies.append(authCookie);
+    request.setHeader(QNetworkRequest::CookieHeader, QVariant::fromValue(cookies));
     QNetworkReply* reply = m_networkAccessManager->deleteResource(request);
     return reply;
 }

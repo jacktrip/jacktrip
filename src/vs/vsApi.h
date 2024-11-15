@@ -46,6 +46,8 @@
 #include <QString>
 #include <QUrl>
 #include <QVariant>
+#include <QNetworkCookie>
+#include <QList>
 #include <iostream>
 
 class VsApi : public QObject
