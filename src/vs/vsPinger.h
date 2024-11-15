@@ -45,6 +45,8 @@
 #include <QtWebSockets>
 #include <stdexcept>
 #include <vector>
+#include <QNetworkRequest>
+#include <QList>
 
 #include "vsPing.h"
 
