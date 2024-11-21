@@ -62,7 +62,7 @@ Item {
             settings.javascriptCanPaste: true
             settings.screenCaptureEnabled: true
             profile.httpUserAgent: `JackTrip/${virtualstudio.versionString}`
-            url: `https://${virtualstudio.apiHost}/studios/${studioId}/live?accessToken=${accessToken}`
+            url: `https://${virtualstudio.apiHost}/studios/${studioId}/live`
 
             // useful for debugging
             // onJavaScriptConsoleMessage: function(level, message, lineNumber, sourceID) {

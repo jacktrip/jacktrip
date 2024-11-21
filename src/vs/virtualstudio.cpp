@@ -221,6 +221,9 @@ VirtualStudio::VirtualStudio(UserInterface& parent)
             std::exit(0);
     }
 
+    // initialize default QtWebEngineProfile
+    m_qwebEngineProfile = QWebEngineProfile::defaultProfile();
+
     // Log to file
     QString logPath(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
     QDir logDir;
@@ -1245,6 +1248,23 @@ void VirtualStudio::slotAuthSucceeded()
         m_apiHost = TEST_API_HOST;
     }
     m_api->setApiHost(m_apiHost);
+
+    // set cookie
+    QWebEngineCookieStore* cookieStore = m_qwebEngineProfile->cookieStore();
+    QNetworkCookie authCookie =
+        QNetworkCookie(QByteArray("auth_code"), m_auth->accessToken().toUtf8());
+
+    QUrl url1 = QUrl(QStringLiteral("https://www.jacktrip.com"));
+    if (testMode()) {
+        url1 = QUrl(QStringLiteral("https://next-test.jacktrip.com"));
+    }
+    QUrl url2 = QUrl(QStringLiteral("https://app.jacktrip.com"));
+    if (testMode()) {
+        url2 = QUrl(QStringLiteral("https://test.jacktrip.com"));
+    }
+
+    cookieStore->setCookie(authCookie, url1);
+    cookieStore->setCookie(authCookie, url2);
 
     // Get refresh token and userId
     m_refreshToken = m_auth->refreshToken();

@@ -41,6 +41,7 @@
 #include <QMap>
 #include <QMutex>
 #include <QNetworkAccessManager>
+#include <QNetworkCookie>
 #include <QObject>
 #include <QScopedPointer>
 #include <QSharedPointer>
@@ -50,6 +51,8 @@
 #include <QUrl>
 #include <QVector>
 #include <QWebChannel>
+#include <QWebEngineCookieStore>
+#include <QWebEngineProfile>
 #include <QWebSocketServer>
 
 #include "../Settings.h"
@@ -275,6 +278,7 @@ class VirtualStudio : public QObject
     UserInterface& m_interface;
     VsServerInfo m_currentStudio;
     QNetworkAccessManager* m_networkAccessManagerPtr;
+    QWebEngineProfile* m_qwebEngineProfile;
     QScopedPointer<VsQuickView> m_view;
     QSharedPointer<VsDeeplink> m_deepLinkPtr;
     QSharedPointer<VsAuth> m_auth;
