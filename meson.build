@@ -77,7 +77,8 @@ src = [	'src/DataProtocol.cpp',
 	'src/Reverb.cpp',
 	'src/main.cpp',
 	'src/SslServer.cpp',
-	'src/Auth.cpp']
+	'src/Auth.cpp',
+	'src/OscServer.cpp']
 
 moc_h = ['src/DataProtocol.h',
 	'src/JackTrip.h',
@@ -94,7 +95,8 @@ moc_h = ['src/DataProtocol.h',
 	'src/UdpDataProtocol.h',
 	'src/UdpHubListener.h',
 	'src/Auth.h',
-	'src/SslServer.h']
+	'src/SslServer.h',
+	'src/OscServer.h']
 
 ui_h = []
 qres = []
@@ -207,7 +209,16 @@ else
 			'src/vs/vsPing.h',
 			'src/vs/vsQmlClipboard.h',
 			'src/vs/JTApplication.h',
-			'src/vs/WebSocketTransport.h'
+			'src/vs/WebSocketTransport.h',
+			'src/oscpp/client.hpp',
+			'src/oscpp/detail/endian.hpp',
+			'src/oscpp/detail/host.hpp',
+			'src/oscpp/detail/stream.hpp',
+			'src/oscpp/error.hpp',
+			'src/oscpp/print.hpp',
+			'src/oscpp/server.hpp',
+			'src/oscpp/types.hpp',
+			'src/oscpp/util.hpp'
 		]
 
 		if host_machine.system() == 'darwin'

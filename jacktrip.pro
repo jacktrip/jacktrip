@@ -234,6 +234,7 @@ HEADERS += src/DataProtocol.h \
            src/Settings.h \
            src/UdpDataProtocol.h \
            src/UdpHubListener.h \
+           src/OscServer.h \
            src/AudioInterface.h \
            src/compressordsp.h \
            src/limiterdsp.h \
@@ -272,7 +273,17 @@ HEADERS += src/DataProtocol.h \
                src/vs/vsPinger.h \
                src/vs/vsPing.h \
                src/vs/vsQmlClipboard.h \
-               src/vs/JTApplication.h
+               src/vs/JTApplication.h \
+               src/oscpp/client.hpp \
+               src/oscpp/detail/endian.hpp \
+               src/oscpp/detail/host.hpp \
+               src/oscpp/detail/stream.hpp \
+               src/oscpp/error.hpp \
+               src/oscpp/print.hpp \
+               src/oscpp/server.hpp \
+               src/oscpp/types.hpp \
+               src/oscpp/util.hpp
+
   }
   !noupdater:!linux-g++:!linux-g++-64 {
     HEADERS += src/dblsqd/feed.h \
@@ -308,6 +319,7 @@ SOURCES += src/DataProtocol.cpp \
            src/Settings.cpp \
            src/UdpDataProtocol.cpp \
            src/UdpHubListener.cpp \
+           src/OscServer.cpp \
            src/AudioInterface.cpp \
            src/main.cpp \
            src/SslServer.cpp \

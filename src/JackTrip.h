@@ -49,6 +49,7 @@
 
 #include "AudioInterface.h"
 #include "DataProtocol.h"
+#include "OscServer.h"
 
 #ifndef NO_JACK
 #include "JackAudioInterface.h"
@@ -647,6 +648,15 @@ class JackTrip : public QObject
     int getID() { return mID; }
 
    private:
+    void startOscServer()
+    {
+#ifndef NO_VS
+        // start osc server to listen to config updates
+        mOscServer = new OscServer(mTcpServerPort, this);
+        mOscServer->start();
+#endif
+    };
+
     int mID = 0;
     jacktripModeT mJackTripMode;                        ///< JackTrip::jacktripModeT
     dataProtocolT mDataProtocol;                        ///< Data Protocol Tipe
@@ -673,6 +683,8 @@ class JackTrip : public QObject
     bool mLoopBack;
     QString mPeerAddress;  ///< Peer Address to use in jacktripModeT::CLIENT Mode
 
+    // Pointer to OscServer
+    OscServer* mOscServer;
     /// Pointer to Abstract Type DataProtocol that sends packets
     DataProtocol* mDataProtocolSender;
     /// Pointer to Abstract Type DataProtocol that receives packets
