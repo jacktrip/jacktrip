@@ -1281,7 +1281,9 @@ int JackTrip::serverStart(bool timeout, int udpTimeout)  // udpTimeout unused
     }
     connect(&mUdpSockTemp, &QUdpSocket::readyRead, this, &JackTrip::receivedDataUDP);
 
-    startOscServer();
+    if (mJackTripMode == SERVERPINGSERVER) {
+        startOscServer();
+    }
 
     if (gVerboseFlag)
         std::cout << "JackTrip:serverStart before !UdpSockTemp.hasPendingDatagrams()"
