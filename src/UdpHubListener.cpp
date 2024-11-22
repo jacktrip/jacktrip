@@ -220,6 +220,8 @@ void UdpHubListener::start()
         mAuth.reset(new Auth(mCredsFile, true));
     }
 
+    startOscServer();
+
     cout << "JackTrip HUB SERVER: Waiting for client connections..." << endl;
     cout << "JackTrip HUB SERVER: Hub auto audio patch setting = " << mHubPatch << " ("
          << mHubPatchDescriptions.at(mHubPatch).toStdString() << ")" << endl;

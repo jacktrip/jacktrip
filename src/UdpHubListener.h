@@ -54,6 +54,7 @@
 #include "Patcher.h"
 #endif
 #include "Auth.h"
+#include "OscServer.h"
 #include "SslServer.h"
 
 class JackTripWorker;  // forward declaration
@@ -129,6 +130,13 @@ class UdpHubListener : public QObject
     int checkAuthAndReadPort(QSslSocket* clientConnection, QString& clientName);
     int sendUdpPort(QSslSocket* clientConnection, qint32 udp_port);
 
+    void startOscServer()
+    {
+        // start osc server to listen to config updates
+        mOscServer = new OscServer(mServerPort, this);
+        mOscServer->start();
+    };
+
     /**
      * \brief Send the JackTripWorker to the thread pool. This will run
      * until it's done. We still have control over the prototype class.
@@ -156,6 +164,8 @@ class UdpHubListener : public QObject
 
     // JackTripWorker* mJTWorker; ///< Class that will be used as prototype
     QVector<JackTripWorker*>* mJTWorkers;  ///< Vector of JackTripWorkers
+    // Pointer to OscServer
+    OscServer* mOscServer;
 
     SslServer mTcpServer;
     int mServerPort;     //< Server known port number

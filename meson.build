@@ -96,7 +96,16 @@ moc_h = ['src/DataProtocol.h',
 	'src/UdpHubListener.h',
 	'src/Auth.h',
 	'src/SslServer.h',
-	'src/OscServer.h']
+	'src/OscServer.h',
+	'src/oscpp/client.hpp',
+	'src/oscpp/detail/endian.hpp',
+	'src/oscpp/detail/host.hpp',
+	'src/oscpp/detail/stream.hpp',
+	'src/oscpp/error.hpp',
+	'src/oscpp/print.hpp',
+	'src/oscpp/server.hpp',
+	'src/oscpp/types.hpp',
+	'src/oscpp/util.hpp']
 
 ui_h = []
 qres = []
@@ -209,17 +218,7 @@ else
 			'src/vs/vsPing.h',
 			'src/vs/vsQmlClipboard.h',
 			'src/vs/JTApplication.h',
-			'src/vs/WebSocketTransport.h',
-			'src/oscpp/client.hpp',
-			'src/oscpp/detail/endian.hpp',
-			'src/oscpp/detail/host.hpp',
-			'src/oscpp/detail/stream.hpp',
-			'src/oscpp/error.hpp',
-			'src/oscpp/print.hpp',
-			'src/oscpp/server.hpp',
-			'src/oscpp/types.hpp',
-			'src/oscpp/util.hpp'
-		]
+			'src/vs/WebSocketTransport.h'		]
 
 		if host_machine.system() == 'darwin'
 			moc_h += ['src/vs/vsMacPermissions.h']

@@ -37,6 +37,11 @@
 
 #include "OscServer.h"
 
+#include <iostream>
+
+using std::cout;
+using std::endl;
+
 //*******************************************************************************
 OscServer::OscServer(quint16 port, QObject* parent) : QObject(parent), mPort(port) {}
 
@@ -64,7 +69,6 @@ void OscServer::closeSocket()
 //*******************************************************************************
 void OscServer::start()
 {
-#ifndef NO_VS
     mOscServerSocket.reset(new QUdpSocket(this));
     qDebug() << "Binding OSC server socket to UDP port " << mPort;
     if (!mOscServerSocket->bind(QHostAddress::LocalHost, mPort)) {
@@ -75,7 +79,6 @@ void OscServer::start()
     connect(mOscServerSocket.get(), &QUdpSocket::readyRead, this,
             &OscServer::readPendingDatagrams);
     qDebug() << "OSC server started on UDP port " << mPort;
-#endif
 }
 
 //*******************************************************************************
@@ -91,9 +94,7 @@ void OscServer::readPendingDatagrams()
                                        &senderPort);
         qDebug() << "Received datagram from" << sender << ":" << senderPort;
         qDebug() << "  - Data:" << datagram;
-#ifndef NO_VS
         handlePacket(OSCPP::Server::Packet(datagram.data(), datagram.size()));
-#endif
         // Send a reply back to the client
         // QByteArray replyData("Reply from server");
         // socket->writeDatagram(replyData, sender, senderPort);
@@ -101,7 +102,6 @@ void OscServer::readPendingDatagrams()
 }
 
 //*******************************************************************************
-#ifndef NO_VS
 void OscServer::handlePacket(const OSCPP::Server::Packet& packet)
 {
     try {
@@ -124,15 +124,14 @@ void OscServer::handlePacket(const OSCPP::Server::Packet& packet)
             if (msg == "/config") {
                 const char* key   = args.string();
                 const float value = args.float32();
-                qDebug() << "Config received - key (" << key << ") value (" << value
-                         << ")";
+                cout << "Config received - key (" << key << ") value (" << value << ")"
+                     << endl;
             } else {
                 // Simply print unknown messages
-                qDebug() << "Unknown message: " << msg.address();
+                cout << "Unknown message:" << msg.address() << endl;
             }
         }
     } catch (std::exception& e) {
-        qDebug() << "Exception: " << e.what();
+        cout << "Exception:" << e.what() << endl;
     }
 }
-#endif

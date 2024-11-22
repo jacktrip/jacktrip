@@ -42,10 +42,8 @@
 #include <QUdpSocket>
 #include <QtCore>
 
-#ifndef NO_VS
 #include "oscpp/client.hpp"
 #include "oscpp/server.hpp"
-#endif
 
 class OscServer : public QObject
 {
@@ -64,7 +62,6 @@ class OscServer : public QObject
                                    [[maybe_unused]] const char* key,
                                    [[maybe_unused]] float value)
     {
-#ifndef NO_VS
         // Construct a packet
         OSCPP::Client::Packet packet(buffer, size);
         packet
@@ -80,9 +77,6 @@ class OscServer : public QObject
             .closeMessage()
             .closeBundle();
         return packet.size();
-#else
-        return 0;
-#endif
     }
 
    private slots:
@@ -90,9 +84,7 @@ class OscServer : public QObject
 
    private:
     void closeSocket();
-#ifndef NO_VS
     void handlePacket(const OSCPP::Server::Packet& packet);
-#endif
 
     QSharedPointer<QUdpSocket> mOscServerSocket;
     quint16 mPort;

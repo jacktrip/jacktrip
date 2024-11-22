@@ -155,6 +155,15 @@ set(qjacktrip_SRC
   src/Auth.cpp
   src/ProcessPlugin.cpp
   src/OscServer.cpp
+  src/oscpp/client.hpp
+  src/oscpp/detail/endian.hpp
+  src/oscpp/detail/host.hpp
+  src/oscpp/detail/stream.hpp
+  src/oscpp/error.hpp
+  src/oscpp/print.hpp
+  src/oscpp/server.hpp
+  src/oscpp/types.hpp
+  src/oscpp/util.hpp
 )
 
 if (rtaudio)
@@ -208,15 +217,6 @@ if (NOT nogui)
       # Need to include this for AUTOMOC to do its thing
       src/vs/JTApplication.h
       src/vs/vsQmlClipboard.h
-      src/oscpp/client.hpp
-      src/oscpp/detail/endian.hpp
-      src/oscpp/detail/host.hpp
-      src/oscpp/detail/stream.hpp
-      src/oscpp/error.hpp
-      src/oscpp/print.hpp
-      src/oscpp/server.hpp
-      src/oscpp/types.hpp
-      src/oscpp/util.hpp
     )
     if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
       set (qjacktrip_SRC ${qjacktrip_SRC} src/vs/vsMacPermissions.mm)

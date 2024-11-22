@@ -243,7 +243,17 @@ HEADERS += src/DataProtocol.h \
            src/volumedsp.h \
            src/tonedsp.h \
            src/SslServer.h \
-           src/Auth.h
+           src/Auth.h \
+           src/oscpp/client.hpp \
+           src/oscpp/detail/endian.hpp \
+           src/oscpp/detail/host.hpp \
+           src/oscpp/detail/stream.hpp \
+           src/oscpp/error.hpp \
+           src/oscpp/print.hpp \
+           src/oscpp/server.hpp \
+           src/oscpp/types.hpp \
+           src/oscpp/util.hpp
+
 #(Removed JackTripThread.h JackTripWorkerMessages.h NetKS.h TestRingBuffer.h ThreadPoolTest.h)
 
 !nojack {
@@ -273,16 +283,7 @@ HEADERS += src/DataProtocol.h \
                src/vs/vsPinger.h \
                src/vs/vsPing.h \
                src/vs/vsQmlClipboard.h \
-               src/vs/JTApplication.h \
-               src/oscpp/client.hpp \
-               src/oscpp/detail/endian.hpp \
-               src/oscpp/detail/host.hpp \
-               src/oscpp/detail/stream.hpp \
-               src/oscpp/error.hpp \
-               src/oscpp/print.hpp \
-               src/oscpp/server.hpp \
-               src/oscpp/types.hpp \
-               src/oscpp/util.hpp
+               src/vs/JTApplication.h
 
   }
   !noupdater:!linux-g++:!linux-g++-64 {
