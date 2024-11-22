@@ -90,7 +90,7 @@ void OscServer::readPendingDatagrams()
         mOscServerSocket->readDatagram(datagram.data(), datagram.size(), &sender,
                                        &senderPort);
         qDebug() << "Received datagram from" << sender << ":" << senderPort;
-        qDebug() << "Data:" << datagram;
+        qDebug() << "  - Data:" << datagram;
 #ifndef NO_VS
         handlePacket(OSCPP::Server::Packet(datagram.data(), datagram.size()));
 #endif

@@ -52,12 +52,6 @@ public:
         m_pos = m_begin;
     }
 
-    Stream(const Stream& stream)
-    {
-        m_begin = m_pos = stream.m_pos;
-        m_end = stream.m_end;
-    }
-
     Stream(const Stream& stream, size_t size)
     {
         m_begin = m_pos = stream.m_pos;
@@ -147,10 +141,6 @@ public:
 
     BasicWriteStream(void* data, size_t size)
     : Stream(data, size)
-    {}
-
-    BasicWriteStream(const BasicWriteStream& stream)
-    : Stream(stream)
     {}
 
     BasicWriteStream(const BasicWriteStream& stream, size_t size)
@@ -251,10 +241,6 @@ public:
 
     BasicReadStream(const void* data, size_t size)
     : Stream(const_cast<void*>(data), size)
-    {}
-
-    BasicReadStream(const BasicReadStream& stream)
-    : Stream(stream)
     {}
 
     BasicReadStream(const BasicReadStream& stream, size_t size)
