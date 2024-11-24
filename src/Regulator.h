@@ -227,6 +227,7 @@ class Regulator : public RingBuffer
 
     //    virtual QString getStats(uint32_t statCount, uint32_t lostCount);
     virtual bool getStats(IOStat* stat, bool reset);
+    virtual void setQueueBufferLength([[maybe_unused]] int queueBuffer);
 
    private:
     void pushPacket(const int8_t* buf, int seq_num);

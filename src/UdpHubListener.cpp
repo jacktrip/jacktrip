@@ -366,6 +366,18 @@ void UdpHubListener::stopCheck()
     }
 }
 
+void UdpHubListener::queueBufferChanged(int queueBufferSize)
+{
+    QMutexLocker lock(&mMutex);
+    mBufferQueueLength = queueBufferSize;
+    // Now that we have our actual port, remove any duplicate workers.
+    for (int i = 0; i < gMaxThreads; i++) {
+        if (mJTWorkers->at(i) != nullptr) {
+            mJTWorkers->at(i)->setBufferQueueLength(mBufferQueueLength);
+        }
+    }
+}
+
 //*******************************************************************************
 // Returns 0 on error
 int UdpHubListener::readClientUdpPort(QSslSocket* clientConnection, QString& clientName)

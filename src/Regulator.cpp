@@ -569,6 +569,30 @@ void Regulator::updatePushStats(int seq_num)
 }
 
 //*******************************************************************************
+void Regulator::setQueueBufferLength(int queueBuffer)
+{
+    // default is -500 from bufstrategy 1 autoq mode
+    // use mMsecTolerance to set headroom
+    mMsecTolerance = queueBuffer;
+    if (mMsecTolerance == -500.0) {
+        mAutoHeadroom = -1;
+        cout << "PLC is in auto mode and has been set with variable headroom" << endl;
+    } else {
+        mAutoHeadroom = std::abs(mMsecTolerance);
+        cout << "PLC is in auto mode and has been set with " << mAutoHeadroom
+             << "ms headroom" << endl;
+        if (mAutoHeadroom > 50.0)
+            cout << "That's a very large value and should be less than, "
+                    "for example, 50ms"
+                 << endl;
+    }
+    // found an interesting relationship between mPeerFPP and initial
+    // mMsecTolerance mPeerFPP*0.5 is pretty good though that's an oddball
+    // conversion of bufsize directly to msec
+    mMsecTolerance = (mPeerFPP * AutoInitValFactor);
+}
+
+//*******************************************************************************
 void Regulator::pushPacket(const int8_t* buf, int seq_num)
 {
     if (m_b_BroadcastRingBuffer != NULL)

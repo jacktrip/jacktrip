@@ -57,10 +57,8 @@ class OscServer : public QObject
     void start();
     void stop();
 
-    static size_t makeConfigPacket([[maybe_unused]] void* buffer,
-                                   [[maybe_unused]] size_t size,
-                                   [[maybe_unused]] const char* key,
-                                   [[maybe_unused]] float value)
+    static size_t makeConfigPacket(void* buffer, size_t size, const char* key,
+                                   float value)
     {
         // Construct a packet
         OSCPP::Client::Packet packet(buffer, size);
@@ -78,6 +76,8 @@ class OscServer : public QObject
             .closeBundle();
         return packet.size();
     }
+   signals:
+    void signalQueueBufferChanged(int queueBufferSize);
 
    private slots:
     void readPendingDatagrams();

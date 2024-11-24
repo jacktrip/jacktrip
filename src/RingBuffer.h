@@ -100,6 +100,7 @@ class RingBuffer
      */
     virtual void readSlotNonBlocking(int8_t* ptrToReadSlot);
     virtual void readBroadcastSlot(int8_t* ptrToReadSlot);
+    virtual void setQueueBufferLength([[maybe_unused]] int queueBuffer);
 
     struct IOStat {
         uint32_t underruns;

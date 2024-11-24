@@ -126,6 +126,9 @@ void OscServer::handlePacket(const OSCPP::Server::Packet& packet)
                 const float value = args.float32();
                 cout << "Config received - key (" << key << ") value (" << value << ")"
                      << endl;
+                if (strcmp("queueBuffer", key) == 0) {
+                    emit signalQueueBufferChanged(static_cast<int>(value));
+                }
             } else {
                 // Simply print unknown messages
                 cout << "Unknown message:" << msg.address() << endl;

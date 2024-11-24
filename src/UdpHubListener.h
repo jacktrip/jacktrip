@@ -110,6 +110,7 @@ class UdpHubListener : public QObject
     }
     void receivedNewConnection();
     void stopCheck();
+    void queueBufferChanged(int queueBufferSize);
 
    signals:
     void signalStarted();
@@ -135,6 +136,9 @@ class UdpHubListener : public QObject
         // start osc server to listen to config updates
         mOscServer = new OscServer(mServerPort, this);
         mOscServer->start();
+
+        QObject::connect(mOscServer, &OscServer::signalQueueBufferChanged, this,
+                         &UdpHubListener::queueBufferChanged, Qt::QueuedConnection);
     };
 
     /**
