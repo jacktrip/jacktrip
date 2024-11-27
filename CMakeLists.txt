@@ -155,15 +155,6 @@ set(qjacktrip_SRC
   src/Auth.cpp
   src/ProcessPlugin.cpp
   src/OscServer.cpp
-  src/oscpp/client.hpp
-  src/oscpp/detail/endian.hpp
-  src/oscpp/detail/host.hpp
-  src/oscpp/detail/stream.hpp
-  src/oscpp/error.hpp
-  src/oscpp/print.hpp
-  src/oscpp/server.hpp
-  src/oscpp/types.hpp
-  src/oscpp/util.hpp
 )
 
 if (rtaudio)

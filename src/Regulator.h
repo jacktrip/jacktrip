@@ -297,6 +297,7 @@ class Regulator : public RingBuffer
     int mStatsGlitches            = 0;
     double mStatsMaxPLCdspElapsed = 0;
     double mCurrentHeadroom       = 0;
+    double mAutoHeadroomStartTime = 6000.0;
     double mAutoHeadroom          = -1;
     Time* mTime                   = nullptr;
 
