@@ -96,16 +96,7 @@ moc_h = ['src/DataProtocol.h',
 	'src/UdpHubListener.h',
 	'src/Auth.h',
 	'src/SslServer.h',
-	'src/OscServer.h',
-	'src/oscpp/client.hpp',
-	'src/oscpp/detail/endian.hpp',
-	'src/oscpp/detail/host.hpp',
-	'src/oscpp/detail/stream.hpp',
-	'src/oscpp/error.hpp',
-	'src/oscpp/print.hpp',
-	'src/oscpp/server.hpp',
-	'src/oscpp/types.hpp',
-	'src/oscpp/util.hpp']
+	'src/OscServer.h']
 
 ui_h = []
 qres = []

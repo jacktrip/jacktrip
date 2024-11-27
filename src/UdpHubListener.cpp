@@ -368,6 +368,7 @@ void UdpHubListener::stopCheck()
 
 void UdpHubListener::queueBufferChanged(int queueBufferSize)
 {
+    cout << "Updating queueBuffer to " << queueBufferSize << endl;
     QMutexLocker lock(&mMutex);
     mBufferQueueLength = queueBufferSize;
     // Now that we have our actual port, remove any duplicate workers.

@@ -554,7 +554,7 @@ void Regulator::updatePushStats(int seq_num)
         mLastSkipped            = totalSkipped;
         if (mAuto && pushStat->lastTime > AutoInitDur) {
             // after AutoInitDur: update auto tolerance once per second
-            if (pushStat->lastTime <= (AutoInitDur + 3000)) {
+            if (pushStat->lastTime <= mAutoHeadroomStartTime) {
                 // Ignore glitches and skips for the first 3 seconds after
                 // we have switched from using the startup tolerance to
                 // a calculated tolerance. Otherwise, the switch can
@@ -571,25 +571,24 @@ void Regulator::updatePushStats(int seq_num)
 //*******************************************************************************
 void Regulator::setQueueBufferLength(int queueBuffer)
 {
-    // default is -500 from bufstrategy 1 autoq mode
-    // use mMsecTolerance to set headroom
-    mMsecTolerance = queueBuffer;
-    if (mMsecTolerance == -500.0) {
-        mAutoHeadroom = -1;
-        cout << "PLC is in auto mode and has been set with variable headroom" << endl;
-    } else {
-        mAutoHeadroom = std::abs(mMsecTolerance);
-        cout << "PLC is in auto mode and has been set with " << mAutoHeadroom
-             << "ms headroom" << endl;
-        if (mAutoHeadroom > 50.0)
-            cout << "That's a very large value and should be less than, "
-                    "for example, 50ms"
-                 << endl;
+    if (queueBuffer > 0) {
+        // update to a fixed tolerance
+        mAuto            = false;
+        mCurrentHeadroom = 0;
+        mMsecTolerance   = queueBuffer;
+        return;
     }
-    // found an interesting relationship between mPeerFPP and initial
-    // mMsecTolerance mPeerFPP*0.5 is pretty good though that's an oddball
-    // conversion of bufsize directly to msec
-    mMsecTolerance = (mPeerFPP * AutoInitValFactor);
+    // update auto headroom for auto tolerance
+    mAuto = true;
+    if (queueBuffer == -500.0) {
+        mAutoHeadroom          = -1;
+        mCurrentHeadroom       = 0;
+        mSkipAutoHeadroom      = true;
+        mAutoHeadroomStartTime = pushStat ? (pushStat->lastTime + 3000.0) : 3000.0;
+    } else {
+        mAutoHeadroom    = std::abs(queueBuffer);
+        mCurrentHeadroom = mAutoHeadroom;
+    }
 }
 
 //*******************************************************************************

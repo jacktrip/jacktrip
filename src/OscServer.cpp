@@ -3,8 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2008-2024 Juan-Pablo Caceres, Chris Chafe.
-  SoundWIRE group at CCRMA, Stanford University.
+  Copyright (c) 2024 JackTrip Labs, Inc.
 
   Permission is hereby granted, free of charge, to any person
   obtaining a copy of this software and associated documentation
