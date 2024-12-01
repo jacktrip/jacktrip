@@ -77,8 +77,7 @@ src = [	'src/DataProtocol.cpp',
 	'src/Reverb.cpp',
 	'src/main.cpp',
 	'src/SslServer.cpp',
-	'src/Auth.cpp',
-	'src/OscServer.cpp']
+	'src/Auth.cpp']
 
 moc_h = ['src/DataProtocol.h',
 	'src/JackTrip.h',
@@ -95,8 +94,17 @@ moc_h = ['src/DataProtocol.h',
 	'src/UdpDataProtocol.h',
 	'src/UdpHubListener.h',
 	'src/Auth.h',
-	'src/SslServer.h',
-	'src/OscServer.h']
+	'src/SslServer.h']
+
+if get_option('nooscpp') == true
+	defines += '-DNO_OSCPP'
+	c_defines += '-DNO_OSCPP'
+else
+	incdirs += include_directories('externals/oscpp')
+	incdirs += include_directories('externals/oscpp/include')
+	src += ['src/OscServer.cpp']
+	moc_h += ['src/OscServer.h']
+endif
 
 ui_h = []
 qres = []
@@ -209,7 +217,8 @@ else
 			'src/vs/vsPing.h',
 			'src/vs/vsQmlClipboard.h',
 			'src/vs/JTApplication.h',
-			'src/vs/WebSocketTransport.h'		]
+			'src/vs/WebSocketTransport.h'
+		]
 
 		if host_machine.system() == 'darwin'
 			moc_h += ['src/vs/vsMacPermissions.h']

@@ -41,8 +41,10 @@
 #include <QUdpSocket>
 #include <QtCore>
 
+#ifndef NO_OSCPP
 #include "oscpp/client.hpp"
 #include "oscpp/server.hpp"
+#endif  // NO_OSCPP
 
 class OscServer : public QObject
 {
@@ -59,6 +61,7 @@ class OscServer : public QObject
     static size_t makeConfigPacket(void* buffer, size_t size, const char* key,
                                    float value)
     {
+#ifndef NO_OSCPP
         // Construct a packet
         OSCPP::Client::Packet packet(buffer, size);
         packet
@@ -74,6 +77,9 @@ class OscServer : public QObject
             .closeMessage()
             .closeBundle();
         return packet.size();
+#else
+        return 0;
+#endif  // NO_OSCPP
     }
    signals:
     void signalQueueBufferChanged(int queueBufferSize);
@@ -83,7 +89,9 @@ class OscServer : public QObject
 
    private:
     void closeSocket();
+#ifndef NO_OSCPP
     void handlePacket(const OSCPP::Server::Packet& packet);
+#endif  // NO_OSCPP
 
     QSharedPointer<QUdpSocket> mOscServerSocket;
     quint16 mPort;

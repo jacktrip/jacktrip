@@ -93,7 +93,9 @@ void OscServer::readPendingDatagrams()
                                        &senderPort);
         qDebug() << "Received datagram from" << sender << ":" << senderPort;
         qDebug() << "  - Data:" << datagram;
+#ifndef NO_OSCPP
         handlePacket(OSCPP::Server::Packet(datagram.data(), datagram.size()));
+#endif  // NO_OSCPP
         // Send a reply back to the client
         // QByteArray replyData("Reply from server");
         // socket->writeDatagram(replyData, sender, senderPort);
@@ -101,6 +103,7 @@ void OscServer::readPendingDatagrams()
 }
 
 //*******************************************************************************
+#ifndef NO_OSCPP
 void OscServer::handlePacket(const OSCPP::Server::Packet& packet)
 {
     try {
@@ -137,3 +140,4 @@ void OscServer::handlePacket(const OSCPP::Server::Packet& packet)
         cout << "Exception:" << e.what() << endl;
     }
 }
+#endif  // NO_OSCPP

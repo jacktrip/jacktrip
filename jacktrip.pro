@@ -234,7 +234,6 @@ HEADERS += src/DataProtocol.h \
            src/Settings.h \
            src/UdpDataProtocol.h \
            src/UdpHubListener.h \
-           src/OscServer.h \
            src/AudioInterface.h \
            src/compressordsp.h \
            src/limiterdsp.h \
@@ -243,17 +242,7 @@ HEADERS += src/DataProtocol.h \
            src/volumedsp.h \
            src/tonedsp.h \
            src/SslServer.h \
-           src/Auth.h \
-           src/oscpp/client.hpp \
-           src/oscpp/detail/endian.hpp \
-           src/oscpp/detail/host.hpp \
-           src/oscpp/detail/stream.hpp \
-           src/oscpp/error.hpp \
-           src/oscpp/print.hpp \
-           src/oscpp/server.hpp \
-           src/oscpp/types.hpp \
-           src/oscpp/util.hpp
-
+           src/Auth.h
 #(Removed JackTripThread.h JackTripWorkerMessages.h NetKS.h TestRingBuffer.h ThreadPoolTest.h)
 
 !nojack {
@@ -284,7 +273,6 @@ HEADERS += src/DataProtocol.h \
                src/vs/vsPing.h \
                src/vs/vsQmlClipboard.h \
                src/vs/JTApplication.h
-
   }
   !noupdater:!linux-g++:!linux-g++-64 {
     HEADERS += src/dblsqd/feed.h \
@@ -320,7 +308,6 @@ SOURCES += src/DataProtocol.cpp \
            src/Settings.cpp \
            src/UdpDataProtocol.cpp \
            src/UdpHubListener.cpp \
-           src/OscServer.cpp \
            src/AudioInterface.cpp \
            src/main.cpp \
            src/SslServer.cpp \
@@ -386,6 +373,23 @@ SOURCES += src/DataProtocol.cpp \
 
 rtaudio|bundled_rtaudio {
   SOURCES += src/RtAudioInterface.cpp
+}
+
+if nooscpp {
+  DEFINES += NO_OSCPP
+} else {
+  INCLUDEPATH += externals/oscpp externals/oscpp/include
+  HEADERS += src/OscServer.h
+  SOURCES += src/OscServer.cpp \
+             externals/oscpp/include/oscpp/client.hpp \
+             externals/oscpp/include/oscpp/error.hpp \
+             externals/oscpp/include/oscpp/print.hpp \
+             externals/oscpp/include/oscpp/server.hpp \
+             externals/oscpp/include/oscpp/types.hpp \
+             externals/oscpp/include/oscpp/util.hpp \
+             externals/oscpp/include/oscpp/detail/endian.hpp \
+             externals/oscpp/include/oscpp/detail/host.hpp \
+             externals/oscpp/include/oscpp/detail/stream.hpp
 }
 
 weakjack {

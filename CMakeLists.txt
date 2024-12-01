@@ -7,6 +7,7 @@ set(nogui FALSE)
 set(rtaudio TRUE)
 set(weakjack TRUE)
 set(novs FALSE)
+set(nooscpp FALSE)
 set(vsftux FALSE)
 set(noupdater FALSE)
 set(psi FALSE)
@@ -154,8 +155,17 @@ set(qjacktrip_SRC
   src/SslServer.cpp
   src/Auth.cpp
   src/ProcessPlugin.cpp
-  src/OscServer.cpp
 )
+
+if (nooscpp)
+  add_compile_definitions(NO_OSCPP)
+else ()
+  include_directories("externals/oscpp")
+  include_directories("externals/oscpp/include")
+  set (qjacktrip_SRC ${qjacktrip_SRC}
+    src/OscServer.cpp
+  )
+endif ()
 
 if (rtaudio)
   add_compile_definitions(RT_AUDIO)
