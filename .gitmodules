@@ -9,4 +9,4 @@
 	url = https://github.com/thestk/rtaudio.git
 [submodule "externals/oscpp"]
 	path = externals/oscpp
-	url = https://github.com/kaoskorobase/oscpp.git
+	url = https://github.com/nwang92/oscpp.git
