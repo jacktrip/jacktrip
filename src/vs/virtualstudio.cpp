@@ -64,6 +64,8 @@
 
 #include "../JackTrip.h"
 #include "../Settings.h"
+#include "../SocketClient.h"
+#include "../SocketServer.h"
 #include "../jacktrip_globals.h"
 #include "JTApplication.h"
 #include "WebSocketTransport.h"
@@ -213,14 +215,6 @@ VirtualStudio::VirtualStudio(UserInterface& parent)
     connect(m_view.get(), &VsQuickView::windowClose, this, &VirtualStudio::exit,
             Qt::QueuedConnection);
 
-    // prepare handler for deeplinks jacktrip://join/<StudioID>
-    m_deepLinkPtr.reset(new VsDeeplink(m_interface.getSettings().getDeeplink()));
-    if (!m_deepLinkPtr->getDeeplink().isEmpty()) {
-        bool readyForExit = m_deepLinkPtr->waitForReady();
-        if (readyForExit)
-            std::exit(0);
-    }
-
     // Log to file
     QString logPath(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
     QDir logDir;
@@ -236,10 +230,37 @@ VirtualStudio::VirtualStudio(UserInterface& parent)
     ts = new QTextStream(&outFile);
     qInstallMessageHandler(qtMessageHandler);
 
-    // Get ready for deep link signals
-    QObject::connect(m_deepLinkPtr.get(), &VsDeeplink::signalDeeplink, this,
+    // check if started with a deep link to handle jacktrip://join/<StudioID>
+    QString deepLinkStr = m_interface.getSettings().getDeeplink();
+    if (!deepLinkStr.isEmpty()) {
+        // started with a deep link; check if another instance is already running
+        SocketClient c;
+        if (c.connect()) {
+            // existing instance found; send deeplink to it and exit
+            c.sendHeader("deeplink");
+            QLocalSocket& s          = c.getSocket();
+            QByteArray deepLinkBytes = deepLinkStr.toLocal8Bit();
+            s.write(deepLinkBytes);
+            s.flush();
+            std::exit(0);
+        }
+    }
+
+    // prepare handler for deep link requests
+    m_deepLinkPtr.reset(new VsDeeplink());
+    QObject::connect(m_deepLinkPtr.get(), &VsDeeplink::signalVsDeeplink, this,
                      &VirtualStudio::handleDeeplinkRequest, Qt::QueuedConnection);
-    m_deepLinkPtr->readyForSignals();
+    if (!deepLinkStr.isEmpty()) {
+        QUrl deepLinkUrl(deepLinkStr);
+        m_deepLinkPtr->handleUrl(deepLinkUrl);
+    }
+
+    // prepare handler for local socket connections
+    m_socketServerPtr.reset(new SocketServer());
+    m_socketServerPtr->addHandler("deeplink", [=](QLocalSocket& socket) {
+        m_deepLinkPtr->handleVsDeeplinkRequest(socket);
+    });
+    m_socketServerPtr->start();
 }
 
 void VirtualStudio::show()
