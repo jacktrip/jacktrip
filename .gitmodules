@@ -7,6 +7,3 @@
 [submodule "externals/rtaudio"]
 	path = externals/rtaudio
 	url = https://github.com/thestk/rtaudio.git
-[submodule "externals/oscpp"]
-	path = externals/oscpp
-	url = https://github.com/nwang92/oscpp.git
