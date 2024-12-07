@@ -219,9 +219,17 @@ class JackTrip : public QObject
         createHeader(mPacketHeaderType);
     }
     /// \brief Sets (override) Buffer Queue Length Mode after construction
-    virtual void setBufferQueueLength(int BufferQueueLength)
+    virtual void setBufferQueueLength(int queueBuffer)
     {
-        mBufferQueueLength = BufferQueueLength;
+        if (mBufferQueueLength == queueBuffer || mReceiveRingBuffer == nullptr) {
+            return;
+        }
+        mBufferQueueLength = queueBuffer;
+        if ((mBufferStrategy == 3) || (mBufferStrategy == 4)) {
+            // mReceiveRingBuffer should be an instance of Regulator when mBufferStrategy
+            // is 3 or 4
+            mReceiveRingBuffer->setQueueBufferLength(mBufferQueueLength);
+        }
     }
     virtual void setBufferStrategy(int BufferStrategy)
     {

@@ -554,7 +554,7 @@ void Regulator::updatePushStats(int seq_num)
         mLastSkipped            = totalSkipped;
         if (mAuto && pushStat->lastTime > AutoInitDur) {
             // after AutoInitDur: update auto tolerance once per second
-            if (pushStat->lastTime <= (AutoInitDur + 3000)) {
+            if (pushStat->lastTime <= mAutoHeadroomStartTime) {
                 // Ignore glitches and skips for the first 3 seconds after
                 // we have switched from using the startup tolerance to
                 // a calculated tolerance. Otherwise, the switch can
@@ -565,6 +565,29 @@ void Regulator::updatePushStats(int seq_num)
                 updateTolerance(newGlitches, newSkipped);
             }
         }
+    }
+}
+
+//*******************************************************************************
+void Regulator::setQueueBufferLength(int queueBuffer)
+{
+    if (queueBuffer > 0) {
+        // update to a fixed tolerance
+        mAuto            = false;
+        mCurrentHeadroom = 0;
+        mMsecTolerance   = queueBuffer;
+        return;
+    }
+    // update auto headroom for auto tolerance
+    mAuto = true;
+    if (queueBuffer == -500.0) {
+        mAutoHeadroom          = -1;
+        mCurrentHeadroom       = 0;
+        mSkipAutoHeadroom      = true;
+        mAutoHeadroomStartTime = pushStat ? (pushStat->lastTime + 3000.0) : 3000.0;
+    } else {
+        mAutoHeadroom    = std::abs(queueBuffer);
+        mCurrentHeadroom = mAutoHeadroom;
     }
 }
 

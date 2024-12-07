@@ -227,6 +227,7 @@ class Regulator : public RingBuffer
 
     //    virtual QString getStats(uint32_t statCount, uint32_t lostCount);
     virtual bool getStats(IOStat* stat, bool reset);
+    virtual void setQueueBufferLength([[maybe_unused]] int queueBuffer);
 
    private:
     void pushPacket(const int8_t* buf, int seq_num);
@@ -296,6 +297,7 @@ class Regulator : public RingBuffer
     int mStatsGlitches            = 0;
     double mStatsMaxPLCdspElapsed = 0;
     double mCurrentHeadroom       = 0;
+    double mAutoHeadroomStartTime = 6000.0;
     double mAutoHeadroom          = -1;
     Time* mTime                   = nullptr;
 

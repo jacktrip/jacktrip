@@ -375,6 +375,14 @@ rtaudio|bundled_rtaudio {
   SOURCES += src/RtAudioInterface.cpp
 }
 
+nooscpp {
+  DEFINES += NO_OSCPP
+} else {
+  INCLUDEPATH += externals/oscpp externals/oscpp/include
+  HEADERS += src/OscServer.h
+  SOURCES += src/OscServer.cpp
+}
+
 weakjack {
   SOURCES += externals/weakjack/weak_libjack.c
 }
