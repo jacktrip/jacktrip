@@ -225,9 +225,14 @@ class Regulator : public RingBuffer
     /// @brief returns true if worker thread & queue is enabled
     inline bool isWorkerEnabled() const { return mWorkerEnabled; }
 
-    //    virtual QString getStats(uint32_t statCount, uint32_t lostCount);
+    /// @brief returns statistics for -I command line option
     virtual bool getStats(IOStat* stat, bool reset);
+
+    /// @brief sets length of queue buffer
     virtual void setQueueBufferLength([[maybe_unused]] int queueBuffer);
+
+    /// @brief returns max latency during previous interval, in milliseconds
+    virtual double getLatency() const { return mLastMaxLatency; }
 
    private:
     void pushPacket(const int8_t* buf, int seq_num);
@@ -295,6 +300,8 @@ class Regulator : public RingBuffer
     int mLastSkipped              = 0;
     int mLastGlitches             = 0;
     int mStatsGlitches            = 0;
+    double mLastMaxLatency        = 0;
+    double mStatsMaxLatency       = 0;
     double mStatsMaxPLCdspElapsed = 0;
     double mCurrentHeadroom       = 0;
     double mAutoHeadroomStartTime = 6000.0;

@@ -326,3 +326,10 @@ void RingBuffer::updateReadStats()
     mUnderrunsNew = 0;
     mLevel        = std::ceil(mLevelCur);
 }
+
+//*******************************************************************************
+// Not supported in RingBuffer
+double RingBuffer::getLatency() const
+{
+    return -1;
+}
