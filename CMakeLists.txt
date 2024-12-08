@@ -133,6 +133,8 @@ find_package(${QtVersion}Network CONFIG REQUIRED)
 set(qjacktrip_SRC
   src/main.cpp
   src/Settings.cpp
+  src/SocketClient.cpp
+  src/SocketServer.cpp
   src/jacktrip_globals.cpp
   src/JackTrip.cpp
   src/UdpHubListener.cpp

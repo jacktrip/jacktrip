@@ -59,6 +59,7 @@
 #include "vsServerInfo.h"
 
 class JackTrip;
+class SocketServer;
 class VsAudio;
 class VsApi;
 class VsAuth;
@@ -275,6 +276,7 @@ class VirtualStudio : public QObject
     UserInterface& m_interface;
     VsServerInfo m_currentStudio;
     QNetworkAccessManager* m_networkAccessManagerPtr;
+    QSharedPointer<SocketServer> m_socketServerPtr;
     QScopedPointer<VsQuickView> m_view;
     QSharedPointer<VsDeeplink> m_deepLinkPtr;
     QSharedPointer<VsAuth> m_auth;

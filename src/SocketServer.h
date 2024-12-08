@@ -29,44 +29,60 @@
 //*****************************************************************
 
 /**
- * \file VsDeeplink.h
+ * \file SocketServer.h
  * \author Mike Dickey, based on code by Aaron Wyatt and Matt Horton
  * \date December 2024
  */
 
-#ifndef __VSDEEPLINK_H__
-#define __VSDEEPLINK_H__
+#ifndef __SocketServer_H__
+#define __SocketServer_H__
 
+#include <QHash>
+#include <QLocalServer>
 #include <QLocalSocket>
-#include <QString>
-#include <QUrl>
+#include <QScopedPointer>
+#include <functional>
 
-class VsDeeplink : public QObject
+// SocketHandler is used to handle a new socket connection
+typedef std::function<void(QLocalSocket&)> SocketHandler;
+
+// SocketServer lists for local socket connections from remote JackTrip processes
+class SocketServer : public QObject
 {
     Q_OBJECT
 
    public:
-    // construct with an instance of the application, to parse command line args
-    VsDeeplink();
+    // default constructor
+    SocketServer() {}
 
     // virtual destructor since it inherits from QObject
-    // this is used to unregister url handler
-    virtual ~VsDeeplink();
+    virtual ~SocketServer() {}
 
-   public slots:
-    // handleUrl is called to trigger processing of a VsDeeplink
-    void handleUrl(const QUrl& url);
+    // sets handler for local socket connections
+    void addHandler(QString name, SocketHandler f) { m_handlers[name] = f; }
 
-    // called by local socket server to process VsDeeplink requests
-    void handleVsDeeplinkRequest(QLocalSocket& socket);
+    // attempts to start the local socket server
+    // returns true if it started successfully
+    // returns false if already running in another JackTrip process
+    bool start();
 
-   signals:
-    // signalVsDeeplink is emitted when we want the local instance to process a VsDeeplink
-    void signalVsDeeplink(const QUrl& url);
+   private slots:
+
+    // called by local socket server to handle requests
+    void handlePendingConnections();
 
    private:
-    // sets url scheme for windows machines; does nothing on other platforms
-    static void setUrlScheme();
+    // called by local socket server to handle requests
+    void handleConnection(const QString& name, QLocalSocket& socket);
+
+    // used to listen for requests via local socket connections
+    QScopedPointer<QLocalServer> m_instanceServer;
+
+    // used to handle requests
+    QHash<QString, SocketHandler> m_handlers;
+
+    // true if a local socket server was started, false if remote was detected
+    bool m_serverStarted = false;
 };
 
-#endif  // __VSDEEPLINK_H__
+#endif  // __SocketServer_H__
