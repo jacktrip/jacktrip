@@ -174,6 +174,23 @@ VirtualStudio::VirtualStudio(UserInterface& parent)
     // Register clipboard Qml type
     qmlRegisterType<VsQmlClipboard>("VS", 1, 0, "Clipboard");
 
+    // on window focus, attempt to refresh the access token if the token is more than 1
+    // hour old
+    connect(m_view.data(), &VsQuickView::focusGained, this, [=]() {
+        QString refreshToken = m_auth->refreshToken();
+        if (refreshToken.isEmpty()) {
+            return;
+        }
+
+        qint64 maxElapsedTimeInMs      = 1000 * 60 * 60;  // 1 hour
+        QDateTime accessTokenTimestamp = m_auth->accessTokenTimestamp();
+        QDateTime accessTokenDeadline  = QDateTime::fromMSecsSinceEpoch(
+             accessTokenTimestamp.toMSecsSinceEpoch() + maxElapsedTimeInMs);
+        if (QDateTime::currentDateTime() > accessTokenDeadline) {
+            m_auth->refreshAccessToken(refreshToken);
+        }
+    });
+
     // setup QML view
     m_view->engine()->rootContext()->setContextProperty(QStringLiteral("virtualstudio"),
                                                         this);
