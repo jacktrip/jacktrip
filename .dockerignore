@@ -2,6 +2,7 @@
 !docs
 !meson*
 !container
+!externals
 !src
 !subprojects
 !linux
