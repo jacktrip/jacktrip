@@ -156,7 +156,7 @@ QNetworkReply* VsApi::put(const QUrl& url, const QByteArray& data)
 {
     QNetworkRequest request = QNetworkRequest(url);
     request.setRawHeader(QByteArray("User-Agent"),
-                         QString("Bearer %1").arg(m_accessToken).toUtf8());
+                         QString("JackTrip/%1 (Qt)").arg(gVersion).toUtf8());
     request.setRawHeader(QByteArray("Content-Type"),
                          QString("application/json").toUtf8());
 
