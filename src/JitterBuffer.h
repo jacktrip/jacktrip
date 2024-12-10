@@ -55,6 +55,9 @@ class JitterBuffer : public RingBuffer
 
     virtual bool getStats(IOStat* stat, bool reset);
 
+    /// @brief returns max latency during previous interval, in milliseconds
+    virtual double getLatency() const { return mMaxLatency; }
+
     void setJackTrip(JackTrip* jackTrip) { mJackTrip = jackTrip; }
 
    protected:
