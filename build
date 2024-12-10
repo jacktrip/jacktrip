@@ -20,6 +20,7 @@ rtaudio - build with RtAudio\n
 no-system-rtaudio - use bundled RtAudio library even if it's available in the system\n
 nogui - build without the gui\n
 novs - build without Virtual Studio support\n
+nooscpp - build without OSC support\n
 vsftux - build with Virtual Studio first launch experience\n
 noupdater - build without auto-update support\n
 static - build with static libraries\n
@@ -32,25 +33,29 @@ while [[ "$#" -gt 0 ]]; do
       noclean) clean=0 ;;
       nojack)
       echo "Building without jack"
-      CONFIG="-config nojack $CONFIG" 
+      CONFIG="-config nojack $CONFIG"
       ;;
-      rtaudio) 
+      rtaudio)
       RTAUDIO=1
       ;;
-      no-system-rtaudio) 
+      no-system-rtaudio)
       NO_SYSTEM_RTAUDIO=1
       ;;
       nogui)
       echo "Building without the gui"
-      CONFIG="-config nogui $CONFIG" 
+      CONFIG="-config nogui $CONFIG"
       ;;
       novs)
       echo "Building without Virtual Studio support"
-      CONFIG="-config novs $CONFIG" 
+      CONFIG="-config novs $CONFIG"
+      ;;
+      nooscpp)
+      echo "Building without OSC support"
+      CONFIG="-config nooscpp $CONFIG"
       ;;
       vsftux)
       echo "Building with Virtual Studio first launch experience"
-      CONFIG="-config vsftux $CONFIG" 
+      CONFIG="-config vsftux $CONFIG"
       ;;
       noupdater)
       echo "Building without auto-update support"
@@ -58,7 +63,7 @@ while [[ "$#" -gt 0 ]]; do
       ;;
       static)
       echo "Building with static libraries"
-      CONFIG="-config static $CONFIG" 
+      CONFIG="-config static $CONFIG"
       ;;
       weakjack)
       echo "Building with weak linking of jack"
@@ -75,8 +80,8 @@ while [[ "$#" -gt 0 ]]; do
       fi
       echo "Will build using $jobs make jobs"
       ;;
-      -h|--help) 
-      echo -e $HELP_STR; exit 
+      -h|--help)
+      echo -e $HELP_STR; exit
       ;;
       *) UNKNOWN_OPTIONS+=("$1") ;;
     esac

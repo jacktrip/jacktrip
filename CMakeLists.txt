@@ -7,6 +7,7 @@ set(nogui FALSE)
 set(rtaudio TRUE)
 set(weakjack TRUE)
 set(novs FALSE)
+set(nooscpp FALSE)
 set(vsftux FALSE)
 set(noupdater FALSE)
 set(psi FALSE)
@@ -132,6 +133,8 @@ find_package(${QtVersion}Network CONFIG REQUIRED)
 set(qjacktrip_SRC
   src/main.cpp
   src/Settings.cpp
+  src/SocketClient.cpp
+  src/SocketServer.cpp
   src/jacktrip_globals.cpp
   src/JackTrip.cpp
   src/UdpHubListener.cpp
@@ -155,6 +158,16 @@ set(qjacktrip_SRC
   src/Auth.cpp
   src/ProcessPlugin.cpp
 )
+
+if (nooscpp)
+  add_compile_definitions(NO_OSCPP)
+else ()
+  include_directories("externals/oscpp")
+  include_directories("externals/oscpp/include")
+  set (qjacktrip_SRC ${qjacktrip_SRC}
+    src/OscServer.cpp
+  )
+endif ()
 
 if (rtaudio)
   add_compile_definitions(RT_AUDIO)
@@ -182,7 +195,7 @@ if (NOT nogui)
     src/Meter.cpp
     src/UserInterface.cpp
   )
-  
+
   if (NOT novs)
     set (qjacktrip_SRC ${qjacktrip_SRC}
       src/vs/virtualstudio.cpp
@@ -214,7 +227,7 @@ if (NOT nogui)
   else ()
     set (qjacktrip_SRC ${qjacktrip_SRC} src/images/images.qrc)
   endif ()
-  
+
   if (NOT noupdater)
     set (qjacktrip_SRC ${qjacktrip_SRC}
       src/dblsqd/feed.cpp

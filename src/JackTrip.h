@@ -219,9 +219,18 @@ class JackTrip : public QObject
         createHeader(mPacketHeaderType);
     }
     /// \brief Sets (override) Buffer Queue Length Mode after construction
-    virtual void setBufferQueueLength(int BufferQueueLength)
+    virtual void setBufferQueueLength(int queueBuffer)
     {
-        mBufferQueueLength = BufferQueueLength;
+        if (mBufferQueueLength == queueBuffer) {
+            return;
+        }
+        mBufferQueueLength = queueBuffer;
+        if (mReceiveRingBuffer != nullptr
+            && (mBufferStrategy == 3 || mBufferStrategy == 4)) {
+            // mReceiveRingBuffer should be an instance of Regulator when mBufferStrategy
+            // is 3 or 4
+            mReceiveRingBuffer->setQueueBufferLength(mBufferQueueLength);
+        }
     }
     virtual void setBufferStrategy(int BufferStrategy)
     {
@@ -541,6 +550,10 @@ class JackTrip : public QObject
     {
         return (mAudioInterface == nullptr) ? false
                                             : mAudioInterface->getHighLatencyFlag();
+    }
+    double getLatency() const
+    {
+        return mReceiveRingBuffer == nullptr ? -1 : mReceiveRingBuffer->getLatency();
     }
     //@}
     //------------------------------------------------------------------------------------

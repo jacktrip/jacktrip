@@ -232,6 +232,8 @@ HEADERS += src/DataProtocol.h \
            src/RingBuffer.h \
            src/RingBufferWavetable.h \
            src/Settings.h \
+           src/SocketClient.h \
+           src/SocketServer.h \
            src/UdpDataProtocol.h \
            src/UdpHubListener.h \
            src/AudioInterface.h \
@@ -306,6 +308,8 @@ SOURCES += src/DataProtocol.cpp \
            src/PacketHeader.cpp \
            src/RingBuffer.cpp \
            src/Settings.cpp \
+           src/SocketClient.cpp \
+           src/SocketServer.cpp \
            src/UdpDataProtocol.cpp \
            src/UdpHubListener.cpp \
            src/AudioInterface.cpp \
@@ -373,6 +377,14 @@ SOURCES += src/DataProtocol.cpp \
 
 rtaudio|bundled_rtaudio {
   SOURCES += src/RtAudioInterface.cpp
+}
+
+nooscpp {
+  DEFINES += NO_OSCPP
+} else {
+  INCLUDEPATH += externals/oscpp externals/oscpp/include
+  HEADERS += src/OscServer.h
+  SOURCES += src/OscServer.cpp
 }
 
 weakjack {

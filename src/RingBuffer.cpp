@@ -225,6 +225,13 @@ void RingBuffer::readBroadcastSlot(int8_t* ptrToReadSlot)
 }
 
 //*******************************************************************************
+// Not supported in RingBuffer
+void RingBuffer::setQueueBufferLength([[maybe_unused]] int queueBuffer)
+{
+    return;
+}
+
+//*******************************************************************************
 void RingBuffer::setUnderrunReadSlot(int8_t* ptrToReadSlot)
 {
     std::memset(ptrToReadSlot, 0, mSlotSize);
@@ -318,4 +325,11 @@ void RingBuffer::updateReadStats()
     mBufIncUnderrun += mUnderrunsNew;
     mUnderrunsNew = 0;
     mLevel        = std::ceil(mLevelCur);
+}
+
+//*******************************************************************************
+// Not supported in RingBuffer
+double RingBuffer::getLatency() const
+{
+    return -1;
 }

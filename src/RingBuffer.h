@@ -101,6 +101,9 @@ class RingBuffer
     virtual void readSlotNonBlocking(int8_t* ptrToReadSlot);
     virtual void readBroadcastSlot(int8_t* ptrToReadSlot);
 
+    /// @brief sets length of queue buffer
+    virtual void setQueueBufferLength([[maybe_unused]] int queueBuffer);
+
     struct IOStat {
         uint32_t underruns;
         uint32_t overflows;
@@ -117,7 +120,12 @@ class RingBuffer
         int32_t autoq_corr;
         int32_t autoq_rate;
     };
+
+    /// @brief returns statistics for -I command line option
     virtual bool getStats(IOStat* stat, bool reset);
+
+    /// @brief returns max latency during previous interval, in milliseconds
+    virtual double getLatency() const;
 
    protected:
     /** \brief Sets the memory in the Read Slot when uderrun occurs. By default,

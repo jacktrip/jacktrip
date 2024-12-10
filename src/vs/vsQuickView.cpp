@@ -54,7 +54,11 @@ VsQuickView::VsQuickView(QWindow* parent) : QQuickView(parent)
 
 bool VsQuickView::event(QEvent* event)
 {
-    if (event->type() == QEvent::Close || event->type() == QEvent::Quit) {
+    if (event->type() == QEvent::FocusIn) {
+        emit focusGained();
+    } else if (event->type() == QEvent::FocusOut) {
+        emit focusLost();
+    } else if (event->type() == QEvent::Close || event->type() == QEvent::Quit) {
         emit windowClose();
         event->ignore();
     }

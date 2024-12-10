@@ -41,6 +41,12 @@
 VsAuth::VsAuth(QNetworkAccessManager* networkAccessManager, VsApi* api)
     : m_clientId(AUTH_CLIENT_ID), m_authorizationServerHost(AUTH_SERVER_HOST)
 {
+    qint64 refreshIntervalInMs =
+        1000 * 60 * 60 * 3;  // automatic access token refresh every 3 hours
+    m_refreshTimer.reset(new QTimer());
+    m_refreshTimer->setInterval(refreshIntervalInMs);
+    m_refreshTimer->setSingleShot(false);
+
     m_networkAccessManager = networkAccessManager;
     m_api                  = api;
     m_deviceCodeFlow.reset(new VsDeviceCodeFlow(networkAccessManager));
@@ -53,6 +59,7 @@ VsAuth::VsAuth(QNetworkAccessManager* networkAccessManager, VsApi* api)
             &VsAuth::codeFlowCompleted);
     connect(m_deviceCodeFlow.data(), &VsDeviceCodeFlow::deviceCodeFlowTimedOut, this,
             &VsAuth::codeExpired);
+    connect(m_refreshTimer.data(), &QTimer::timeout, this, &VsAuth::refreshTimerTimedOut);
 
     m_verificationUrl = QStringLiteral("https://auth.jacktrip.org/activate");
 }
@@ -190,6 +197,13 @@ void VsAuth::codeExpired()
     emit deviceCodeExpired();
 }
 
+void VsAuth::refreshTimerTimedOut()
+{
+    if (m_refreshToken != "") {
+        refreshAccessToken(m_refreshToken);
+    }
+}
+
 void VsAuth::handleRefreshSucceeded(QString accessToken)
 {
     qDebug() << "Successfully refreshed access token";
@@ -198,11 +212,19 @@ void VsAuth::handleRefreshSucceeded(QString accessToken)
     m_authenticationStage    = QStringLiteral("success");
     m_errorMessage           = QStringLiteral("");
     m_attemptingRefreshToken = false;
+    m_accessTokenTimestamp   = QDateTime::currentDateTime();
+
+    m_refreshTimer->start();
 
     emit updatedAuthenticationStage(m_authenticationStage);
     emit updatedErrorMessage(m_errorMessage);
     emit updatedVerificationCode(m_verificationCode);
     emit updatedAttemptingRefreshToken(m_attemptingRefreshToken);
+}
+
+void VsAuth::handleRefreshFailed()
+{
+    m_refreshTimer->stop();
 }
 
 void VsAuth::handleAuthSucceeded(QString userId, QString accessToken)
@@ -225,6 +247,9 @@ void VsAuth::handleAuthSucceeded(QString userId, QString accessToken)
     m_errorMessage           = QStringLiteral("");
     m_attemptingRefreshToken = false;
     m_isAuthenticated        = true;
+    m_accessTokenTimestamp   = QDateTime::currentDateTime();
+
+    m_refreshTimer->start();
 
     emit updatedUserId(m_userId);
     emit updatedAuthenticationStage(m_authenticationStage);
@@ -253,6 +278,7 @@ void VsAuth::handleAuthFailed(QString errorMessage)
     m_authenticationMethod   = QStringLiteral("");
     m_attemptingRefreshToken = false;
     m_isAuthenticated        = false;
+    m_accessTokenTimestamp   = QDateTime::fromMSecsSinceEpoch(0);
 
     emit updatedUserId(m_userId);
     emit updatedAuthenticationStage(m_authenticationStage);
@@ -271,12 +297,13 @@ void VsAuth::cancelAuthenticationFlow()
     qDebug() << "Canceling authentication flow";
     m_deviceCodeFlow->cancelCodeFlow();
 
-    m_userId              = QStringLiteral("");
-    m_verificationCode    = QStringLiteral("");
-    m_accessToken         = QStringLiteral("");
-    m_authenticationStage = QStringLiteral("unauthenticated");
-    m_errorMessage        = QStringLiteral("cancelled");
-    m_isAuthenticated     = false;
+    m_userId               = QStringLiteral("");
+    m_verificationCode     = QStringLiteral("");
+    m_accessToken          = QStringLiteral("");
+    m_accessTokenTimestamp = QDateTime::fromMSecsSinceEpoch(0);
+    m_authenticationStage  = QStringLiteral("unauthenticated");
+    m_errorMessage         = QStringLiteral("cancelled");
+    m_isAuthenticated      = false;
 
     emit updatedUserId(m_userId);
     emit updatedAuthenticationStage(m_authenticationStage);
@@ -293,12 +320,13 @@ void VsAuth::logout()
     qDebug() << "Logging out";
 
     // reset auth state
-    m_userId              = QStringLiteral("");
-    m_verificationCode    = QStringLiteral("");
-    m_accessToken         = QStringLiteral("");
-    m_authenticationStage = QStringLiteral("unauthenticated");
-    m_errorMessage        = QStringLiteral("");
-    m_isAuthenticated     = false;
+    m_userId               = QStringLiteral("");
+    m_verificationCode     = QStringLiteral("");
+    m_accessToken          = QStringLiteral("");
+    m_authenticationStage  = QStringLiteral("unauthenticated");
+    m_errorMessage         = QStringLiteral("");
+    m_isAuthenticated      = false;
+    m_accessTokenTimestamp = QDateTime::fromMSecsSinceEpoch(0);
 
     emit updatedUserId(m_userId);
     emit updatedAuthenticationStage(m_authenticationStage);

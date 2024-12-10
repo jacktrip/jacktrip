@@ -55,6 +55,8 @@ class VsQuickView : public QQuickView
 
    signals:
     void windowClose();
+    void focusGained();
+    void focusLost();
 
    private slots:
     void closeWindow();

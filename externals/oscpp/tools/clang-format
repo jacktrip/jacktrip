@@ -1,0 +1,22 @@
+#!/bin/sh
+# clang-format all C/C++/ObjC source files under source control
+
+function source_files()
+{
+    git ls-tree -r HEAD --name-only | grep -E '\.(h|hpp|cpp|m|M)$'
+}
+
+function clang_format()
+{
+    xargs -n1 clang-format -style=file "$@"
+}
+
+case "$1" in
+    check)
+        source_files | clang_format -output-replacements-xml
+        ;;
+    *)
+        source_files | clang_format -i
+        ;;
+esac
+

@@ -64,6 +64,8 @@ src = [	'src/DataProtocol.cpp',
 	'src/JitterBuffer.cpp',
 	'src/Regulator.cpp',
 	'src/Settings.cpp',
+	'src/SocketClient.cpp',
+	'src/SocketServer.cpp',
 	'src/UdpDataProtocol.cpp',
 	'src/UdpHubListener.cpp',
 	'src/AudioInterface.cpp',
@@ -91,10 +93,22 @@ moc_h = ['src/DataProtocol.h',
 	'src/PacketHeader.h',
 	'src/Regulator.h',
 	'src/Settings.h',
+	'src/SocketClient.h',
+	'src/SocketServer.h',
 	'src/UdpDataProtocol.h',
 	'src/UdpHubListener.h',
 	'src/Auth.h',
 	'src/SslServer.h']
+
+if get_option('nooscpp') == true
+	defines += '-DNO_OSCPP'
+	c_defines += '-DNO_OSCPP'
+else
+	incdirs += include_directories('externals/oscpp')
+	incdirs += include_directories('externals/oscpp/include')
+	src += ['src/OscServer.cpp']
+	moc_h += ['src/OscServer.h']
+endif
 
 ui_h = []
 qres = []
