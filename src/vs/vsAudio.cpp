@@ -280,16 +280,6 @@ void VsAudio::setBufferSize(int bufSize)
     emit bufferSizeChanged();
 }
 
-void VsAudio::setQueueBuffer(int queueBuffer)
-{
-    if (m_queueBuffer == queueBuffer)
-        return;
-    if (queueBuffer < 0)
-        queueBuffer = 0;
-    m_queueBuffer = queueBuffer;
-    emit queueBufferChanged();
-}
-
 void VsAudio::setNumInputChannels(int numChannels)
 {
     if (numChannels == m_numInputChannels)
@@ -543,7 +533,6 @@ void VsAudio::loadSettings()
     }
 
     setBufferSize(settings.value(QStringLiteral("BufferSize"), 128).toInt());
-    setQueueBuffer(settings.value(QStringLiteral("QueueBuffer"), 0).toInt());
     setFeedbackDetectionEnabled(
         settings.value(QStringLiteral("FeedbackDetectionEnabled"), true).toBool());
     settings.endGroup();
@@ -566,7 +555,6 @@ void VsAudio::saveSettings()
     settings.setValue(QStringLiteral("BaseOutputChannel"), m_baseOutputChannel);
     settings.setValue(QStringLiteral("NumOutputChannels"), m_numOutputChannels);
     settings.setValue(QStringLiteral("BufferSize"), m_audioBufferSize);
-    settings.setValue(QStringLiteral("QueueBuffer"), m_queueBuffer);
     settings.setValue(QStringLiteral("FeedbackDetectionEnabled"),
                       m_feedbackDetectionEnabled);
     settings.endGroup();

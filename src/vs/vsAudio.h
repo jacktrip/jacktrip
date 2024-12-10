@@ -81,8 +81,6 @@ class VsAudio : public QObject
         int sampleRate READ getSampleRate WRITE setSampleRate NOTIFY sampleRateChanged)
     Q_PROPERTY(
         int bufferSize READ getBufferSize WRITE setBufferSize NOTIFY bufferSizeChanged)
-    Q_PROPERTY(int queueBuffer READ getQueueBuffer WRITE setQueueBuffer NOTIFY
-                   queueBufferChanged)
     Q_PROPERTY(int numInputChannels READ getNumInputChannels WRITE setNumInputChannels
                    NOTIFY numInputChannelsChanged)
     Q_PROPERTY(int numOutputChannels READ getNumOutputChannels WRITE setNumOutputChannels
@@ -168,7 +166,6 @@ class VsAudio : public QObject
     }
     int getSampleRate() const { return m_audioSampleRate; }
     int getBufferSize() const { return m_audioBufferSize; }
-    int getQueueBuffer() const { return m_queueBuffer; }
     int getNumInputChannels() const { return getUseRtAudio() ? m_numInputChannels : 2; }
     int getNumOutputChannels() const { return getUseRtAudio() ? m_numOutputChannels : 2; }
     int getBaseInputChannel() const { return getUseRtAudio() ? m_baseInputChannel : 0; }
@@ -215,7 +212,6 @@ class VsAudio : public QObject
     void setAudioBackend(const QString& backend);
     void setSampleRate(int sampleRate);
     void setBufferSize(int bufSize);
-    void setQueueBuffer(int queueBuffer);
     void setNumInputChannels(int numChannels);
     void setNumOutputChannels(int numChannels);
     void setBaseInputChannel(int baseChannel);
@@ -252,7 +248,6 @@ class VsAudio : public QObject
     void audioBackendChanged(bool useRtAudio);
     void sampleRateChanged();
     void bufferSizeChanged();
-    void queueBufferChanged();
     void numInputChannelsChanged(int numChannels);
     void numOutputChannelsChanged(int numChannels);
     void baseInputChannelChanged(int baseChannel);
@@ -326,7 +321,6 @@ class VsAudio : public QObject
     int m_audioSampleRate           = gDefaultSampleRate;
     int m_audioBufferSize =
         gDefaultBufferSizeInSamples;  ///< Audio buffer size to process on each callback
-    int m_queueBuffer       = 0;
     int m_numInputChannels  = gDefaultNumInChannels;
     int m_numOutputChannels = gDefaultNumOutChannels;
     int m_baseInputChannel  = 0;
