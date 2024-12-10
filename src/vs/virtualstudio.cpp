@@ -232,14 +232,6 @@ VirtualStudio::VirtualStudio(UserInterface& parent)
     connect(m_view.get(), &VsQuickView::windowClose, this, &VirtualStudio::exit,
             Qt::QueuedConnection);
 
-    // prepare handler for deeplinks jacktrip://join/<StudioID>
-    m_deepLinkPtr.reset(new VsDeeplink(m_interface.getSettings().getDeeplink()));
-    if (!m_deepLinkPtr->getDeeplink().isEmpty()) {
-        bool readyForExit = m_deepLinkPtr->waitForReady();
-        if (readyForExit)
-            std::exit(0);
-    }
-
     // initialize default QtWebEngineProfile
     m_qwebEngineProfile = QWebEngineProfile::defaultProfile();
 
