@@ -184,7 +184,7 @@ Rectangle {
                 virtualstudio.queueBuffer = value;
             }
             from: 0
-            to: 128
+            to: 250
             stepSize: 1
             padding: 0
             visible: useStudioQueueBuffer.checkState != Qt.Checked
