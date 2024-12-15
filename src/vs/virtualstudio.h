@@ -98,6 +98,10 @@ class VirtualStudio : public QObject
     Q_PROPERTY(QString connectionState READ connectionState NOTIFY connectionStateChanged)
     Q_PROPERTY(QJsonObject networkStats READ networkStats NOTIFY networkStatsChanged)
     Q_PROPERTY(bool networkOutage READ networkOutage NOTIFY updatedNetworkOutage)
+    Q_PROPERTY(int queueBuffer READ getQueueBuffer WRITE setQueueBuffer NOTIFY
+                   queueBufferChanged)
+    Q_PROPERTY(bool useStudioQueueBuffer READ useStudioQueueBuffer WRITE
+                   setUseStudioQueueBuffer NOTIFY useStudioQueueBufferChanged)
 
     Q_PROPERTY(QString updateChannel READ updateChannel WRITE setUpdateChannel NOTIFY
                    updateChannelChanged)
@@ -172,6 +176,10 @@ class VirtualStudio : public QObject
     bool psiBuild();
     QString failedMessage();
     bool networkOutage();
+    int getQueueBuffer() const;
+    void setQueueBuffer(int queueBuffer);
+    bool useStudioQueueBuffer();
+    void setUseStudioQueueBuffer(bool b);
     bool backendAvailable();
     QString windowState();
     QString apiHost();
@@ -237,6 +245,8 @@ class VirtualStudio : public QObject
     void failedMessageChanged();
     void studioToJoinChanged();
     void updatedNetworkOutage(bool outage);
+    void queueBufferChanged(int queueBuffer);
+    void useStudioQueueBufferChanged(bool b);
     void windowStateUpdated();
     void isExitingChanged();
     void scheduleStudioRefresh(int index, bool signalRefresh);
@@ -321,6 +331,8 @@ class VirtualStudio : public QObject
     bool m_collapseDeviceControls = false;
     bool m_testMode               = false;
     bool m_authenticated          = false;
+    bool m_useStudioQueueBuffer   = true;
+    int m_queueBuffer             = 0;
     float m_fontScale             = 1;
     float m_uiScale               = 1;
     uint32_t m_webChannelPort     = 1;

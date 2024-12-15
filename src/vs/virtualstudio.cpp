@@ -437,6 +437,53 @@ bool VirtualStudio::networkOutage()
     return m_devicePtr.isNull() ? false : m_devicePtr->getNetworkOutage();
 }
 
+int VirtualStudio::getQueueBuffer() const
+{
+    return m_queueBuffer;
+}
+
+void VirtualStudio::setQueueBuffer(int queueBuffer)
+{
+    if (m_queueBuffer == queueBuffer)
+        return;
+
+    m_queueBuffer = queueBuffer;
+    emit queueBufferChanged(queueBuffer);
+    if (!m_useStudioQueueBuffer && !m_devicePtr.isNull())
+        m_devicePtr->setQueueBuffer(queueBuffer);
+
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("VirtualStudio"));
+    settings.setValue(QStringLiteral("QueueBuffer"), m_queueBuffer);
+    settings.endGroup();
+}
+
+bool VirtualStudio::useStudioQueueBuffer()
+{
+    return m_useStudioQueueBuffer;
+}
+
+void VirtualStudio::setUseStudioQueueBuffer(bool b)
+{
+    if (m_useStudioQueueBuffer == b)
+        return;
+
+    m_useStudioQueueBuffer = b;
+    emit useStudioQueueBufferChanged(b);
+    if (!m_devicePtr.isNull()) {
+        if (!m_useStudioQueueBuffer) {
+            m_devicePtr->setQueueBuffer(m_queueBuffer);
+        } else if (m_currentStudio.id() != "") {
+            m_devicePtr->setQueueBuffer(m_currentStudio.queueBuffer());
+        }
+    }
+
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("VirtualStudio"));
+    settings.setValue(QStringLiteral("UseStudioQueueBuffer"), m_useStudioQueueBuffer);
+    settings.endGroup();
+}
+
 QJsonObject VirtualStudio::regions()
 {
     return m_regions;
@@ -933,6 +980,9 @@ void VirtualStudio::loadSettings()
     m_testMode       = settings.value(QStringLiteral("TestMode"), false).toBool();
     m_showInactive   = settings.value(QStringLiteral("ShowInactive"), true).toBool();
     m_showSelfHosted = settings.value(QStringLiteral("ShowSelfHosted"), true).toBool();
+    m_useStudioQueueBuffer =
+        settings.value(QStringLiteral("UseStudioQueueBuffer"), true).toBool();
+    m_queueBuffer = settings.value(QStringLiteral("QueueBuffer"), 0).toInt();
 
     // use setters to emit signals for these if they change; otherwise, the
     // user interface will not revert back after cancelling settings changes
@@ -1039,18 +1089,16 @@ void VirtualStudio::completeConnection()
         }
 #endif
 
-        // adjust queueBuffer config setting to map to auto headroom
-        int queue_buffer = m_audioConfigPtr->getQueueBuffer();
-        if (queue_buffer <= 0) {
-            queue_buffer = -500;
-        } else {
-            queue_buffer *= -1;
-        }
+        // check if we should use studio or local queueBuffer setting
+        int queueBuffer = m_queueBuffer;
+        if (m_useStudioQueueBuffer)
+            queueBuffer = m_currentStudio.queueBuffer();
+        m_devicePtr->setQueueBuffer(queueBuffer);
 
         // create a new JackTrip instance
         JackTrip* jackTrip = m_devicePtr->initJackTrip(
             useRtAudio, input, output, baseInputChannel, numInputChannels,
-            baseOutputChannel, numOutputChannels, inputMixMode, buffer_size, queue_buffer,
+            baseOutputChannel, numOutputChannels, inputMixMode, buffer_size,
             &m_currentStudio);
         if (jackTrip == 0) {
             processError("Could not bind port");
@@ -1316,6 +1364,9 @@ void VirtualStudio::slotAuthSucceeded()
     settings.endGroup();
 
     // initialize new VsDevice and wire up signals/slots before registering app
+    if (!m_devicePtr.isNull()) {
+        m_devicePtr->disconnect();
+    }
     m_devicePtr.reset(new VsDevice(m_auth, m_api, m_audioConfigPtr));
     connect(m_devicePtr.get(), &VsDevice::updateNetworkStats, this,
             &VirtualStudio::updatedStats);
@@ -1427,6 +1478,7 @@ void VirtualStudio::handleWebsocketMessage(const QString& msg)
     QString serverStatus    = serverState[QStringLiteral("status")].toString();
     bool serverEnabled      = serverState[QStringLiteral("enabled")].toBool();
     QString serverCloudId   = serverState[QStringLiteral("cloudId")].toString();
+    int queueBuffer         = serverState[QStringLiteral("queueBuffer")].toInt();
 
     // server notifications are also transmitted along this websocket, so ignore data if
     // it contains "message"
@@ -1440,6 +1492,7 @@ void VirtualStudio::handleWebsocketMessage(const QString& msg)
     m_currentStudio.setStatus(serverStatus);
     m_currentStudio.setEnabled(serverEnabled);
     m_currentStudio.setCloudId(serverCloudId);
+    m_currentStudio.setQueueBuffer(queueBuffer);
     if (!m_jackTripRunning) {
         if (serverStatus == QLatin1String("Ready") && m_onConnectedScreen) {
             m_currentStudio.setHost(serverState[QStringLiteral("serverHost")].toString());
@@ -1448,6 +1501,8 @@ void VirtualStudio::handleWebsocketMessage(const QString& msg)
                 serverState[QStringLiteral("sessionId")].toString());
             completeConnection();
         }
+    } else if (m_useStudioQueueBuffer && !m_devicePtr.isNull()) {
+        m_devicePtr->setQueueBuffer(m_currentStudio.queueBuffer());
     }
 
     emit currentStudioChanged();
@@ -1775,9 +1830,15 @@ VirtualStudio::~VirtualStudio()
     // close the window
     m_view.reset();
     // stop the audio worker thread before destructing other things
-    m_audioConfigPtr.reset();
+    if (!m_audioConfigPtr.isNull()) {
+        m_audioConfigPtr->disconnect();
+        m_audioConfigPtr.reset();
+    }
     // stop device and corresponding threads
-    m_devicePtr.reset();
+    if (!m_devicePtr.isNull()) {
+        m_devicePtr->disconnect();
+        m_devicePtr.reset();
+    }
 }
 
 QApplication* VirtualStudio::createApplication(int& argc, char* argv[])
