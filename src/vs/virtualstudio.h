@@ -76,7 +76,6 @@ class VirtualStudio : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(int webChannelPort READ webChannelPort NOTIFY webChannelPortChanged)
-    Q_PROPERTY(bool hasRefreshToken READ hasRefreshToken NOTIFY hasRefreshTokenChanged)
     Q_PROPERTY(QString versionString READ versionString CONSTANT)
     Q_PROPERTY(QString buildString READ buildString CONSTANT)
     Q_PROPERTY(QString copyrightString READ copyrightString CONSTANT)
@@ -138,7 +137,6 @@ class VirtualStudio : public QObject
     void raiseToTop();
 
     int webChannelPort();
-    bool hasRefreshToken();
     QString versionString();
     QString buildString();
     QString copyrightString();
@@ -222,7 +220,6 @@ class VirtualStudio : public QObject
     void disconnected();
     void refreshFinished(int index);
     void webChannelPortChanged(int webChannelPort);
-    void hasRefreshTokenChanged();
     void logoSectionChanged();
     void connectedErrorMsgChanged();
     void serverModelChanged();
@@ -259,6 +256,7 @@ class VirtualStudio : public QObject
 
    private slots:
     void slotAuthSucceeded();
+    void slotAccessTokenUpdated(QString accessToken);
     void receivedConnectionFromPeer();
     void handleWebsocketMessage(const QString& msg);
     void restartStudioSocket();
