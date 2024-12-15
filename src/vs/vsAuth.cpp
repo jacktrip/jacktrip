@@ -220,6 +220,8 @@ void VsAuth::handleRefreshSucceeded(QString accessToken)
     emit updatedErrorMessage(m_errorMessage);
     emit updatedVerificationCode(m_verificationCode);
     emit updatedAttemptingRefreshToken(m_attemptingRefreshToken);
+    emit updatedAccessToken(m_accessToken);
+    emit updatedAccessTokenTimestamp(m_accessTokenTimestamp);
 }
 
 void VsAuth::handleRefreshFailed()
