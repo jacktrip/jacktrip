@@ -95,15 +95,15 @@ AudioInterface::~AudioInterface()
         delete[] mAPInBuffer[i];
     }
 #endif  // endwhere
-    for (auto* i : std::as_const(mProcessPluginsFromNetwork)) {
+    for (auto* i : qAsConst(mProcessPluginsFromNetwork)) {
         i->disconnect();
         delete i;
     }
-    for (auto* i : std::as_const(mProcessPluginsToNetwork)) {
+    for (auto* i : qAsConst(mProcessPluginsToNetwork)) {
         i->disconnect();
         delete i;
     }
-    for (auto* i : std::as_const(mProcessPluginsToMonitor)) {
+    for (auto* i : qAsConst(mProcessPluginsToMonitor)) {
         i->disconnect();
         delete i;
     }
@@ -206,7 +206,7 @@ void AudioInterface::audioInputCallback(QVarLengthArray<sample_t*>& in_buffer,
 #endif  // not WAIR
 
     // process incoming signal from audio interface using process plugins
-    for (auto* p : std::as_const(mProcessPluginsToNetwork)) {
+    for (auto* p : qAsConst(mProcessPluginsToNetwork)) {
         if (p->getInited()) {
             p->compute(n_frames, in_buffer.data(), in_buffer.data());
         }
@@ -268,7 +268,7 @@ void AudioInterface::audioOutputCallback(QVarLengthArray<sample_t*>& out_buffer,
     /// with one. do it chaining outputs to inputs in the buffers. May need a tempo buffer
 
 #ifndef WAIR  // NOT WAIR:
-    for (auto* p : std::as_const(mProcessPluginsFromNetwork)) {
+    for (auto* p : qAsConst(mProcessPluginsFromNetwork)) {
         if (p->getInited()) {
             p->compute(n_frames, out_buffer.data(), out_buffer.data());
         }
@@ -728,17 +728,17 @@ void AudioInterface::initPlugins(bool verbose)
                       << ") at sampling rate " << mSampleRate << "\n";
         }
 
-        for (ProcessPlugin* plugin : std::as_const(mProcessPluginsFromNetwork)) {
+        for (ProcessPlugin* plugin : qAsConst(mProcessPluginsFromNetwork)) {
             plugin->setOutgoingToNetwork(false);
             plugin->updateNumChannels(nChansIn, nChansOut);
             plugin->init(mSampleRate, mBufferSizeInSamples);
         }
-        for (ProcessPlugin* plugin : std::as_const(mProcessPluginsToNetwork)) {
+        for (ProcessPlugin* plugin : qAsConst(mProcessPluginsToNetwork)) {
             plugin->setOutgoingToNetwork(true);
             plugin->updateNumChannels(nChansIn, nChansOut);
             plugin->init(mSampleRate, mBufferSizeInSamples);
         }
-        for (ProcessPlugin* plugin : std::as_const(mProcessPluginsToMonitor)) {
+        for (ProcessPlugin* plugin : qAsConst(mProcessPluginsToMonitor)) {
             plugin->setOutgoingToNetwork(false);
             plugin->updateNumChannels(nChansMon, nChansMon);
             plugin->init(mSampleRate, mBufferSizeInSamples);

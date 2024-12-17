@@ -124,6 +124,56 @@ $ meson install -C builddir
 # enter your password when prompted
 ```
 
+### Building with Docker
+
+You can also build JackTrip using Docker, which especially makes it easier
+to build for alternative architectures. The following build arguments are
+available:
+
+* BUILD_CONTAINER - Debian based container image to build with
+* MESON_ARGS - arguments to build using meson
+* QT_DOWNLOAD_URL - path to qt6 download (optional)
+
+For example:
+
+amd64 dynamic
+```
+docker buildx build --target=artifact -f linux/Dockerfile.build --output type=local,dest=./ \
+  --platform linux/amd64 --build-arg BUILD_CONTAINER=ubuntu:22.04 \
+  --build-arg MESON_ARGS="-Ddefault_library=shared -Drtaudio=enabled -Drtaudio:jack=disabled -Drtaudio:default_library=static -Drtaudio:alsa=enabled -Drtaudio:pulse=enabled -Drtaudio:werror=false" .
+```
+
+amd64 static
+```
+docker buildx build --target=artifact -f linux/Dockerfile.build --output type=local,dest=./ \
+  --platform linux/amd64 --build-arg BUILD_CONTAINER=ubuntu:20.04 \
+  --build-arg MESON_ARGS="-Ddefault_library=static -Drtaudio=enabled -Drtaudio:jack=disabled -Drtaudio:default_library=static -Drtaudio:alsa=enabled -Drtaudio:pulse=disabled -Drtaudio:werror=false -Dnogui=true" \
+  --build-arg QT_DOWNLOAD_URL=https://files.jacktrip.org/contrib/qt/qt-6.5.3-static-linux-amd64.tar.gz .
+```
+
+arm64 dynamic
+```
+docker buildx build --target=artifact -f linux/Dockerfile.build --output type=local,dest=./ \
+  --platform linux/arm64 --build-arg BUILD_CONTAINER=ubuntu:22.04 \
+  --build-arg MESON_ARGS="-Ddefault_library=shared -Drtaudio=enabled -Drtaudio:jack=disabled -Drtaudio:default_library=static -Drtaudio:alsa=enabled -Drtaudio:pulse=enabled -Drtaudio:werror=false" .
+```
+
+arm64 static
+```
+docker buildx build --target=artifact -f linux/Dockerfile.build --output type=local,dest=./ \
+  --platform linux/arm64 --build-arg BUILD_CONTAINER=ubuntu:20.04 \
+  --build-arg MESON_ARGS="-Ddefault_library=static -Drtaudio=enabled -Drtaudio:jack=disabled -Drtaudio:default_library=static -Drtaudio:alsa=enabled -Drtaudio:pulse=disabled -Drtaudio:werror=false -Dnogui=true" \
+  --build-arg QT_DOWNLOAD_URL=https://files.jacktrip.org/contrib/qt/qt-6.5.3-static-linux-arm64.tar.gz .
+```
+
+arm32 static
+```
+docker buildx build --target=artifact -f linux/Dockerfile.build --output type=local,dest=./ \
+  --platform linux/arm/v7 --build-arg BUILD_CONTAINER=debian:buster \
+  --build-arg MESON_ARGS="-Ddefault_library=static -Drtaudio=enabled -Drtaudio:jack=disabled -Drtaudio:default_library=static -Drtaudio:alsa=enabled -Drtaudio:pulse=disabled -Drtaudio:werror=false -Dnogui=true -Dcpp_link_args='-no-pie'" \
+  --build-arg QT_DOWNLOAD_URL=https://files.jacktrip.org/contrib/qt/qt-5.15.13-static-linux-arm32.tar.gz .
+```
+
 ### Verification
 
 If you have installed jacktrip, from anywhere in the Terminal, type:
