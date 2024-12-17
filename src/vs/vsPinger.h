@@ -39,6 +39,8 @@
 
 #include <QAbstractSocket>
 #include <QDateTime>
+#include <QList>
+#include <QNetworkRequest>
 #include <QObject>
 #include <QTimer>
 #include <QUrl>

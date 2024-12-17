@@ -39,8 +39,10 @@
 
 #include <QEventLoop>
 #include <QJsonParseError>
+#include <QList>
 #include <QMap>
 #include <QNetworkAccessManager>
+#include <QNetworkCookie>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QString>

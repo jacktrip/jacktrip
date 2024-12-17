@@ -132,6 +132,8 @@ VirtualStudio::VirtualStudio(UserInterface& parent)
     m_auth.reset(new VsAuth(m_networkAccessManagerPtr, m_api.data()));
     connect(m_auth.data(), &VsAuth::authSucceeded, this,
             &VirtualStudio::slotAuthSucceeded);
+    connect(m_auth.data(), &VsAuth::updatedAccessToken, this,
+            &VirtualStudio::slotAccessTokenUpdated);
     connect(m_auth.data(), &VsAuth::refreshTokenFailed, this, [=]() {
         m_auth->authenticate(QStringLiteral(""));  // retry without using refresh token
     });
@@ -231,6 +233,9 @@ VirtualStudio::VirtualStudio(UserInterface& parent)
     // call exit() when the UI window is closed
     connect(m_view.get(), &VsQuickView::windowClose, this, &VirtualStudio::exit,
             Qt::QueuedConnection);
+
+    // initialize default QtWebEngineProfile
+    m_qwebEngineProfile = QWebEngineProfile::defaultProfile();
 
     // Log to file
     QString logPath(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
@@ -344,11 +349,6 @@ void VirtualStudio::raiseToTop()
 int VirtualStudio::webChannelPort()
 {
     return m_webChannelPort;
-}
-
-bool VirtualStudio::hasRefreshToken()
-{
-    return !m_refreshToken.isEmpty();
 }
 
 QString VirtualStudio::versionString()
@@ -958,7 +958,6 @@ void VirtualStudio::logout()
     m_refreshToken.clear();
     m_userMetadata = QJsonObject();
     m_userId.clear();
-    emit hasRefreshTokenChanged();
 
     // reset window state
     setWindowState(QStringLiteral("login"));
@@ -1013,10 +1012,10 @@ void VirtualStudio::connectToStudio()
 
     m_onConnectedScreen = true;
 
-    m_studioSocketPtr.reset(new VsWebSocket(
-        QUrl(QStringLiteral("wss://%1/api/servers/%2?auth_code=%3")
-                 .arg(m_api->getApiHost(), m_currentStudio.id(), m_auth->accessToken())),
-        m_auth->accessToken(), QString(), QString()));
+    m_studioSocketPtr.reset(
+        new VsWebSocket(QUrl(QStringLiteral("wss://%1/api/servers/%2")
+                                 .arg(m_api->getApiHost(), m_currentStudio.id())),
+                        m_auth->accessToken(), QString(), QString()));
     connect(m_studioSocketPtr.get(), &VsWebSocket::textMessageReceived, this,
             &VirtualStudio::handleWebsocketMessage);
     connect(m_studioSocketPtr.get(), &VsWebSocket::disconnected, this,
@@ -1332,17 +1331,6 @@ void VirtualStudio::slotAuthSucceeded()
     }
     m_api->setApiHost(m_apiHost);
 
-    // Get refresh token and userId
-    m_refreshToken = m_auth->refreshToken();
-    m_userId       = m_auth->userId();
-    emit hasRefreshTokenChanged();
-
-    QSettings settings;
-    settings.beginGroup(QStringLiteral("VirtualStudio"));
-    settings.setValue(QStringLiteral("RefreshToken"), m_refreshToken);
-    settings.setValue(QStringLiteral("UserId"), m_userId);
-    settings.endGroup();
-
     // initialize new VsDevice and wire up signals/slots before registering app
     if (!m_devicePtr.isNull()) {
         m_devicePtr->disconnect();
@@ -1371,6 +1359,36 @@ void VirtualStudio::slotAuthSucceeded()
 
     getRegions();
     getUserMetadata();  // calls refreshStudios(-1, false)
+}
+
+void VirtualStudio::slotAccessTokenUpdated(QString accessToken)
+{
+    // set cookie
+    QWebEngineCookieStore* cookieStore = m_qwebEngineProfile->cookieStore();
+    QNetworkCookie authCookie =
+        QNetworkCookie(QByteArray("auth_code"), accessToken.toUtf8());
+
+    QUrl url1 = QUrl(QStringLiteral("https://www.jacktrip.com"));
+    if (testMode()) {
+        url1 = QUrl(QStringLiteral("https://next-test.jacktrip.com"));
+    }
+    QUrl url2 = QUrl(QStringLiteral("https://app.jacktrip.com"));
+    if (testMode()) {
+        url2 = QUrl(QStringLiteral("https://test.jacktrip.com"));
+    }
+
+    cookieStore->setCookie(authCookie, url1);
+    cookieStore->setCookie(authCookie, url2);
+
+    // Get refresh token and userId
+    m_refreshToken = m_auth->refreshToken();
+    m_userId       = m_auth->userId();
+
+    QSettings settings;
+    settings.beginGroup(QStringLiteral("VirtualStudio"));
+    settings.setValue(QStringLiteral("RefreshToken"), m_refreshToken);
+    settings.setValue(QStringLiteral("UserId"), m_userId);
+    settings.endGroup();
 }
 
 void VirtualStudio::connectionFinished()

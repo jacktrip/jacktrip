@@ -41,6 +41,7 @@
 #include <QMap>
 #include <QMutex>
 #include <QNetworkAccessManager>
+#include <QNetworkCookie>
 #include <QObject>
 #include <QScopedPointer>
 #include <QSharedPointer>
@@ -50,6 +51,8 @@
 #include <QUrl>
 #include <QVector>
 #include <QWebChannel>
+#include <QWebEngineCookieStore>
+#include <QWebEngineProfile>
 #include <QWebSocketServer>
 
 #include "../Settings.h"
@@ -73,7 +76,6 @@ class VirtualStudio : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(int webChannelPort READ webChannelPort NOTIFY webChannelPortChanged)
-    Q_PROPERTY(bool hasRefreshToken READ hasRefreshToken NOTIFY hasRefreshTokenChanged)
     Q_PROPERTY(QString versionString READ versionString CONSTANT)
     Q_PROPERTY(QString buildString READ buildString CONSTANT)
     Q_PROPERTY(QString copyrightString READ copyrightString CONSTANT)
@@ -135,7 +137,6 @@ class VirtualStudio : public QObject
     void raiseToTop();
 
     int webChannelPort();
-    bool hasRefreshToken();
     QString versionString();
     QString buildString();
     QString copyrightString();
@@ -219,7 +220,6 @@ class VirtualStudio : public QObject
     void disconnected();
     void refreshFinished(int index);
     void webChannelPortChanged(int webChannelPort);
-    void hasRefreshTokenChanged();
     void logoSectionChanged();
     void connectedErrorMsgChanged();
     void serverModelChanged();
@@ -256,6 +256,7 @@ class VirtualStudio : public QObject
 
    private slots:
     void slotAuthSucceeded();
+    void slotAccessTokenUpdated(QString accessToken);
     void receivedConnectionFromPeer();
     void handleWebsocketMessage(const QString& msg);
     void restartStudioSocket();
@@ -286,6 +287,7 @@ class VirtualStudio : public QObject
     UserInterface& m_interface;
     VsServerInfo m_currentStudio;
     QNetworkAccessManager* m_networkAccessManagerPtr;
+    QWebEngineProfile* m_qwebEngineProfile;
     QSharedPointer<SocketServer> m_socketServerPtr;
     QScopedPointer<VsQuickView> m_view;
     QSharedPointer<VsDeeplink> m_deepLinkPtr;

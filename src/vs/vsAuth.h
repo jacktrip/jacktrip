@@ -99,6 +99,8 @@ class VsAuth : public QObject
     void updatedUserId(QString userId);
     void updatedAuthenticationMethod(QString grant);
     void updatedAttemptingRefreshToken(bool attemptingRefreshToken);
+    void updatedAccessToken(QString accessToken);
+    void updatedAccessTokenTimestamp(QDateTime accessTokenTimestamp);
     void authSucceeded();
     void authFailed();
     void refreshTokenFailed();
