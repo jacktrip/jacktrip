@@ -268,7 +268,7 @@ if get_option('default_library') == 'static'
 	qt_plugindir = run_command(qmake, '-query', 'QT_INSTALL_PLUGINS', check : true).stdout().strip()
 	if qt_version == '6'
 		# qt6 requires "Bundled*" modules for linking
-		deps += dependency('qt6', modules: ['BundledLibpng', 'BundledPcre2', 'BundledHarfbuzz', 'BundledZLIB'], include_type: 'system')
+		deps += dependency('qt6', modules: ['DBus', 'BundledLibpng', 'BundledPcre2', 'BundledHarfbuzz', 'BundledZLIB'], include_type: 'system')
 	else
 		deps += compiler.find_library('qtpcre2', required : true, dirs : [qt_libdir])
 	endif
@@ -280,6 +280,7 @@ if get_option('default_library') == 'static'
 		deps += compiler.find_library('glib-2.0', required : true)
 		if qt_version == '6'
 			# we need a Q_IMPORT_LIBRARY for the openssl backend on linux
+			deps += compiler.find_library('dbus-1', required : true)
 			deps += compiler.find_library('qopensslbackend', required : true, dirs : [qt_plugindir+'/tls'])
 			src += ['src/QtStaticPlugins.cpp']
 		endif
