@@ -357,6 +357,65 @@ endif
 
 jacktrip = executable('jacktrip', src, qres_files, ui_files, moc_files, include_directories: incdirs, dependencies: deps, link_args: link_args, c_args: c_defines, cpp_args: defines, install: true )
 
+version = compiler.run(
+	'''
+	#include <iostream>
+	#include "jacktrip_globals.h"
+	int main(void) {
+		std::cout << gVersion;
+		return 0;
+	}
+	''',
+	include_directories: include_directories('src/'),
+	).stdout().strip()
+
+vst_sdkdir = get_option('vst-sdkdir')
+if vst_sdkdir != ''
+	# adapted from https://github.com/centricular/gstreamer-vst3
+	message('Looking for VST3 SDK in directory ' + vst_sdkdir)
+	if not compiler.has_header('pluginterfaces/vst/ivstaudioprocessor.h', args : '-I@0@'.format(vst_sdkdir))
+		error('Cannot find VST3 SDK plug interfaces')
+	endif
+	vst_includedir = '@0@/public.sdk/source'.format(vst_sdkdir)
+	vst_pluginterfaces_includedir = '@0@'.format(vst_sdkdir)
+
+	vst_libdir = get_option('vst-libdir')
+	if vst_libdir == ''
+		vst_libdir = vst_sdkdir + '/lib'
+	endif
+	libbase_dep = compiler.find_library('base', required : true, dirs : [vst_libdir])
+	libsdk_dep = compiler.find_library('sdk', required : true, dirs : [vst_libdir])
+	libsdk_common_dep = compiler.find_library('sdk_common', required : true, dirs : [vst_libdir])
+	libvstgui_dep = compiler.find_library('vstgui', required : true, dirs : [vst_libdir])
+	libvstgui_support_dep = compiler.find_library('vstgui_support', required : true, dirs : [vst_libdir])
+	libvstgui_uidescription_dep = compiler.find_library('vstgui_uidescription', required : true, dirs : [vst_libdir])
+	libpluginterfaces_dep = compiler.find_library('pluginterfaces', required : true, dirs : [vst_libdir])
+
+	if (host_machine.system() == 'linux')
+		vst_entry = '@0@/main/linuxmain.cpp'.format(vst_includedir)
+	elif (host_machine.system() == 'darwin')
+		vst_entry = '@0@/main/macmain.cpp'.format(vst_includedir)
+	elif (host_machine.system() == 'windows')
+		vst_entry = '@0@/main/dllmain.cpp'.format(vst_includedir)
+	else
+		error('Unsupported platform: ' + host_machine.system())
+	endif
+
+	vst3 = shared_library('JackTrip',
+		['src/vst3/JackTripVSTController.cpp', 'src/vst3/JackTripVSTEntry.cpp', 'src/vst3/JackTripVSTProcessor.cpp'] + vst_entry,
+		name_suffix: 'vst3',
+		cpp_args : [ defines,
+					'-I@0@'.format(vst_includedir),
+					'-I@0@'.format(vst_pluginterfaces_includedir),
+					'-I@0@/vstgui4'.format(vst_pluginterfaces_includedir),
+					'-DPACKAGE="jacktrip-vst3"',
+					'-DGST_PACKAGE_NAME="jacktrip-vst3"',
+					'-DGST_PACKAGE_ORIGIN="https://github.com/jacktrip/jacktrip"',
+					'-DFULL_VERSION_STR="@0@"'.format(version)],
+		dependencies : [libbase_dep, libsdk_dep, libsdk_common_dep, libvstgui_dep, libvstgui_uidescription_dep, libvstgui_support_dep, libpluginterfaces_dep]
+	)
+endif
+
 help2man = find_program('help2man', required: false)
 if (host_machine.system() == 'linux')
 	if help2man.found()
@@ -386,6 +445,7 @@ summary({'JACK': jack_dep.found(),
 	'RtAudio': rtaudio_dep.found()}, bool_yn: true, section: 'Audio Backends')
 
 summary({'Application ID': application_id,
+	'Version': version,
 	'GUI': not get_option('nogui'),
 	'WAIR': get_option('wair'),
 	'Manpage': help2man.found()}, bool_yn: true, section: 'Configuration')
