@@ -512,11 +512,10 @@ jobs:
           elif [[ "${{ matrix.novs }}" == true ]]; then
             CONFIG_STRING="-Dnovs=true $CONFIG_STRING"
           elif [[ "${{ needs.check-secrets.outputs.should_run }}" == "true" ]]; then
-            if [[ "${{ runner.os }}" == 'Windows' ]] || [[ "${{ runner.os }}" == 'macOS' ]]; then
-              # signed JTL builds for Windows and MacOS use Qt commercial license
-              CONFIG_STRING="-Dqtedition=commercial $CONFIG_STRING"
-              # do not include classic mode interface in signed JackTrip Labs builds
-              CONFIG_STRING="-Dnoclassic=true $CONFIG_STRING"
+            if [[ "${{ runner.os }}" == 'Windows' ]]; then
+              # signed JTL builds for Windows use ASIO and Qt commercial license
+              # because licenses for classic mode and Qt are not compatible with ASIO
+              CONFIG_STRING="-Dnoclassic=true -Dqtedition=commercial $CONFIG_STRING"
             else
               # prefer virtual studio interface for JackTrip Labs builds on Linux
               CONFIG_STRING="-Dvsftux=true $CONFIG_STRING"
