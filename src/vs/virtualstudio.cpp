@@ -1369,16 +1369,18 @@ void VirtualStudio::slotAccessTokenUpdated(QString accessToken)
         QNetworkCookie(QByteArray("auth_code"), accessToken.toUtf8());
 
     QUrl url1 = QUrl(QStringLiteral("https://www.jacktrip.com"));
+    QUrl url2 = QUrl(QStringLiteral("https://app.jacktrip.com"));
+    QUrl url3 = QUrl(QStringLiteral("http://localhost:3000"));
     if (testMode()) {
         url1 = QUrl(QStringLiteral("https://next-test.jacktrip.com"));
-    }
-    QUrl url2 = QUrl(QStringLiteral("https://app.jacktrip.com"));
-    if (testMode()) {
         url2 = QUrl(QStringLiteral("https://test.jacktrip.com"));
     }
 
     cookieStore->setCookie(authCookie, url1);
     cookieStore->setCookie(authCookie, url2);
+    if (testMode()) {
+        cookieStore->setCookie(authCookie, url3);
+    }
 
     // Get refresh token and userId
     m_refreshToken = m_auth->refreshToken();
