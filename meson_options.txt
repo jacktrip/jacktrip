@@ -13,3 +13,7 @@ option('profile', type: 'combo', choices: ['default', 'development'], value: 'de
 option('qtversion', type : 'combo', choices: ['', '5', '6'], description: 'Choose to build with either Qt5 or Qt6')
 option('qtedition', type : 'combo', choices: ['opensource', 'commercial'], description: 'Choose license edition for Qt')
 option('buildinfo', type : 'string', value : '', yield : true, description: 'Additional info used to describe the build')
+option('vst-libdir', type : 'string', value : '', yield : true,
+  description : 'Directory with VST SDK3 libraries (e.g. libsdk.a, libbase.a)')
+option('vst-sdkdir', type : 'string', value : '', yield : true,
+  description : 'Directory with VST SDK3 headers (e.g. public.sdk/source/vst/hosting/module.h)')
