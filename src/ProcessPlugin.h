@@ -39,7 +39,6 @@
 #define __PROCESSPLUGIN_H__
 
 #include <QObject>
-#include <QThread>
 
 /** \brief Interface for the process plugins to add to the JACK callback process in
  * JackAudioInterface
@@ -56,13 +55,21 @@ class ProcessPlugin : public QObject
    public:
     /// \brief The Class Constructor
     ProcessPlugin(){};
+
     /// \brief The Class Destructor
     virtual ~ProcessPlugin(){};
 
     /// \brief Return Number of Input Channels
     virtual int getNumInputs() = 0;
+
     /// \brief Return Number of Output Channels
     virtual int getNumOutputs() = 0;
+
+    /// \brief Return local audio sample rate
+    int getSampleRate() { return mSampleRate; }
+
+    /// \brief Return local audio buffer size
+    int getBufferSize() { return mBufferSize; }
 
     // virtual void buildUserInterface(UI* interface) = 0;
 
@@ -83,7 +90,7 @@ class ProcessPlugin : public QObject
             bufferSize = 128;
             printf("%s: *** HAD TO GUESS the buffer size (chose 128) ***\n", getName());
         }
-        fSamplingFreq = samplingRate;
+        mSampleRate = samplingRate;
         mBufferSize   = bufferSize;
         if (verbose) {
             printf("%s: init(%d, %d)\n", getName(), samplingRate, bufferSize);
@@ -109,8 +116,8 @@ class ProcessPlugin : public QObject
     virtual void updateNumChannels(int /*nChansIn*/, int /*nChansOut*/) { return; };
 
    protected:
-    int fSamplingFreq;  //< Faust Data member, Sampling Rate
-    int mBufferSize;    //< expected number of samples per compute callbacks
+    int mSampleRate;  //< local audio sampling rate
+    int mBufferSize;  //< expected number of samples per compute callbacks
     bool inited                  = false;
     bool verbose                 = false;
     bool outgoingPluginToNetwork = false;  //< Tells the plugin if it processes audio

@@ -55,6 +55,7 @@ endif
 src = [	'src/DataProtocol.cpp',
 	'src/JackTrip.cpp',
 	'src/ProcessPlugin.cpp',
+	'src/AudioSocket.cpp',
 	'src/AudioTester.cpp',
 	'src/jacktrip_globals.cpp',
 	'src/JackTripWorker.cpp',
@@ -84,6 +85,7 @@ src = [	'src/DataProtocol.cpp',
 moc_h = ['src/DataProtocol.h',
 	'src/JackTrip.h',
 	'src/ProcessPlugin.h',
+	'src/AudioSocket.h',
 	'src/Meter.h',
 	'src/Monitor.h',
 	'src/StereoToMono.h',
@@ -142,11 +144,13 @@ else
 	endif
 endif
 
+qt_core_deps = []
 if qt_version == '5'
-	deps += dependency('qt5', modules: ['Core', 'Network'], include_type: 'system')
+	qt_core_deps = dependency('qt5', modules: ['Core', 'Network'], include_type: 'system')
 else
-	deps += dependency('qt6', modules: ['Core', 'Network'], include_type: 'system')
+	qt_core_deps = dependency('qt6', modules: ['Core', 'Network'], include_type: 'system')
 endif
+deps += qt_core_deps
 
 if get_option('nogui') == true or (get_option('noclassic') == true and get_option('novs') == true)
 	# command line only
@@ -372,12 +376,12 @@ version = compiler.run(
 vst_sdkdir = get_option('vst-sdkdir')
 if vst_sdkdir != ''
 	# adapted from https://github.com/centricular/gstreamer-vst3
-	message('Looking for VST3 SDK in directory ' + vst_sdkdir)
-	if not compiler.has_header('pluginterfaces/vst/ivstaudioprocessor.h', args : '-I@0@'.format(vst_sdkdir))
-		error('Cannot find VST3 SDK plug interfaces')
-	endif
 	vst_includedir = '@0@/public.sdk/source'.format(vst_sdkdir)
 	vst_pluginterfaces_includedir = '@0@'.format(vst_sdkdir)
+	vst_incdirs = []
+	vst_incdirs += include_directories('@0@'.format(vst_includedir))
+	vst_incdirs += include_directories('@0@'.format(vst_pluginterfaces_includedir))
+	vst_incdirs += include_directories('@0@/vstgui4'.format(vst_pluginterfaces_includedir))
 
 	vst_libdir = get_option('vst-libdir')
 	if vst_libdir == ''
@@ -390,29 +394,99 @@ if vst_sdkdir != ''
 	libvstgui_support_dep = compiler.find_library('vstgui_support', required : true, dirs : [vst_libdir])
 	libvstgui_uidescription_dep = compiler.find_library('vstgui_uidescription', required : true, dirs : [vst_libdir])
 	libpluginterfaces_dep = compiler.find_library('pluginterfaces', required : true, dirs : [vst_libdir])
+	vst_deps = [libbase_dep, libsdk_dep, libsdk_common_dep, libvstgui_dep, libvstgui_uidescription_dep, libvstgui_support_dep, libpluginterfaces_dep]
+	vst_deps += qt_core_deps
+
+	vst_link_args = []
+	qmake = find_program('qmake', required: true)
+	qt_libdir = run_command(qmake, '-query', 'QT_INSTALL_LIBS', check : true).stdout().strip()
+	qt_incdir = run_command(qmake, '-query', 'QT_INSTALL_HEADERS', check : true).stdout().strip()
 
 	if (host_machine.system() == 'linux')
 		vst_entry = '@0@/main/linuxmain.cpp'.format(vst_includedir)
 	elif (host_machine.system() == 'darwin')
 		vst_entry = '@0@/main/macmain.cpp'.format(vst_includedir)
+		vst_link_args += ['-framework', 'CoreServices']
+		vst_link_args += ['-framework', 'CFNetwork']
+		vst_link_args += ['-framework', 'AppKit']
+		vst_link_args += ['-framework', 'IOKit']
+		vst_link_args += ['-framework', 'Security']
+		vst_link_args += ['-framework', 'GSS']
+		vst_link_args += ['-framework', 'SystemConfiguration']
+		vst_deps += dependency('zlib', required : true)
+		if (qt_version == '5')
+			vst_link_args += '@0@/libQt5Core.a'.format(qt_libdir)
+			vst_link_args += '@0@/libQt5Network.a'.format(qt_libdir)
+			#vst_link_args += '-lqtpcre2'
+			#vst_link_args += '-lm'
+			#vst_link_args += '-lexpat'
+		else
+			vst_link_args += '@0@/libQt6Core.a'.format(qt_libdir)
+			vst_link_args += '@0@/libQt6Network.a'.format(qt_libdir)
+			vst_link_args += '@0@/libQt6BundledPcre2.a'.format(qt_libdir)
+			#vst_link_args += '-lm'
+			#vst_link_args += '-lexpat'
+		endif
 	elif (host_machine.system() == 'windows')
 		vst_entry = '@0@/main/dllmain.cpp'.format(vst_includedir)
+		vst_deps += compiler.find_library('bcrypt', required : true)
+		vst_deps += compiler.find_library('winmm', required : true)
+		vst_deps += compiler.find_library('Crypt32', required : true)
+		vst_deps += compiler.find_library('ws2_32', required: true)
+		vst_link_args += 'userenv.lib'
+		vst_link_args += 'Synchronization.lib'
+		vst_link_args += 'Netapi32.lib'
+		vst_link_args += 'Version.lib'
+		vst_link_args += 'Dwrite.lib'
+		vst_link_args += 'Iphlpapi.lib'
+		vst_link_args += 'Secur32.lib'
+		vst_link_args += 'Winhttp.lib'
+		vst_link_args += 'Dnsapi.lib'
+		vst_link_args += 'Iphlpapi.lib'
+		if (qt_version == '5')
+			vst_link_args += '@0@/Qt5Core.lib'.format(qt_libdir)
+			vst_link_args += '@0@/Qt5Network.lib'.format(qt_libdir)
+		else
+			vst_link_args += '@0@/Qt6Core.lib'.format(qt_libdir)
+			vst_link_args += '@0@/Qt6Network.lib'.format(qt_libdir)
+			vst_link_args += '@0@/Qt6BundledPcre2.lib'.format(qt_libdir)
+			vst_link_args += '@0@/Qt6BundledZLIB.lib'.format(qt_libdir)
+			vst_deps += compiler.find_library('Authz', required : true)
+		endif
 	else
 		error('Unsupported platform: ' + host_machine.system())
 	endif
 
-	vst3 = shared_library('JackTrip',
-		['src/vst3/JackTripVSTController.cpp', 'src/vst3/JackTripVSTEntry.cpp', 'src/vst3/JackTripVSTProcessor.cpp'] + vst_entry,
+	vst_sources = ['src/vst3/JackTripVSTController.cpp', 'src/vst3/JackTripVSTEntry.cpp', 'src/vst3/JackTripVSTProcessor.cpp'] + vst_entry
+
+	audio_socket_moc_h = ['src/AudioSocket.h', 'src/SocketClient.h', 'src/ProcessPlugin.h']
+	audio_socket_sources = qt.compile_moc(headers: audio_socket_moc_h, extra_args: defines)
+	audio_socket_sources += [
+		'src/AudioSocket.cpp',
+		'src/SocketClient.cpp',
+		'src/ProcessPlugin.cpp',
+		'src/jacktrip_globals.cpp'
+	]
+	audio_socket_test = executable('audio_socket_tests',
+		['tests/audio_socket_test.cpp'] + audio_socket_sources,
+		cpp_args : defines,
+		dependencies : vst_deps,
+		include_directories: vst_incdirs + include_directories('src/'),
+		link_args: vst_link_args
+	)
+
+	vst3 = shared_module('JackTrip',
+		vst_sources, audio_socket_sources,
+		name_prefix: '',
 		name_suffix: 'vst3',
 		cpp_args : [ defines,
-					'-I@0@'.format(vst_includedir),
-					'-I@0@'.format(vst_pluginterfaces_includedir),
-					'-I@0@/vstgui4'.format(vst_pluginterfaces_includedir),
 					'-DPACKAGE="jacktrip-vst3"',
 					'-DGST_PACKAGE_NAME="jacktrip-vst3"',
 					'-DGST_PACKAGE_ORIGIN="https://github.com/jacktrip/jacktrip"',
 					'-DFULL_VERSION_STR="@0@"'.format(version)],
-		dependencies : [libbase_dep, libsdk_dep, libsdk_common_dep, libvstgui_dep, libvstgui_uidescription_dep, libvstgui_support_dep, libpluginterfaces_dep]
+		dependencies : vst_deps,
+		include_directories: vst_incdirs,
+		link_args: vst_link_args
 	)
 endif
 

@@ -32,7 +32,8 @@
 // https://github.com/steinbergmedia/vst3_example_plugin_hello_world
 
 #include "JackTripVSTProcessor.h"
-#include "JackTripVSTCids.h"
+#include "JackTripVST.h"
+#include "../AudioSocket.h"
 
 #include "base/source/fstreamer.h"
 #include "pluginterfaces/vst/ivstparameterchanges.h"
@@ -70,8 +71,18 @@ tresult PLUGIN_API JackTripVSTProcessor::initialize (FUnknown* context)
 	addAudioInput (STR16 ("Stereo In"), Steinberg::Vst::SpeakerArr::kStereo);
 	addAudioOutput (STR16 ("Stereo Out"), Steinberg::Vst::SpeakerArr::kStereo);
 
-	/* If you don't need an event bus, you can remove the next line */
-	addEventInput (STR16 ("Event In"), 1);
+    int argc = 0;
+    mAppPtr.reset(new QCoreApplication(argc, nullptr));
+    mAppPtr->setAttribute(Qt::AA_NativeWindows);
+    //mAppThreadPtr.reset(new QtAppThread());
+    //mAppThreadPtr->start();
+
+    mInputBuffer = new float*[AudioSocketNumChannels];
+    mOutputBuffer = new float*[AudioSocketNumChannels];
+    for (int i = 0; i < AudioSocketNumChannels; i++) {
+        mInputBuffer[i] = new float[AudioSocketMaxSamplesPerBlock];
+        mOutputBuffer[i] = new float[AudioSocketMaxSamplesPerBlock];
+    }
 
 	return kResultOk;
 }
@@ -79,8 +90,23 @@ tresult PLUGIN_API JackTripVSTProcessor::initialize (FUnknown* context)
 //------------------------------------------------------------------------
 tresult PLUGIN_API JackTripVSTProcessor::terminate ()
 {
-	// Here the Plug-in will be de-instantiated, last possibility to remove some memory!
-	
+	if (!mAppPtr.isNull()) {
+        mAppPtr->exit();
+        if (!mAppThreadPtr.isNull()) {
+            mAppThreadPtr->quit();
+            mAppThreadPtr->wait();
+            mAppThreadPtr.reset();
+        }
+        mAppPtr.reset();
+    }
+
+    for (int i = 0; i < AudioSocketNumChannels; i++) {
+        delete[] mInputBuffer[i];
+        delete[] mOutputBuffer[i];
+    }
+    delete[] mInputBuffer;
+    delete[] mOutputBuffer;
+
 	//---do not forget to call parent ------
 	return AudioEffect::terminate ();
 }
@@ -88,6 +114,14 @@ tresult PLUGIN_API JackTripVSTProcessor::terminate ()
 //------------------------------------------------------------------------
 tresult PLUGIN_API JackTripVSTProcessor::setActive (TBool state)
 {
+    /*
+    if (state) {
+        mSocketPtr.reset(new AudioSocket());
+    } else {
+        mSocketPtr.reset();
+    }
+    */
+
 	//--- called when the Plug-in is enable/disable (On/Off) -----
 	return AudioEffect::setActive (state);
 }
@@ -143,14 +177,48 @@ tresult PLUGIN_API JackTripVSTProcessor::process (Vst::ProcessData& data)
         // Process Algorithm
         // Ex: algo.process (data.inputs[0].channelBuffers32, data.outputs[0].channelBuffers32,
         // data.numSamples);
-    }
-    return kResultOk;
 
+        // clear buffers
+        for (int i = 0; i < AudioSocketNumChannels; i++) {
+            memset(mInputBuffer[i], 0, AudioSocketMaxSamplesPerBlock * sizeof(float));
+            memset(mOutputBuffer[i], 0, AudioSocketMaxSamplesPerBlock * sizeof(float));
+        }
+
+        // copy input to buffer
+        int channelsIn = std::min(data.inputs[0].numChannels, AudioSocketNumChannels);
+        for (int i = 0; i < channelsIn; i++) {
+            float* inBuffer = data.inputs[0].channelBuffers32[i];
+            for (int j = 0; j < data.numSamples; j++) {
+                mInputBuffer[i][j] = inBuffer[j];
+            }
+        }
+
+        // send to socket
+        mSocketPtr->compute(data.numSamples, mInputBuffer, mOutputBuffer);
+
+        // copy buffer to output
+        int channelsOut = std::min(data.outputs[0].numChannels, AudioSocketNumChannels);
+        for (int i = 0; i < channelsOut; i++) {
+            float* outBuffer = data.outputs[0].channelBuffers32[i];
+            for (int j = 0; j < data.numSamples; j++) {
+                mOutputBuffer[i][j] = outBuffer[j];
+            }
+        }
+    }
+
+    return kResultOk;
 }
 
 //------------------------------------------------------------------------
 tresult PLUGIN_API JackTripVSTProcessor::setupProcessing (Vst::ProcessSetup& newSetup)
 {
+    if (mSocketPtr.isNull()) {
+        mSocketPtr.reset(new AudioSocket());
+    }
+    mSocketPtr->connect(newSetup.sampleRate, newSetup.maxSamplesPerBlock);
+
+    // TODO: error handling, reconnecting, etc
+
 	//--- called before any processing ----
 	return AudioEffect::setupProcessing (newSetup);
 }

@@ -33,8 +33,7 @@
 
 #include "JackTripVSTProcessor.h"
 #include "JackTripVSTController.h"
-#include "JackTripVSTCids.h"
-#include "version.h"
+#include "JackTripVST.h"
 
 #include "public.sdk/source/main/pluginfactory.h"
 

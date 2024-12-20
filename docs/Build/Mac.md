@@ -112,3 +112,20 @@ If you see something like this, you have successfully installed Jacktrip:
 >     Copyright (c) 2008-2020 Juan-Pablo Caceres, Chris Chafe.
 >     SoundWIRE group at CCRMA, Stanford University
 
+## Building VST3 SDK for Mac
+
+```
+git clone https://github.com/steinbergmedia/vst3sdk
+mkdir vst3sdk/build
+cd vst3sdk/build
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" ../
+cmake --build . --config Release
+mkdir -p /opt/vst3sdk
+cp -r lib/Release /opt/vst3sdk/lib
+cp -r ../base ../pluginterfaces ../public.sdk ../vstgui4 /opt/vst3sdk
+```
+
+When you run `meson setup` use `-Dvst-sdkdir=/path/to/vst3sdk -Dvst-libdir=/path/to/vst3sdk/lib`
+
+Please note that redistribution of JackTrip's VST3 plugin requires a
+[license from Steinberg](https://www.steinberg.net/developers/).

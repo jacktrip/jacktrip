@@ -57,8 +57,8 @@ bool SocketServer::start()
         m_serverStarted = false;
     } else {
         // confirmed that no other jacktrip instance is running
-        qDebug() << "Listening for deep link requests";
-        m_instanceServer.reset(new QLocalServer(this));
+        qDebug() << "Listening for local socket connections";
+        m_instanceServer.reset(new QLocalServer());
         m_instanceServer->setSocketOptions(QLocalServer::WorldAccessOption);
         QObject::connect(m_instanceServer.data(), &QLocalServer::newConnection, this,
                          &SocketServer::handlePendingConnections, Qt::QueuedConnection);
@@ -107,11 +107,15 @@ void SocketServer::handlePendingConnections()
         QString handlerName(header);
         handlerName.replace("JackTrip/1.0 ", "");
         handlerName.replace("\n", "");
-        handleConnection(handlerName, *connectedSocket);
+
+        qDebug() << "Socket server: received connection for" << handlerName;
+        connectedSocket->setParent(nullptr);
+        QSharedPointer<QLocalSocket> sharedSocket(connectedSocket);
+        handleConnection(handlerName, sharedSocket);
     }
 }
 
-void SocketServer::handleConnection(const QString& name, QLocalSocket& socket)
+void SocketServer::handleConnection(const QString& name, QSharedPointer<QLocalSocket>& socket)
 {
     auto it = m_handlers.find(name);
     if (it == m_handlers.end()) {

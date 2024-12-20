@@ -234,9 +234,6 @@ VirtualStudio::VirtualStudio(UserInterface& parent)
     connect(m_view.get(), &VsQuickView::windowClose, this, &VirtualStudio::exit,
             Qt::QueuedConnection);
 
-    // initialize default QtWebEngineProfile
-    m_qwebEngineProfile = QWebEngineProfile::defaultProfile();
-
     // Log to file
     QString logPath(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
     QDir logDir;
@@ -259,11 +256,21 @@ VirtualStudio::VirtualStudio(UserInterface& parent)
         SocketClient c;
         if (c.connect()) {
             // existing instance found; send deeplink to it and exit
-            c.sendHeader("deeplink");
+            if (!c.sendHeader("deeplink")) {
+                c.close();
+                std::cerr << "Failed to send deeplink header" << std::endl;
+                std::exit(1);
+            }
             QLocalSocket& s          = c.getSocket();
             QByteArray deepLinkBytes = deepLinkStr.toLocal8Bit();
-            s.write(deepLinkBytes);
+            qint64 bytesWritten = s.write(deepLinkBytes);
             s.flush();
+            s.waitForBytesWritten(1000);
+            if (bytesWritten != deepLinkBytes.size()) {
+                std::cerr << "Failed to send deeplink" << std::endl;
+                std::exit(1);
+            }
+            std::cout << "sent deeplink: " << deepLinkStr.toStdString() << std::endl;
             std::exit(0);
         }
     }
@@ -279,10 +286,16 @@ VirtualStudio::VirtualStudio(UserInterface& parent)
 
     // prepare handler for local socket connections
     m_socketServerPtr.reset(new SocketServer());
-    m_socketServerPtr->addHandler("deeplink", [=](QLocalSocket& socket) {
+    m_socketServerPtr->addHandler("deeplink", [=](QSharedPointer<QLocalSocket>& socket) {
         m_deepLinkPtr->handleVsDeeplinkRequest(socket);
     });
+    m_socketServerPtr->addHandler("audio", [=](QSharedPointer<QLocalSocket>& socket) {
+        m_audioConfigPtr->handleAudioSocketRequest(socket);
+    });
     m_socketServerPtr->start();
+
+    // initialize default QtWebEngineProfile
+    m_qwebEngineProfile = QWebEngineProfile::defaultProfile();
 }
 
 void VirtualStudio::show()

@@ -106,7 +106,7 @@ Reverb::~Reverb()
 void Reverb::init(int samplingRate, int bufferSize)
 {
     ProcessPlugin::init(samplingRate, bufferSize);
-    fs = float(fSamplingFreq);
+    fs = float(mSampleRate);
     if (mReverbLevel <= 1.0) {  // freeverb:
         static_cast<freeverbdsp*>(freeverbStereoP)
             ->init(fs);  // compression filter parameters depend on sampling rate

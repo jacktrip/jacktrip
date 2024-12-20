@@ -33,7 +33,24 @@
 
 #pragma once
 
+#include <QCoreApplication>
+#include <QScopedPointer>
+#include <QThread>
+
 #include "public.sdk/source/vst/vstaudioeffect.h"
+
+class AudioSocket;
+
+// QtAppThread class is used to run the main event loop for Qt
+class QtAppThread : public QThread
+{
+public:
+    QtAppThread() {}
+    virtual ~QtAppThread() {}
+    void run() override {
+		QCoreApplication::exec();
+    }
+};
 
 namespace Steinberg {
 
@@ -82,6 +99,14 @@ protected:
 	Vst::ParamValue mParam1 = 0;
 	int16 mParam2 = 0;
 	bool mBypass = false;
+
+private:
+	//QScopedPointer<QtEventsThread> mEventsThreadPtr;
+	QScopedPointer<QCoreApplication> mAppPtr;
+	QScopedPointer<QtAppThread> mAppThreadPtr;
+	QScopedPointer<AudioSocket> mSocketPtr;
+	float **mInputBuffer;
+	float **mOutputBuffer;
 };
 
 //------------------------------------------------------------------------

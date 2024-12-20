@@ -32,7 +32,7 @@
 // https://github.com/steinbergmedia/vst3_example_plugin_hello_world
 
 #include "JackTripVSTController.h"
-#include "JackTripVSTCids.h"
+#include "JackTripVST.h"
 
 #include "vstgui/plugin-bindings/vst3editor.h"
 #include "base/source/fstreamer.h"
