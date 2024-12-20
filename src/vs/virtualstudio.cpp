@@ -282,6 +282,9 @@ VirtualStudio::VirtualStudio(UserInterface& parent)
     m_socketServerPtr->addHandler("deeplink", [=](QLocalSocket& socket) {
         m_deepLinkPtr->handleVsDeeplinkRequest(socket);
     });
+    m_socketServerPtr->addHandler("audio", [=](QLocalSocket& socket) {
+        m_audioConfigPtr->handleAudioSocketRequest(socket);
+    });
     m_socketServerPtr->start();
 }
 

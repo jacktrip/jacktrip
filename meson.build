@@ -55,6 +55,7 @@ endif
 src = [	'src/DataProtocol.cpp',
 	'src/JackTrip.cpp',
 	'src/ProcessPlugin.cpp',
+	'src/AudioSocket.cpp',
 	'src/AudioTester.cpp',
 	'src/jacktrip_globals.cpp',
 	'src/JackTripWorker.cpp',
@@ -84,6 +85,7 @@ src = [	'src/DataProtocol.cpp',
 moc_h = ['src/DataProtocol.h',
 	'src/JackTrip.h',
 	'src/ProcessPlugin.h',
+	'src/AudioSocket.h',
 	'src/Meter.h',
 	'src/Monitor.h',
 	'src/StereoToMono.h',
@@ -372,10 +374,6 @@ version = compiler.run(
 vst_sdkdir = get_option('vst-sdkdir')
 if vst_sdkdir != ''
 	# adapted from https://github.com/centricular/gstreamer-vst3
-	message('Looking for VST3 SDK in directory ' + vst_sdkdir)
-	if not compiler.has_header('pluginterfaces/vst/ivstaudioprocessor.h', args : '-I@0@'.format(vst_sdkdir))
-		error('Cannot find VST3 SDK plug interfaces')
-	endif
 	vst_includedir = '@0@/public.sdk/source'.format(vst_sdkdir)
 	vst_pluginterfaces_includedir = '@0@'.format(vst_sdkdir)
 
@@ -390,19 +388,31 @@ if vst_sdkdir != ''
 	libvstgui_support_dep = compiler.find_library('vstgui_support', required : true, dirs : [vst_libdir])
 	libvstgui_uidescription_dep = compiler.find_library('vstgui_uidescription', required : true, dirs : [vst_libdir])
 	libpluginterfaces_dep = compiler.find_library('pluginterfaces', required : true, dirs : [vst_libdir])
+	vst_deps = [libbase_dep, libsdk_dep, libsdk_common_dep, libvstgui_dep, libvstgui_uidescription_dep, libvstgui_support_dep, libpluginterfaces_dep]
 
+	vst_link_args = []
 	if (host_machine.system() == 'linux')
 		vst_entry = '@0@/main/linuxmain.cpp'.format(vst_includedir)
 	elif (host_machine.system() == 'darwin')
 		vst_entry = '@0@/main/macmain.cpp'.format(vst_includedir)
+		vst_link_args += ['-framework', 'CoreGraphics']
+		vst_link_args += ['-framework', 'ImageIO']
+		vst_link_args += ['-framework', 'OpenGL']
+		vst_link_args += ['-framework', 'CoreText']
+		vst_link_args += ['-framework', 'ColorSync']
+		vst_link_args += ['-framework', 'AppKit']
+		vst_link_args += ['-framework', 'QuartzCore']
+		vst_link_args += ['-framework', 'Accelerate']
+		vst_link_args += '-lexpat'
 	elif (host_machine.system() == 'windows')
 		vst_entry = '@0@/main/dllmain.cpp'.format(vst_includedir)
 	else
 		error('Unsupported platform: ' + host_machine.system())
 	endif
 
-	vst3 = shared_library('JackTrip',
+	vst3 = shared_module('JackTrip',
 		['src/vst3/JackTripVSTController.cpp', 'src/vst3/JackTripVSTEntry.cpp', 'src/vst3/JackTripVSTProcessor.cpp'] + vst_entry,
+		name_prefix: '',
 		name_suffix: 'vst3',
 		cpp_args : [ defines,
 					'-I@0@'.format(vst_includedir),
@@ -412,7 +422,8 @@ if vst_sdkdir != ''
 					'-DGST_PACKAGE_NAME="jacktrip-vst3"',
 					'-DGST_PACKAGE_ORIGIN="https://github.com/jacktrip/jacktrip"',
 					'-DFULL_VERSION_STR="@0@"'.format(version)],
-		dependencies : [libbase_dep, libsdk_dep, libsdk_common_dep, libvstgui_dep, libvstgui_uidescription_dep, libvstgui_support_dep, libpluginterfaces_dep]
+		dependencies : vst_deps,
+		link_args: vst_link_args
 	)
 endif
 

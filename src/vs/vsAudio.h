@@ -54,9 +54,11 @@
 #endif
 
 class Analyzer;
+class AudioSocket;
 class JackTrip;
 class Meter;
 class Monitor;
+class QLocalSocket;
 class QThread;
 class Tone;
 class Volume;
@@ -205,6 +207,10 @@ class VsAudio : public QObject
     const QString& getDevicesWarningHelpUrl() const { return m_devicesWarningHelpUrl; }
     const QString& getDevicesErrorHelpUrl() const { return m_devicesErrorHelpUrl; }
     bool getHighLatencyFlag() const { return m_highLatencyFlag; }
+
+    // called by local socket server to process audio requests
+    void handleAudioSocketRequest(QLocalSocket& socket);
+
    public slots:
 
     // setters for state shared with QML
@@ -351,6 +357,7 @@ class VsAudio : public QObject
     // other state not shared with QML
     QSharedPointer<VsPermissions> m_permissionsPtr;
     QScopedPointer<VsAudioWorker> m_audioWorkerPtr;
+    QVector<QSharedPointer<AudioSocket>> m_audioSockets;
     QThread* m_workerThreadPtr;
     QTimer m_inputClipTimer;
     QTimer m_outputClipTimer;

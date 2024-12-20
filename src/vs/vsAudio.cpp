@@ -60,6 +60,7 @@
 #include "../Analyzer.h"
 #endif
 
+#include "../AudioSocket.h"
 #include "../JackTrip.h"
 #include "../Meter.h"
 #include "../Monitor.h"
@@ -679,6 +680,9 @@ void VsAudio::appendProcessPlugins(AudioInterface& audioInterface, bool forJackT
 
     // Note that plugin ownership is passed to the JackTrip class
     // In particular, the AudioInterface that it uses to connect
+    for (QVector<QSharedPointer<AudioSocket>>::iterator i=m_audioSockets.begin(); i != m_audioSockets.end(); ++i) {
+        audioInterface.appendProcessPluginToNetwork((*i)->getFromAudioSocketPlugin());
+    }
     audioInterface.appendProcessPluginToNetwork(m_inputVolumePluginPtr);
     audioInterface.appendProcessPluginToNetwork(m_inputMeterPluginPtr);
 
@@ -721,6 +725,16 @@ void VsAudio::appendProcessPlugins(AudioInterface& audioInterface, bool forJackT
         audioInterface.appendProcessPluginFromNetwork(m_outputVolumePluginPtr);
         audioInterface.appendProcessPluginFromNetwork(m_outputMeterPluginPtr);
     }
+
+    for (QVector<QSharedPointer<AudioSocket>>::iterator i=m_audioSockets.begin(); i != m_audioSockets.end(); ++i) {
+        audioInterface.appendProcessPluginFromNetwork((*i)->getToAudioSocketPlugin());
+    }
+}
+
+void VsAudio::handleAudioSocketRequest(QLocalSocket& s)
+{
+    QSharedPointer<AudioSocket> sPtr(new AudioSocket(&s));
+    m_audioSockets.push_back(sPtr);
 }
 
 void VsAudio::setDeviceModels(QJsonArray inputComboModel, QJsonArray outputComboModel)
