@@ -33,7 +33,10 @@
 
 #pragma once
 
+#include <QByteArray>
+
 #include "public.sdk/source/vst/vstaudioeffect.h"
+//#include "../SocketClient.h"
 
 namespace Steinberg {
 
@@ -82,6 +85,10 @@ protected:
 	Vst::ParamValue mParam1 = 0;
 	int16 mParam2 = 0;
 	bool mBypass = false;
+
+private:
+	//SocketClient mSocketClient;
+    QByteArray mSendBuffer;
 };
 
 //------------------------------------------------------------------------

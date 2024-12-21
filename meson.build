@@ -389,6 +389,7 @@ if vst_sdkdir != ''
 	libvstgui_uidescription_dep = compiler.find_library('vstgui_uidescription', required : true, dirs : [vst_libdir])
 	libpluginterfaces_dep = compiler.find_library('pluginterfaces', required : true, dirs : [vst_libdir])
 	vst_deps = [libbase_dep, libsdk_dep, libsdk_common_dep, libvstgui_dep, libvstgui_uidescription_dep, libvstgui_support_dep, libpluginterfaces_dep]
+	vst_deps += dependency('qt6', modules: ['Core'], required: true)
 
 	vst_link_args = []
 	if (host_machine.system() == 'linux')
@@ -409,6 +410,9 @@ if vst_sdkdir != ''
 	else
 		error('Unsupported platform: ' + host_machine.system())
 	endif
+	vst_sources = ['src/vst3/JackTripVSTController.cpp', 'src/vst3/JackTripVSTEntry.cpp', 'src/vst3/JackTripVSTProcessor.cpp'] + vst_entry
+	#vst_sources += ['src/SocketClient.cpp']
+	#vst_sources += qt.compile_moc(headers: ['src/SocketClient.h'], extra_args: defines)
 
 	vst3 = shared_module('JackTrip',
 		['src/vst3/JackTripVSTController.cpp', 'src/vst3/JackTripVSTEntry.cpp', 'src/vst3/JackTripVSTProcessor.cpp'] + vst_entry,

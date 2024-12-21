@@ -32,7 +32,7 @@
 // https://github.com/steinbergmedia/vst3_example_plugin_hello_world
 
 #include "JackTripVSTProcessor.h"
-#include "JackTripVSTCids.h"
+#include "JackTripVST.h"
 
 #include "base/source/fstreamer.h"
 #include "pluginterfaces/vst/ivstparameterchanges.h"
@@ -70,17 +70,20 @@ tresult PLUGIN_API JackTripVSTProcessor::initialize (FUnknown* context)
 	addAudioInput (STR16 ("Stereo In"), Steinberg::Vst::SpeakerArr::kStereo);
 	addAudioOutput (STR16 ("Stereo Out"), Steinberg::Vst::SpeakerArr::kStereo);
 
-	/* If you don't need an event bus, you can remove the next line */
-	addEventInput (STR16 ("Event In"), 1);
-
+/*
+    if (mSocketClient.connect()) {
+        // TODO: error handling, reconnecting, etc
+        mSocketClient.sendHeader("audio");
+    }
+*/
 	return kResultOk;
 }
 
 //------------------------------------------------------------------------
 tresult PLUGIN_API JackTripVSTProcessor::terminate ()
 {
-	// Here the Plug-in will be de-instantiated, last possibility to remove some memory!
-	
+	//mSocketClient.close();
+
 	//---do not forget to call parent ------
 	return AudioEffect::terminate ();
 }

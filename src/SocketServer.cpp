@@ -57,7 +57,7 @@ bool SocketServer::start()
         m_serverStarted = false;
     } else {
         // confirmed that no other jacktrip instance is running
-        qDebug() << "Listening for deep link requests";
+        qDebug() << "Listening for local socket connections";
         m_instanceServer.reset(new QLocalServer(this));
         m_instanceServer->setSocketOptions(QLocalServer::WorldAccessOption);
         QObject::connect(m_instanceServer.data(), &QLocalServer::newConnection, this,
@@ -91,6 +91,8 @@ void SocketServer::handlePendingConnections()
             qDebug() << "Socket server: ready but no bytes available";
             continue;
         }
+
+        qDebug() << "Socket server: received connection";
 
         // first line should be in the format "JackTrip/1.0 HandlerName"
         // where HandlerName indicates which handler should be used

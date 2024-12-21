@@ -33,14 +33,30 @@
 
 #pragma once
 
-#include "pluginterfaces/base/fplatform.h"
+#include "pluginterfaces/base/funknown.h"
+#include "pluginterfaces/vst/vsttypes.h"
 
+#define JackTripVSTVST3Category "Fx"
 #define stringOriginalFilename	"JackTrip.vst3"
-#if SMTG_PLATFORM_64
-#define stringFileDescription	"JackTrip VST3 (64Bit)"
-#else
 #define stringFileDescription	"JackTrip VST3"
-#endif
 #define stringCompanyName		"JackTrip Labs\0"
 #define stringLegalCopyright	"Copyright(c) 2024 JackTrip Labs, Inc."
 #define stringLegalTrademarks	"VST is a trademark of Steinberg Media Technologies GmbH"
+
+namespace Steinberg {
+
+//------------------------------------------------------------------------
+enum JackTripVSTParams : Vst::ParamID
+{
+	kBypassId = 100,
+
+	kParamVolId = 102,
+	kParamOnId = 1000
+};
+
+//------------------------------------------------------------------------
+static const Steinberg::FUID kJackTripVSTProcessorUID (0x176F9AF4, 0xA56041A1, 0x890DD021, 0x765ABCF0);
+static const Steinberg::FUID kJackTripVSTControllerUID (0x075C3106, 0xBC524686, 0xB63544CC, 0xF88423FF);
+
+//------------------------------------------------------------------------
+} // namespace Steinberg
