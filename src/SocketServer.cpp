@@ -58,7 +58,7 @@ bool SocketServer::start()
     } else {
         // confirmed that no other jacktrip instance is running
         qDebug() << "Listening for local socket connections";
-        m_instanceServer.reset(new QLocalServer(this));
+        m_instanceServer.reset(new QLocalServer());
         m_instanceServer->setSocketOptions(QLocalServer::WorldAccessOption);
         QObject::connect(m_instanceServer.data(), &QLocalServer::newConnection, this,
                          &SocketServer::handlePendingConnections, Qt::QueuedConnection);
@@ -92,8 +92,6 @@ void SocketServer::handlePendingConnections()
             continue;
         }
 
-        qDebug() << "Socket server: received connection";
-
         // first line should be in the format "JackTrip/1.0 HandlerName"
         // where HandlerName indicates which handler should be used
         QByteArray in(connectedSocket->readLine());
@@ -109,6 +107,9 @@ void SocketServer::handlePendingConnections()
         QString handlerName(header);
         handlerName.replace("JackTrip/1.0 ", "");
         handlerName.replace("\n", "");
+
+        qDebug() << "Socket server: received connection for" << handlerName;
+
         handleConnection(handlerName, *connectedSocket);
     }
 }

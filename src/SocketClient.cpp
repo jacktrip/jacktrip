@@ -37,14 +37,20 @@
 #include "SocketClient.h"
 
 #include <QDebug>
-#include <QEventLoop>
-#include <QTimer>
 
-SocketClient::SocketClient() : m_socket(new QLocalSocket(this)) {}
+SocketClient::SocketClient() :
+    m_socket(new QLocalSocket(this)), m_owns_socket(true)
+{
+}
+
+SocketClient::SocketClient(QSharedPointer<QLocalSocket>& s) :
+    m_socket(s), m_owns_socket(false)
+{
+}
 
 SocketClient::~SocketClient()
 {
-    if (m_established) {
+    if (m_established && m_owns_socket) {
         m_socket->close();
     }
 }
@@ -67,19 +73,7 @@ bool SocketClient::connect()
 #endif
     QObject::connect(m_socket.data(), errorFunc, this, &SocketClient::connectionFailed);
     m_socket->connectToServer(JACKTRIP_SOCKET_NAME);
-
-    // wait for the connection attempt to finish
-    while (!m_ready) {
-        QTimer timer;
-        timer.setTimerType(Qt::CoarseTimer);
-        timer.setSingleShot(true);
-
-        QEventLoop loop;
-        QObject::connect(this, &SocketClient::signalIsReady, &loop, &QEventLoop::quit);
-        QObject::connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
-        timer.start(100);  // wait for 100ms
-        loop.exec();
-    }
+    m_socket->waitForConnected(1000);  // wait for up to 1 second
 
     // return true if a local socket connection was established
     return m_established;

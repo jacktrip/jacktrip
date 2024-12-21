@@ -95,7 +95,7 @@ void Compressor::setParamAllChannels(const char pName[], float p)
 void Compressor::init(int samplingRate, int bufferSize)
 {
     ProcessPlugin::init(samplingRate, bufferSize);
-    fs = float(fSamplingFreq);
+    fs = float(mSampleRate);
     for (int i = 0; i < mNumChannels; i++) {
         static_cast<compressordsp*>(compressorP[i])
             ->init(fs);  // compression filter parameters depend on sampling rate

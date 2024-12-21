@@ -144,11 +144,13 @@ else
 	endif
 endif
 
+qt_core_deps = []
 if qt_version == '5'
-	deps += dependency('qt5', modules: ['Core', 'Network'], include_type: 'system')
+	qt_core_deps = dependency('qt5', modules: ['Core', 'Network'], include_type: 'system')
 else
-	deps += dependency('qt6', modules: ['Core', 'Network'], include_type: 'system')
+	qt_core_deps = dependency('qt6', modules: ['Core', 'Network'], include_type: 'system')
 endif
+deps += qt_core_deps
 
 if get_option('nogui') == true or (get_option('noclassic') == true and get_option('novs') == true)
 	# command line only
@@ -376,6 +378,10 @@ if vst_sdkdir != ''
 	# adapted from https://github.com/centricular/gstreamer-vst3
 	vst_includedir = '@0@/public.sdk/source'.format(vst_sdkdir)
 	vst_pluginterfaces_includedir = '@0@'.format(vst_sdkdir)
+	vst_incdirs = []
+	vst_incdirs += include_directories('@0@'.format(vst_includedir))
+	vst_incdirs += include_directories('@0@'.format(vst_pluginterfaces_includedir))
+	vst_incdirs += include_directories('@0@/vstgui4'.format(vst_pluginterfaces_includedir))
 
 	vst_libdir = get_option('vst-libdir')
 	if vst_libdir == ''
@@ -389,9 +395,13 @@ if vst_sdkdir != ''
 	libvstgui_uidescription_dep = compiler.find_library('vstgui_uidescription', required : true, dirs : [vst_libdir])
 	libpluginterfaces_dep = compiler.find_library('pluginterfaces', required : true, dirs : [vst_libdir])
 	vst_deps = [libbase_dep, libsdk_dep, libsdk_common_dep, libvstgui_dep, libvstgui_uidescription_dep, libvstgui_support_dep, libpluginterfaces_dep]
-	vst_deps += dependency('qt6', modules: ['Core'], required: true)
+	vst_deps += qt_core_deps
 
 	vst_link_args = []
+	qmake = find_program('qmake', required: true)
+	qt_libdir = run_command(qmake, '-query', 'QT_INSTALL_LIBS', check : true).stdout().strip()
+	qt_incdir = run_command(qmake, '-query', 'QT_INSTALL_HEADERS', check : true).stdout().strip()
+
 	if (host_machine.system() == 'linux')
 		vst_entry = '@0@/main/linuxmain.cpp'.format(vst_includedir)
 	elif (host_machine.system() == 'darwin')
@@ -404,29 +414,43 @@ if vst_sdkdir != ''
 		vst_link_args += ['-framework', 'AppKit']
 		vst_link_args += ['-framework', 'QuartzCore']
 		vst_link_args += ['-framework', 'Accelerate']
-		vst_link_args += '-lexpat'
+		vst_link_args += '-L@0@'.format(qt_libdir)
+		if (qt_version == '5')
+			vst_link_args += '@0@/libQt5Core.a'.format(qt_libdir)
+			vst_link_args += '@0@/libQt5Network.a'.format(qt_libdir)
+			vst_link_args += '-lqtpcre2'
+			vst_link_args += '-lm'
+			vst_link_args += '-lz'
+			vst_link_args += '-lexpat'
+		else
+			vst_link_args += '@0@/libQt6Core.a'.format(qt_libdir)
+			vst_link_args += '@0@/libQt6Network.a'.format(qt_libdir)
+			vst_link_args += '@0@/libQt6BundledPcre2.a'.format(qt_libdir)
+			vst_link_args += '-lm'
+			vst_link_args += '-lz'
+			vst_link_args += '-lexpat'
+		endif
 	elif (host_machine.system() == 'windows')
 		vst_entry = '@0@/main/dllmain.cpp'.format(vst_includedir)
 	else
 		error('Unsupported platform: ' + host_machine.system())
 	endif
 	vst_sources = ['src/vst3/JackTripVSTController.cpp', 'src/vst3/JackTripVSTEntry.cpp', 'src/vst3/JackTripVSTProcessor.cpp'] + vst_entry
-	#vst_sources += ['src/SocketClient.cpp']
-	#vst_sources += qt.compile_moc(headers: ['src/SocketClient.h'], extra_args: defines)
+	vst_sources += ['src/AudioSocket.cpp', 'src/SocketClient.cpp', 'src/ProcessPlugin.cpp']
+	vst_moc_h = ['src/AudioSocket.h', 'src/SocketClient.h', 'src/ProcessPlugin.h']
+	vst_sources += qt.compile_moc(headers: vst_moc_h, extra_args: defines)
 
 	vst3 = shared_module('JackTrip',
-		['src/vst3/JackTripVSTController.cpp', 'src/vst3/JackTripVSTEntry.cpp', 'src/vst3/JackTripVSTProcessor.cpp'] + vst_entry,
+		vst_sources,
 		name_prefix: '',
 		name_suffix: 'vst3',
 		cpp_args : [ defines,
-					'-I@0@'.format(vst_includedir),
-					'-I@0@'.format(vst_pluginterfaces_includedir),
-					'-I@0@/vstgui4'.format(vst_pluginterfaces_includedir),
 					'-DPACKAGE="jacktrip-vst3"',
 					'-DGST_PACKAGE_NAME="jacktrip-vst3"',
 					'-DGST_PACKAGE_ORIGIN="https://github.com/jacktrip/jacktrip"',
 					'-DFULL_VERSION_STR="@0@"'.format(version)],
 		dependencies : vst_deps,
+		include_directories: vst_incdirs,
 		link_args: vst_link_args
 	)
 endif

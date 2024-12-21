@@ -83,7 +83,7 @@ Analyzer::~Analyzer()
 void Analyzer::init(int samplingRate, int bufferSize)
 {
     ProcessPlugin::init(samplingRate, bufferSize);
-    fs = float(fSamplingFreq);
+    fs = float(mSampleRate);
 
     mPushBuffer.resize(mBufferSize);
     mCircularBufferPtr = new WaitFreeFrameBuffer<4096>(mBufferSize * sizeof(float));

@@ -40,8 +40,19 @@
 
 #include <QLocalSocket>
 #include <QObject>
+#include <QSharedPointer>
+#include <QThread>
 
 #include "ProcessPlugin.h"
+
+// assume stereo audio for this implementation
+constexpr int AudioSocketNumChannels = 2;
+
+// assume max buffer size of 8192 samples
+constexpr int AudioSocketMaxSamplesPerBlock = 8192;
+
+// audio header is 4 bytes for the number of samples + 2 bytes for the buffer size
+constexpr int AudioSocketHeaderSize = 4 + 2;
 
 /** \brief ToAudioSocketPlugin is used to send audio from a signal chain to an audio socket
  */
@@ -50,7 +61,7 @@ class ToAudioSocketPlugin : public ProcessPlugin
     Q_OBJECT;
 
    public:
-    ToAudioSocketPlugin(QLocalSocket *s, int numchans, bool verboseFlag = false);
+    ToAudioSocketPlugin(QSharedPointer<QLocalSocket>& s, int numchans, bool verboseFlag = false);
     virtual ~ToAudioSocketPlugin();
 
     void init(int samplingRate, int bufferSize) override;
@@ -61,12 +72,12 @@ class ToAudioSocketPlugin : public ProcessPlugin
     void updateNumChannels(int nChansIn, int nChansOut) override;
 
    private:
+    QSharedPointer<QLocalSocket> mSocketPtr;
     QByteArray mSendBuffer;
-    QLocalSocket *mSocketPtr;
-    int mBufferSize;
-    int mNumChannels;
-    int mBytesPerChannel;
-    int mBytesPerPacket;
+    int mNumChannels = 2;
+    int mBytesPerChannel = 0;
+    int mBytesPerPacket = 0;
+    bool mSentAudioHeader = false;
 };
 
 /** \brief FromAudioSocketPlugin is used mix audio from an audio socket into a signal chain
@@ -76,7 +87,7 @@ class FromAudioSocketPlugin : public ProcessPlugin
     Q_OBJECT;
 
    public:
-    FromAudioSocketPlugin(QLocalSocket *s, int numchans, bool verboseFlag = false);
+    FromAudioSocketPlugin(QSharedPointer<QLocalSocket>& s, int numchans, bool verboseFlag = false);
     virtual ~FromAudioSocketPlugin();
 
     void init(int samplingRate, int bufferSize) override;
@@ -87,12 +98,13 @@ class FromAudioSocketPlugin : public ProcessPlugin
     void updateNumChannels(int nChansIn, int nChansOut) override;
 
    private:
+    QSharedPointer<QLocalSocket> mSocketPtr;
     QByteArray mRecvBuffer;
-    QLocalSocket *mSocketPtr;
-    int mBufferSize;
-    int mNumChannels;
-    int mBytesPerChannel;
-    int mBytesPerPacket;
+    int mNumChannels = 2;
+    int mRemoteSampleRate = 0;
+    int mRemoteBufferSize = 0;
+    int mRemoteBytesPerChannel = 0;
+    int mRemoteBytesPerPacket = 0;
 };
 
 /** \brief An AudioSocket is used to exchange audio with another processes via a local socket
@@ -100,15 +112,28 @@ class FromAudioSocketPlugin : public ProcessPlugin
 class AudioSocket
 {
    public:
-    AudioSocket(QLocalSocket *s, bool verboseFlag = false);
+    AudioSocket();
+    AudioSocket(QSharedPointer<QLocalSocket>& s);
     virtual ~AudioSocket();
 
     inline QLocalSocket& getSocket() { return *mSocketPtr; }
     inline ProcessPlugin* getToAudioSocketPlugin() { return &mToAudioSocketPlugin; }
     inline ProcessPlugin* getFromAudioSocketPlugin() { return &mFromAudioSocketPlugin; }
 
+    // initializes the socket and plugins
+    void init(int samplingRate, int bufferSize);
+
+    // attempts to connect to remote instance's socket server
+    // returns true if connection was successfully established
+    // returns false if connection failed
+    bool connect();
+
+    // closes the connection to remote instance's socket server
+    void close();
+
    private:
-    QLocalSocket *mSocketPtr;
+    QThread mThread;
+    QSharedPointer<QLocalSocket> mSocketPtr;
     ToAudioSocketPlugin mToAudioSocketPlugin;
     FromAudioSocketPlugin mFromAudioSocketPlugin;
 };

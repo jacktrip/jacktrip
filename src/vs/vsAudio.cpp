@@ -733,8 +733,9 @@ void VsAudio::appendProcessPlugins(AudioInterface& audioInterface, bool forJackT
 
 void VsAudio::handleAudioSocketRequest(QLocalSocket& s)
 {
-    QSharedPointer<AudioSocket> sPtr(new AudioSocket(&s));
-    m_audioSockets.push_back(sPtr);
+    QSharedPointer<QLocalSocket> socketPtr(&s);
+    QSharedPointer<AudioSocket> audioSocketPtr(new AudioSocket(socketPtr));
+    m_audioSockets.push_back(audioSocketPtr);
 }
 
 void VsAudio::setDeviceModels(QJsonArray inputComboModel, QJsonArray outputComboModel)

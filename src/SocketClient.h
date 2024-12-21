@@ -38,7 +38,7 @@
 #define __SocketClient_H__
 
 #include <QLocalSocket>
-#include <QScopedPointer>
+#include <QSharedPointer>
 
 // name of the local socket used by JackTrip
 constexpr const char* JACKTRIP_SOCKET_NAME = "JackTrip";
@@ -51,6 +51,9 @@ class SocketClient : public QObject
    public:
     // default constructor
     SocketClient();
+
+    // construct with an existing socket
+    SocketClient(QSharedPointer<QLocalSocket>& s);
 
     // virtual destructor since it inherits from QObject
     virtual ~SocketClient();
@@ -87,13 +90,16 @@ class SocketClient : public QObject
 
    private:
     // used to check if there is another server already running
-    QScopedPointer<QLocalSocket> m_socket;
+    QSharedPointer<QLocalSocket> m_socket;
 
     // true after connection attempt has completed
     bool m_ready = false;
 
-    // true if a local socket server was started, false if remote was detected
+    // true if a local socket connection was started, false if remote was detected
     bool m_established = false;
+
+    // true if a this owns the socket and should close on destruction
+    bool m_owns_socket = false;
 };
 
 #endif  // __SocketClient_H__

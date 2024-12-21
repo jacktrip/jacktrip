@@ -33,10 +33,12 @@
 
 #pragma once
 
-#include <QByteArray>
+#include <QCoreApplication>
+#include <QScopedPointer>
 
 #include "public.sdk/source/vst/vstaudioeffect.h"
-//#include "../SocketClient.h"
+
+class AudioSocket;
 
 namespace Steinberg {
 
@@ -87,8 +89,11 @@ protected:
 	bool mBypass = false;
 
 private:
-	//SocketClient mSocketClient;
-    QByteArray mSendBuffer;
+	//QScopedPointer<QtEventsThread> mEventsThreadPtr;
+	QScopedPointer<QCoreApplication> mAppPtr;
+	QScopedPointer<AudioSocket> mSocketPtr;
+	float **mInputBuffer;
+	float **mOutputBuffer;
 };
 
 //------------------------------------------------------------------------

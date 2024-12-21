@@ -60,7 +60,7 @@ void StereoToMono::init(int samplingRate, int bufferSize)
 {
     ProcessPlugin::init(samplingRate, bufferSize);
 
-    fs = float(fSamplingFreq);
+    fs = float(mSampleRate);
     static_cast<stereotomonodsp*>(stereoToMonoP)->init(fs);
 
     inited = true;
