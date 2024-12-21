@@ -37,9 +37,11 @@
 #ifndef __VSDEEPLINK_H__
 #define __VSDEEPLINK_H__
 
-#include <QLocalSocket>
+#include <QSharedPointer>
 #include <QString>
 #include <QUrl>
+
+class QLocalSocket;
 
 class VsDeeplink : public QObject
 {
@@ -58,7 +60,7 @@ class VsDeeplink : public QObject
     void handleUrl(const QUrl& url);
 
     // called by local socket server to process VsDeeplink requests
-    void handleVsDeeplinkRequest(QLocalSocket& socket);
+    void handleVsDeeplinkRequest(QSharedPointer<QLocalSocket>& socket);
 
    signals:
     // signalVsDeeplink is emitted when we want the local instance to process a VsDeeplink

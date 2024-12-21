@@ -41,10 +41,11 @@
 #include <QLocalServer>
 #include <QLocalSocket>
 #include <QScopedPointer>
+#include <QSharedPointer>
 #include <functional>
 
 // SocketHandler is used to handle a new socket connection
-typedef std::function<void(QLocalSocket&)> SocketHandler;
+typedef std::function<void(QSharedPointer<QLocalSocket>&)> SocketHandler;
 
 // SocketServer lists for local socket connections from remote JackTrip processes
 class SocketServer : public QObject
@@ -73,7 +74,7 @@ class SocketServer : public QObject
 
    private:
     // called by local socket server to handle requests
-    void handleConnection(const QString& name, QLocalSocket& socket);
+    void handleConnection(const QString& name, QSharedPointer<QLocalSocket>& socket);
 
     // used to listen for requests via local socket connections
     QScopedPointer<QLocalServer> m_instanceServer;

@@ -41,6 +41,7 @@
 #include <QDesktopServices>
 #include <QDir>
 #include <QEventLoop>
+#include <QLocalSocket>
 #include <QMutexLocker>
 #include <QSettings>
 #include <QTimer>
@@ -61,23 +62,23 @@ void VsDeeplink::handleUrl(const QUrl& url)
     emit signalVsDeeplink(url);
 }
 
-void VsDeeplink::handleVsDeeplinkRequest(QLocalSocket& socket)
+void VsDeeplink::handleVsDeeplinkRequest(QSharedPointer<QLocalSocket>& socket)
 {
-    if (!socket.waitForReadyRead() && socket.bytesAvailable() <= 0) {
+    if (!socket->waitForReadyRead() && socket->bytesAvailable() <= 0) {
         qDebug() << "VsDeeplink socket: not ready and no bytes available: "
-                 << socket.errorString();
-        socket.close();
+                 << socket->errorString();
+        socket->close();
         return;
     }
 
-    if (socket.bytesAvailable() < (int)sizeof(quint16)) {
+    if (socket->bytesAvailable() < (int)sizeof(quint16)) {
         qDebug() << "VsDeeplink socket: ready but no bytes available";
-        socket.close();
+        socket->close();
         return;
     }
 
-    QByteArray in(socket.readAll());
-    socket.close();
+    QByteArray in(socket->readAll());
+    socket->close();
     QString urlString(in);
     handleUrl(urlString);
 }

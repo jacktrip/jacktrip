@@ -361,6 +361,21 @@ endif
 
 jacktrip = executable('jacktrip', src, qres_files, ui_files, moc_files, include_directories: incdirs, dependencies: deps, link_args: link_args, c_args: c_defines, cpp_args: defines, install: true )
 
+audio_socket_moc_h = ['src/AudioSocket.h', 'src/SocketClient.h', 'src/ProcessPlugin.h']
+audio_socket_sources = qt.compile_moc(headers: audio_socket_moc_h, extra_args: defines)
+audio_socket_sources += [
+	'src/AudioSocket.cpp',
+	'src/SocketClient.cpp',
+	'src/ProcessPlugin.cpp',
+	'src/jacktrip_globals.cpp'
+]
+audio_socket_test = executable('audio_socket_tests',
+	['tests/audio_socket_test.cpp'] + audio_socket_sources,
+	cpp_args : defines,
+	dependencies : qt_core_deps,
+	include_directories: include_directories('src/')
+)
+
 version = compiler.run(
 	'''
 	#include <iostream>
@@ -435,13 +450,11 @@ if vst_sdkdir != ''
 	else
 		error('Unsupported platform: ' + host_machine.system())
 	endif
+
 	vst_sources = ['src/vst3/JackTripVSTController.cpp', 'src/vst3/JackTripVSTEntry.cpp', 'src/vst3/JackTripVSTProcessor.cpp'] + vst_entry
-	vst_sources += ['src/AudioSocket.cpp', 'src/SocketClient.cpp', 'src/ProcessPlugin.cpp']
-	vst_moc_h = ['src/AudioSocket.h', 'src/SocketClient.h', 'src/ProcessPlugin.h']
-	vst_sources += qt.compile_moc(headers: vst_moc_h, extra_args: defines)
 
 	vst3 = shared_module('JackTrip',
-		vst_sources,
+		vst_sources, audio_socket_sources,
 		name_prefix: '',
 		name_suffix: 'vst3',
 		cpp_args : [ defines,
@@ -453,6 +466,7 @@ if vst_sdkdir != ''
 		include_directories: vst_incdirs,
 		link_args: vst_link_args
 	)
+
 endif
 
 help2man = find_program('help2man', required: false)

@@ -109,12 +109,13 @@ void SocketServer::handlePendingConnections()
         handlerName.replace("\n", "");
 
         qDebug() << "Socket server: received connection for" << handlerName;
-
-        handleConnection(handlerName, *connectedSocket);
+        connectedSocket->setParent(nullptr);
+        QSharedPointer<QLocalSocket> sharedSocket(connectedSocket);
+        handleConnection(handlerName, sharedSocket);
     }
 }
 
-void SocketServer::handleConnection(const QString& name, QLocalSocket& socket)
+void SocketServer::handleConnection(const QString& name, QSharedPointer<QLocalSocket>& socket)
 {
     auto it = m_handlers.find(name);
     if (it == m_handlers.end()) {

@@ -44,6 +44,7 @@
 #include <QThread>
 
 #include "ProcessPlugin.h"
+#include "WaitFreeFrameBuffer.h"
 
 // assume stereo audio for this implementation
 constexpr int AudioSocketNumChannels = 2;
@@ -61,7 +62,8 @@ class ToAudioSocketPlugin : public ProcessPlugin
     Q_OBJECT;
 
    public:
-    ToAudioSocketPlugin(QSharedPointer<QLocalSocket>& s, int numchans, bool verboseFlag = false);
+    ToAudioSocketPlugin(QSharedPointer<QLocalSocket>& s, WaitFreeFrameBuffer<>& sendQueue,
+                        WaitFreeFrameBuffer<>& receiveQueue);
     virtual ~ToAudioSocketPlugin();
 
     void init(int samplingRate, int bufferSize) override;
@@ -71,13 +73,24 @@ class ToAudioSocketPlugin : public ProcessPlugin
     const char* getName() const override { return "ToAudioSocket"; };
     void updateNumChannels(int nChansIn, int nChansOut) override;
 
+   signals:
+    void signalSendAudioHeader(uint32_t sampleRate, uint16_t bufferSize);
+    void signalExchangeAudio();
+
+   public slots:
+    void gotAudioHeader(int samplingRate, int bufferSize);
+
    private:
     QSharedPointer<QLocalSocket> mSocketPtr;
+    WaitFreeFrameBuffer<>& mSendQueue;
+    WaitFreeFrameBuffer<>& mReceiveQueue;
     QByteArray mSendBuffer;
-    int mNumChannels = 2;
+    int mNumChannels = AudioSocketNumChannels;
     int mBytesPerChannel = 0;
     int mBytesPerPacket = 0;
     bool mSentAudioHeader = false;
+    bool mRemoteIsReady = false;
+    bool mLostConnection = false;
 };
 
 /** \brief FromAudioSocketPlugin is used mix audio from an audio socket into a signal chain
@@ -87,7 +100,8 @@ class FromAudioSocketPlugin : public ProcessPlugin
     Q_OBJECT;
 
    public:
-    FromAudioSocketPlugin(QSharedPointer<QLocalSocket>& s, int numchans, bool verboseFlag = false);
+    FromAudioSocketPlugin(QSharedPointer<QLocalSocket>& s, WaitFreeFrameBuffer<>& sendQueue,
+                      WaitFreeFrameBuffer<>& receiveQueue);
     virtual ~FromAudioSocketPlugin();
 
     void init(int samplingRate, int bufferSize) override;
@@ -97,45 +111,114 @@ class FromAudioSocketPlugin : public ProcessPlugin
     const char* getName() const override { return "FromAudioSocket"; };
     void updateNumChannels(int nChansIn, int nChansOut) override;
 
+   public slots:
+    void gotAudioHeader(int samplingRate, int bufferSize);
+
    private:
     QSharedPointer<QLocalSocket> mSocketPtr;
+    WaitFreeFrameBuffer<>& mSendQueue;
+    WaitFreeFrameBuffer<>& mReceiveQueue;
     QByteArray mRecvBuffer;
-    int mNumChannels = 2;
+    int mNumChannels = AudioSocketNumChannels;
     int mRemoteSampleRate = 0;
     int mRemoteBufferSize = 0;
     int mRemoteBytesPerChannel = 0;
-    int mRemoteBytesPerPacket = 0;
+    bool mRemoteIsReady = false;
+    bool mLostConnection = false;
 };
+
+
+/** \brief AudioSocketWorker is used to perform socket operations in a separate thread
+ */
+class AudioSocketWorker : public QObject
+{
+    Q_OBJECT;
+
+   public:
+    AudioSocketWorker(QSharedPointer<QLocalSocket>& s, WaitFreeFrameBuffer<>& sendQueue,
+                      WaitFreeFrameBuffer<>& receiveQueue, ToAudioSocketPlugin& toPlugin,
+                      FromAudioSocketPlugin& fromPlugin);
+    virtual ~AudioSocketWorker();
+
+    inline bool isConnected() { return mSocketPtr->state() == QLocalSocket::ConnectedState; }
+
+   signals:
+    void signalConnectFinished(bool);
+    void signalGotAudioHeader(int samplingRate, int bufferSize);
+ 
+   public slots:
+    // attempts to connect to remote instance's socket server
+    // returns true if connection was successfully established
+    // returns false if connection failed
+    void connect();
+
+    /// \brief closes the connection to remote instance's socket server
+    void close();
+
+    /// \brief send audio header to remote instance
+    void sendAudioHeader(uint32_t sampleRate, uint16_t bufferSize);
+
+    /// \brief exchanges audio packets with remote instance
+    void exchangeAudio();
+
+   private:
+    QSharedPointer<QLocalSocket> mSocketPtr;
+    WaitFreeFrameBuffer<>& mSendQueue;
+    WaitFreeFrameBuffer<>& mReceiveQueue;
+    ToAudioSocketPlugin& mToAudioSocketPlugin;
+    FromAudioSocketPlugin& mFromAudioSocketPlugin;
+    QByteArray mSendBuffer;
+    QByteArray mRecvBuffer;
+    int mLocalBytesPerPacket = 0;
+    int mRemoteBytesPerPacket = 0;
+    bool mRemoteIsReady = false;
+};
+
 
 /** \brief An AudioSocket is used to exchange audio with another processes via a local socket
  */
-class AudioSocket
+class AudioSocket : public QObject
 {
+    Q_OBJECT;
+
    public:
     AudioSocket();
     AudioSocket(QSharedPointer<QLocalSocket>& s);
     virtual ~AudioSocket();
 
     inline QLocalSocket& getSocket() { return *mSocketPtr; }
+    inline bool isConnected() { return mSocketPtr->state() == QLocalSocket::ConnectedState; }
     inline ProcessPlugin* getToAudioSocketPlugin() { return &mToAudioSocketPlugin; }
     inline ProcessPlugin* getFromAudioSocketPlugin() { return &mFromAudioSocketPlugin; }
-
-    // initializes the socket and plugins
-    void init(int samplingRate, int bufferSize);
 
     // attempts to connect to remote instance's socket server
     // returns true if connection was successfully established
     // returns false if connection failed
-    bool connect();
+    bool connect(int samplingRate, int bufferSize);
 
-    // closes the connection to remote instance's socket server
+    /// \brief audio callback for duplex processing
+    void compute(int nframes, float** inputs, float** outputs);
+
+    /// \brief closes the connection to remote instance's socket server
     void close();
 
+   signals:
+    void signalConnect();
+    void signalClose();
+
    private:
+    /// \brief initializes worker and worker thread
+    void initWorker();
+
     QThread mThread;
+    WaitFreeFrameBuffer<> mSendQueue;
+    WaitFreeFrameBuffer<> mReceiveQueue;
     QSharedPointer<QLocalSocket> mSocketPtr;
     ToAudioSocketPlugin mToAudioSocketPlugin;
     FromAudioSocketPlugin mFromAudioSocketPlugin;
+    QScopedPointer<AudioSocketWorker> mWorkerPtr;
+
+    friend class AudioSocketWorker;
 };
 
 #endif

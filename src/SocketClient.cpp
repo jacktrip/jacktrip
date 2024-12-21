@@ -38,30 +38,29 @@
 
 #include <QDebug>
 
-SocketClient::SocketClient() :
-    m_socket(new QLocalSocket(this)), m_owns_socket(true)
+SocketClient::SocketClient(QObject* parent) :
+    QObject(parent), m_socket(new QLocalSocket(this)), m_owns_socket(true)
 {
 }
 
-SocketClient::SocketClient(QSharedPointer<QLocalSocket>& s) :
-    m_socket(s), m_owns_socket(false)
+SocketClient::SocketClient(QSharedPointer<QLocalSocket>& s, QObject* parent) :
+    QObject(parent), m_socket(s), m_owns_socket(false)
 {
 }
 
 SocketClient::~SocketClient()
 {
-    if (m_established && m_owns_socket) {
+    if (isConnected() && m_owns_socket) {
         m_socket->close();
     }
 }
 
 bool SocketClient::connect()
 {
-    if (m_established) {
+    if (isConnected()) {
         return true;
     }
     m_ready       = false;
-    m_established = false;
 
     QObject::connect(m_socket.data(), &QLocalSocket::connected, this,
                      &SocketClient::connectionEstablished, Qt::QueuedConnection);
@@ -73,39 +72,33 @@ bool SocketClient::connect()
 #endif
     QObject::connect(m_socket.data(), errorFunc, this, &SocketClient::connectionFailed);
     m_socket->connectToServer(JACKTRIP_SOCKET_NAME);
-    m_socket->waitForConnected(1000);  // wait for up to 1 second
-
-    // return true if a local socket connection was established
-    return m_established;
+    return m_socket->waitForConnected(1000);  // wait for up to 1 second
 }
 
 void SocketClient::close()
 {
-    if (!m_established) {
-        return;
+    if (isConnected()) {
+        m_socket->close();
     }
-    m_socket->close();
-    m_established = false;
 }
 
 bool SocketClient::sendHeader(const QString& handler)
 {
     // sanity check
-    if (!m_established) {
+    if (!isConnected()) {
         return false;
     }
     QString headerStr = "JackTrip/1.0 ";
     headerStr += handler;
     headerStr += "\n";
     QByteArray headerBytes = headerStr.toLocal8Bit();
-    qint64 writeBytes      = m_socket->write(headerBytes) > 0;
+    qint64 writeBytes      = m_socket->write(headerBytes);
     m_socket->flush();
     return writeBytes > 0;
 }
 
 void SocketClient::connectionEstablished()
 {
-    m_established = true;
     m_ready       = true;
     emit signalIsReady();
 }
@@ -127,7 +120,6 @@ void SocketClient::connectionFailed(QLocalSocket::LocalSocketError socketError)
         qDebug() << m_socket->errorString();
     }
 
-    m_established = false;
     m_ready       = true;
     emit signalIsReady();
 }

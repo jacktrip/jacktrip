@@ -50,16 +50,16 @@ class SocketClient : public QObject
 
    public:
     // default constructor
-    SocketClient();
+    SocketClient(QObject* parent = nullptr);
 
     // construct with an existing socket
-    SocketClient(QSharedPointer<QLocalSocket>& s);
+    SocketClient(QSharedPointer<QLocalSocket>& s, QObject* parent = nullptr);
 
     // virtual destructor since it inherits from QObject
     virtual ~SocketClient();
 
     // return local socket connection
-    inline bool isConnected() const { return m_established; }
+    inline bool isConnected() { return m_socket->state() == QLocalSocket::ConnectedState; }
 
     // return local socket connection
     inline QLocalSocket& getSocket() { return *m_socket; }
@@ -94,9 +94,6 @@ class SocketClient : public QObject
 
     // true after connection attempt has completed
     bool m_ready = false;
-
-    // true if a local socket connection was started, false if remote was detected
-    bool m_established = false;
 
     // true if a this owns the socket and should close on destruction
     bool m_owns_socket = false;

@@ -209,7 +209,7 @@ class VsAudio : public QObject
     bool getHighLatencyFlag() const { return m_highLatencyFlag; }
 
     // called by local socket server to process audio requests
-    void handleAudioSocketRequest(QLocalSocket& socket);
+    void handleAudioSocketRequest(QSharedPointer<QLocalSocket>& socket);
 
    public slots:
 
