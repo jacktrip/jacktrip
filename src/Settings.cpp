@@ -1031,7 +1031,6 @@ void Settings::setDevicesByString(std::string nameArg)
     }
 }
 
-
 #endif
 
 //*******************************************************************************
