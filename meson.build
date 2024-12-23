@@ -361,21 +361,6 @@ endif
 
 jacktrip = executable('jacktrip', src, qres_files, ui_files, moc_files, include_directories: incdirs, dependencies: deps, link_args: link_args, c_args: c_defines, cpp_args: defines, install: true )
 
-audio_socket_moc_h = ['src/AudioSocket.h', 'src/SocketClient.h', 'src/ProcessPlugin.h']
-audio_socket_sources = qt.compile_moc(headers: audio_socket_moc_h, extra_args: defines)
-audio_socket_sources += [
-	'src/AudioSocket.cpp',
-	'src/SocketClient.cpp',
-	'src/ProcessPlugin.cpp',
-	'src/jacktrip_globals.cpp'
-]
-audio_socket_test = executable('audio_socket_tests',
-	['tests/audio_socket_test.cpp'] + audio_socket_sources,
-	cpp_args : defines,
-	dependencies : qt_core_deps,
-	include_directories: include_directories('src/')
-)
-
 version = compiler.run(
 	'''
 	#include <iostream>
@@ -410,12 +395,12 @@ if vst_sdkdir != ''
 	libvstgui_uidescription_dep = compiler.find_library('vstgui_uidescription', required : true, dirs : [vst_libdir])
 	libpluginterfaces_dep = compiler.find_library('pluginterfaces', required : true, dirs : [vst_libdir])
 	vst_deps = [libbase_dep, libsdk_dep, libsdk_common_dep, libvstgui_dep, libvstgui_uidescription_dep, libvstgui_support_dep, libpluginterfaces_dep]
-	vst_deps += qt_core_deps
 
 	vst_link_args = []
 	qmake = find_program('qmake', required: true)
 	qt_libdir = run_command(qmake, '-query', 'QT_INSTALL_LIBS', check : true).stdout().strip()
 	qt_incdir = run_command(qmake, '-query', 'QT_INSTALL_HEADERS', check : true).stdout().strip()
+	vst_incdirs += include_directories(qt_incdir, '@0@/QtCore'.format(qt_incdir), '@0@/QtNetwork'.format(qt_incdir))
 
 	if (host_machine.system() == 'linux')
 		vst_entry = '@0@/main/linuxmain.cpp'.format(vst_includedir)
@@ -441,17 +426,58 @@ if vst_sdkdir != ''
 			vst_link_args += '@0@/libQt6Core.a'.format(qt_libdir)
 			vst_link_args += '@0@/libQt6Network.a'.format(qt_libdir)
 			vst_link_args += '@0@/libQt6BundledPcre2.a'.format(qt_libdir)
+			vst_link_args += '@0@/libQt6BundledZLIB.a'.format(qt_libdir)
 			vst_link_args += '-lm'
 			vst_link_args += '-lz'
 			vst_link_args += '-lexpat'
 		endif
 	elif (host_machine.system() == 'windows')
 		vst_entry = '@0@/main/dllmain.cpp'.format(vst_includedir)
+		vst_deps += compiler.find_library('bcrypt', required : true)
+		vst_deps += compiler.find_library('winmm', required : true)
+		vst_deps += compiler.find_library('Crypt32', required : true)
+		vst_deps += compiler.find_library('ws2_32', required: true)
+		vst_link_args += 'userenv.lib'
+		vst_link_args += 'Synchronization.lib'
+		vst_link_args += 'Netapi32.lib'
+		vst_link_args += 'Version.lib'
+		vst_link_args += 'Dwrite.lib'
+		vst_link_args += 'Iphlpapi.lib'
+		vst_link_args += 'Secur32.lib'
+		vst_link_args += 'Winhttp.lib'
+		vst_link_args += 'Dnsapi.lib'
+		vst_link_args += 'Iphlpapi.lib'
+		if (qt_version == '5')
+			vst_link_args += '@0@/Qt5Core.lib'.format(qt_libdir)
+			vst_link_args += '@0@/Qt5Network.lib'.format(qt_libdir)
+		else
+			vst_link_args += '@0@/Qt6Core.lib'.format(qt_libdir)
+			vst_link_args += '@0@/Qt6Network.lib'.format(qt_libdir)
+			vst_link_args += '@0@/Qt6BundledPcre2.lib'.format(qt_libdir)
+			vst_link_args += '@0@/Qt6BundledZLIB.lib'.format(qt_libdir)
+			vst_deps += compiler.find_library('Authz', required : true)
+		endif
 	else
 		error('Unsupported platform: ' + host_machine.system())
 	endif
 
 	vst_sources = ['src/vst3/JackTripVSTController.cpp', 'src/vst3/JackTripVSTEntry.cpp', 'src/vst3/JackTripVSTProcessor.cpp'] + vst_entry
+
+	audio_socket_moc_h = ['src/AudioSocket.h', 'src/SocketClient.h', 'src/ProcessPlugin.h']
+	audio_socket_sources = qt.compile_moc(headers: audio_socket_moc_h, extra_args: defines)
+	audio_socket_sources += [
+		'src/AudioSocket.cpp',
+		'src/SocketClient.cpp',
+		'src/ProcessPlugin.cpp',
+		'src/jacktrip_globals.cpp'
+	]
+	audio_socket_test = executable('audio_socket_tests',
+		['tests/audio_socket_test.cpp'] + audio_socket_sources,
+		cpp_args : defines,
+		dependencies : vst_deps,
+		include_directories: vst_incdirs + include_directories('src/'),
+		link_args: vst_link_args
+	)
 
 	vst3 = shared_module('JackTrip',
 		vst_sources, audio_socket_sources,
@@ -466,7 +492,6 @@ if vst_sdkdir != ''
 		include_directories: vst_incdirs,
 		link_args: vst_link_args
 	)
-
 endif
 
 help2man = find_program('help2man', required: false)

@@ -37,6 +37,7 @@
 #ifndef __VSDEEPLINK_H__
 #define __VSDEEPLINK_H__
 
+#include <QObject>
 #include <QSharedPointer>
 #include <QString>
 #include <QUrl>
