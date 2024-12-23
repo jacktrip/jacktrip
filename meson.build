@@ -395,41 +395,37 @@ if vst_sdkdir != ''
 	libvstgui_uidescription_dep = compiler.find_library('vstgui_uidescription', required : true, dirs : [vst_libdir])
 	libpluginterfaces_dep = compiler.find_library('pluginterfaces', required : true, dirs : [vst_libdir])
 	vst_deps = [libbase_dep, libsdk_dep, libsdk_common_dep, libvstgui_dep, libvstgui_uidescription_dep, libvstgui_support_dep, libpluginterfaces_dep]
+	vst_deps += qt_core_deps
 
 	vst_link_args = []
 	qmake = find_program('qmake', required: true)
 	qt_libdir = run_command(qmake, '-query', 'QT_INSTALL_LIBS', check : true).stdout().strip()
 	qt_incdir = run_command(qmake, '-query', 'QT_INSTALL_HEADERS', check : true).stdout().strip()
-	vst_incdirs += include_directories(qt_incdir, '@0@/QtCore'.format(qt_incdir), '@0@/QtNetwork'.format(qt_incdir))
 
 	if (host_machine.system() == 'linux')
 		vst_entry = '@0@/main/linuxmain.cpp'.format(vst_includedir)
 	elif (host_machine.system() == 'darwin')
 		vst_entry = '@0@/main/macmain.cpp'.format(vst_includedir)
-		vst_link_args += ['-framework', 'CoreGraphics']
-		vst_link_args += ['-framework', 'ImageIO']
-		vst_link_args += ['-framework', 'OpenGL']
-		vst_link_args += ['-framework', 'CoreText']
-		vst_link_args += ['-framework', 'ColorSync']
+		vst_link_args += ['-framework', 'CoreServices']
+		vst_link_args += ['-framework', 'CFNetwork']
 		vst_link_args += ['-framework', 'AppKit']
-		vst_link_args += ['-framework', 'QuartzCore']
-		vst_link_args += ['-framework', 'Accelerate']
-		vst_link_args += '-L@0@'.format(qt_libdir)
+		vst_link_args += ['-framework', 'IOKit']
+		vst_link_args += ['-framework', 'Security']
+		vst_link_args += ['-framework', 'GSS']
+		vst_link_args += ['-framework', 'SystemConfiguration']
+		vst_deps += dependency('zlib', required : true)
 		if (qt_version == '5')
 			vst_link_args += '@0@/libQt5Core.a'.format(qt_libdir)
 			vst_link_args += '@0@/libQt5Network.a'.format(qt_libdir)
-			vst_link_args += '-lqtpcre2'
-			vst_link_args += '-lm'
-			vst_link_args += '-lz'
-			vst_link_args += '-lexpat'
+			#vst_link_args += '-lqtpcre2'
+			#vst_link_args += '-lm'
+			#vst_link_args += '-lexpat'
 		else
 			vst_link_args += '@0@/libQt6Core.a'.format(qt_libdir)
 			vst_link_args += '@0@/libQt6Network.a'.format(qt_libdir)
 			vst_link_args += '@0@/libQt6BundledPcre2.a'.format(qt_libdir)
-			vst_link_args += '@0@/libQt6BundledZLIB.a'.format(qt_libdir)
-			vst_link_args += '-lm'
-			vst_link_args += '-lz'
-			vst_link_args += '-lexpat'
+			#vst_link_args += '-lm'
+			#vst_link_args += '-lexpat'
 		endif
 	elif (host_machine.system() == 'windows')
 		vst_entry = '@0@/main/dllmain.cpp'.format(vst_includedir)
