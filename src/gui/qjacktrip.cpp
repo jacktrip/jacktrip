@@ -136,6 +136,11 @@ QJackTrip::QJackTrip(UserInterface& interface, QWidget* parent)
         m_ui->credsLabel->setEnabled(m_ui->requireAuthCheckBox->isChecked());
         m_ui->credsEdit->setEnabled(m_ui->requireAuthCheckBox->isChecked());
         m_ui->credsBrowse->setEnabled(m_ui->requireAuthCheckBox->isChecked());
+        /*connect(m_ui->usersButton, &QPushButton::clicked, this, [=]() {
+            AuthDialog authDialog(this, m_credsFile, m_lastPath);
+            connect(&authDialog, &AuthDialog::signalFileChanged, this, &QJackTrip::credsFileChanged);
+            authDialog.exec();
+        });*/
         authFilesChanged();
     });
     connect(m_ui->ioStatsCheckBox, &QCheckBox::stateChanged, this, [=]() {
@@ -554,8 +559,7 @@ void QJackTrip::receivedConnectionFromPeer()
 #if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
                                                                       Qt::SkipEmptyParts);
 #else
-                                                                      QString::
-                                                                          SkipEmptyParts);
+                                                                      QString::SkipEmptyParts); 
 #endif
         if (!arguments.isEmpty()) {
             QProcess connectScript;
@@ -711,6 +715,12 @@ void QJackTrip::credentialsChanged()
     }
 }
 
+/*void QJackTrip::credsFileChanged(const QString& fileName)
+{
+    m_credsFile = fileName;
+    m_lastPath = QFileInfo(fileName).canonicalPath();
+}*/
+
 void QJackTrip::browseForFile()
 {
     QPushButton* sender = static_cast<QPushButton*>(QObject::sender());
@@ -814,6 +824,18 @@ void QJackTrip::resetOptions()
 
 void QJackTrip::start()
 {
+    // Abort if we're a hub server and still need to set up authentication.
+    /*if (m_ui->typeComboBox->currentIndex() == HUB_SERVER
+        && m_ui->requireAuthCheckBox->isChecked() && m_credsFile.isEmpty()) {
+        QMessageBox msgBox;
+        msgBox.setText(QStringLiteral(
+            "Error: To enable authentication you need to set up a list of users before "
+            "running the server. Click on the \"Manage Users\" button to do this."));
+        msgBox.setWindowTitle(QStringLiteral("Doh!"));
+        msgBox.exec();
+        return;
+    }*/
+
     m_ui->connectButton->setEnabled(false);
     enableUi(false);
     m_jackTripRunning = true;
@@ -1965,8 +1987,13 @@ QString QJackTrip::commandLineFromCurrentOptions()
         if (m_ui->outputDeviceComboBox->currentIndex() > 0) {
             outDevice = m_ui->outputDeviceComboBox->currentText();
         }
+        QString inDeviceEscaped = QString(inDevice).replace(QStringLiteral(","),
+                                                            QStringLiteral("\\,"));
+        QString outDeviceEscaped = QString(outDevice).replace(QStringLiteral(","),
+                                                              QStringLiteral("\\,"));
         commandLine.append(
-            QStringLiteral(" --audiodevice \"%1\",\"%2\"").arg(inDevice, outDevice));
+            QStringLiteral(" --audiodevice \"%1\",\"%2\"").arg(inDeviceEscaped,
+                                                               outDeviceEscaped));
     }
 #endif
 
@@ -1991,11 +2018,13 @@ void QJackTrip::populateDeviceMenu(QComboBox* menu, bool isInput)
         if (menu->findText(utf8Name) != -1) {
             continue;
         }
+
         if (isInput && info.inputChannels > 0) {
             menu->addItem(utf8Name);
         } else if (!isInput && info.outputChannels > 0) {
             menu->addItem(utf8Name);
         }
+
     }
 
     // set the previous value
