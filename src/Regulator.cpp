@@ -855,11 +855,16 @@ bool StdDev::tick(double prevTime, double curTime)
         return false;
 
     data[ctr] = msElapsed;
-    if (msElapsed < min)
-        min = msElapsed;
-    else if (msElapsed > max)
-        max = msElapsed;
     acc += msElapsed;
+    if (ctr == 0) {
+        min = msElapsed;
+        max = msElapsed;
+    } else {
+        if (msElapsed < min)
+            min = msElapsed;
+        if (msElapsed > max)
+            max = msElapsed;
+    }
     if (ctr == 0 && longTermCnt % WindowDivisor == 0) {
         lastMin = msElapsed;
         lastMax = msElapsed;
