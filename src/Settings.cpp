@@ -997,7 +997,7 @@ void Settings::setDevicesByString(std::string nameArg)
 
     if (delimCount - escapedPositions.size() > 1) {
         throw std::invalid_argument(
-            "Found multiple commas in the --audiodevice argument, cannot parse "
+            "Found multiple unescaped commas in the --audiodevice argument, cannot parse "
             "reliably.");
     }
     int index = escapedPositions.size() - 1;
@@ -1013,7 +1013,23 @@ void Settings::setDevicesByString(std::string nameArg)
     } else {
         mInputDeviceName = mOutputDeviceName = nameArg;
     }
+
+    if (escapedPositions.size() > 0) {
+        // We have to get rid of instances of our escape character.
+        position = 0;
+        while ((position = mInputDeviceName.find(escaped, position)) != std::string::npos) {
+            mInputDeviceName.replace(position, escaped.length(), ",");
+            position++;
+        }
+        position = 0;
+        while ((position = mOutputDeviceName.find(escaped, position)) != std::string::npos) {
+            mOutputDeviceName.replace(position, escaped.length(), ",");
+            position++;
+        }
+    }
 }
+
+
 #endif
 
 //*******************************************************************************
