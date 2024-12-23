@@ -136,11 +136,6 @@ QJackTrip::QJackTrip(UserInterface& interface, QWidget* parent)
         m_ui->credsLabel->setEnabled(m_ui->requireAuthCheckBox->isChecked());
         m_ui->credsEdit->setEnabled(m_ui->requireAuthCheckBox->isChecked());
         m_ui->credsBrowse->setEnabled(m_ui->requireAuthCheckBox->isChecked());
-        /*connect(m_ui->usersButton, &QPushButton::clicked, this, [=]() {
-            AuthDialog authDialog(this, m_credsFile, m_lastPath);
-            connect(&authDialog, &AuthDialog::signalFileChanged, this, &QJackTrip::credsFileChanged);
-            authDialog.exec();
-        });*/
         authFilesChanged();
     });
     connect(m_ui->ioStatsCheckBox, &QCheckBox::stateChanged, this, [=]() {
@@ -560,7 +555,7 @@ void QJackTrip::receivedConnectionFromPeer()
                                                                       Qt::SkipEmptyParts);
 #else
                                                                       QString::
-                                                                          SkipEmptyParts); 
+                                                                          SkipEmptyParts);
 #endif
         if (!arguments.isEmpty()) {
             QProcess connectScript;
