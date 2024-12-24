@@ -140,7 +140,7 @@ sed -i '' "s/%BUNDLEID%/$BUNDLE_ID/" "$APPNAME.app/Contents/Info.plist"
 
 if [ -n "$DYNAMIC_QT" ]; then
     QT_VERSION="qt$(echo "$DYNAMIC_QT" | sed -E '1!d;s/.*compatibility version ([0-9]+)\.[0-9]+\.[0-9]+.*/\1/g')"
-    echo "Detected a dynamic Qt$QT_VERSION binary"
+    echo "Detected a dynamic $QT_VERSION binary"
     DEPLOY_CMD="$(which macdeployqt)"
     if [ -z "$DEPLOY_CMD" ]; then
         # Attempt to find macdeployqt. Try macports location first, then brew.
