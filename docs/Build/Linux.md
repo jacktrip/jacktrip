@@ -20,7 +20,7 @@ Optional:
 dnf install qt5-qtbase-devel qt5-qtnetworkauth-devel qt5-qtwebsockets-devel qt5-qtquickcontrols2-devel qt5-qtsvg-devel
 dnf groupinstall "C Development Tools and Libraries"
 dnf groupinstall "Development Tools"
-dnf install "pkgconfig(jack)" rtaudio-devel git help2man python3-jinja2
+dnf install "pkgconfig(jack)" rtaudio-devel git help2man python3-jinja2 dbus-devel
 ```
 
 ### Fedora (Qt6)
@@ -28,7 +28,7 @@ dnf install "pkgconfig(jack)" rtaudio-devel git help2man python3-jinja2
 dnf install qt6-qtbase-devel qt5-qtnetworkauth-devel qt5-qtwebsockets-devel qt5-qtquickcontrols2-devel qt5-qtsvg-devel qt6-qtwebengine-devel qt6-qtwebchannel-devel qt6-qt5compat-devel qt6-qtshadertools-devel
 dnf groupinstall "C Development Tools and Libraries"
 dnf groupinstall "Development Tools"
-dnf install "pkgconfig(jack)" rtaudio-devel git help2man python3-jinja2
+dnf install "pkgconfig(jack)" rtaudio-devel git help2man python3-jinja2 dbus-devel
 ```
 
 Clone the git repo with submodules and run `./build install` in the project
