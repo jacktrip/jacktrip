@@ -1965,8 +1965,12 @@ QString QJackTrip::commandLineFromCurrentOptions()
         if (m_ui->outputDeviceComboBox->currentIndex() > 0) {
             outDevice = m_ui->outputDeviceComboBox->currentText();
         }
-        commandLine.append(
-            QStringLiteral(" --audiodevice \"%1\",\"%2\"").arg(inDevice, outDevice));
+        QString inDeviceEscaped =
+            QString(inDevice).replace(QStringLiteral(","), QStringLiteral("\\,"));
+        QString outDeviceEscaped =
+            QString(outDevice).replace(QStringLiteral(","), QStringLiteral("\\,"));
+        commandLine.append(QStringLiteral(" --audiodevice \"%1\",\"%2\"")
+                               .arg(inDeviceEscaped, outDeviceEscaped));
     }
 #endif
 
