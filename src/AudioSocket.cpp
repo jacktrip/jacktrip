@@ -139,12 +139,13 @@ void ToAudioSocketPlugin::compute(int nframes, float** inputs, [[maybe_unused]] 
 }
 
 //*******************************************************************************
-void ToAudioSocketPlugin::updateNumChannels(int nChansIn, [[maybe_unused]] int nChansOut)
+void ToAudioSocketPlugin::updateNumChannels(int nChansIn, int nChansOut)
 {
-    if (mNumChannels == nChansIn) {
-        return;
+    if (outgoingPluginToNetwork) {
+        mNumChannels = nChansIn;
+    } else {
+        mNumChannels = nChansOut;
     }
-    mNumChannels = nChansIn;
 }
 
 //*******************************************************************************
@@ -248,12 +249,13 @@ void FromAudioSocketPlugin::compute(int nframes, [[maybe_unused]] float** inputs
 }
 
 //*******************************************************************************
-void FromAudioSocketPlugin::updateNumChannels([[maybe_unused]] int nChansIn, int nChansOut)
+void FromAudioSocketPlugin::updateNumChannels(int nChansIn, int nChansOut)
 {
-    if (mNumChannels == nChansOut) {
-        return;
+    if (outgoingPluginToNetwork) {
+        mNumChannels = nChansIn;
+    } else {
+        mNumChannels = nChansOut;
     }
-    mNumChannels = nChansOut;
 }
 
 //*******************************************************************************
