@@ -136,8 +136,8 @@ class AudioSocketWorker : public QObject
 
    public:
     AudioSocketWorker(QSharedPointer<QLocalSocket>& s, WaitFreeFrameBuffer<>& sendQueue,
-                      WaitFreeFrameBuffer<>& receiveQueue, ToAudioSocketPlugin& toPlugin,
-                      FromAudioSocketPlugin& fromPlugin);
+                      WaitFreeFrameBuffer<>& receiveQueue, QSharedPointer<ProcessPlugin>& toPlugin,
+                      QSharedPointer<ProcessPlugin>& fromPlugin);
     virtual ~AudioSocketWorker();
 
     inline bool isConnected() { return mSocketPtr->state() == QLocalSocket::ConnectedState; }
@@ -163,10 +163,10 @@ class AudioSocketWorker : public QObject
 
    private:
     QSharedPointer<QLocalSocket> mSocketPtr;
+    QSharedPointer<ProcessPlugin> mToAudioSocketPluginPtr;
+    QSharedPointer<ProcessPlugin> mFromAudioSocketPluginPtr;
     WaitFreeFrameBuffer<>& mSendQueue;
     WaitFreeFrameBuffer<>& mReceiveQueue;
-    ToAudioSocketPlugin& mToAudioSocketPlugin;
-    FromAudioSocketPlugin& mFromAudioSocketPlugin;
     QByteArray mSendBuffer;
     QByteArray mRecvBuffer;
     int mLocalBytesPerPacket = 0;
@@ -188,8 +188,8 @@ class AudioSocket : public QObject
 
     inline QLocalSocket& getSocket() { return *mSocketPtr; }
     inline bool isConnected() { return mSocketPtr->state() == QLocalSocket::ConnectedState; }
-    inline ProcessPlugin* getToAudioSocketPlugin() { return &mToAudioSocketPlugin; }
-    inline ProcessPlugin* getFromAudioSocketPlugin() { return &mFromAudioSocketPlugin; }
+    inline QSharedPointer<ProcessPlugin>& getToAudioSocketPlugin() { return mToAudioSocketPluginPtr; }
+    inline QSharedPointer<ProcessPlugin>& getFromAudioSocketPlugin() { return mFromAudioSocketPluginPtr; }
 
     // attempts to connect to remote instance's socket server
     // returns true if connection was successfully established
@@ -214,8 +214,8 @@ class AudioSocket : public QObject
     WaitFreeFrameBuffer<> mSendQueue;
     WaitFreeFrameBuffer<> mReceiveQueue;
     QSharedPointer<QLocalSocket> mSocketPtr;
-    ToAudioSocketPlugin mToAudioSocketPlugin;
-    FromAudioSocketPlugin mFromAudioSocketPlugin;
+    QSharedPointer<ProcessPlugin> mToAudioSocketPluginPtr;
+    QSharedPointer<ProcessPlugin> mFromAudioSocketPluginPtr;
     QScopedPointer<AudioSocketWorker> mWorkerPtr;
 
     friend class AudioSocketWorker;

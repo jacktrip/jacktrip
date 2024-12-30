@@ -38,17 +38,18 @@
 #ifndef __AUDIOINTERFACE_H__
 #define __AUDIOINTERFACE_H__
 
+#include <QSharedPointer>
 #include <QVarLengthArray>
 #include <QVector>
 #include <functional>
 
 #include "AudioTester.h"
-#include "ProcessPlugin.h"
 #include "WaitFreeFrameBuffer.h"
 #include "jacktrip_types.h"
 
 // Forward declarations
 class JackTrip;
+class ProcessPlugin;
 
 // using namespace JackTripNamespace;
 
@@ -190,7 +191,7 @@ class AudioInterface
      * using something like:\n
      * <tt>std::tr1::shared_ptr<ProcessPluginName> loopback(new ProcessPluginName);</tt>
      */
-    virtual void appendProcessPluginToNetwork(ProcessPlugin* plugin);
+    virtual void appendProcessPluginToNetwork(QSharedPointer<ProcessPlugin>& plugin);
 
     /** \brief appendProcessPluginFromNetwork():
      * Same as appendProcessPluginToNetwork() except that these plugins operate
@@ -200,12 +201,12 @@ class AudioInterface
      *               -> remote JackTrip server
      *               -> JackTrip client -> processPlugin from network -> JACK -> audio
      */
-    virtual void appendProcessPluginFromNetwork(ProcessPlugin* plugin);
+    virtual void appendProcessPluginFromNetwork(QSharedPointer<ProcessPlugin>& plugin);
 
     /** \brief appendProcessPluginToMonitor():
      * Appends plugins used for local monitoring
      */
-    virtual void appendProcessPluginToMonitor(ProcessPlugin* plugin);
+    virtual void appendProcessPluginToMonitor(QSharedPointer<ProcessPlugin>& plugin);
 
     /** \brief initPlugins():
      * Initialize all ProcessPlugin modules.
@@ -337,11 +338,11 @@ class AudioInterface
     std::string mInputDeviceName, mOutputDeviceName;  ///< RTAudio device names
     uint32_t mBufferSizeInSamples;                    ///< Buffer size in samples
     size_t mSizeInBytesPerChannel;                    ///< Size in bytes per audio channel
-    QVector<ProcessPlugin*>
+    QVector< QSharedPointer<ProcessPlugin> >
         mProcessPluginsFromNetwork;  ///< Vector of ProcessPlugin<EM>s</EM>
-    QVector<ProcessPlugin*>
+    QVector< QSharedPointer<ProcessPlugin> >
         mProcessPluginsToNetwork;  ///< Vector of ProcessPlugin<EM>s</EM>
-    QVector<ProcessPlugin*>
+    QVector< QSharedPointer<ProcessPlugin> >
         mProcessPluginsToMonitor;  ///< Vector of ProcessPlugin<EM>s</EM>
     QVarLengthArray<sample_t*>
         mInProcessBuffer;  ///< Vector of Input buffers/channel for ProcessPlugin

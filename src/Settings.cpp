@@ -1226,13 +1226,15 @@ JackTrip* Settings::getConfiguredJackTrip()
     std::vector<ProcessPlugin*> outgoingEffects =
         mEffects.allocateOutgoingEffects(mNumAudioInputChans - nReservedChans);
     for (auto p : outgoingEffects) {
-        jackTrip->appendProcessPluginToNetwork(p);
+        QSharedPointer<ProcessPlugin> pShared(p);
+        jackTrip->appendProcessPluginToNetwork(pShared);
     }
 
     std::vector<ProcessPlugin*> incomingEffects =
         mEffects.allocateIncomingEffects(mNumAudioOutputChans - nReservedChans);
     for (auto p : incomingEffects) {
-        jackTrip->appendProcessPluginFromNetwork(p);
+        QSharedPointer<ProcessPlugin> pShared(p);
+        jackTrip->appendProcessPluginFromNetwork(pShared);
     }
 
 #ifdef WAIR  // WAIR

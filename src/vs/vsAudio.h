@@ -361,16 +361,7 @@ class VsAudio : public QObject
     QThread* m_workerThreadPtr;
     QTimer m_inputClipTimer;
     QTimer m_outputClipTimer;
-    Meter* m_inputMeterPluginPtr;
-    Meter* m_outputMeterPluginPtr;
-    Volume* m_inputVolumePluginPtr;
-    Volume* m_outputVolumePluginPtr;
-    Monitor* m_monitorPluginPtr;
     bool mHasErrors;  ///< true if one or more error callbacks have been triggered
-
-#ifndef NO_FEEDBACK
-    Analyzer* m_outputAnalyzerPluginPtr;
-#endif
 
     QStringList m_audioBackendComboModel = {"JACK", "RtAudio"};
     QStringList m_bufferSizeComboModel = {"16", "32", "64", "128", "256", "512", "1024"};

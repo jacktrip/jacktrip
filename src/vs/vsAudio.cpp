@@ -97,11 +97,6 @@ VsAudio::VsAudio(QObject* parent)
     , m_inputMixModeComboModel(QJsonArray::fromStringList(QStringList(QLatin1String(""))))
     , m_audioWorkerPtr(new VsAudioWorker(this))
     , m_workerThreadPtr(nullptr)
-    , m_inputMeterPluginPtr(nullptr)
-    , m_outputMeterPluginPtr(nullptr)
-    , m_inputVolumePluginPtr(nullptr)
-    , m_outputVolumePluginPtr(nullptr)
-    , m_monitorPluginPtr(nullptr)
     , mHasErrors(false)
 {
     loadSettings();
@@ -656,26 +651,30 @@ void VsAudio::appendProcessPlugins(AudioInterface& audioInterface, bool forJackT
     setInputMuted(false);
 
     // Create plugins
-    m_inputMeterPluginPtr   = new Meter(numInputChannels);
-    m_outputMeterPluginPtr  = new Meter(numOutputChannels);
-    m_inputVolumePluginPtr  = new Volume(numInputChannels);
-    m_outputVolumePluginPtr = new Volume(numOutputChannels);
+    Meter* inputMeterPluginPtr    = new Meter(numInputChannels);
+    Meter* outputMeterPluginPtr   = new Meter(numOutputChannels);
+    Volume* inputVolumePluginPtr  = new Volume(numInputChannels);
+    Volume* outputVolumePluginPtr = new Volume(numOutputChannels);
+    QSharedPointer<ProcessPlugin> inputVolumePluginSharedPtr(inputVolumePluginPtr);
+    QSharedPointer<ProcessPlugin> outputVolumePluginSharedPtr(outputVolumePluginPtr);
+    QSharedPointer<ProcessPlugin> inputMeterPluginSharedPtr(inputMeterPluginPtr);
+    QSharedPointer<ProcessPlugin> outputMeterPluginSharedPtr(outputMeterPluginPtr);
 
     // initialize input and output volumes
-    m_outputVolumePluginPtr->volumeUpdated(m_outMultiplier);
-    m_inputVolumePluginPtr->volumeUpdated(m_inMultiplier);
-    m_inputVolumePluginPtr->muteUpdated(m_inMuted);
+    outputVolumePluginPtr->volumeUpdated(m_outMultiplier);
+    inputVolumePluginPtr->volumeUpdated(m_inMultiplier);
+    inputVolumePluginPtr->muteUpdated(m_inMuted);
 
     // Connect plugins for communication with UI
-    connect(m_inputMeterPluginPtr, &Meter::onComputedVolumeMeasurements, this,
+    connect(inputMeterPluginPtr, &Meter::onComputedVolumeMeasurements, this,
             &VsAudio::updatedInputVuMeasurements);
-    connect(m_outputMeterPluginPtr, &Meter::onComputedVolumeMeasurements, this,
+    connect(outputMeterPluginPtr, &Meter::onComputedVolumeMeasurements, this,
             &VsAudio::updatedOutputVuMeasurements);
-    connect(this, &VsAudio::updatedInputVolume, m_inputVolumePluginPtr,
+    connect(this, &VsAudio::updatedInputVolume, inputVolumePluginPtr,
             &Volume::volumeUpdated);
-    connect(this, &VsAudio::updatedOutputVolume, m_outputVolumePluginPtr,
+    connect(this, &VsAudio::updatedOutputVolume, outputVolumePluginPtr,
             &Volume::volumeUpdated);
-    connect(this, &VsAudio::updatedInputMuted, m_inputVolumePluginPtr,
+    connect(this, &VsAudio::updatedInputMuted, inputVolumePluginPtr,
             &Volume::muteUpdated);
 
     // Note that plugin ownership is passed to the JackTrip class
@@ -683,47 +682,50 @@ void VsAudio::appendProcessPlugins(AudioInterface& audioInterface, bool forJackT
     for (QVector<QSharedPointer<AudioSocket>>::iterator i=m_audioSockets.begin(); i != m_audioSockets.end(); ++i) {
         audioInterface.appendProcessPluginToNetwork((*i)->getFromAudioSocketPlugin());
     }
-    audioInterface.appendProcessPluginToNetwork(m_inputVolumePluginPtr);
-    audioInterface.appendProcessPluginToNetwork(m_inputMeterPluginPtr);
+    audioInterface.appendProcessPluginToNetwork(inputVolumePluginSharedPtr);
+    audioInterface.appendProcessPluginToNetwork(inputMeterPluginSharedPtr);
 
     if (forJackTrip) {
         // plugins for stream going to audio interface
-        audioInterface.appendProcessPluginFromNetwork(m_outputVolumePluginPtr);
+        audioInterface.appendProcessPluginFromNetwork(outputVolumePluginSharedPtr);
 
         // Setup monitor
         // Note: Constructor determines how many internal monitor buffers to allocate
-        m_monitorPluginPtr = new Monitor(std::max(numInputChannels, numOutputChannels));
-        m_monitorPluginPtr->volumeUpdated(m_monMultiplier);
-        audioInterface.appendProcessPluginToMonitor(m_monitorPluginPtr);
-        connect(this, &VsAudio::updatedMonitorVolume, m_monitorPluginPtr,
+        Monitor* monitorPluginPtr = new Monitor(std::max(numInputChannels, numOutputChannels));
+        monitorPluginPtr->volumeUpdated(m_monMultiplier);
+        connect(this, &VsAudio::updatedMonitorVolume, monitorPluginPtr,
                 &Monitor::volumeUpdated);
+        QSharedPointer<ProcessPlugin> monitorPluginSharedPtr(monitorPluginPtr);
+        audioInterface.appendProcessPluginToMonitor(monitorPluginSharedPtr);
 
 #ifndef NO_FEEDBACK
         // Setup output analyzer
         if (m_feedbackDetectionEnabled) {
-            m_outputAnalyzerPluginPtr = new Analyzer(numOutputChannels);
-            m_outputAnalyzerPluginPtr->setIsMonitoringAnalyzer(true);
-            audioInterface.appendProcessPluginToMonitor(m_outputAnalyzerPluginPtr);
-            connect(m_outputAnalyzerPluginPtr, &Analyzer::signalFeedbackDetected, this,
+            Analyzer *outputAnalyzerPluginPtr = new Analyzer(numOutputChannels);
+            outputAnalyzerPluginPtr->setIsMonitoringAnalyzer(true);
+            connect(outputAnalyzerPluginPtr, &Analyzer::signalFeedbackDetected, this,
                     &VsAudio::detectedFeedbackLoop);
+            QSharedPointer<ProcessPlugin> outputAnalyzerPluginSharedPtr(outputAnalyzerPluginPtr);
+            audioInterface.appendProcessPluginToMonitor(outputAnalyzerPluginSharedPtr);
         }
 #endif
 
         // Setup output meter
         // Note: Add this to monitor process to include self-volume
-        m_outputMeterPluginPtr->setIsMonitoringMeter(true);
-        audioInterface.appendProcessPluginToMonitor(m_outputMeterPluginPtr);
+        outputMeterPluginPtr->setIsMonitoringMeter(true);
+        audioInterface.appendProcessPluginToMonitor(outputMeterPluginSharedPtr);
 
     } else {
         // tone plugin is used to test audio output
         Tone* outputTonePluginPtr = new Tone(getNumOutputChannels());
         connect(this, &VsAudio::signalPlayOutputAudio, outputTonePluginPtr,
                 &Tone::triggerPlayback);
-        audioInterface.appendProcessPluginFromNetwork(outputTonePluginPtr);
+        QSharedPointer<ProcessPlugin> outputTonePluginSharedPtr(outputTonePluginPtr);
+        audioInterface.appendProcessPluginFromNetwork(outputTonePluginSharedPtr);
 
         // plugins for stream going to audio interface
-        audioInterface.appendProcessPluginFromNetwork(m_outputVolumePluginPtr);
-        audioInterface.appendProcessPluginFromNetwork(m_outputMeterPluginPtr);
+        audioInterface.appendProcessPluginFromNetwork(outputVolumePluginSharedPtr);
+        audioInterface.appendProcessPluginFromNetwork(outputMeterPluginSharedPtr);
     }
 
     for (QVector<QSharedPointer<AudioSocket>>::iterator i=m_audioSockets.begin(); i != m_audioSockets.end(); ++i) {
