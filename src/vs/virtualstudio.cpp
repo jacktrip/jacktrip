@@ -62,6 +62,7 @@
 // https://bugreports.qt.io/browse/QTBUG-55199
 #include <QSvgGenerator>
 
+#include "../AudioSocket.h"
 #include "../JackTrip.h"
 #include "../Settings.h"
 #include "../SocketClient.h"
@@ -290,7 +291,7 @@ VirtualStudio::VirtualStudio(UserInterface& parent)
         m_deepLinkPtr->handleVsDeeplinkRequest(socket);
     });
     m_socketServerPtr->addHandler("audio", [=](QSharedPointer<QLocalSocket>& socket) {
-        m_audioConfigPtr->handleAudioSocketRequest(socket);
+        this->handleAudioSocketRequest(socket);
     });
     m_socketServerPtr->start();
 
@@ -1306,6 +1307,13 @@ void VirtualStudio::handleDeeplinkRequest(const QUrl& link)
     }
 
     // otherwise, assume we are on setup screens and can let the normal flow handle it
+}
+
+void VirtualStudio::handleAudioSocketRequest(QSharedPointer<QLocalSocket>& socket)
+{
+    QSharedPointer<AudioSocket> audioSocketPtr(new AudioSocket(socket));
+    m_audioConfigPtr->registerAudioSocket(audioSocketPtr);
+    triggerReconnect(true);
 }
 
 void VirtualStudio::exit()

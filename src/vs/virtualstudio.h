@@ -62,6 +62,7 @@
 #include "vsServerInfo.h"
 
 class JackTrip;
+class QLocalSocket;
 class SocketServer;
 class VsAudio;
 class VsApi;
@@ -208,6 +209,7 @@ class VirtualStudio : public QObject
     void showAbout();
     void openLink(const QString& url);
     void handleDeeplinkRequest(const QUrl& url);
+    void handleAudioSocketRequest(QSharedPointer<QLocalSocket>& socket);
     void udpWaitingTooLong();
     void setWindowState(QString state);
     void joinStudio();

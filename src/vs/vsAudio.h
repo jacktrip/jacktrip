@@ -39,6 +39,7 @@
 
 #include <QJsonArray>
 #include <QList>
+#include <QMutex>
 #include <QObject>
 #include <QSharedPointer>
 #include <QString>
@@ -58,7 +59,6 @@ class AudioSocket;
 class JackTrip;
 class Meter;
 class Monitor;
-class QLocalSocket;
 class QThread;
 class Tone;
 class Volume;
@@ -209,7 +209,7 @@ class VsAudio : public QObject
     bool getHighLatencyFlag() const { return m_highLatencyFlag; }
 
     // called by local socket server to process audio requests
-    void handleAudioSocketRequest(QSharedPointer<QLocalSocket>& socket);
+    void registerAudioSocket(QSharedPointer<AudioSocket>& s);
 
    public slots:
 
@@ -358,6 +358,7 @@ class VsAudio : public QObject
     QSharedPointer<VsPermissions> m_permissionsPtr;
     QScopedPointer<VsAudioWorker> m_audioWorkerPtr;
     QVector<QSharedPointer<AudioSocket>> m_audioSockets;
+    QMutex m_audioSocketMutex;
     QThread* m_workerThreadPtr;
     QTimer m_inputClipTimer;
     QTimer m_outputClipTimer;
