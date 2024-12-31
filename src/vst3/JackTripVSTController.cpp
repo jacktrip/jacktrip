@@ -142,7 +142,7 @@ IPlugView* PLUGIN_API JackTripVSTController::createView (FIDString name)
 	if (FIDStringsEqual (name, Vst::ViewType::kEditor))
 	{
 		// create your editor here and return a IPlugView ptr of it
-		auto* view = new VSTGUI::VST3Editor (this, "view", "JackTripVSTeditor.uidesc");
+		auto* view = new VSTGUI::VST3Editor (this, "view", "JackTripEditor.uidesc");
 		return view;
 	}
 	return nullptr;

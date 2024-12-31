@@ -66,10 +66,10 @@ class ProcessPlugin : public QObject
     virtual int getNumOutputs() = 0;
 
     /// \brief Return local audio sample rate
-    int getSampleRate() { return mSampleRate; }
+    int getSampleRate() const { return mSampleRate; }
 
     /// \brief Return local audio buffer size
-    int getBufferSize() { return mBufferSize; }
+    int getBufferSize() const { return mBufferSize; }
 
     // virtual void buildUserInterface(UI* interface) = 0;
 

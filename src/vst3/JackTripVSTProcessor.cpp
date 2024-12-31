@@ -166,43 +166,54 @@ tresult PLUGIN_API JackTripVSTProcessor::process (Vst::ProcessData& data)
 
     //--- Process Audio---------------------
     //--- ----------------------------------
-    if (data.numInputs == 0 || data.numOutputs == 0)
-    {
+    if (data.numInputs == 0 || data.numOutputs == 0) {
         // nothing to do
         return kResultOk;
     }
 
-    if (data.numSamples > 0)
-    {
-        // Process Algorithm
-        // Ex: algo.process (data.inputs[0].channelBuffers32, data.outputs[0].channelBuffers32,
-        // data.numSamples);
+    if (data.numSamples <= 0) {
+        // nothing to do
+        return kResultOk;
+    }
 
-        // clear buffers
-        for (int i = 0; i < AudioSocketNumChannels; i++) {
-            memset(mInputBuffer[i], 0, AudioSocketMaxSamplesPerBlock * sizeof(float));
-            memset(mOutputBuffer[i], 0, AudioSocketMaxSamplesPerBlock * sizeof(float));
+/*
+    if (mBypass) {
+        // copy input to output
+        for (int i = 0; i < data.inputs[0].numChannels && i < data.outputs[0].numChannels; i++) {
+            memcpy(data.outputs[0].channelBuffers32[i], data.inputs[0].channelBuffers32[i],
+                    data.numSamples * sizeof(Steinberg::Vst::Sample32));
         }
+        return kResultOk;
+    }
+*/
+    // Process Algorithm
+    // Ex: algo.process (data.inputs[0].channelBuffers32, data.outputs[0].channelBuffers32,
+    // data.numSamples);
 
-        // copy input to buffer
-        int channelsIn = std::min(data.inputs[0].numChannels, AudioSocketNumChannels);
-        for (int i = 0; i < channelsIn; i++) {
-            float* inBuffer = data.inputs[0].channelBuffers32[i];
-            for (int j = 0; j < data.numSamples; j++) {
-                mInputBuffer[i][j] = inBuffer[j];
-            }
+    // clear buffers
+    for (int i = 0; i < AudioSocketNumChannels; i++) {
+        memset(mInputBuffer[i], 0, AudioSocketMaxSamplesPerBlock * sizeof(float));
+        memset(mOutputBuffer[i], 0, AudioSocketMaxSamplesPerBlock * sizeof(float));
+    }
+
+    // copy input to buffer
+    int channelsIn = std::min(data.inputs[0].numChannels, AudioSocketNumChannels);
+    for (int i = 0; i < channelsIn; i++) {
+        float* inBuffer = data.inputs[0].channelBuffers32[i];
+        for (int j = 0; j < data.numSamples; j++) {
+            mInputBuffer[i][j] = inBuffer[j];
         }
+    }
 
-        // send to socket
-        mSocketPtr->compute(data.numSamples, mInputBuffer, mOutputBuffer);
+    // send to socket
+    mSocketPtr->compute(data.numSamples, mInputBuffer, mOutputBuffer);
 
-        // copy buffer to output
-        int channelsOut = std::min(data.outputs[0].numChannels, AudioSocketNumChannels);
-        for (int i = 0; i < channelsOut; i++) {
-            float* outBuffer = data.outputs[0].channelBuffers32[i];
-            for (int j = 0; j < data.numSamples; j++) {
-                mOutputBuffer[i][j] = outBuffer[j];
-            }
+    // copy buffer to output
+    int channelsOut = std::min(data.outputs[0].numChannels, AudioSocketNumChannels);
+    for (int i = 0; i < channelsOut; i++) {
+        float* outBuffer = data.outputs[0].channelBuffers32[i];
+        for (int j = 0; j < data.numSamples; j++) {
+            mOutputBuffer[i][j] = outBuffer[j];
         }
     }
 
@@ -213,9 +224,20 @@ tresult PLUGIN_API JackTripVSTProcessor::process (Vst::ProcessData& data)
 tresult PLUGIN_API JackTripVSTProcessor::setupProcessing (Vst::ProcessSetup& newSetup)
 {
     if (mSocketPtr.isNull()) {
+        // not yet initialized
         mSocketPtr.reset(new AudioSocket());
     }
-    mSocketPtr->connect(newSetup.sampleRate, newSetup.maxSamplesPerBlock);
+
+    if (mSocketPtr->isConnected()) {
+        if (newSetup.sampleRate != mSocketPtr->getSampleRate()
+            || newSetup.maxSamplesPerBlock != mSocketPtr->getBufferSize()) {
+            // reconnect
+            mSocketPtr.reset(new AudioSocket());
+            mSocketPtr->connect(newSetup.sampleRate, newSetup.maxSamplesPerBlock);
+        }
+    } else {
+        mSocketPtr->connect(newSetup.sampleRate, newSetup.maxSamplesPerBlock);
+    }
 
     // TODO: error handling, reconnecting, etc
 
