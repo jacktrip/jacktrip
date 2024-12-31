@@ -190,6 +190,8 @@ class AudioSocket : public QObject
     inline bool isConnected() { return mSocketPtr->state() == QLocalSocket::ConnectedState; }
     inline QSharedPointer<ProcessPlugin>& getToAudioSocketPlugin() { return mToAudioSocketPluginPtr; }
     inline QSharedPointer<ProcessPlugin>& getFromAudioSocketPlugin() { return mFromAudioSocketPluginPtr; }
+    inline int getSampleRate() const { return mToAudioSocketPluginPtr->getSampleRate(); }
+    inline int getBufferSize() const { return mToAudioSocketPluginPtr->getBufferSize(); }
 
     // attempts to connect to remote instance's socket server
     // returns true if connection was successfully established

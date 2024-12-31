@@ -285,6 +285,10 @@ AudioSocketWorker::~AudioSocketWorker()
 //****************************************************************************
 void AudioSocketWorker::connect()
 {
+    if (isConnected()) {
+        return;
+    }
+
     SocketClient c(mSocketPtr);
 
     if (!c.connect()) {
@@ -307,6 +311,7 @@ void AudioSocketWorker::connect()
 void AudioSocketWorker::close()
 {
     mSocketPtr->close();
+    mRemoteIsReady = false;
 }
 
 //*******************************************************************************
@@ -446,6 +451,9 @@ AudioSocket::~AudioSocket()
 //*******************************************************************************
 bool AudioSocket::connect(int samplingRate, int bufferSize)
 {
+    if (mWorkerPtr->isConnected()) {
+        return true;
+    }
     mFromAudioSocketPluginPtr->init(samplingRate, bufferSize);
     mToAudioSocketPluginPtr->init(samplingRate, bufferSize);
     emit signalConnect();
