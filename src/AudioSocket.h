@@ -62,7 +62,7 @@ class ToAudioSocketPlugin : public ProcessPlugin
     Q_OBJECT;
 
    public:
-    ToAudioSocketPlugin(QSharedPointer<QLocalSocket>& s, WaitFreeFrameBuffer<>& sendQueue,
+    ToAudioSocketPlugin(WaitFreeFrameBuffer<>& sendQueue,
                         WaitFreeFrameBuffer<>& receiveQueue);
     virtual ~ToAudioSocketPlugin();
 
@@ -79,9 +79,9 @@ class ToAudioSocketPlugin : public ProcessPlugin
 
    public slots:
     void gotAudioHeader(int samplingRate, int bufferSize);
+    void lostConnection();
 
    private:
-    QSharedPointer<QLocalSocket> mSocketPtr;
     WaitFreeFrameBuffer<>& mSendQueue;
     WaitFreeFrameBuffer<>& mReceiveQueue;
     QByteArray mSendBuffer;
@@ -100,8 +100,8 @@ class FromAudioSocketPlugin : public ProcessPlugin
     Q_OBJECT;
 
    public:
-    FromAudioSocketPlugin(QSharedPointer<QLocalSocket>& s, WaitFreeFrameBuffer<>& sendQueue,
-                      WaitFreeFrameBuffer<>& receiveQueue);
+    FromAudioSocketPlugin(WaitFreeFrameBuffer<>& sendQueue,
+                          WaitFreeFrameBuffer<>& receiveQueue);
     virtual ~FromAudioSocketPlugin();
 
     void init(int samplingRate, int bufferSize) override;
@@ -113,9 +113,9 @@ class FromAudioSocketPlugin : public ProcessPlugin
 
    public slots:
     void gotAudioHeader(int samplingRate, int bufferSize);
+    void lostConnection();
 
    private:
-    QSharedPointer<QLocalSocket> mSocketPtr;
     WaitFreeFrameBuffer<>& mSendQueue;
     WaitFreeFrameBuffer<>& mReceiveQueue;
     QByteArray mRecvBuffer;
@@ -136,8 +136,7 @@ class AudioSocketWorker : public QObject
 
    public:
     AudioSocketWorker(QSharedPointer<QLocalSocket>& s, WaitFreeFrameBuffer<>& sendQueue,
-                      WaitFreeFrameBuffer<>& receiveQueue, QSharedPointer<ProcessPlugin>& toPlugin,
-                      QSharedPointer<ProcessPlugin>& fromPlugin);
+                      WaitFreeFrameBuffer<>& receiveQueue);
     virtual ~AudioSocketWorker();
 
     inline bool isConnected() { return mSocketPtr->state() == QLocalSocket::ConnectedState; }
@@ -145,6 +144,7 @@ class AudioSocketWorker : public QObject
    signals:
     void signalConnectFinished(bool);
     void signalGotAudioHeader(int samplingRate, int bufferSize);
+    void signalLostConnection();
  
    public slots:
     // attempts to connect to remote instance's socket server
@@ -163,8 +163,6 @@ class AudioSocketWorker : public QObject
 
    private:
     QSharedPointer<QLocalSocket> mSocketPtr;
-    QSharedPointer<ProcessPlugin> mToAudioSocketPluginPtr;
-    QSharedPointer<ProcessPlugin> mFromAudioSocketPluginPtr;
     WaitFreeFrameBuffer<>& mSendQueue;
     WaitFreeFrameBuffer<>& mReceiveQueue;
     QByteArray mSendBuffer;
@@ -186,12 +184,12 @@ class AudioSocket : public QObject
     AudioSocket(QSharedPointer<QLocalSocket>& s);
     virtual ~AudioSocket();
 
-    inline QLocalSocket& getSocket() { return *mSocketPtr; }
     inline bool isConnected() { return mSocketPtr->state() == QLocalSocket::ConnectedState; }
-    inline QSharedPointer<ProcessPlugin>& getToAudioSocketPlugin() { return mToAudioSocketPluginPtr; }
-    inline QSharedPointer<ProcessPlugin>& getFromAudioSocketPlugin() { return mFromAudioSocketPluginPtr; }
     inline int getSampleRate() const { return mToAudioSocketPluginPtr->getSampleRate(); }
     inline int getBufferSize() const { return mToAudioSocketPluginPtr->getBufferSize(); }
+    inline QLocalSocket& getSocket() { return *mSocketPtr; }
+    inline QSharedPointer<ProcessPlugin>& getToAudioSocketPlugin() { return mToAudioSocketPluginPtr; }
+    inline QSharedPointer<ProcessPlugin>& getFromAudioSocketPlugin() { return mFromAudioSocketPluginPtr; }
 
     // attempts to connect to remote instance's socket server
     // returns true if connection was successfully established
