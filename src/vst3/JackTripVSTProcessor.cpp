@@ -41,6 +41,19 @@
 using namespace Steinberg;
 
 namespace Steinberg {
+
+static QCoreApplication* sQtAppPtr = nullptr;
+
+static QCoreApplication* getQtAppPtr()
+{
+    if (sQtAppPtr == nullptr) {
+        int argc = 0;
+        sQtAppPtr = new QCoreApplication(argc, nullptr);
+        sQtAppPtr->setAttribute(Qt::AA_NativeWindows);
+    }
+    return sQtAppPtr;
+}
+
 //------------------------------------------------------------------------
 // JackTripVSTProcessor
 //------------------------------------------------------------------------
@@ -71,11 +84,7 @@ tresult PLUGIN_API JackTripVSTProcessor::initialize (FUnknown* context)
 	addAudioInput (STR16 ("Stereo In"), Steinberg::Vst::SpeakerArr::kStereo);
 	addAudioOutput (STR16 ("Stereo Out"), Steinberg::Vst::SpeakerArr::kStereo);
 
-    int argc = 0;
-    mAppPtr.reset(new QCoreApplication(argc, nullptr));
-    mAppPtr->setAttribute(Qt::AA_NativeWindows);
-    //mAppThreadPtr.reset(new QtAppThread());
-    //mAppThreadPtr->start();
+    getQtAppPtr();
 
     mInputBuffer = new float*[AudioSocketNumChannels];
     mOutputBuffer = new float*[AudioSocketNumChannels];
@@ -90,16 +99,6 @@ tresult PLUGIN_API JackTripVSTProcessor::initialize (FUnknown* context)
 //------------------------------------------------------------------------
 tresult PLUGIN_API JackTripVSTProcessor::terminate ()
 {
-	if (!mAppPtr.isNull()) {
-        mAppPtr->exit();
-        if (!mAppThreadPtr.isNull()) {
-            mAppThreadPtr->quit();
-            mAppThreadPtr->wait();
-            mAppThreadPtr.reset();
-        }
-        mAppPtr.reset();
-    }
-
     for (int i = 0; i < AudioSocketNumChannels; i++) {
         delete[] mInputBuffer[i];
         delete[] mOutputBuffer[i];
