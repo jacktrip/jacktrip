@@ -48,6 +48,7 @@
 #include "jacktrip_types.h"
 
 // Forward declarations
+class AudioSocket;
 class JackTrip;
 class ProcessPlugin;
 
@@ -208,6 +209,11 @@ class AudioInterface
      */
     virtual void appendProcessPluginToMonitor(QSharedPointer<ProcessPlugin>& plugin);
 
+    /** \brief appendAudioSocket():
+     * Appends audio socket connections
+     */
+    virtual void appendAudioSocket(QSharedPointer<AudioSocket>& s);
+
     /** \brief initPlugins():
      * Initialize all ProcessPlugin modules.
      * The audio sampling rate (mSampleRate) must be set at this time.
@@ -344,6 +350,8 @@ class AudioInterface
         mProcessPluginsToNetwork;  ///< Vector of ProcessPlugin<EM>s</EM>
     QVector< QSharedPointer<ProcessPlugin> >
         mProcessPluginsToMonitor;  ///< Vector of ProcessPlugin<EM>s</EM>
+    QVector< QSharedPointer<AudioSocket> >
+        mAudioSockets;  ///< Vector of AudioSocket<EM>s</EM>
     QVarLengthArray<sample_t*>
         mInProcessBuffer;  ///< Vector of Input buffers/channel for ProcessPlugin
     QVarLengthArray<sample_t*>
