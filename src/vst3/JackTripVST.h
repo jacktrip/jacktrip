@@ -37,11 +37,11 @@
 #include "pluginterfaces/vst/vsttypes.h"
 
 #define JackTripVSTVST3Category "Fx"
-#define stringOriginalFilename	"JackTrip.vst3"
-#define stringFileDescription	"JackTrip VST3"
-#define stringCompanyName		"JackTrip Labs\0"
-#define stringLegalCopyright	"Copyright(c) 2024 JackTrip Labs, Inc."
-#define stringLegalTrademarks	"VST is a trademark of Steinberg Media Technologies GmbH"
+#define stringOriginalFilename  "JackTrip.vst3"
+#define stringFileDescription   "JackTrip VST3"
+#define stringCompanyName       "JackTrip Labs\0"
+#define stringLegalCopyright    "Copyright(c) 2024 JackTrip Labs, Inc."
+#define stringLegalTrademarks   "VST is a trademark of Steinberg Media Technologies GmbH"
 
 namespace Steinberg {
 
