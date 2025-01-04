@@ -48,10 +48,11 @@ namespace Steinberg {
 //------------------------------------------------------------------------
 enum JackTripVSTParams : Vst::ParamID
 {
-	kBypassId = 100,
-
-	kParamVolId = 102,
-	kParamOnId = 1000
+    kParamVolSendId = 100,
+    kParamVolReceiveId = 101,
+    kParamVolPassId = 102,
+    kParamConnectedId = 200,
+    kBypassId = 1000
 };
 
 //------------------------------------------------------------------------
