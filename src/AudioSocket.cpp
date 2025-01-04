@@ -195,9 +195,9 @@ void FromAudioSocketPlugin::compute(int nframes, [[maybe_unused]] float** inputs
         nframes = mBufferSize;
     }
 
-    // clear outputs with silence for early returns
+    // copy inputs to outputs
     for (int i = 0; i < getNumOutputs(); i++) {
-        memset(outputs[i], 0, bytesPerChannel);
+        memcpy(outputs[i], inputs[i], bytesPerChannel);
     }
 
     if (mLostConnection) {
@@ -235,14 +235,15 @@ void FromAudioSocketPlugin::compute(int nframes, [[maybe_unused]] float** inputs
 
     // copy bytes from remote to outputs
     char *nextPtr = mRecvBuffer.data();
-    for (int i = 0; i < getNumOutputs(); i++) {
-        if (i < AudioSocketNumChannels) {
-            memcpy(outputs[i], nextPtr, bytesPerChannel);  // use local buffer size
-            nextPtr += mRemoteBytesPerChannel;  // use remote buffer size
+    for (int i = 0; i < AudioSocketNumChannels; i++) {
+        int outputChannel = i < getNumOutputs() ? i : 0;  // mix to mono
+        float *framePtr = reinterpret_cast<float*>(nextPtr);
+        for (int j = 0; j < nframes; j++) {
+            // TODO: is addition sufficient for mixing audio?
+            outputs[outputChannel][j] += *(framePtr++);
         }
+        nextPtr += mRemoteBytesPerChannel;  // use remote buffer size
     }
-
-    // note: inputs are ignored
 }
 
 //*******************************************************************************
@@ -380,11 +381,13 @@ void AudioSocketWorker::exchangeAudio()
     }
 
     // send local audio packets to remote
-    int8_t* sendPtr = reinterpret_cast<int8_t*>(mSendBuffer.data());
-    while (mSendQueue.pop(sendPtr)) {
-        mSocketPtr->write(mSendBuffer);
+    if (!mSendQueue.empty()) {
+        int8_t* sendPtr = reinterpret_cast<int8_t*>(mSendBuffer.data());
+        while (mSendQueue.pop(sendPtr)) {
+            mSocketPtr->write(mSendBuffer);
+        }
+        mSocketPtr->flush();
     }
-    mSocketPtr->flush();
 
     // get audio packets from remote
     memset(mRecvBuffer.data(), 0, mRemoteBytesPerPacket);

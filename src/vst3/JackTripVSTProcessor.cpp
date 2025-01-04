@@ -246,6 +246,7 @@ tresult PLUGIN_API JackTripVSTProcessor::process (Vst::ProcessData& data)
                 if (i < AudioSocketNumChannels && mReceiveVol >= 0.0000001) {
                     outBuffer[j] = mOutputBuffer[i][j] * mReceiveVol;
                 }
+                // TODO: is addition sufficient for mixing audio?
                 if (i < data.inputs[0].numChannels && mPassVol >= 0.0000001) {
                     outBuffer[j] += data.inputs[0].channelBuffers32[i][j] * mPassVol;
                 }
