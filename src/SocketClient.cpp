@@ -79,6 +79,7 @@ void SocketClient::close()
 {
     if (isConnected()) {
         m_socket->close();
+        m_socket->waitForDisconnected(1000);  // wait for up to 1 second
     }
 }
 
@@ -93,7 +94,7 @@ bool SocketClient::sendHeader(const QString& handler)
     headerStr += "\n";
     QByteArray headerBytes = headerStr.toLocal8Bit();
     qint64 writeBytes      = m_socket->write(headerBytes);
-    m_socket->flush();
+    m_socket->waitForBytesWritten(-1);
     return writeBytes > 0;
 }
 

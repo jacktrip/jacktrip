@@ -113,14 +113,6 @@ tresult PLUGIN_API JackTripVSTProcessor::terminate ()
 //------------------------------------------------------------------------
 tresult PLUGIN_API JackTripVSTProcessor::setActive (TBool state)
 {
-    /*
-    if (state) {
-        mSocketPtr.reset(new AudioSocket());
-    } else {
-        mSocketPtr.reset();
-    }
-    */
-
     //--- called when the Plug-in is enable/disable (On/Off) -----
     return AudioEffect::setActive (state);
 }

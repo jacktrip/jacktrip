@@ -75,7 +75,7 @@ class ToAudioSocketPlugin : public ProcessPlugin
 
    signals:
     void signalSendAudioHeader(uint32_t sampleRate, uint16_t bufferSize);
-    void signalExchangeAudio();
+    void signalSendAudio();
 
    public slots:
     void gotAudioHeader(int samplingRate, int bufferSize);
@@ -101,7 +101,8 @@ class FromAudioSocketPlugin : public ProcessPlugin
 
    public:
     FromAudioSocketPlugin(WaitFreeFrameBuffer<>& sendQueue,
-                          WaitFreeFrameBuffer<>& receiveQueue);
+                          WaitFreeFrameBuffer<>& receiveQueue,
+                          bool passthrough = false);
     virtual ~FromAudioSocketPlugin();
 
     void init(int samplingRate, int bufferSize) override;
@@ -110,6 +111,10 @@ class FromAudioSocketPlugin : public ProcessPlugin
     void compute(int nframes, float** inputs, float** outputs) override;
     const char* getName() const override { return "FromAudioSocket"; };
     void updateNumChannels(int nChansIn, int nChansOut) override;
+    void setPassthrough(bool b) { mPassthrough = b; }
+
+   signals:
+    void signalReceiveAudio();
 
    public slots:
     void gotAudioHeader(int samplingRate, int bufferSize);
@@ -125,6 +130,7 @@ class FromAudioSocketPlugin : public ProcessPlugin
     int mRemoteBytesPerChannel = 0;
     bool mRemoteIsReady = false;
     bool mLostConnection = false;
+    bool mPassthrough = false;
 };
 
 
@@ -142,11 +148,15 @@ class AudioSocketWorker : public QObject
     inline bool isConnected() { return mSocketPtr->state() == QLocalSocket::ConnectedState; }
 
    signals:
+    void signalReadAudioHeader();
     void signalConnectFinished(bool);
     void signalGotAudioHeader(int samplingRate, int bufferSize);
     void signalLostConnection();
  
    public slots:
+    // sets a few things up at startup
+    void start();
+
     // attempts to connect to remote instance's socket server
     // returns true if connection was successfully established
     // returns false if connection failed
@@ -158,8 +168,14 @@ class AudioSocketWorker : public QObject
     /// \brief send audio header to remote instance
     void sendAudioHeader(uint32_t sampleRate, uint16_t bufferSize);
 
-    /// \brief exchanges audio packets with remote instance
-    void exchangeAudio();
+    /// \brief read audio header from remote instance
+    void readAudioHeader();
+
+    /// \brief sends audio packets to remote instance
+    void sendAudio();
+
+    /// \brief receives audio packets from remote instance
+    void receiveAudio();
 
    private:
     QSharedPointer<QLocalSocket> mSocketPtr;
@@ -203,6 +219,7 @@ class AudioSocket : public QObject
     void close();
 
    signals:
+    void signalStartWorker();
     void signalConnect();
     void signalClose();
 

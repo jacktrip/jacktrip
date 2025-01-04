@@ -677,21 +677,8 @@ void VsAudio::appendProcessPlugins(AudioInterface& audioInterface, bool forJackT
     connect(this, &VsAudio::updatedInputMuted, inputVolumePluginPtr,
             &Volume::muteUpdated);
 
-    // clear out any audio sockets that have disconnected
-    QMutexLocker locker(&m_audioSocketMutex);
-    for (auto i = m_audioSockets.begin(); i != m_audioSockets.end();) {
-        if ((*i)->isConnected()) {
-            ++i;
-        } else {
-            i = m_audioSockets.erase(i);
-        }
-    }
-
     // Note that plugin ownership is passed to the JackTrip class
     // In particular, the AudioInterface that it uses to connect
-    for (auto& s : m_audioSockets) {
-        audioInterface.appendProcessPluginToNetwork(s->getFromAudioSocketPlugin());
-    }
     audioInterface.appendProcessPluginToNetwork(inputVolumePluginSharedPtr);
     audioInterface.appendProcessPluginToNetwork(inputMeterPluginSharedPtr);
 
@@ -738,8 +725,15 @@ void VsAudio::appendProcessPlugins(AudioInterface& audioInterface, bool forJackT
         audioInterface.appendProcessPluginFromNetwork(outputMeterPluginSharedPtr);
     }
 
-    for (auto& s : m_audioSockets) {
-        audioInterface.appendProcessPluginFromNetwork(s->getToAudioSocketPlugin());
+    // clear out any audio sockets that have disconnected
+    QMutexLocker locker(&m_audioSocketMutex);
+    for (auto i = m_audioSockets.begin(); i != m_audioSockets.end();) {
+        if ((*i)->isConnected()) {
+            audioInterface.appendAudioSocket(*i);
+            ++i;
+        } else {
+            i = m_audioSockets.erase(i);
+        }
     }
 }
 
