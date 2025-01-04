@@ -50,126 +50,141 @@ namespace Steinberg {
 //------------------------------------------------------------------------
 tresult PLUGIN_API JackTripVSTController::initialize (FUnknown* context)
 {
-	// Here the Plug-in will be instantiated
+    // Here the Plug-in will be instantiated
 
-	//---do not forget to call parent ------
-	tresult result = EditControllerEx1::initialize (context);
-	if (result != kResultOk)
-	{
-		return result;
-	}
+    //---do not forget to call parent ------
+    tresult result = EditControllerEx1::initialize (context);
+    if (result != kResultOk)
+    {
+        return result;
+    }
 
-	// Here you could register some parameters
-	if (result == kResultTrue)
-	{
-		//---Create Parameters------------
-		parameters.addParameter (STR16 ("Bypass"), nullptr, 1, 0,
-		                         Vst::ParameterInfo::kCanAutomate | Vst::ParameterInfo::kIsBypass,
-		                         JackTripVSTParams::kBypassId);
+    // Here you could register some parameters
+    if (result == kResultTrue)
+    {
+        //---Create Parameters------------
+        parameters.addParameter (STR16 ("Send Volume"), STR16 ("dB"), 0, 1.,
+                                 Vst::ParameterInfo::kCanAutomate, JackTripVSTParams::kParamVolSendId, 0,
+                                 STR16 ("Send"));
 
-		parameters.addParameter (STR16 ("Parameter 1"), STR16 ("dB"), 0, .5,
-		                         Vst::ParameterInfo::kCanAutomate, JackTripVSTParams::kParamVolId, 0,
-		                         STR16 ("Param1"));
+        parameters.addParameter (STR16 ("Receive Volume"), STR16 ("dB"), 0, 1.,
+                                 Vst::ParameterInfo::kCanAutomate, JackTripVSTParams::kParamVolReceiveId, 0,
+                                 STR16 ("Receive"));
 
-		parameters.addParameter (STR16 ("Parameter 2"), STR16 ("On/Off"), 1, 1.,
-		                         Vst::ParameterInfo::kCanAutomate, JackTripVSTParams::kParamOnId, 0,
-		                         STR16 ("Param2"));
-	}
+        parameters.addParameter (STR16 ("Passthrough Volume"), STR16 ("dB"), 0, 1.,
+                                 Vst::ParameterInfo::kCanAutomate, JackTripVSTParams::kParamVolPassId, 0,
+                                 STR16 ("Passthrough"));
 
-	return result;
+        parameters.addParameter (STR16 ("Connected"), STR16 ("On/Off"), 1, 1.,
+                                 Vst::ParameterInfo::kIsReadOnly, JackTripVSTParams::kParamConnectedId, 0,
+                                 STR16 ("Connected"));
+
+        parameters.addParameter (STR16 ("Bypass"), nullptr, 1, 0,
+                                 Vst::ParameterInfo::kCanAutomate | Vst::ParameterInfo::kIsBypass,
+                                 JackTripVSTParams::kBypassId);
+    }
+
+    return result;
 }
 
 //------------------------------------------------------------------------
 tresult PLUGIN_API JackTripVSTController::terminate ()
 {
-	// Here the Plug-in will be de-instantiated, last possibility to remove some memory!
+    // Here the Plug-in will be de-instantiated, last possibility to remove some memory!
 
-	//---do not forget to call parent ------
-	return EditControllerEx1::terminate ();
+    //---do not forget to call parent ------
+    return EditControllerEx1::terminate ();
 }
 
 //------------------------------------------------------------------------
 tresult PLUGIN_API JackTripVSTController::setComponentState (IBStream* state)
 {
-	// Here you get the state of the component (Processor part)
-	if (!state)
-		return kResultFalse;
+    // Here you get the state of the component (Processor part)
+    if (!state)
+        return kResultFalse;
 
-	IBStreamer streamer (state, kLittleEndian);
+    IBStreamer streamer (state, kLittleEndian);
 
-	float savedParam1 = 0.f;
-	if (streamer.readFloat (savedParam1) == false)
-		return kResultFalse;
-	setParamNormalized (JackTripVSTParams::kParamVolId, savedParam1);
+    float sendVol = 1.f;
+    if (streamer.readFloat (sendVol) == false)
+        return kResultFalse;
+    setParamNormalized (JackTripVSTParams::kParamVolSendId, sendVol);
 
-	int8 savedParam2 = 0;
-	if (streamer.readInt8 (savedParam2) == false)
-		return kResultFalse;
-	setParamNormalized (JackTripVSTParams::kParamOnId, savedParam2);
+    float receiveVol = 1.f;
+    if (streamer.readFloat (receiveVol) == false)
+        return kResultFalse;
+    setParamNormalized (JackTripVSTParams::kParamVolReceiveId, receiveVol);
 
-	// read the bypass
-	int32 bypassState;
-	if (streamer.readInt32 (bypassState) == false)
-		return kResultFalse;
-	setParamNormalized (kBypassId, bypassState ? 1 : 0);
+    float passVol = 1.f;
+    if (streamer.readFloat (passVol) == false)
+        return kResultFalse;
+    setParamNormalized (JackTripVSTParams::kParamVolPassId, passVol);
 
-	return kResultOk;
+    int8 connectedState = 0;
+    if (streamer.readInt8 (connectedState) == false)
+        return kResultFalse;
+    setParamNormalized (JackTripVSTParams::kParamConnectedId, connectedState);
 
-	return kResultOk;
+    int32 bypassState;
+    if (streamer.readInt32 (bypassState) == false)
+        return kResultFalse;
+    setParamNormalized (kBypassId, bypassState ? 1 : 0);
+
+    return kResultOk;
 }
 
 //------------------------------------------------------------------------
 tresult PLUGIN_API JackTripVSTController::setState (IBStream* state)
 {
-	// Here you get the state of the controller
+    // Here you get the state of the controller
 
-	return kResultTrue;
+    return kResultTrue;
 }
 
 //------------------------------------------------------------------------
 tresult PLUGIN_API JackTripVSTController::getState (IBStream* state)
 {
-	// Here you are asked to deliver the state of the controller (if needed)
-	// Note: the real state of your plug-in is saved in the processor
+    // Here you are asked to deliver the state of the controller (if needed)
+    // Note: the real state of your plug-in is saved in the processor
 
-	return kResultTrue;
+    return kResultTrue;
 }
 
 //------------------------------------------------------------------------
 IPlugView* PLUGIN_API JackTripVSTController::createView (FIDString name)
 {
-	// Here the Host wants to open your editor (if you have one)
-	if (FIDStringsEqual (name, Vst::ViewType::kEditor))
-	{
-		// create your editor here and return a IPlugView ptr of it
-		auto* view = new VSTGUI::VST3Editor (this, "view", "JackTripEditor.uidesc");
-		return view;
-	}
-	return nullptr;
+    // Here the Host wants to open your editor (if you have one)
+    if (FIDStringsEqual (name, Vst::ViewType::kEditor))
+    {
+        // create your editor here and return a IPlugView ptr of it
+        auto* view = new VSTGUI::VST3Editor (this, "view", "JackTripEditor.uidesc");
+        return view;
+    }
+    return nullptr;
 }
 
 //------------------------------------------------------------------------
 tresult PLUGIN_API JackTripVSTController::setParamNormalized (Vst::ParamID tag, Vst::ParamValue value)
 {
-	// called by host to update your parameters
-	tresult result = EditControllerEx1::setParamNormalized (tag, value);
-	return result;
+    // called by host to update your parameters
+    tresult result = EditControllerEx1::setParamNormalized (tag, value);
+    return result;
 }
 
 //------------------------------------------------------------------------
 tresult PLUGIN_API JackTripVSTController::getParamStringByValue (Vst::ParamID tag, Vst::ParamValue valueNormalized, Vst::String128 string)
 {
-	// called by host to get a string for given normalized value of a specific parameter
-	// (without having to set the value!)
-	return EditControllerEx1::getParamStringByValue (tag, valueNormalized, string);
+    // called by host to get a string for given normalized value of a specific parameter
+    // (without having to set the value!)
+    return EditControllerEx1::getParamStringByValue (tag, valueNormalized, string);
 }
 
 //------------------------------------------------------------------------
 tresult PLUGIN_API JackTripVSTController::getParamValueByString (Vst::ParamID tag, Vst::TChar* string, Vst::ParamValue& valueNormalized)
 {
-	// called by host to get a normalized value from a string representation of a specific parameter
-	// (without having to set the value!)
-	return EditControllerEx1::getParamValueByString (tag, string, valueNormalized);
+    // called by host to get a normalized value from a string representation of a specific parameter
+    // (without having to set the value!)
+    return EditControllerEx1::getParamValueByString (tag, string, valueNormalized);
 }
 
 //------------------------------------------------------------------------

@@ -458,6 +458,10 @@ if vst_sdkdir != ''
 	endif
 
 	vst_sources = ['src/vst3/JackTripVSTController.cpp', 'src/vst3/JackTripVSTEntry.cpp', 'src/vst3/JackTripVSTProcessor.cpp'] + vst_entry
+	if get_option('debug') == true
+		vst_sources += ['@0@/vstgui4/vstgui/vstgui_uidescription.cpp'.format(vst_sdkdir), '@0@/vstgui4/vstgui/plugin-bindings/vst3editor.cpp'.format(vst_sdkdir)]
+		defines += ['-DVSTGUI_LIVE_EDITING=1']
+	endif
 
 	audio_socket_moc_h = ['src/AudioSocket.h', 'src/SocketClient.h', 'src/ProcessPlugin.h']
 	audio_socket_sources = qt.compile_moc(headers: audio_socket_moc_h, extra_args: defines)
