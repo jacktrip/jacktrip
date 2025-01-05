@@ -71,6 +71,9 @@ class JackTripVSTProcessor : public Steinberg::Vst::AudioEffect
     /** Switch the Plug-in on/off */
     Steinberg::tresult PLUGIN_API setActive(Steinberg::TBool state) SMTG_OVERRIDE;
 
+    /** Called by audio thread immediately before processing starts, and after it ends */
+    Steinberg::tresult PLUGIN_API setProcessing(TBool state) SMTG_OVERRIDE;
+
     /** Will be called before any process call */
     Steinberg::tresult PLUGIN_API setupProcessing(Steinberg::Vst::ProcessSetup& newSetup)
         SMTG_OVERRIDE;
@@ -99,6 +102,8 @@ class JackTripVSTProcessor : public Steinberg::Vst::AudioEffect
     QScopedPointer<AudioSocket> mSocketPtr;
     float** mInputBuffer;
     float** mOutputBuffer;
+    Vst::SampleRate mSampleRate = 0;
+    int32 mBufferSize           = 0;
 };
 
 //------------------------------------------------------------------------

@@ -48,9 +48,12 @@ static QCoreApplication* sQtAppPtr = nullptr;
 static QCoreApplication* getQtAppPtr()
 {
     if (sQtAppPtr == nullptr) {
-        int argc  = 0;
-        sQtAppPtr = new QCoreApplication(argc, nullptr);
-        sQtAppPtr->setAttribute(Qt::AA_NativeWindows);
+        sQtAppPtr = QCoreApplication::instance();
+        if (sQtAppPtr == nullptr) {
+            int argc  = 0;
+            sQtAppPtr = new QCoreApplication(argc, nullptr);
+            sQtAppPtr->setAttribute(Qt::AA_NativeWindows);
+        }
     }
     return sQtAppPtr;
 }
@@ -98,6 +101,8 @@ tresult PLUGIN_API JackTripVSTProcessor::initialize(FUnknown* context)
 //------------------------------------------------------------------------
 tresult PLUGIN_API JackTripVSTProcessor::terminate()
 {
+    mSocketPtr.reset();
+
     for (int i = 0; i < AudioSocketNumChannels; i++) {
         delete[] mInputBuffer[i];
         delete[] mOutputBuffer[i];
@@ -112,8 +117,31 @@ tresult PLUGIN_API JackTripVSTProcessor::terminate()
 //------------------------------------------------------------------------
 tresult PLUGIN_API JackTripVSTProcessor::setActive(TBool state)
 {
+    if (state) {
+        // sanity check to ensure these were initialized by setupProcessing()
+        if (mSampleRate == 0 || mBufferSize == 0) {
+            return kResultFalse;
+        }
+        // create a audio new socket
+        if (mSocketPtr.isNull()) {
+            // not yet initialized
+            mSocketPtr.reset(new AudioSocket(true));
+            // automatically retry to establish connection
+            mSocketPtr->setRetryConnection(true);
+            mSocketPtr->connect(mSampleRate, mBufferSize);
+        }
+    } else {
+        // disconnect from remote when inactive
+        mSocketPtr.reset();
+    }
     //--- called when the Plug-in is enable/disable (On/Off) -----
     return AudioEffect::setActive(state);
+}
+
+//------------------------------------------------------------------------
+tresult PLUGIN_API JackTripVSTProcessor::setProcessing(TBool state)
+{
+    return AudioEffect::setProcessing(state);
 }
 
 //------------------------------------------------------------------------
@@ -258,22 +286,8 @@ tresult PLUGIN_API JackTripVSTProcessor::process(Vst::ProcessData& data)
 //------------------------------------------------------------------------
 tresult PLUGIN_API JackTripVSTProcessor::setupProcessing(Vst::ProcessSetup& newSetup)
 {
-    if (mSocketPtr.isNull()) {
-        // not yet initialized
-        mSocketPtr.reset(new AudioSocket(true));
-        mSocketPtr->setRetryConnection(true);
-    }
-
-    if (mSocketPtr->isConnected()) {
-        if (newSetup.sampleRate != mSocketPtr->getSampleRate()
-            || newSetup.maxSamplesPerBlock != mSocketPtr->getBufferSize()) {
-            // reconnect
-            mSocketPtr.reset(new AudioSocket(true));
-            mSocketPtr->connect(newSetup.sampleRate, newSetup.maxSamplesPerBlock);
-        }
-    } else {
-        mSocketPtr->connect(newSetup.sampleRate, newSetup.maxSamplesPerBlock);
-    }
+    mSampleRate = newSetup.sampleRate;
+    mBufferSize = newSetup.maxSamplesPerBlock;
 
     //--- called before any processing ----
     return AudioEffect::setupProcessing(newSetup);

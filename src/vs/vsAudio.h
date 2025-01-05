@@ -210,6 +210,7 @@ class VsAudio : public QObject
 
     // called by local socket server to process audio requests
     void registerAudioSocket(QSharedPointer<AudioSocket>& s);
+    void clearAudioSockets();
 
    public slots:
 

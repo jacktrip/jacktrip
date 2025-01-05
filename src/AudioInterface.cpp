@@ -266,11 +266,6 @@ void AudioInterface::audioOutputCallback(QVarLengthArray<sample_t*>& out_buffer,
     /// with one. do it chaining outputs to inputs in the buffers. May need a tempo buffer
 
 #ifndef WAIR  // NOT WAIR:
-    for (auto& s : qAsConst(mAudioSockets)) {
-        s->getToAudioSocketPlugin()->compute(n_frames, out_buffer.data(),
-                                             out_buffer.data());
-    }
-
     for (auto& p : qAsConst(mProcessPluginsFromNetwork)) {
         if (p->getInited()) {
             p->compute(n_frames, out_buffer.data(), out_buffer.data());
@@ -311,6 +306,11 @@ void AudioInterface::audioOutputCallback(QVarLengthArray<sample_t*>& out_buffer,
                 p->compute(n_frames, mOutProcessBuffer.data(), out_buffer.data());
             }
         }
+    }
+
+    for (auto& s : qAsConst(mAudioSockets)) {
+        s->getToAudioSocketPlugin()->compute(n_frames, out_buffer.data(),
+                                             out_buffer.data());
     }
 
 #else  // WAIR:
@@ -720,6 +720,8 @@ void AudioInterface::appendProcessPluginToMonitor(QSharedPointer<ProcessPlugin>&
 
 void AudioInterface::appendAudioSocket(QSharedPointer<AudioSocket>& s)
 {
+    if (s.isNull())
+        return;
     static_cast<FromAudioSocketPlugin*>(s->getFromAudioSocketPlugin().data())
         ->setPassthrough(true);
     mAudioSockets.append(s);

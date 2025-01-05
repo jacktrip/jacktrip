@@ -31,6 +31,7 @@
 // Based on the Hello World VST 3 example from Steinberg
 // https://github.com/steinbergmedia/vst3_example_plugin_hello_world
 
+#include "../jacktrip_globals.h"
 #include "JackTripVST.h"
 #include "JackTripVSTController.h"
 #include "JackTripVSTProcessor.h"
@@ -59,7 +60,7 @@ DEF_CLASS2(INLINE_UID_FROM_FUID(kJackTripVSTProcessorUID),
            Vst::kDistributable,         // means that component and controller could be
                                         // distributed on different computers
            JackTripVSTVST3Category,     // Subcategory for this Plug-in (to be changed)
-           FULL_VERSION_STR,            // Plug-in version (to be changed)
+           gVersion,                    // Plug-in version (to be changed)
            kVstVersionString,  // the VST 3 SDK version (do not changed this, use always
                                // this define)
            JackTripVSTProcessor::createInstance)  // function pointer called when this
@@ -73,7 +74,7 @@ DEF_CLASS2(INLINE_UID_FROM_FUID(kJackTripVSTControllerUID),
            "Controller",       // controller name (could be the same than component name)
            0,                  // not used here
            "",                 // not used here
-           FULL_VERSION_STR,   // Plug-in version (to be changed)
+           gVersion,           // Plug-in version (to be changed)
            kVstVersionString,  // the VST 3 SDK version (do not changed this, use always
                                // this define)
            JackTripVSTController::createInstance)  // function pointer called when this

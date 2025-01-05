@@ -215,7 +215,7 @@ void FromAudioSocketPlugin::compute(int nframes, [[maybe_unused]] float** inputs
     int8_t* recvPtr = reinterpret_cast<int8_t*>(mRecvBuffer.data());
     bool gotPacket  = mReceiveQueue.pop(recvPtr);
     if (!gotPacket) {
-        qDebug() << "Audio socket glitch: receive queue empty";
+        // qDebug() << "Audio socket glitch: receive queue empty";
         return;
     }
 

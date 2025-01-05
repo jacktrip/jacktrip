@@ -429,6 +429,7 @@ void VsAudio::stopAudio(bool block)
     if (!getAudioReady())
         return;
     emit signalStopAudio();
+    clearAudioSockets();  // force audio sockets to reconnect
     if (!block)
         return;
     WaitForSignal(this, &VsAudio::signalAudioIsNotReady);
@@ -737,14 +738,18 @@ void VsAudio::appendProcessPlugins(AudioInterface& audioInterface, bool forJackT
             i = m_audioSockets.erase(i);
         }
     }
-    // clear so that all sockets disconnect when interface ends
-    m_audioSockets.clear();
 }
 
 void VsAudio::registerAudioSocket(QSharedPointer<AudioSocket>& s)
 {
     QMutexLocker locker(&m_audioSocketMutex);
     m_audioSockets.push_back(s);
+}
+
+void VsAudio::clearAudioSockets()
+{
+    QMutexLocker locker(&m_audioSocketMutex);
+    m_audioSockets.clear();
 }
 
 void VsAudio::setDeviceModels(QJsonArray inputComboModel, QJsonArray outputComboModel)

@@ -361,18 +361,6 @@ endif
 
 jacktrip = executable('jacktrip', src, qres_files, ui_files, moc_files, include_directories: incdirs, dependencies: deps, link_args: link_args, c_args: c_defines, cpp_args: defines, install: true )
 
-version = compiler.run(
-	'''
-	#include <iostream>
-	#include "jacktrip_globals.h"
-	int main(void) {
-		std::cout << gVersion;
-		return 0;
-	}
-	''',
-	include_directories: include_directories('src/'),
-	).stdout().strip()
-
 vst_sdkdir = get_option('vst-sdkdir')
 if vst_sdkdir != ''
 	# adapted from https://github.com/centricular/gstreamer-vst3
@@ -486,8 +474,7 @@ if vst_sdkdir != ''
 		cpp_args : [ defines,
 					'-DPACKAGE="jacktrip-vst3"',
 					'-DGST_PACKAGE_NAME="jacktrip-vst3"',
-					'-DGST_PACKAGE_ORIGIN="https://github.com/jacktrip/jacktrip"',
-					'-DFULL_VERSION_STR="@0@"'.format(version)],
+					'-DGST_PACKAGE_ORIGIN="https://github.com/jacktrip/jacktrip"'],
 		dependencies : vst_deps,
 		include_directories: vst_incdirs,
 		link_args: vst_link_args
@@ -523,7 +510,6 @@ summary({'JACK': jack_dep.found(),
 	'RtAudio': rtaudio_dep.found()}, bool_yn: true, section: 'Audio Backends')
 
 summary({'Application ID': application_id,
-	'Version': version,
 	'GUI': not get_option('nogui'),
 	'WAIR': get_option('wair'),
 	'Manpage': help2man.found()}, bool_yn: true, section: 'Configuration')

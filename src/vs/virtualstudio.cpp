@@ -1218,6 +1218,9 @@ void VirtualStudio::disconnect()
     // reset network statistics
     m_networkStats = QJsonObject();
 
+    // force audio sockets to reconnect, since audio has stopped
+    m_audioConfigPtr->clearAudioSockets();
+
     if (!m_currentStudio.id().isEmpty()) {
         emit openFeedbackSurveyModal(m_currentStudio.id());
         m_currentStudio.setId("");

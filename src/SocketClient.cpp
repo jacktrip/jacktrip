@@ -52,6 +52,7 @@ SocketClient::~SocketClient()
 {
     if (isConnected() && m_owns_socket) {
         m_socket->close();
+        m_socket->waitForDisconnected(1000);  // wait for up to 1 second
     }
 }
 
@@ -60,17 +61,6 @@ bool SocketClient::connect()
     if (isConnected()) {
         return true;
     }
-    m_ready = false;
-
-    QObject::connect(m_socket.data(), &QLocalSocket::connected, this,
-                     &SocketClient::connectionEstablished, Qt::QueuedConnection);
-    void (QLocalSocket::*errorFunc)(QLocalSocket::LocalSocketError);
-#if (QT_VERSION < QT_VERSION_CHECK(5, 15, 0))
-    errorFunc = &QLocalSocket::error;
-#else
-    errorFunc = &QLocalSocket::errorOccurred;
-#endif
-    QObject::connect(m_socket.data(), errorFunc, this, &SocketClient::connectionFailed);
     m_socket->connectToServer(JACKTRIP_SOCKET_NAME);
     return m_socket->waitForConnected(1000);  // wait for up to 1 second
 }
@@ -96,31 +86,4 @@ bool SocketClient::sendHeader(const QString& handler)
     qint64 writeBytes      = m_socket->write(headerBytes);
     m_socket->waitForBytesWritten(-1);
     return writeBytes > 0;
-}
-
-void SocketClient::connectionEstablished()
-{
-    m_ready = true;
-    emit signalIsReady();
-}
-
-void SocketClient::connectionFailed(QLocalSocket::LocalSocketError socketError)
-{
-    switch (socketError) {
-    case QLocalSocket::ServerNotFoundError:
-    case QLocalSocket::SocketTimeoutError:
-    case QLocalSocket::ConnectionRefusedError:
-        // no other remote jacktrip instance is running, unable to connect
-        break;
-    case QLocalSocket::PeerClosedError:
-        // shouldn't happen
-        qDebug() << "Peer prematurely closed socket connection";
-        break;
-    default:
-        // shouldn't happen
-        qDebug() << m_socket->errorString();
-    }
-
-    m_ready = true;
-    emit signalIsReady();
 }

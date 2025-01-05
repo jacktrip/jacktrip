@@ -78,25 +78,9 @@ class SocketClient : public QObject
     // send connection header with name of handler to use
     bool sendHeader(const QString& handler);
 
-   signals:
-
-    // signalIsReady is emitted when the local socket server is ready
-    void signalIsReady();
-
-   private slots:
-
-    // called if a connection was established to another instance
-    void connectionEstablished();
-
-    // called if unable to connect to another instance
-    void connectionFailed(QLocalSocket::LocalSocketError socketError);
-
    private:
     // used to check if there is another server already running
     QSharedPointer<QLocalSocket> m_socket;
-
-    // true after connection attempt has completed
-    bool m_ready = false;
 
     // true if a this owns the socket and should close on destruction
     bool m_owns_socket = false;
