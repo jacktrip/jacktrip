@@ -735,6 +735,8 @@ void VsAudio::appendProcessPlugins(AudioInterface& audioInterface, bool forJackT
             i = m_audioSockets.erase(i);
         }
     }
+    // clear so that all sockets disconnect when interface ends
+    m_audioSockets.clear();
 }
 
 void VsAudio::registerAudioSocket(QSharedPointer<AudioSocket>& s)

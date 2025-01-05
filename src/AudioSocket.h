@@ -40,8 +40,10 @@
 
 #include <QLocalSocket>
 #include <QObject>
+#include <QScopedPointer>
 #include <QSharedPointer>
 #include <QThread>
+#include <QTimer>
 
 #include "ProcessPlugin.h"
 #include "WaitFreeFrameBuffer.h"
@@ -79,6 +81,7 @@ class ToAudioSocketPlugin : public ProcessPlugin
 
    public slots:
     void gotAudioHeader(int samplingRate, int bufferSize);
+    void gotConnection();
     void lostConnection();
 
    private:
@@ -90,7 +93,7 @@ class ToAudioSocketPlugin : public ProcessPlugin
     int mBytesPerPacket = 0;
     bool mSentAudioHeader = false;
     bool mRemoteIsReady = false;
-    bool mLostConnection = false;
+    bool mIsConnected = false;
 };
 
 /** \brief FromAudioSocketPlugin is used mix audio from an audio socket into a signal chain
@@ -113,11 +116,9 @@ class FromAudioSocketPlugin : public ProcessPlugin
     void updateNumChannels(int nChansIn, int nChansOut) override;
     void setPassthrough(bool b) { mPassthrough = b; }
 
-   signals:
-    void signalReceiveAudio();
-
    public slots:
     void gotAudioHeader(int samplingRate, int bufferSize);
+    void gotConnection();
     void lostConnection();
 
    private:
@@ -129,7 +130,7 @@ class FromAudioSocketPlugin : public ProcessPlugin
     int mRemoteBufferSize = 0;
     int mRemoteBytesPerChannel = 0;
     bool mRemoteIsReady = false;
-    bool mLostConnection = false;
+    bool mIsConnected = false;
     bool mPassthrough = false;
 };
 
@@ -145,13 +146,16 @@ class AudioSocketWorker : public QObject
                       WaitFreeFrameBuffer<>& receiveQueue);
     virtual ~AudioSocketWorker();
 
+    inline void setRetryConnection(bool retry) { mRetryConnection = retry; }
     inline bool isConnected() { return mSocketPtr->state() == QLocalSocket::ConnectedState; }
+    inline QLocalSocket& getSocket() { return *mSocketPtr; }
 
    signals:
     void signalReadAudioHeader();
-    void signalConnectFinished(bool);
-    void signalGotAudioHeader(int samplingRate, int bufferSize);
+    void signalConnectionEstablished();
+    void signalConnectionFailed();
     void signalLostConnection();
+    void signalGotAudioHeader(int samplingRate, int bufferSize);
  
    public slots:
     // sets a few things up at startup
@@ -159,7 +163,7 @@ class AudioSocketWorker : public QObject
 
     // attempts to connect to remote instance's socket server
     // returns true if connection was successfully established
-    // returns false if connection failed
+    // returns false and schedules retry if connection failed
     void connect();
 
     /// \brief closes the connection to remote instance's socket server
@@ -177,7 +181,11 @@ class AudioSocketWorker : public QObject
     /// \brief receives audio packets from remote instance
     void receiveAudio();
 
+    /// \brief schedules a reconnect attempt
+    void scheduleReconnect();
+
    private:
+    QScopedPointer<QTimer> mTimerPtr;
     QSharedPointer<QLocalSocket> mSocketPtr;
     WaitFreeFrameBuffer<>& mSendQueue;
     WaitFreeFrameBuffer<>& mReceiveQueue;
@@ -185,7 +193,7 @@ class AudioSocketWorker : public QObject
     QByteArray mRecvBuffer;
     int mLocalBytesPerPacket = 0;
     int mRemoteBytesPerPacket = 0;
-    bool mRemoteIsReady = false;
+    bool mRetryConnection = false;
 };
 
 
@@ -196,20 +204,21 @@ class AudioSocket : public QObject
     Q_OBJECT;
 
    public:
-    AudioSocket();
+    AudioSocket(bool retryConnection = false);
     AudioSocket(QSharedPointer<QLocalSocket>& s);
     virtual ~AudioSocket();
 
-    inline bool isConnected() { return mSocketPtr->state() == QLocalSocket::ConnectedState; }
+    inline bool isConnected() { return mWorkerPtr->isConnected(); }
+    inline QLocalSocket& getSocket() { return mWorkerPtr->getSocket(); }
     inline int getSampleRate() const { return mToAudioSocketPluginPtr->getSampleRate(); }
     inline int getBufferSize() const { return mToAudioSocketPluginPtr->getBufferSize(); }
-    inline QLocalSocket& getSocket() { return *mSocketPtr; }
     inline QSharedPointer<ProcessPlugin>& getToAudioSocketPlugin() { return mToAudioSocketPluginPtr; }
     inline QSharedPointer<ProcessPlugin>& getFromAudioSocketPlugin() { return mFromAudioSocketPluginPtr; }
+    inline void setRetryConnection(bool retry) { mWorkerPtr->setRetryConnection(retry); }
 
     // attempts to connect to remote instance's socket server
     // returns true if connection was successfully established
-    // returns false if connection failed
+    // returns false and schedules retry if connection failed
     bool connect(int samplingRate, int bufferSize);
 
     /// \brief audio callback for duplex processing
@@ -230,7 +239,6 @@ class AudioSocket : public QObject
     QThread mThread;
     WaitFreeFrameBuffer<> mSendQueue;
     WaitFreeFrameBuffer<> mReceiveQueue;
-    QSharedPointer<QLocalSocket> mSocketPtr;
     QSharedPointer<ProcessPlugin> mToAudioSocketPluginPtr;
     QSharedPointer<ProcessPlugin> mFromAudioSocketPluginPtr;
     QScopedPointer<AudioSocketWorker> mWorkerPtr;
