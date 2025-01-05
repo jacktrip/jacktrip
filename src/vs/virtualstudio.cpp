@@ -264,7 +264,7 @@ VirtualStudio::VirtualStudio(UserInterface& parent)
             }
             QLocalSocket& s          = c.getSocket();
             QByteArray deepLinkBytes = deepLinkStr.toLocal8Bit();
-            qint64 bytesWritten = s.write(deepLinkBytes);
+            qint64 bytesWritten      = s.write(deepLinkBytes);
             s.flush();
             s.waitForBytesWritten(1000);
             if (bytesWritten != deepLinkBytes.size()) {

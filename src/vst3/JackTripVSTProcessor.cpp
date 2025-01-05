@@ -32,22 +32,23 @@
 // https://github.com/steinbergmedia/vst3_example_plugin_hello_world
 
 #include "JackTripVSTProcessor.h"
-#include "JackTripVST.h"
-#include "../AudioSocket.h"
 
+#include "../AudioSocket.h"
+#include "JackTripVST.h"
 #include "base/source/fstreamer.h"
 #include "pluginterfaces/vst/ivstparameterchanges.h"
 
 using namespace Steinberg;
 
-namespace Steinberg {
+namespace Steinberg
+{
 
 static QCoreApplication* sQtAppPtr = nullptr;
 
 static QCoreApplication* getQtAppPtr()
 {
     if (sQtAppPtr == nullptr) {
-        int argc = 0;
+        int argc  = 0;
         sQtAppPtr = new QCoreApplication(argc, nullptr);
         sQtAppPtr->setAttribute(Qt::AA_NativeWindows);
     }
@@ -57,39 +58,37 @@ static QCoreApplication* getQtAppPtr()
 //------------------------------------------------------------------------
 // JackTripVSTProcessor
 //------------------------------------------------------------------------
-JackTripVSTProcessor::JackTripVSTProcessor ()
+JackTripVSTProcessor::JackTripVSTProcessor()
 {
     //--- set the wanted controller for our processor
-    setControllerClass (kJackTripVSTControllerUID);
+    setControllerClass(kJackTripVSTControllerUID);
 }
 
 //------------------------------------------------------------------------
-JackTripVSTProcessor::~JackTripVSTProcessor ()
-{}
+JackTripVSTProcessor::~JackTripVSTProcessor() {}
 
 //------------------------------------------------------------------------
-tresult PLUGIN_API JackTripVSTProcessor::initialize (FUnknown* context)
+tresult PLUGIN_API JackTripVSTProcessor::initialize(FUnknown* context)
 {
     // Here the Plug-in will be instantiated
-    
+
     //---always initialize the parent-------
-    tresult result = AudioEffect::initialize (context);
+    tresult result = AudioEffect::initialize(context);
     // if everything Ok, continue
-    if (result != kResultOk)
-    {
+    if (result != kResultOk) {
         return result;
     }
 
     //--- create Audio IO ------
-    addAudioInput (STR16 ("Stereo In"), Steinberg::Vst::SpeakerArr::kStereo);
-    addAudioOutput (STR16 ("Stereo Out"), Steinberg::Vst::SpeakerArr::kStereo);
+    addAudioInput(STR16("Stereo In"), Steinberg::Vst::SpeakerArr::kStereo);
+    addAudioOutput(STR16("Stereo Out"), Steinberg::Vst::SpeakerArr::kStereo);
 
     getQtAppPtr();
 
-    mInputBuffer = new float*[AudioSocketNumChannels];
+    mInputBuffer  = new float*[AudioSocketNumChannels];
     mOutputBuffer = new float*[AudioSocketNumChannels];
     for (int i = 0; i < AudioSocketNumChannels; i++) {
-        mInputBuffer[i] = new float[AudioSocketMaxSamplesPerBlock];
+        mInputBuffer[i]  = new float[AudioSocketMaxSamplesPerBlock];
         mOutputBuffer[i] = new float[AudioSocketMaxSamplesPerBlock];
     }
 
@@ -97,7 +96,7 @@ tresult PLUGIN_API JackTripVSTProcessor::initialize (FUnknown* context)
 }
 
 //------------------------------------------------------------------------
-tresult PLUGIN_API JackTripVSTProcessor::terminate ()
+tresult PLUGIN_API JackTripVSTProcessor::terminate()
 {
     for (int i = 0; i < AudioSocketNumChannels; i++) {
         delete[] mInputBuffer[i];
@@ -107,59 +106,55 @@ tresult PLUGIN_API JackTripVSTProcessor::terminate ()
     delete[] mOutputBuffer;
 
     //---do not forget to call parent ------
-    return AudioEffect::terminate ();
+    return AudioEffect::terminate();
 }
 
 //------------------------------------------------------------------------
-tresult PLUGIN_API JackTripVSTProcessor::setActive (TBool state)
+tresult PLUGIN_API JackTripVSTProcessor::setActive(TBool state)
 {
     //--- called when the Plug-in is enable/disable (On/Off) -----
-    return AudioEffect::setActive (state);
+    return AudioEffect::setActive(state);
 }
 
 //------------------------------------------------------------------------
-tresult PLUGIN_API JackTripVSTProcessor::process (Vst::ProcessData& data)
+tresult PLUGIN_API JackTripVSTProcessor::process(Vst::ProcessData& data)
 {
     //--- Read inputs parameter changes-----------
-    if (data.inputParameterChanges)
-    {
-        int32 numParamsChanged = data.inputParameterChanges->getParameterCount ();
-        for (int32 index = 0; index < numParamsChanged; index++)
-        {
+    if (data.inputParameterChanges) {
+        int32 numParamsChanged = data.inputParameterChanges->getParameterCount();
+        for (int32 index = 0; index < numParamsChanged; index++) {
             Vst::IParamValueQueue* paramQueue =
-                data.inputParameterChanges->getParameterData (index);
-            if (paramQueue)
-            {
+                data.inputParameterChanges->getParameterData(index);
+            if (paramQueue) {
                 Vst::ParamValue value;
                 int32 sampleOffset;
-                int32 numPoints = paramQueue->getPointCount ();
-                switch (paramQueue->getParameterId ())
-                {
-                    case JackTripVSTParams::kParamVolSendId:
-                        if (paramQueue->getPoint (numPoints - 1, sampleOffset, value) ==
-                            kResultTrue)
-                            mSendVol = value;
-                        break;
-                    case JackTripVSTParams::kParamVolReceiveId:
-                        if (paramQueue->getPoint (numPoints - 1, sampleOffset, value) ==
-                            kResultTrue)
-                            mReceiveVol = value;
-                        break;
-                    case JackTripVSTParams::kParamVolPassId:
-                        if (paramQueue->getPoint (numPoints - 1, sampleOffset, value) ==
-                            kResultTrue)
-                            mPassVol = value;
-                        break;
-                    case JackTripVSTParams::kParamConnectedId:
-                        if (paramQueue->getPoint (numPoints - 1, sampleOffset, value) ==
-                            kResultTrue)
-                            mConnected = value > 0;
-                        break;
-                    case JackTripVSTParams::kBypassId:
-                        if (paramQueue->getPoint (numPoints - 1, sampleOffset, value) ==
-                            kResultTrue)
-                            mBypass = value > 0;
-                        break;
+                int32 numPoints = paramQueue->getPointCount();
+                switch (paramQueue->getParameterId()) {
+                case JackTripVSTParams::kParamVolSendId:
+                    if (paramQueue->getPoint(numPoints - 1, sampleOffset, value)
+                        == kResultTrue)
+                        mSendVol = value;
+                    break;
+                case JackTripVSTParams::kParamVolReceiveId:
+                    if (paramQueue->getPoint(numPoints - 1, sampleOffset, value)
+                        == kResultTrue)
+                        mReceiveVol = value;
+                    break;
+                case JackTripVSTParams::kParamVolPassId:
+                    if (paramQueue->getPoint(numPoints - 1, sampleOffset, value)
+                        == kResultTrue)
+                        mPassVol = value;
+                    break;
+                case JackTripVSTParams::kParamConnectedId:
+                    if (paramQueue->getPoint(numPoints - 1, sampleOffset, value)
+                        == kResultTrue)
+                        mConnected = value > 0;
+                    break;
+                case JackTripVSTParams::kBypassId:
+                    if (paramQueue->getPoint(numPoints - 1, sampleOffset, value)
+                        == kResultTrue)
+                        mBypass = value > 0;
+                    break;
                 }
             }
         }
@@ -168,12 +163,13 @@ tresult PLUGIN_API JackTripVSTProcessor::process (Vst::ProcessData& data)
     // handle connection state change
     if (mConnected != mSocketPtr->isConnected() && data.outputParameterChanges) {
         int32 index = 0;
-        Steinberg::Vst::IParamValueQueue* paramQueue = data.outputParameterChanges->addParameterData (kParamConnectedId, index);
+        Steinberg::Vst::IParamValueQueue* paramQueue =
+            data.outputParameterChanges->addParameterData(kParamConnectedId, index);
         if (paramQueue) {
-            mConnected = mSocketPtr->isConnected();
+            mConnected          = mSocketPtr->isConnected();
             int8 connectedState = mConnected ? 1 : 0;
-            int32 index2 = 0;
-            paramQueue->addPoint (0, connectedState, index2);
+            int32 index2        = 0;
+            paramQueue->addPoint(0, connectedState, index2);
         }
     }
 
@@ -191,17 +187,19 @@ tresult PLUGIN_API JackTripVSTProcessor::process (Vst::ProcessData& data)
 
     if (mBypass) {
         // copy input to output
-        for (int i = 0; i < data.inputs[0].numChannels && i < data.outputs[0].numChannels; i++) {
-            memcpy(data.outputs[0].channelBuffers32[i], data.inputs[0].channelBuffers32[i],
-                    data.numSamples * sizeof(Steinberg::Vst::Sample32));
+        for (int i = 0; i < data.inputs[0].numChannels && i < data.outputs[0].numChannels;
+             i++) {
+            memcpy(data.outputs[0].channelBuffers32[i],
+                   data.inputs[0].channelBuffers32[i],
+                   data.numSamples * sizeof(Steinberg::Vst::Sample32));
         }
         data.outputs[0].silenceFlags = data.inputs[0].silenceFlags;
         return kResultOk;
     }
 
     // Process Algorithm
-    // Ex: algo.process (data.inputs[0].channelBuffers32, data.outputs[0].channelBuffers32,
-    // data.numSamples);
+    // Ex: algo.process (data.inputs[0].channelBuffers32,
+    // data.outputs[0].channelBuffers32, data.numSamples);
 
     // clear buffers
     for (int i = 0; i < AudioSocketNumChannels; i++) {
@@ -231,8 +229,10 @@ tresult PLUGIN_API JackTripVSTProcessor::process (Vst::ProcessData& data)
     // copy buffer to output
     for (int i = 0; i < data.outputs[0].numChannels; i++) {
         bool silent = true;
-        memset(data.outputs[0].channelBuffers32[i], 0, data.numSamples * sizeof(Steinberg::Vst::Sample32));
-        if (mPassVol >= 0.0000001 || mReceiveVol >= 0.0000001) {  // silent output shortcut
+        memset(data.outputs[0].channelBuffers32[i], 0,
+               data.numSamples * sizeof(Steinberg::Vst::Sample32));
+        if (mPassVol >= 0.0000001
+            || mReceiveVol >= 0.0000001) {  // silent output shortcut
             Steinberg::Vst::Sample32* outBuffer = data.outputs[0].channelBuffers32[i];
             for (int j = 0; j < data.numSamples; j++) {
                 if (i < AudioSocketNumChannels && mReceiveVol >= 0.0000001) {
@@ -256,7 +256,7 @@ tresult PLUGIN_API JackTripVSTProcessor::process (Vst::ProcessData& data)
 }
 
 //------------------------------------------------------------------------
-tresult PLUGIN_API JackTripVSTProcessor::setupProcessing (Vst::ProcessSetup& newSetup)
+tresult PLUGIN_API JackTripVSTProcessor::setupProcessing(Vst::ProcessSetup& newSetup)
 {
     if (mSocketPtr.isNull()) {
         // not yet initialized
@@ -275,14 +275,12 @@ tresult PLUGIN_API JackTripVSTProcessor::setupProcessing (Vst::ProcessSetup& new
         mSocketPtr->connect(newSetup.sampleRate, newSetup.maxSamplesPerBlock);
     }
 
-    // TODO: error handling, reconnecting, etc
-
     //--- called before any processing ----
-    return AudioEffect::setupProcessing (newSetup);
+    return AudioEffect::setupProcessing(newSetup);
 }
 
 //------------------------------------------------------------------------
-tresult PLUGIN_API JackTripVSTProcessor::canProcessSampleSize (int32 symbolicSampleSize)
+tresult PLUGIN_API JackTripVSTProcessor::canProcessSampleSize(int32 symbolicSampleSize)
 {
     // by default kSample32 is supported
     if (symbolicSampleSize == Vst::kSample32)
@@ -296,64 +294,64 @@ tresult PLUGIN_API JackTripVSTProcessor::canProcessSampleSize (int32 symbolicSam
 }
 
 //------------------------------------------------------------------------
-tresult PLUGIN_API JackTripVSTProcessor::setState (IBStream* state)
+tresult PLUGIN_API JackTripVSTProcessor::setState(IBStream* state)
 {
     if (!state)
         return kResultFalse;
 
     // called when we load a preset or project, the model has to be reloaded
 
-    IBStreamer streamer (state, kLittleEndian);
+    IBStreamer streamer(state, kLittleEndian);
 
     float sendVol = 1.f;
-    if (streamer.readFloat (sendVol) == false)
+    if (streamer.readFloat(sendVol) == false)
         return kResultFalse;
 
     float receiveVol = 1.f;
-    if (streamer.readFloat (receiveVol) == false)
+    if (streamer.readFloat(receiveVol) == false)
         return kResultFalse;
 
     float passVol = 1.f;
-    if (streamer.readFloat (passVol) == false)
+    if (streamer.readFloat(passVol) == false)
         return kResultFalse;
 
     int8 connectedState = 0;
-    if (streamer.readInt8 (connectedState) == false)
+    if (streamer.readInt8(connectedState) == false)
         return kResultFalse;
 
     int32 bypassState = 0;
-    if (streamer.readInt32 (bypassState) == false)
+    if (streamer.readInt32(bypassState) == false)
         return kResultFalse;
 
-    mSendVol = sendVol;
+    mSendVol    = sendVol;
     mReceiveVol = receiveVol;
-    mPassVol = passVol;
-    mConnected = connectedState > 0;
-    mBypass = bypassState > 0;
+    mPassVol    = passVol;
+    mConnected  = connectedState > 0;
+    mBypass     = bypassState > 0;
 
     return kResultOk;
 }
 
 //------------------------------------------------------------------------
-tresult PLUGIN_API JackTripVSTProcessor::getState (IBStream* state)
+tresult PLUGIN_API JackTripVSTProcessor::getState(IBStream* state)
 {
     // here we need to save the model (preset or project)
 
-    float sendVol = mSendVol;
-    float receiveVol = mReceiveVol;
-    float passVol = mPassVol;
+    float sendVol       = mSendVol;
+    float receiveVol    = mReceiveVol;
+    float passVol       = mPassVol;
     int8 connectedState = mConnected ? 1 : 0;
-    int32 bypassState = mBypass ? 1 : 0;
+    int32 bypassState   = mBypass ? 1 : 0;
 
-    IBStreamer streamer (state, kLittleEndian);
-    streamer.writeFloat (sendVol);
-    streamer.writeFloat (receiveVol);
-    streamer.writeFloat (passVol);
-    streamer.writeInt8 (connectedState);
-    streamer.writeInt32 (bypassState);
+    IBStreamer streamer(state, kLittleEndian);
+    streamer.writeFloat(sendVol);
+    streamer.writeFloat(receiveVol);
+    streamer.writeFloat(passVol);
+    streamer.writeInt8(connectedState);
+    streamer.writeInt32(bypassState);
 
     return kResultOk;
 }
 
 //------------------------------------------------------------------------
-} // namespace Steinberg
+}  // namespace Steinberg

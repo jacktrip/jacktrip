@@ -718,11 +718,11 @@ class JackTrip : public QObject
     JackTrip::hubConnectionModeT
         mHubConnectionModeT;  ///< Hub Server Jack Audio Patch Connection Mode
 
-    QVector< QSharedPointer<ProcessPlugin> >
+    QVector<QSharedPointer<ProcessPlugin> >
         mProcessPluginsFromNetwork;  ///< Vector of ProcessPlugin<EM>s</EM>
-    QVector< QSharedPointer<ProcessPlugin> >
+    QVector<QSharedPointer<ProcessPlugin> >
         mProcessPluginsToNetwork;  ///< Vector of ProcessPlugin<EM>s</EM>
-    QVector< QSharedPointer<ProcessPlugin> >
+    QVector<QSharedPointer<ProcessPlugin> >
         mProcessPluginsToMonitor;  ///< Vector of ProcessPlugin<EM>s</EM>
     QTimer mTimeoutTimer;
     QTimer mRetryTimer;

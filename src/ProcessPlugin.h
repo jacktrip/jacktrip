@@ -91,7 +91,7 @@ class ProcessPlugin : public QObject
             printf("%s: *** HAD TO GUESS the buffer size (chose 128) ***\n", getName());
         }
         mSampleRate = samplingRate;
-        mBufferSize   = bufferSize;
+        mBufferSize = bufferSize;
         if (verbose) {
             printf("%s: init(%d, %d)\n", getName(), samplingRate, bufferSize);
         }

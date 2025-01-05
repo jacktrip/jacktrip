@@ -57,7 +57,8 @@ constexpr int AudioSocketMaxSamplesPerBlock = 8192;
 // audio header is 4 bytes for the number of samples + 2 bytes for the buffer size
 constexpr int AudioSocketHeaderSize = 4 + 2;
 
-/** \brief ToAudioSocketPlugin is used to send audio from a signal chain to an audio socket
+/** \brief ToAudioSocketPlugin is used to send audio from a signal chain to an audio
+ * socket
  */
 class ToAudioSocketPlugin : public ProcessPlugin
 {
@@ -88,15 +89,16 @@ class ToAudioSocketPlugin : public ProcessPlugin
     WaitFreeFrameBuffer<>& mSendQueue;
     WaitFreeFrameBuffer<>& mReceiveQueue;
     QByteArray mSendBuffer;
-    int mNumChannels = AudioSocketNumChannels;
-    int mBytesPerChannel = 0;
-    int mBytesPerPacket = 0;
+    int mNumChannels      = AudioSocketNumChannels;
+    int mBytesPerChannel  = 0;
+    int mBytesPerPacket   = 0;
     bool mSentAudioHeader = false;
-    bool mRemoteIsReady = false;
-    bool mIsConnected = false;
+    bool mRemoteIsReady   = false;
+    bool mIsConnected     = false;
 };
 
-/** \brief FromAudioSocketPlugin is used mix audio from an audio socket into a signal chain
+/** \brief FromAudioSocketPlugin is used mix audio from an audio socket into a signal
+ * chain
  */
 class FromAudioSocketPlugin : public ProcessPlugin
 {
@@ -104,8 +106,7 @@ class FromAudioSocketPlugin : public ProcessPlugin
 
    public:
     FromAudioSocketPlugin(WaitFreeFrameBuffer<>& sendQueue,
-                          WaitFreeFrameBuffer<>& receiveQueue,
-                          bool passthrough = false);
+                          WaitFreeFrameBuffer<>& receiveQueue, bool passthrough = false);
     virtual ~FromAudioSocketPlugin();
 
     void init(int samplingRate, int bufferSize) override;
@@ -125,15 +126,14 @@ class FromAudioSocketPlugin : public ProcessPlugin
     WaitFreeFrameBuffer<>& mSendQueue;
     WaitFreeFrameBuffer<>& mReceiveQueue;
     QByteArray mRecvBuffer;
-    int mNumChannels = AudioSocketNumChannels;
-    int mRemoteSampleRate = 0;
-    int mRemoteBufferSize = 0;
+    int mNumChannels           = AudioSocketNumChannels;
+    int mRemoteSampleRate      = 0;
+    int mRemoteBufferSize      = 0;
     int mRemoteBytesPerChannel = 0;
-    bool mRemoteIsReady = false;
-    bool mIsConnected = false;
-    bool mPassthrough = false;
+    bool mRemoteIsReady        = false;
+    bool mIsConnected          = false;
+    bool mPassthrough          = false;
 };
-
 
 /** \brief AudioSocketWorker is used to perform socket operations in a separate thread
  */
@@ -147,7 +147,10 @@ class AudioSocketWorker : public QObject
     virtual ~AudioSocketWorker();
 
     inline void setRetryConnection(bool retry) { mRetryConnection = retry; }
-    inline bool isConnected() { return mSocketPtr->state() == QLocalSocket::ConnectedState; }
+    inline bool isConnected()
+    {
+        return mSocketPtr->state() == QLocalSocket::ConnectedState;
+    }
     inline QLocalSocket& getSocket() { return *mSocketPtr; }
 
    signals:
@@ -156,7 +159,7 @@ class AudioSocketWorker : public QObject
     void signalConnectionFailed();
     void signalLostConnection();
     void signalGotAudioHeader(int samplingRate, int bufferSize);
- 
+
    public slots:
     // sets a few things up at startup
     void start();
@@ -191,13 +194,13 @@ class AudioSocketWorker : public QObject
     WaitFreeFrameBuffer<>& mReceiveQueue;
     QByteArray mSendBuffer;
     QByteArray mRecvBuffer;
-    int mLocalBytesPerPacket = 0;
+    int mLocalBytesPerPacket  = 0;
     int mRemoteBytesPerPacket = 0;
-    bool mRetryConnection = false;
+    bool mRetryConnection     = false;
 };
 
-
-/** \brief An AudioSocket is used to exchange audio with another processes via a local socket
+/** \brief An AudioSocket is used to exchange audio with another processes via a local
+ * socket
  */
 class AudioSocket : public QObject
 {
@@ -212,8 +215,14 @@ class AudioSocket : public QObject
     inline QLocalSocket& getSocket() { return mWorkerPtr->getSocket(); }
     inline int getSampleRate() const { return mToAudioSocketPluginPtr->getSampleRate(); }
     inline int getBufferSize() const { return mToAudioSocketPluginPtr->getBufferSize(); }
-    inline QSharedPointer<ProcessPlugin>& getToAudioSocketPlugin() { return mToAudioSocketPluginPtr; }
-    inline QSharedPointer<ProcessPlugin>& getFromAudioSocketPlugin() { return mFromAudioSocketPluginPtr; }
+    inline QSharedPointer<ProcessPlugin>& getToAudioSocketPlugin()
+    {
+        return mToAudioSocketPluginPtr;
+    }
+    inline QSharedPointer<ProcessPlugin>& getFromAudioSocketPlugin()
+    {
+        return mFromAudioSocketPluginPtr;
+    }
     inline void setRetryConnection(bool retry) { mWorkerPtr->setRetryConnection(retry); }
 
     // attempts to connect to remote instance's socket server

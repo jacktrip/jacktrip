@@ -344,13 +344,13 @@ class AudioInterface
     std::string mInputDeviceName, mOutputDeviceName;  ///< RTAudio device names
     uint32_t mBufferSizeInSamples;                    ///< Buffer size in samples
     size_t mSizeInBytesPerChannel;                    ///< Size in bytes per audio channel
-    QVector< QSharedPointer<ProcessPlugin> >
+    QVector<QSharedPointer<ProcessPlugin> >
         mProcessPluginsFromNetwork;  ///< Vector of ProcessPlugin<EM>s</EM>
-    QVector< QSharedPointer<ProcessPlugin> >
+    QVector<QSharedPointer<ProcessPlugin> >
         mProcessPluginsToNetwork;  ///< Vector of ProcessPlugin<EM>s</EM>
-    QVector< QSharedPointer<ProcessPlugin> >
+    QVector<QSharedPointer<ProcessPlugin> >
         mProcessPluginsToMonitor;  ///< Vector of ProcessPlugin<EM>s</EM>
-    QVector< QSharedPointer<AudioSocket> >
+    QVector<QSharedPointer<AudioSocket> >
         mAudioSockets;  ///< Vector of AudioSocket<EM>s</EM>
     QVarLengthArray<sample_t*>
         mInProcessBuffer;  ///< Vector of Input buffers/channel for ProcessPlugin
