@@ -39,6 +39,7 @@
 #include <QCoreApplication>
 
 #include "AudioSocket.h"
+#include "jacktrip_globals.h"
 
 using std::cout;
 using std::cerr;
@@ -64,13 +65,11 @@ public:
             }
         }
 
+        setRealtimeProcessPriority();
+
         do {
             s.compute(BUFFER_SIZE, inputs, outputs);
             QThread::usleep(BUFFER_SIZE * 1000000 / SAMPLE_RATE);
-            if (!s.isConnected()) {
-                cerr << "Lost connection" << endl;
-                break;
-            }
         } while (isRunning());
 
         cout << "Exiting" << endl;
@@ -89,8 +88,7 @@ int main(int argc, char** argv)
         cerr << "Failed to connect: " << s.getSocket().errorString().toStdString() << endl;
         return -1;
     }
-
-    cout << "Established connection" << endl;
+    s.setRetryConnection(true);
 
     MyThread thread(s);
     QObject::connect(&thread, &QThread::finished, &app, &QCoreApplication::quit);

@@ -260,14 +260,15 @@ tresult PLUGIN_API JackTripVSTProcessor::setupProcessing (Vst::ProcessSetup& new
 {
     if (mSocketPtr.isNull()) {
         // not yet initialized
-        mSocketPtr.reset(new AudioSocket());
+        mSocketPtr.reset(new AudioSocket(true));
+        mSocketPtr->setRetryConnection(true);
     }
 
     if (mSocketPtr->isConnected()) {
         if (newSetup.sampleRate != mSocketPtr->getSampleRate()
             || newSetup.maxSamplesPerBlock != mSocketPtr->getBufferSize()) {
             // reconnect
-            mSocketPtr.reset(new AudioSocket());
+            mSocketPtr.reset(new AudioSocket(true));
             mSocketPtr->connect(newSetup.sampleRate, newSetup.maxSamplesPerBlock);
         }
     } else {
