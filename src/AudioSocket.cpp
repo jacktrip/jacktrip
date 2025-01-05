@@ -35,26 +35,25 @@
  * \license MIT
  */
 
-#include <iostream>
+#include "AudioSocket.h"
 
 #include <QEventLoop>
+#include <iostream>
 
-#include "AudioSocket.h"
 #include "SocketClient.h"
 #include "jacktrip_globals.h"
 
 //*******************************************************************************
 ToAudioSocketPlugin::ToAudioSocketPlugin(WaitFreeFrameBuffer<>& sendQueue,
                                          WaitFreeFrameBuffer<>& receiveQueue)
-  : mSendQueue(sendQueue), mReceiveQueue(receiveQueue)
+    : mSendQueue(sendQueue), mReceiveQueue(receiveQueue)
 {
-    mSendBuffer.resize(AudioSocketMaxSamplesPerBlock * AudioSocketNumChannels * sizeof(float));
+    mSendBuffer.resize(AudioSocketMaxSamplesPerBlock * AudioSocketNumChannels
+                       * sizeof(float));
 }
 
 //*******************************************************************************
-ToAudioSocketPlugin::~ToAudioSocketPlugin()
-{
-}
+ToAudioSocketPlugin::~ToAudioSocketPlugin() {}
 
 //*******************************************************************************
 void ToAudioSocketPlugin::init(int samplingRate, int bufferSize)
@@ -69,10 +68,12 @@ void ToAudioSocketPlugin::init(int samplingRate, int bufferSize)
 }
 
 //*******************************************************************************
-void ToAudioSocketPlugin::compute(int nframes, float** inputs, [[maybe_unused]] float** outputs)
+void ToAudioSocketPlugin::compute(int nframes, float** inputs,
+                                  [[maybe_unused]] float** outputs)
 {
     if (!inited) {
-        std::cerr << "*** ToAudioSocketPlugin " << this << ": init never called! Doing it now.\n";
+        std::cerr << "*** ToAudioSocketPlugin " << this
+                  << ": init never called! Doing it now.\n";
         init(0, 0);
     }
 
@@ -92,7 +93,7 @@ void ToAudioSocketPlugin::compute(int nframes, float** inputs, [[maybe_unused]] 
         // send audio socket header
         emit signalSendAudioHeader(getSampleRate(), getBufferSize());
         mBytesPerChannel = getBufferSize() * sizeof(float);
-        mBytesPerPacket = mBytesPerChannel * AudioSocketNumChannels;
+        mBytesPerPacket  = mBytesPerChannel * AudioSocketNumChannels;
         mSentAudioHeader = true;
         return;
     }
@@ -105,7 +106,7 @@ void ToAudioSocketPlugin::compute(int nframes, float** inputs, [[maybe_unused]] 
     // qDebug() << "in ToAudioSocketPlugin::compute," << "nframes =" << nframes;
 
     memset(mSendBuffer.data(), 0, mBytesPerPacket);
-    char *nextPtr = mSendBuffer.data();
+    char* nextPtr = mSendBuffer.data();
     for (int i = 0; i < getNumInputs() && i < AudioSocketNumChannels; i++) {
         memcpy(nextPtr, inputs[i], bytesPerChannel);  // use current local buffer size
         nextPtr += mBytesPerChannel;  // use buffer size sent in audio header
@@ -127,7 +128,8 @@ void ToAudioSocketPlugin::updateNumChannels(int nChansIn, int nChansOut)
 }
 
 //*******************************************************************************
-void ToAudioSocketPlugin::gotAudioHeader([[maybe_unused]] int samplingRate, [[maybe_unused]] int bufferSize)
+void ToAudioSocketPlugin::gotAudioHeader([[maybe_unused]] int samplingRate,
+                                         [[maybe_unused]] int bufferSize)
 {
     mRemoteIsReady = true;
 }
@@ -136,10 +138,10 @@ void ToAudioSocketPlugin::gotAudioHeader([[maybe_unused]] int samplingRate, [[ma
 void ToAudioSocketPlugin::gotConnection()
 {
     mBytesPerChannel = 0;
-    mBytesPerPacket = 0;
+    mBytesPerPacket  = 0;
     mSentAudioHeader = false;
-    mRemoteIsReady = false;
-    mIsConnected = true;
+    mRemoteIsReady   = false;
+    mIsConnected     = true;
 }
 
 //*******************************************************************************
@@ -152,22 +154,21 @@ void ToAudioSocketPlugin::lostConnection()
 FromAudioSocketPlugin::FromAudioSocketPlugin(WaitFreeFrameBuffer<>& sendQueue,
                                              WaitFreeFrameBuffer<>& receiveQueue,
                                              bool passthrough)
-  : mSendQueue(sendQueue), mReceiveQueue(receiveQueue), mPassthrough(passthrough)
+    : mSendQueue(sendQueue), mReceiveQueue(receiveQueue), mPassthrough(passthrough)
 {
-    mRecvBuffer.resize(AudioSocketMaxSamplesPerBlock * AudioSocketNumChannels * sizeof(float));
+    mRecvBuffer.resize(AudioSocketMaxSamplesPerBlock * AudioSocketNumChannels
+                       * sizeof(float));
 }
 
 //*******************************************************************************
-FromAudioSocketPlugin::~FromAudioSocketPlugin()
-{
-}
+FromAudioSocketPlugin::~FromAudioSocketPlugin() {}
 
 //*******************************************************************************
 void FromAudioSocketPlugin::init(int samplingRate, int bufferSize)
 {
     if (bufferSize < 2) {
-        std::cerr << "*** FromAudioSocketPlugin " << this << ": bufferSize (" << bufferSize
-                  << ") < 2! Setting to 2.\n";
+        std::cerr << "*** FromAudioSocketPlugin " << this << ": bufferSize ("
+                  << bufferSize << ") < 2! Setting to 2.\n";
         bufferSize = 2;
     }
     ProcessPlugin::init(samplingRate, bufferSize);
@@ -175,10 +176,12 @@ void FromAudioSocketPlugin::init(int samplingRate, int bufferSize)
 }
 
 //*******************************************************************************
-void FromAudioSocketPlugin::compute(int nframes, [[maybe_unused]] float** inputs, float** outputs)
+void FromAudioSocketPlugin::compute(int nframes, [[maybe_unused]] float** inputs,
+                                    float** outputs)
 {
     if (!inited) {
-        std::cerr << "*** FromAudioSocketPlugin " << this << ": init never called! Doing it now.\n";
+        std::cerr << "*** FromAudioSocketPlugin " << this
+                  << ": init never called! Doing it now.\n";
         init(0, 0);
     }
 
@@ -208,11 +211,9 @@ void FromAudioSocketPlugin::compute(int nframes, [[maybe_unused]] float** inputs
         return;
     }
 
-    // qDebug() << "in FromAudioSocketPlugin::compute," << "nframes =" << nframes << "queueSize =" << mReceiveQueue.size();
-
     // try to get an audio packet from queue
     int8_t* recvPtr = reinterpret_cast<int8_t*>(mRecvBuffer.data());
-    bool gotPacket = mReceiveQueue.pop(recvPtr);
+    bool gotPacket  = mReceiveQueue.pop(recvPtr);
     if (!gotPacket) {
         qDebug() << "Audio socket glitch: receive queue empty";
         return;
@@ -226,10 +227,10 @@ void FromAudioSocketPlugin::compute(int nframes, [[maybe_unused]] float** inputs
     // TODO: handle sample rate conversions
 
     // copy bytes from remote to outputs
-    char *nextPtr = mRecvBuffer.data();
+    char* nextPtr = mRecvBuffer.data();
     for (int i = 0; i < AudioSocketNumChannels; i++) {
         int outputChannel = i < getNumOutputs() ? i : 0;  // mix to mono
-        float *framePtr = reinterpret_cast<float*>(nextPtr);
+        float* framePtr   = reinterpret_cast<float*>(nextPtr);
         for (int j = 0; j < nframes; j++) {
             // TODO: is addition sufficient for mixing audio?
             outputs[outputChannel][j] += *(framePtr++);
@@ -251,20 +252,20 @@ void FromAudioSocketPlugin::updateNumChannels(int nChansIn, int nChansOut)
 //*******************************************************************************
 void FromAudioSocketPlugin::gotAudioHeader(int samplingRate, int bufferSize)
 {
-    mRemoteSampleRate = samplingRate;
-    mRemoteBufferSize = bufferSize;
+    mRemoteSampleRate      = samplingRate;
+    mRemoteBufferSize      = bufferSize;
     mRemoteBytesPerChannel = bufferSize * sizeof(float);
-    mRemoteIsReady = true;
+    mRemoteIsReady         = true;
 }
 
 //*******************************************************************************
 void FromAudioSocketPlugin::gotConnection()
 {
-    mRemoteSampleRate = 0;
-    mRemoteBufferSize = 0;
+    mRemoteSampleRate      = 0;
+    mRemoteBufferSize      = 0;
     mRemoteBytesPerChannel = 0;
-    mRemoteIsReady = false;
-    mIsConnected = true;
+    mRemoteIsReady         = false;
+    mIsConnected           = true;
 }
 
 //*******************************************************************************
@@ -275,17 +276,18 @@ void FromAudioSocketPlugin::lostConnection()
 
 //*******************************************************************************
 AudioSocketWorker::AudioSocketWorker(QSharedPointer<QLocalSocket>& s,
-    WaitFreeFrameBuffer<>& sendQueue, WaitFreeFrameBuffer<>& receiveQueue)
-  : mSocketPtr(s), mSendQueue(sendQueue), mReceiveQueue(receiveQueue)
+                                     WaitFreeFrameBuffer<>& sendQueue,
+                                     WaitFreeFrameBuffer<>& receiveQueue)
+    : mSocketPtr(s), mSendQueue(sendQueue), mReceiveQueue(receiveQueue)
 {
-    mSendBuffer.resize(AudioSocketMaxSamplesPerBlock * AudioSocketNumChannels * sizeof(float));
-    mRecvBuffer.resize(AudioSocketMaxSamplesPerBlock * AudioSocketNumChannels * sizeof(float));
+    mSendBuffer.resize(AudioSocketMaxSamplesPerBlock * AudioSocketNumChannels
+                       * sizeof(float));
+    mRecvBuffer.resize(AudioSocketMaxSamplesPerBlock * AudioSocketNumChannels
+                       * sizeof(float));
 }
 
 //*******************************************************************************
-AudioSocketWorker::~AudioSocketWorker()
-{
-}
+AudioSocketWorker::~AudioSocketWorker() {}
 
 //****************************************************************************
 void AudioSocketWorker::start()
@@ -337,7 +339,7 @@ void AudioSocketWorker::sendAudioHeader(uint32_t sampleRate, uint16_t bufferSize
     // send audio socket header
     QByteArray headerBuffer;
     headerBuffer.resize(AudioSocketHeaderSize);
-    char *headPtr = headerBuffer.data();
+    char* headPtr = headerBuffer.data();
     memcpy(headPtr, &sampleRate, sizeof(uint32_t));
     headPtr += 4;
     memcpy(headPtr, &bufferSize, sizeof(uint16_t));
@@ -370,27 +372,30 @@ void AudioSocketWorker::readAudioHeader()
     mRecvBuffer.resize(AudioSocketHeaderSize);
     memset(mRecvBuffer.data(), 0, AudioSocketHeaderSize);
     mSocketPtr->read(mRecvBuffer.data(), AudioSocketHeaderSize);
-    char *headPtr = mRecvBuffer.data();
+    char* headPtr = mRecvBuffer.data();
     memcpy(&headSampleRate, headPtr, sizeof(uint32_t));
     headPtr += 4;
     memcpy(&headBufferSize, headPtr, sizeof(uint16_t));
 
     // sanity checks (should never happen)
     if (headSampleRate != 44100 && headSampleRate != 48000 && headSampleRate != 96000) {
-        std::cerr << "Audio socket received invalid sample rate = " << headSampleRate << std::endl;
+        std::cerr << "Audio socket received invalid sample rate = " << headSampleRate
+                  << std::endl;
         mSocketPtr->close();
         return;
     }
     if (headBufferSize < 2) {
-        std::cerr << "Audio socket received invalid buffer size = " << headBufferSize << std::endl;
+        std::cerr << "Audio socket received invalid buffer size = " << headBufferSize
+                  << std::endl;
         mSocketPtr->close();
         return;
     }
 
-    qDebug() << "Received audio socket header: sample rate =" << headSampleRate << ", buffer size =" << headBufferSize;
+    qDebug() << "Received audio socket header: sample rate =" << headSampleRate
+             << ", buffer size =" << headBufferSize;
 
-    QObject::connect(mSocketPtr.data(), &QLocalSocket::readyRead,
-        this, &AudioSocketWorker::receiveAudio, Qt::QueuedConnection);
+    QObject::connect(mSocketPtr.data(), &QLocalSocket::readyRead, this,
+                     &AudioSocketWorker::receiveAudio, Qt::QueuedConnection);
 
     emit signalGotAudioHeader(headSampleRate, headBufferSize);
     mRemoteBytesPerPacket = headBufferSize * sizeof(float) * AudioSocketNumChannels;
@@ -425,7 +430,8 @@ void AudioSocketWorker::receiveAudio()
 {
     // return early if no new audio packets ready to read
     if (mSocketPtr->bytesAvailable() < mRemoteBytesPerPacket) {
-        qDebug() << "Not enough bytes available in audio socket:" << mSocketPtr->bytesAvailable();
+        qDebug() << "Not enough bytes available in audio socket:"
+                 << mSocketPtr->bytesAvailable();
         return;
     }
 
@@ -448,12 +454,14 @@ void AudioSocketWorker::receiveAudio()
 }
 
 //*******************************************************************************
-void AudioSocketWorker::scheduleReconnect() {
+void AudioSocketWorker::scheduleReconnect()
+{
     if (mRetryConnection) {
         qDebug() << "Attempting to reconnect audio socket";
         if (mTimerPtr.isNull()) {
             mTimerPtr.reset(new QTimer);
-            QObject::connect(mTimerPtr.data(), &QTimer::timeout, this, &AudioSocketWorker::connect);
+            QObject::connect(mTimerPtr.data(), &QTimer::timeout, this,
+                             &AudioSocketWorker::connect);
         }
         mTimerPtr->start(1000);  // try reconnecting in 1 second
     }
@@ -461,11 +469,12 @@ void AudioSocketWorker::scheduleReconnect() {
 
 //*******************************************************************************
 AudioSocket::AudioSocket(bool retryConnection)
-  : mThread(),
-  mSendQueue(AudioSocketMaxSamplesPerBlock * AudioSocketNumChannels * sizeof(float)),
-  mReceiveQueue(AudioSocketMaxSamplesPerBlock * AudioSocketNumChannels * sizeof(float)),
-  mToAudioSocketPluginPtr(new ToAudioSocketPlugin(mSendQueue, mReceiveQueue)),
-  mFromAudioSocketPluginPtr(new FromAudioSocketPlugin(mSendQueue, mReceiveQueue))
+    : mThread()
+    , mSendQueue(AudioSocketMaxSamplesPerBlock * AudioSocketNumChannels * sizeof(float))
+    , mReceiveQueue(AudioSocketMaxSamplesPerBlock * AudioSocketNumChannels
+                    * sizeof(float))
+    , mToAudioSocketPluginPtr(new ToAudioSocketPlugin(mSendQueue, mReceiveQueue))
+    , mFromAudioSocketPluginPtr(new FromAudioSocketPlugin(mSendQueue, mReceiveQueue))
 {
     mThread.setObjectName("AudioSocket");
     mThread.start();
@@ -482,12 +491,13 @@ AudioSocket::AudioSocket(bool retryConnection)
 
 //*******************************************************************************
 AudioSocket::AudioSocket(QSharedPointer<QLocalSocket>& s)
-  : mThread(),
-  mSendQueue(AudioSocketMaxSamplesPerBlock * AudioSocketNumChannels * sizeof(float)),
-  mReceiveQueue(AudioSocketMaxSamplesPerBlock * AudioSocketNumChannels * sizeof(float)),
-  mToAudioSocketPluginPtr(new ToAudioSocketPlugin(mSendQueue, mReceiveQueue)),
-  mFromAudioSocketPluginPtr(new FromAudioSocketPlugin(mSendQueue, mReceiveQueue)),
-  mWorkerPtr(new AudioSocketWorker(s, mSendQueue, mReceiveQueue))
+    : mThread()
+    , mSendQueue(AudioSocketMaxSamplesPerBlock * AudioSocketNumChannels * sizeof(float))
+    , mReceiveQueue(AudioSocketMaxSamplesPerBlock * AudioSocketNumChannels
+                    * sizeof(float))
+    , mToAudioSocketPluginPtr(new ToAudioSocketPlugin(mSendQueue, mReceiveQueue))
+    , mFromAudioSocketPluginPtr(new FromAudioSocketPlugin(mSendQueue, mReceiveQueue))
+    , mWorkerPtr(new AudioSocketWorker(s, mSendQueue, mReceiveQueue))
 {
     mThread.setObjectName("AudioSocket");
     mThread.start();
@@ -502,36 +512,48 @@ AudioSocket::AudioSocket(QSharedPointer<QLocalSocket>& s)
 void AudioSocket::initWorker()
 {
     auto* toPluginPtr = static_cast<ToAudioSocketPlugin*>(mToAudioSocketPluginPtr.get());
-    auto* fromPluginPtr = static_cast<FromAudioSocketPlugin*>(mFromAudioSocketPluginPtr.get());
+    auto* fromPluginPtr =
+        static_cast<FromAudioSocketPlugin*>(mFromAudioSocketPluginPtr.get());
 
-    QObject::connect(this, &AudioSocket::signalConnect,
-        mWorkerPtr.data(), &AudioSocketWorker::connect, Qt::QueuedConnection);
-    QObject::connect(this, &AudioSocket::signalClose,
-        mWorkerPtr.data(), &AudioSocketWorker::close, Qt::QueuedConnection);
-    QObject::connect(this, &AudioSocket::signalStartWorker,
-        mWorkerPtr.data(), &AudioSocketWorker::start, Qt::QueuedConnection);
+    QObject::connect(this, &AudioSocket::signalConnect, mWorkerPtr.data(),
+                     &AudioSocketWorker::connect, Qt::QueuedConnection);
+    QObject::connect(this, &AudioSocket::signalClose, mWorkerPtr.data(),
+                     &AudioSocketWorker::close, Qt::QueuedConnection);
+    QObject::connect(this, &AudioSocket::signalStartWorker, mWorkerPtr.data(),
+                     &AudioSocketWorker::start, Qt::QueuedConnection);
     QObject::connect(toPluginPtr, &ToAudioSocketPlugin::signalSendAudioHeader,
-        mWorkerPtr.data(), &AudioSocketWorker::sendAudioHeader, Qt::QueuedConnection);
+                     mWorkerPtr.data(), &AudioSocketWorker::sendAudioHeader,
+                     Qt::QueuedConnection);
     QObject::connect(toPluginPtr, &ToAudioSocketPlugin::signalSendAudio,
-        mWorkerPtr.data(), &AudioSocketWorker::sendAudio, Qt::QueuedConnection);
+                     mWorkerPtr.data(), &AudioSocketWorker::sendAudio,
+                     Qt::QueuedConnection);
     QObject::connect(mWorkerPtr.data(), &AudioSocketWorker::signalGotAudioHeader,
-        toPluginPtr, &ToAudioSocketPlugin::gotAudioHeader, Qt::DirectConnection);
+                     toPluginPtr, &ToAudioSocketPlugin::gotAudioHeader,
+                     Qt::DirectConnection);
     QObject::connect(mWorkerPtr.data(), &AudioSocketWorker::signalGotAudioHeader,
-        fromPluginPtr, &FromAudioSocketPlugin::gotAudioHeader, Qt::DirectConnection);
+                     fromPluginPtr, &FromAudioSocketPlugin::gotAudioHeader,
+                     Qt::DirectConnection);
     QObject::connect(mWorkerPtr.data(), &AudioSocketWorker::signalConnectionEstablished,
-        toPluginPtr, &ToAudioSocketPlugin::gotConnection, Qt::DirectConnection);
+                     toPluginPtr, &ToAudioSocketPlugin::gotConnection,
+                     Qt::DirectConnection);
     QObject::connect(mWorkerPtr.data(), &AudioSocketWorker::signalConnectionEstablished,
-        fromPluginPtr, &FromAudioSocketPlugin::gotConnection, Qt::DirectConnection);
+                     fromPluginPtr, &FromAudioSocketPlugin::gotConnection,
+                     Qt::DirectConnection);
     QObject::connect(mWorkerPtr.data(), &AudioSocketWorker::signalLostConnection,
-        toPluginPtr, &ToAudioSocketPlugin::lostConnection, Qt::DirectConnection);
+                     toPluginPtr, &ToAudioSocketPlugin::lostConnection,
+                     Qt::DirectConnection);
     QObject::connect(mWorkerPtr.data(), &AudioSocketWorker::signalLostConnection,
-        fromPluginPtr, &FromAudioSocketPlugin::lostConnection, Qt::DirectConnection);
+                     fromPluginPtr, &FromAudioSocketPlugin::lostConnection,
+                     Qt::DirectConnection);
     QObject::connect(mWorkerPtr.data(), &AudioSocketWorker::signalLostConnection,
-        mWorkerPtr.data(), &AudioSocketWorker::scheduleReconnect, Qt::DirectConnection);
+                     mWorkerPtr.data(), &AudioSocketWorker::scheduleReconnect,
+                     Qt::DirectConnection);
     QObject::connect(mWorkerPtr.data(), &AudioSocketWorker::signalConnectionFailed,
-        mWorkerPtr.data(), &AudioSocketWorker::scheduleReconnect, Qt::DirectConnection);
+                     mWorkerPtr.data(), &AudioSocketWorker::scheduleReconnect,
+                     Qt::DirectConnection);
     QObject::connect(mWorkerPtr.data(), &AudioSocketWorker::signalReadAudioHeader,
-        mWorkerPtr.data(), &AudioSocketWorker::readAudioHeader, Qt::QueuedConnection);
+                     mWorkerPtr.data(), &AudioSocketWorker::readAudioHeader,
+                     Qt::QueuedConnection);
 
     if (isConnected()) {
         toPluginPtr->gotConnection();
@@ -565,8 +587,10 @@ bool AudioSocket::connect(int samplingRate, int bufferSize)
     timer.setSingleShot(true);
 
     QEventLoop loop;
-    QObject::connect(mWorkerPtr.data(), &AudioSocketWorker::signalConnectionEstablished, &loop, &QEventLoop::quit);
-    QObject::connect(mWorkerPtr.data(), &AudioSocketWorker::signalConnectionFailed, &loop, &QEventLoop::quit);
+    QObject::connect(mWorkerPtr.data(), &AudioSocketWorker::signalConnectionEstablished,
+                     &loop, &QEventLoop::quit);
+    QObject::connect(mWorkerPtr.data(), &AudioSocketWorker::signalConnectionFailed, &loop,
+                     &QEventLoop::quit);
     QObject::connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
     timer.start(1000);
     loop.exec();
@@ -582,6 +606,7 @@ void AudioSocket::compute(int nframes, float** inputs, float** outputs)
 }
 
 //*******************************************************************************
-void AudioSocket::close() {
+void AudioSocket::close()
+{
     emit signalClose();
 }

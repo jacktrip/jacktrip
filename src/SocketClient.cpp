@@ -38,13 +38,13 @@
 
 #include <QDebug>
 
-SocketClient::SocketClient(QObject* parent) :
-    QObject(parent), m_socket(new QLocalSocket(this)), m_owns_socket(true)
+SocketClient::SocketClient(QObject* parent)
+    : QObject(parent), m_socket(new QLocalSocket(this)), m_owns_socket(true)
 {
 }
 
-SocketClient::SocketClient(QSharedPointer<QLocalSocket>& s, QObject* parent) :
-    QObject(parent), m_socket(s), m_owns_socket(false)
+SocketClient::SocketClient(QSharedPointer<QLocalSocket>& s, QObject* parent)
+    : QObject(parent), m_socket(s), m_owns_socket(false)
 {
 }
 
@@ -60,7 +60,7 @@ bool SocketClient::connect()
     if (isConnected()) {
         return true;
     }
-    m_ready       = false;
+    m_ready = false;
 
     QObject::connect(m_socket.data(), &QLocalSocket::connected, this,
                      &SocketClient::connectionEstablished, Qt::QueuedConnection);
@@ -100,7 +100,7 @@ bool SocketClient::sendHeader(const QString& handler)
 
 void SocketClient::connectionEstablished()
 {
-    m_ready       = true;
+    m_ready = true;
     emit signalIsReady();
 }
 
@@ -121,6 +121,6 @@ void SocketClient::connectionFailed(QLocalSocket::LocalSocketError socketError)
         qDebug() << m_socket->errorString();
     }
 
-    m_ready       = true;
+    m_ready = true;
     emit signalIsReady();
 }

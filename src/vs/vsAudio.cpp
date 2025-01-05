@@ -688,7 +688,8 @@ void VsAudio::appendProcessPlugins(AudioInterface& audioInterface, bool forJackT
 
         // Setup monitor
         // Note: Constructor determines how many internal monitor buffers to allocate
-        Monitor* monitorPluginPtr = new Monitor(std::max(numInputChannels, numOutputChannels));
+        Monitor* monitorPluginPtr =
+            new Monitor(std::max(numInputChannels, numOutputChannels));
         monitorPluginPtr->volumeUpdated(m_monMultiplier);
         connect(this, &VsAudio::updatedMonitorVolume, monitorPluginPtr,
                 &Monitor::volumeUpdated);
@@ -698,11 +699,12 @@ void VsAudio::appendProcessPlugins(AudioInterface& audioInterface, bool forJackT
 #ifndef NO_FEEDBACK
         // Setup output analyzer
         if (m_feedbackDetectionEnabled) {
-            Analyzer *outputAnalyzerPluginPtr = new Analyzer(numOutputChannels);
+            Analyzer* outputAnalyzerPluginPtr = new Analyzer(numOutputChannels);
             outputAnalyzerPluginPtr->setIsMonitoringAnalyzer(true);
             connect(outputAnalyzerPluginPtr, &Analyzer::signalFeedbackDetected, this,
                     &VsAudio::detectedFeedbackLoop);
-            QSharedPointer<ProcessPlugin> outputAnalyzerPluginSharedPtr(outputAnalyzerPluginPtr);
+            QSharedPointer<ProcessPlugin> outputAnalyzerPluginSharedPtr(
+                outputAnalyzerPluginPtr);
             audioInterface.appendProcessPluginToMonitor(outputAnalyzerPluginSharedPtr);
         }
 #endif

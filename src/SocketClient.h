@@ -59,7 +59,10 @@ class SocketClient : public QObject
     virtual ~SocketClient();
 
     // return local socket connection
-    inline bool isConnected() { return m_socket->state() == QLocalSocket::ConnectedState; }
+    inline bool isConnected()
+    {
+        return m_socket->state() == QLocalSocket::ConnectedState;
+    }
 
     // return local socket connection
     inline QLocalSocket& getSocket() { return *m_socket; }

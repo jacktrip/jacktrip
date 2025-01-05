@@ -38,6 +38,8 @@
 #ifndef __JACKTRIP_GLOBALS_H__
 #define __JACKTRIP_GLOBALS_H__
 
+#include "jacktrip_types.h"
+
 constexpr const char* const gVersion = "2.4.1";  ///< JackTrip version
 
 //*******************************************************************************

@@ -190,7 +190,8 @@ void AudioInterface::audioInputCallback(QVarLengthArray<sample_t*>& in_buffer,
 
 #ifndef WAIR
     for (auto& s : qAsConst(mAudioSockets)) {
-        s->getFromAudioSocketPlugin()->compute(n_frames, in_buffer.data(), in_buffer.data());
+        s->getFromAudioSocketPlugin()->compute(n_frames, in_buffer.data(),
+                                               in_buffer.data());
     }
     if (mMonitorQueuePtr != nullptr && mProcessPluginsToMonitor.size() > 0) {
         // copy audio input to monitor queue
@@ -266,10 +267,11 @@ void AudioInterface::audioOutputCallback(QVarLengthArray<sample_t*>& out_buffer,
 
 #ifndef WAIR  // NOT WAIR:
     for (auto& s : qAsConst(mAudioSockets)) {
-        s->getToAudioSocketPlugin()->compute(n_frames, out_buffer.data(), out_buffer.data());
+        s->getToAudioSocketPlugin()->compute(n_frames, out_buffer.data(),
+                                             out_buffer.data());
     }
 
-    for (auto&p : qAsConst(mProcessPluginsFromNetwork)) {
+    for (auto& p : qAsConst(mProcessPluginsFromNetwork)) {
         if (p->getInited()) {
             p->compute(n_frames, out_buffer.data(), out_buffer.data());
         }
@@ -718,7 +720,8 @@ void AudioInterface::appendProcessPluginToMonitor(QSharedPointer<ProcessPlugin>&
 
 void AudioInterface::appendAudioSocket(QSharedPointer<AudioSocket>& s)
 {
-    reinterpret_cast<FromAudioSocketPlugin*>(s->getFromAudioSocketPlugin().data())->setPassthrough(true);
+    static_cast<FromAudioSocketPlugin*>(s->getFromAudioSocketPlugin().data())
+        ->setPassthrough(true);
     mAudioSockets.append(s);
 }
 

@@ -115,7 +115,8 @@ void SocketServer::handlePendingConnections()
     }
 }
 
-void SocketServer::handleConnection(const QString& name, QSharedPointer<QLocalSocket>& socket)
+void SocketServer::handleConnection(const QString& name,
+                                    QSharedPointer<QLocalSocket>& socket)
 {
     auto it = m_handlers.find(name);
     if (it == m_handlers.end()) {

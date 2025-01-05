@@ -1640,39 +1640,46 @@ void QJackTrip::appendPlugins(JackTrip* jackTrip, int numSendChannels,
     // These effects are currently deleted by the AudioInterface of jacktrip.
     // May need to change this code if we move to smart pointers.
     if (m_ui->outCompressorCheckBox->isChecked()) {
-        QSharedPointer<ProcessPlugin> pluginPtr(new Compressor(numSendChannels, false, CompressorPresets::voice));
+        QSharedPointer<ProcessPlugin> pluginPtr(
+            new Compressor(numSendChannels, false, CompressorPresets::voice));
         jackTrip->appendProcessPluginToNetwork(pluginPtr);
     }
     if (m_ui->inCompressorCheckBox->isChecked()) {
-        QSharedPointer<ProcessPlugin> pluginPtr(new Compressor(numRecvChannels, false, CompressorPresets::voice));
+        QSharedPointer<ProcessPlugin> pluginPtr(
+            new Compressor(numRecvChannels, false, CompressorPresets::voice));
         jackTrip->appendProcessPluginFromNetwork(pluginPtr);
     }
 
     if (m_ui->outZitarevCheckBox->isChecked()) {
         qreal wetness = m_ui->outZitarevWetnessSlider->value() / 100.0;
-        QSharedPointer<ProcessPlugin> pluginPtr(new Reverb(numSendChannels, numSendChannels, 1.0 + wetness));
+        QSharedPointer<ProcessPlugin> pluginPtr(
+            new Reverb(numSendChannels, numSendChannels, 1.0 + wetness));
         jackTrip->appendProcessPluginToNetwork(pluginPtr);
     }
     if (m_ui->inZitarevCheckBox->isChecked()) {
         qreal wetness = m_ui->inZitarevWetnessSlider->value() / 100.0;
-        QSharedPointer<ProcessPlugin> pluginPtr(new Reverb(numRecvChannels, numRecvChannels, 1.0 + wetness));
+        QSharedPointer<ProcessPlugin> pluginPtr(
+            new Reverb(numRecvChannels, numRecvChannels, 1.0 + wetness));
         jackTrip->appendProcessPluginFromNetwork(pluginPtr);
     }
 
     if (m_ui->outFreeverbCheckBox->isChecked()) {
         qreal wetness = m_ui->outFreeverbWetnessSlider->value() / 100.0;
-        QSharedPointer<ProcessPlugin> pluginPtr(new Reverb(numSendChannels, numSendChannels, wetness));
+        QSharedPointer<ProcessPlugin> pluginPtr(
+            new Reverb(numSendChannels, numSendChannels, wetness));
         jackTrip->appendProcessPluginToNetwork(pluginPtr);
     }
     if (m_ui->inFreeverbCheckBox->isChecked()) {
         qreal wetness = m_ui->inFreeverbWetnessSlider->value() / 100.0;
-        QSharedPointer<ProcessPlugin> pluginPtr(new Reverb(numRecvChannels, numRecvChannels, wetness));
+        QSharedPointer<ProcessPlugin> pluginPtr(
+            new Reverb(numRecvChannels, numRecvChannels, wetness));
         jackTrip->appendProcessPluginFromNetwork(pluginPtr);
     }
 
     // Limiters go last in the plugin sequence.
     if (m_ui->outLimiterCheckBox->isChecked()) {
-        QSharedPointer<ProcessPlugin> pluginPtr(new Limiter(numSendChannels, m_ui->outClientsSpinBox->value()));
+        QSharedPointer<ProcessPlugin> pluginPtr(
+            new Limiter(numSendChannels, m_ui->outClientsSpinBox->value()));
         jackTrip->appendProcessPluginToNetwork(pluginPtr);
     }
     if (m_ui->inLimiterCheckBox->isChecked()) {

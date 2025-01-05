@@ -43,21 +43,23 @@
 #define stringLegalCopyright    "Copyright(c) 2024 JackTrip Labs, Inc."
 #define stringLegalTrademarks   "VST is a trademark of Steinberg Media Technologies GmbH"
 
-namespace Steinberg {
+namespace Steinberg
+{
 
 //------------------------------------------------------------------------
-enum JackTripVSTParams : Vst::ParamID
-{
-    kParamVolSendId = 100,
+enum JackTripVSTParams : Vst::ParamID {
+    kParamVolSendId    = 100,
     kParamVolReceiveId = 101,
-    kParamVolPassId = 102,
-    kParamConnectedId = 200,
-    kBypassId = 1000
+    kParamVolPassId    = 102,
+    kParamConnectedId  = 200,
+    kBypassId          = 1000
 };
 
 //------------------------------------------------------------------------
-static const Steinberg::FUID kJackTripVSTProcessorUID (0x176F9AF4, 0xA56041A1, 0x890DD021, 0x765ABCF0);
-static const Steinberg::FUID kJackTripVSTControllerUID (0x075C3106, 0xBC524686, 0xB63544CC, 0xF88423FF);
+static const Steinberg::FUID kJackTripVSTProcessorUID(0x176F9AF4, 0xA56041A1, 0x890DD021,
+                                                      0x765ABCF0);
+static const Steinberg::FUID kJackTripVSTControllerUID(0x075C3106, 0xBC524686, 0xB63544CC,
+                                                       0xF88423FF);
 
 //------------------------------------------------------------------------
-} // namespace Steinberg
+}  // namespace Steinberg
