@@ -38,6 +38,13 @@
 #include "base/source/fstreamer.h"
 #include "pluginterfaces/vst/ivstparameterchanges.h"
 
+#ifdef JACKTRIP_VST_LOG
+#include <filesystem>
+#define JACKTRIP_VST_LOG_PATH "/tmp/jacktrip"
+#define JACKTRIP_VST_LOG_FILE "/tmp/jacktrip/vst.log"
+#endif
+
+using namespace std;
 using namespace Steinberg;
 
 namespace Steinberg
@@ -95,6 +102,21 @@ tresult PLUGIN_API JackTripVSTProcessor::initialize(FUnknown* context)
         mOutputBuffer[i] = new float[AudioSocketMaxSamplesPerBlock];
     }
 
+#ifdef JACKTRIP_VST_LOG
+    if (!filesystem::is_directory(JACKTRIP_VST_LOG_PATH)) {
+        if (!filesystem::create_directory(JACKTRIP_VST_LOG_PATH)) {
+            qDebug() << "Failed to create VST log directory: " << JACKTRIP_VST_LOG_PATH;
+        }
+    }
+    mLogFile.open(JACKTRIP_VST_LOG_FILE, ios::app);
+    if (mLogFile.is_open()) {
+        mLogFile << "JackTrip VST initialized" << endl;
+        mLogFile.flush();
+    } else {
+        qDebug() << "Failed to open VST log file: " << JACKTRIP_VST_LOG_FILE;
+    }
+#endif
+
     return kResultOk;
 }
 
@@ -109,6 +131,13 @@ tresult PLUGIN_API JackTripVSTProcessor::terminate()
     }
     delete[] mInputBuffer;
     delete[] mOutputBuffer;
+
+#ifdef JACKTRIP_VST_LOG
+    if (mLogFile.is_open()) {
+        mLogFile << "JackTrip VST terminated" << endl;
+        mLogFile.close();
+    }
+#endif
 
     //---do not forget to call parent ------
     return AudioEffect::terminate();
@@ -134,6 +163,14 @@ tresult PLUGIN_API JackTripVSTProcessor::setActive(TBool state)
         // disconnect from remote when inactive
         mSocketPtr.reset();
     }
+
+#ifdef JACKTRIP_VST_LOG
+    if (mLogFile.is_open()) {
+        mLogFile << "JackTrip VST setActive(" << int(state) << ")" << endl;
+        mLogFile.flush();
+    }
+#endif
+
     //--- called when the Plug-in is enable/disable (On/Off) -----
     return AudioEffect::setActive(state);
 }
@@ -141,6 +178,12 @@ tresult PLUGIN_API JackTripVSTProcessor::setActive(TBool state)
 //------------------------------------------------------------------------
 tresult PLUGIN_API JackTripVSTProcessor::setProcessing(TBool state)
 {
+#ifdef JACKTRIP_VST_LOG
+    if (mLogFile.is_open()) {
+        mLogFile << "JackTrip VST setProcessing(" << int(state) << ")" << endl;
+        mLogFile.flush();
+    }
+#endif
     return AudioEffect::setProcessing(state);
 }
 
@@ -188,6 +231,15 @@ tresult PLUGIN_API JackTripVSTProcessor::process(Vst::ProcessData& data)
         }
     }
 
+#if 0
+    if (mLogFile.is_open()) {
+        mLogFile << "JackTrip VST process: inputs=" << data.numInputs
+                 << ", outputs=" << data.numOutputs
+                 << ", samples=" << data.numSamples
+                 << endl;
+    }
+#endif
+
     // handle connection state change
     if (mConnected != mSocketPtr->isConnected() && data.outputParameterChanges) {
         int32 index = 0;
@@ -225,20 +277,16 @@ tresult PLUGIN_API JackTripVSTProcessor::process(Vst::ProcessData& data)
         return kResultOk;
     }
 
-    // Process Algorithm
-    // Ex: algo.process (data.inputs[0].channelBuffers32,
-    // data.outputs[0].channelBuffers32, data.numSamples);
-
     // clear buffers
     for (int i = 0; i < AudioSocketNumChannels; i++) {
-        memset(mInputBuffer[i], 0, AudioSocketMaxSamplesPerBlock * sizeof(float));
-        memset(mOutputBuffer[i], 0, AudioSocketMaxSamplesPerBlock * sizeof(float));
+        memset(mInputBuffer[i], 0, mBufferSize * sizeof(float));
+        memset(mOutputBuffer[i], 0, mBufferSize * sizeof(float));
     }
 
     // copy input to buffer
     if (mSendVol >= 0.0000001) {
         Steinberg::uint64 inSilentFlag = 1;
-        int channelsIn = std::min(data.inputs[0].numChannels, AudioSocketNumChannels);
+        int channelsIn = min(data.inputs[0].numChannels, AudioSocketNumChannels);
         for (int i = 0; i < channelsIn; i++) {
             bool isSilent = inSilentFlag & data.inputs[0].silenceFlags;
             inSilentFlag <<= 1;
@@ -288,6 +336,14 @@ tresult PLUGIN_API JackTripVSTProcessor::setupProcessing(Vst::ProcessSetup& newS
 {
     mSampleRate = newSetup.sampleRate;
     mBufferSize = newSetup.maxSamplesPerBlock;
+
+#ifdef JACKTRIP_VST_LOG
+    if (mLogFile.is_open()) {
+        mLogFile << "JackTrip VST setupProcessing: mSampleRate=" << mSampleRate
+                 << ", mbufferSize=" << mBufferSize << endl;
+        mLogFile.flush();
+    }
+#endif
 
     //--- called before any processing ----
     return AudioEffect::setupProcessing(newSetup);

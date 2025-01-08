@@ -54,8 +54,14 @@ constexpr int AudioSocketNumChannels = 2;
 // assume max buffer size of 8192 samples
 constexpr int AudioSocketMaxSamplesPerBlock = 8192;
 
+// allow up to 1024 frames
+constexpr int AudioSocketMaxQueueSize = 1024;
+
 // audio header is 4 bytes for the number of samples + 2 bytes for the buffer size
 constexpr int AudioSocketHeaderSize = 4 + 2;
+
+// data type for audio socket circular buffer
+typedef WaitFreeFrameBuffer<AudioSocketMaxQueueSize> AudioSocketQueueT;
 
 /** \brief ToAudioSocketPlugin is used to send audio from a signal chain to an audio
  * socket
@@ -65,8 +71,7 @@ class ToAudioSocketPlugin : public ProcessPlugin
     Q_OBJECT;
 
    public:
-    ToAudioSocketPlugin(WaitFreeFrameBuffer<>& sendQueue,
-                        WaitFreeFrameBuffer<>& receiveQueue);
+    ToAudioSocketPlugin(AudioSocketQueueT& sendQueue, AudioSocketQueueT& receiveQueue);
     virtual ~ToAudioSocketPlugin();
 
     void init(int samplingRate, int bufferSize) override;
@@ -86,12 +91,13 @@ class ToAudioSocketPlugin : public ProcessPlugin
     void lostConnection();
 
    private:
-    WaitFreeFrameBuffer<>& mSendQueue;
-    WaitFreeFrameBuffer<>& mReceiveQueue;
+    AudioSocketQueueT& mSendQueue;
+    AudioSocketQueueT& mReceiveQueue;
     QByteArray mSendBuffer;
     int mNumChannels      = AudioSocketNumChannels;
     int mBytesPerChannel  = 0;
     int mBytesPerPacket   = 0;
+    int mSamplesToSend    = 0;
     bool mSentAudioHeader = false;
     bool mRemoteIsReady   = false;
     bool mIsConnected     = false;
@@ -105,8 +111,8 @@ class FromAudioSocketPlugin : public ProcessPlugin
     Q_OBJECT;
 
    public:
-    FromAudioSocketPlugin(WaitFreeFrameBuffer<>& sendQueue,
-                          WaitFreeFrameBuffer<>& receiveQueue, bool passthrough = false);
+    FromAudioSocketPlugin(AudioSocketQueueT& sendQueue, AudioSocketQueueT& receiveQueue,
+                          bool passthrough = false);
     virtual ~FromAudioSocketPlugin();
 
     void init(int samplingRate, int bufferSize) override;
@@ -122,14 +128,24 @@ class FromAudioSocketPlugin : public ProcessPlugin
     void gotConnection();
     void lostConnection();
 
+   protected:
+    void resetQueueStats();
+
    private:
-    WaitFreeFrameBuffer<>& mSendQueue;
-    WaitFreeFrameBuffer<>& mReceiveQueue;
+    AudioSocketQueueT& mSendQueue;
+    AudioSocketQueueT& mReceiveQueue;
     QByteArray mRecvBuffer;
+    float** mExtraSamples      = nullptr;
     int mNumChannels           = AudioSocketNumChannels;
     int mRemoteSampleRate      = 0;
     int mRemoteBufferSize      = 0;
     int mRemoteBytesPerChannel = 0;
+    int mNextExtraSample       = 0;
+    int mLastExtraSample       = 0;
+    int mMinQueuePackets       = 0;
+    int mMaxQueuePackets       = 0;
+    int mQueueCheckSec         = 0;
+    uint32_t mNextQueueCheck   = 0;
     bool mRemoteIsReady        = false;
     bool mIsConnected          = false;
     bool mPassthrough          = false;
@@ -142,8 +158,8 @@ class AudioSocketWorker : public QObject
     Q_OBJECT;
 
    public:
-    AudioSocketWorker(QSharedPointer<QLocalSocket>& s, WaitFreeFrameBuffer<>& sendQueue,
-                      WaitFreeFrameBuffer<>& receiveQueue);
+    AudioSocketWorker(AudioSocketQueueT& sendQueue, AudioSocketQueueT& receiveQueue,
+                      QSharedPointer<QLocalSocket>& s);
     virtual ~AudioSocketWorker();
 
     inline void setRetryConnection(bool retry) { mRetryConnection = retry; }
@@ -181,21 +197,22 @@ class AudioSocketWorker : public QObject
     /// \brief sends audio packets to remote instance
     void sendAudio();
 
-    /// \brief receives audio packets from remote instance
+    /// \brief receives audio bytes from remote instance
     void receiveAudio();
 
     /// \brief schedules a reconnect attempt
     void scheduleReconnect();
 
    private:
+    AudioSocketQueueT& mSendQueue;
+    AudioSocketQueueT& mReceiveQueue;
     QScopedPointer<QTimer> mTimerPtr;
     QSharedPointer<QLocalSocket> mSocketPtr;
-    WaitFreeFrameBuffer<>& mSendQueue;
-    WaitFreeFrameBuffer<>& mReceiveQueue;
     QByteArray mSendBuffer;
     QByteArray mRecvBuffer;
     int mLocalBytesPerPacket  = 0;
     int mRemoteBytesPerPacket = 0;
+    int mRecvBytes            = 0;
     bool mRetryConnection     = false;
 };
 
@@ -246,8 +263,8 @@ class AudioSocket : public QObject
     void initWorker();
 
     QThread mThread;
-    WaitFreeFrameBuffer<> mSendQueue;
-    WaitFreeFrameBuffer<> mReceiveQueue;
+    AudioSocketQueueT mSendQueue;
+    AudioSocketQueueT mReceiveQueue;
     QSharedPointer<ProcessPlugin> mToAudioSocketPluginPtr;
     QSharedPointer<ProcessPlugin> mFromAudioSocketPluginPtr;
     QScopedPointer<AudioSocketWorker> mWorkerPtr;
