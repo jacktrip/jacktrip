@@ -403,15 +403,15 @@ if vst_sdkdir != ''
 		vst_link_args += ['-framework', 'SystemConfiguration']
 		vst_deps += dependency('zlib', required : true)
 		if (qt_version == '5')
-			vst_link_args += '@0@/libQt5Core.a'.format(qt_libdir)
-			vst_link_args += '@0@/libQt5Network.a'.format(qt_libdir)
+			vst_link_args += '@0@/libQt5Core.a'.format(vst_libdir)
+			vst_link_args += '@0@/libQt5Network.a'.format(vst_libdir)
 			#vst_link_args += '-lqtpcre2'
 			#vst_link_args += '-lm'
 			#vst_link_args += '-lexpat'
 		else
-			vst_link_args += '@0@/libQt6Core.a'.format(qt_libdir)
-			vst_link_args += '@0@/libQt6Network.a'.format(qt_libdir)
-			vst_link_args += '@0@/libQt6BundledPcre2.a'.format(qt_libdir)
+			vst_link_args += '@0@/libQt6Core.a'.format(vst_libdir)
+			vst_link_args += '@0@/libQt6Network.a'.format(vst_libdir)
+			vst_link_args += '@0@/libQt6BundledPcre2.a'.format(vst_libdir)
 			#vst_link_args += '-lm'
 			#vst_link_args += '-lexpat'
 		endif

@@ -19,6 +19,7 @@ site/
 
 # app bundle and installer
 macos/*.app
+macos/*.vst3
 macos/package/build
 macos/package/*.pkgproj
 macos/package/*.txt

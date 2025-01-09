@@ -57,13 +57,20 @@ bool SocketServer::start()
         m_serverStarted = false;
     } else {
         // confirmed that no other jacktrip instance is running
-        qDebug() << "Listening for local socket connections";
         m_instanceServer.reset(new QLocalServer());
         m_instanceServer->setSocketOptions(QLocalServer::WorldAccessOption);
         QObject::connect(m_instanceServer.data(), &QLocalServer::newConnection, this,
                          &SocketServer::handlePendingConnections, Qt::QueuedConnection);
-        m_instanceServer->listen(JACKTRIP_SOCKET_NAME);
-        m_serverStarted = true;
+        QString serverName(JACKTRIP_SOCKET_NAME);
+        QLocalServer::removeServer(serverName);
+        m_serverStarted = m_instanceServer->listen(serverName);
+        if (m_serverStarted) {
+            qDebug() << "Listening for local connections:"
+                     << m_instanceServer->fullServerName();
+        } else {
+            qDebug() << "Error listening for local connections:"
+                     << m_instanceServer->errorString();
+        }
     }
 
     // return true if a local socket server was started

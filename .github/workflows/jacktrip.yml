@@ -205,6 +205,7 @@ jobs:
             qt-version: '6.2.6'
             qt-download-commit: 'b09fbe4'
             qt-type: 'dynamic'
+            vst3sdk-version: '3.7.12'
             macosx-architectures: 'x86_64;arm64'
             macosx-deployment-target: 10.14
             xcode-directory: /Applications/Xcode_14.2.app
@@ -244,6 +245,7 @@ jobs:
       BUILD_PATH: ${{ github.workspace }}/builddir
       CLANG_TIDY_NAME: clang-tidy-result
       CLANG_TIDY_PATH: ${{ github.workspace }}/clang-tidy-result
+      VST3SDK_DOWNLOAD_BASE_URL: 'https://files.jacktrip.org/contrib/vst3sdk'
       QT_DOWNLOAD_BASE_URL: 'https://files.jacktrip.org/contrib/qt'
       QT_DOWNLOAD_COMMIT: 'f82eab7'
 
@@ -420,6 +422,37 @@ jobs:
               echo "DYLD_FRAMEWORK_PATH=$QT_PATH/lib" >> $GITHUB_ENV
             fi
           fi
+      - name: Download VST3SDK build
+        if: matrix.vst3sdk-version
+        shell: bash
+        run: |
+          VST3SDK_INSTALL_PATH=/opt
+          if [[ "${{ runner.os }}" == 'Windows' ]]; then
+            VST3SDK_INSTALL_PATH=/c
+            VST3SDK_DOWNLOAD_OS=win
+            VST3SDK_DOWNLOAD_EXT=zip
+          elif [[ "${{ runner.os }}" == 'Linux' ]]; then
+            VST3SDK_DOWNLOAD_OS=linux
+            VST3SDK_DOWNLOAD_EXT=tar.gz
+          else
+            VST3SDK_DOWNLOAD_OS=osx
+            VST3SDK_DOWNLOAD_EXT=tar.gz
+          fi
+          if [[ -n "${{ matrix.vst3sdk-arch }}" ]]; then
+            VST3SDK_DOWNLOAD_ARCH="-${{ matrix.vst3sdk-arch }}"
+          fi
+          VST3SDK_DOWNLOAD_URL="$VST3SDK_DOWNLOAD_BASE_URL/vst3sdk-${{ matrix.vst3sdk-version }}-${VST3SDK_DOWNLOAD_OS}${VST3SDK_DOWNLOAD_ARCH}.$VST3SDK_DOWNLOAD_EXT"
+          mkdir -p $VST3SDK_INSTALL_PATH
+          cd $VST3SDK_INSTALL_PATH
+          echo "Downloading $VST3SDK_DOWNLOAD_URL"
+          curl -L $VST3SDK_DOWNLOAD_URL -o vst3sdk.$VST3SDK_DOWNLOAD_EXT
+          if [[ "${{ runner.os }}" == 'Windows' ]]; then
+            unzip vst3sdk.$VST3SDK_DOWNLOAD_EXT
+          else
+            tar -xzf vst3sdk.$VST3SDK_DOWNLOAD_EXT
+          fi
+          echo "VST3SDK_PATH=$VST3SDK_INSTALL_PATH/vst3sdk" >> $GITHUB_ENV
+          rm vst3sdk.$VST3SDK_DOWNLOAD_EXT
       - name: Set up QEMU dependency
         if: matrix.build-system == 'docker' && needs.check-secrets.outputs.should_run == 'false'
         uses: docker/setup-qemu-action@v3
@@ -527,8 +560,11 @@ jobs:
               CONFIG_STRING="-Dvsftux=true $CONFIG_STRING"
             fi
           fi
-          if [[ "${{ matrix.weakjack }}" == true ]]; then 
+          if [[ "${{ matrix.weakjack }}" == true ]]; then
             CONFIG_STRING="-Dweakjack=true $CONFIG_STRING"
+          fi
+          if [[ -n "${{ matrix.vst3sdk-version }}" ]]; then
+            CONFIG_STRING="-Dvst-sdkdir=$VST3SDK_PATH $CONFIG_STRING"
           fi
           if [[ -n "${{ matrix.macosx-architectures }}" ]]; then
             # TODO: for now, just assume that we want universal if it is not empty
@@ -625,6 +661,9 @@ jobs:
           if [[ -n ${{ matrix.bundle-path }} ]]; then
             mkdir -p $BUILD_PATH/${{ matrix.bundle-path }}
             zip --symlinks -r $BUILD_PATH/${{ matrix.bundle-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}$SIGNED-application.zip *.app
+            if [[ -n "${{ matrix.vst3sdk-version }}" ]]; then
+              zip -r $BUILD_PATH/${{ matrix.bundle-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}$SIGNED-application.zip *.vst3
+            fi
             cd $GITHUB_WORKSPACE # we need to be in the root project directory for adding licenses
             zip -r $BUILD_PATH/${{ matrix.bundle-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}$SIGNED-application.zip LICENSE.md LICENSES
           fi

@@ -125,6 +125,17 @@ cp -r lib/Release /opt/vst3sdk/lib
 cp -r ../base ../pluginterfaces ../public.sdk ../vstgui4 /opt/vst3sdk
 ```
 
+VST plugins are not allowed to have any shared library dependencies. If you
+are using a shared/dynamic version of the Qt libraries to build JackTrip,
+you may need to copy over a few static versions for a few of these so that
+the linker can find them:
+
+```
+cp /opt/qt-6.2.6-static/lib/libQt6Core.a /opt/vst3sdk/lib
+cp /opt/qt-6.2.6-static/lib/libQt6Network.a /opt/vst3sdk/lib
+cp /opt/qt-6.2.6-static/lib/libQt6BundledPcre2.a /opt/vst3sdk/lib
+```
+
 When you run `meson setup` use `-Dvst-sdkdir=/path/to/vst3sdk -Dvst-libdir=/path/to/vst3sdk/lib`
 
 Please note that redistribution of JackTrip's VST3 plugin requires a
