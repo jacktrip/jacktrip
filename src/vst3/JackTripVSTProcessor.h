@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2022-2024 JackTrip Labs, Inc.
+  Copyright (c) 2024-2025 JackTrip Labs, Inc.
 
   Permission is hereby granted, free of charge, to any person
   obtaining a copy of this software and associated documentation
@@ -37,6 +37,7 @@
 #include <QScopedPointer>
 #include <QThread>
 
+#include "public.sdk/source/vst/utility/dataexchange.h"
 #include "public.sdk/source/vst/vstaudioeffect.h"
 
 // uncomment to generate log file, for debugging purposes
@@ -47,9 +48,6 @@
 #endif
 
 class AudioSocket;
-
-namespace Steinberg
-{
 
 //------------------------------------------------------------------------
 //  JackTripVSTProcessor
@@ -75,11 +73,19 @@ class JackTripVSTProcessor : public Steinberg::Vst::AudioEffect
     /** Called at the end before destructor */
     Steinberg::tresult PLUGIN_API terminate() SMTG_OVERRIDE;
 
+    /** Called to connect data exchange API */
+    Steinberg::tresult PLUGIN_API
+    connect(Steinberg::Vst::IConnectionPoint* other) override;
+
+    /** Called to disconnect data exchange API */
+    Steinberg::tresult PLUGIN_API
+    disconnect(Steinberg::Vst::IConnectionPoint* other) override;
+
     /** Switch the Plug-in on/off */
     Steinberg::tresult PLUGIN_API setActive(Steinberg::TBool state) SMTG_OVERRIDE;
 
     /** Called by audio thread immediately before processing starts, and after it ends */
-    Steinberg::tresult PLUGIN_API setProcessing(TBool state) SMTG_OVERRIDE;
+    Steinberg::tresult PLUGIN_API setProcessing(Steinberg::TBool state) SMTG_OVERRIDE;
 
     /** Will be called before any process call */
     Steinberg::tresult PLUGIN_API setupProcessing(Steinberg::Vst::ProcessSetup& newSetup)
@@ -99,22 +105,23 @@ class JackTripVSTProcessor : public Steinberg::Vst::AudioEffect
 
     //------------------------------------------------------------------------
    protected:
-    Vst::ParamValue mSendVol    = 1.f;
-    Vst::ParamValue mReceiveVol = 1.f;
-    Vst::ParamValue mPassVol    = 1.f;
-    bool mConnected             = false;
-    bool mBypass                = false;
+    void acquireNewExchangeBlock();
+
+    Steinberg::Vst::ParamValue mSendVol    = 1.f;
+    Steinberg::Vst::ParamValue mReceiveVol = 1.f;
+    Steinberg::Vst::ParamValue mPassVol    = 1.f;
+    bool mConnected                        = false;
+    bool mBypass                           = false;
 
    private:
     QScopedPointer<AudioSocket> mSocketPtr;
+    QScopedPointer<Steinberg::Vst::DataExchangeHandler> mDataExchangePtr;
+    Steinberg::Vst::DataExchangeBlock mCurrentExchangeBlock;
     float** mInputBuffer;
     float** mOutputBuffer;
-    Vst::SampleRate mSampleRate = 0;
-    int32 mBufferSize           = 0;
+    Steinberg::Vst::SampleRate mSampleRate = 0;
+    int mBufferSize                        = 0;
 #ifdef JACKTRIP_VST_LOG
     std::ofstream mLogFile;
 #endif
 };
-
-//------------------------------------------------------------------------
-}  // namespace Steinberg

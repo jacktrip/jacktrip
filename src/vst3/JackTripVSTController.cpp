@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2022-2024 JackTrip Labs, Inc.
+  Copyright (c) 2024-2025 JackTrip Labs, Inc.
 
   Permission is hereby granted, free of charge, to any person
   obtaining a copy of this software and associated documentation
@@ -34,14 +34,15 @@
 #include "JackTripVSTController.h"
 
 #include "JackTripVST.h"
+#include "JackTripVSTDataBlock.h"
 #include "base/source/fstreamer.h"
 #include "pluginterfaces/base/ibstream.h"
 #include "vstgui/plugin-bindings/vst3editor.h"
 
 using namespace Steinberg;
 
-namespace Steinberg
-{
+// the number of parameters used by the plugin
+constexpr int32 JackTripVSTNumParameters = 5;
 
 //------------------------------------------------------------------------
 // JackTripVSTController Implementation
@@ -59,21 +60,22 @@ tresult PLUGIN_API JackTripVSTController::initialize(FUnknown* context)
     // Here you could register some parameters
     if (result == kResultTrue) {
         //---Create Parameters------------
-        parameters.addParameter(STR16("Send Volume"), STR16("dB"), 0, 1.,
+        parameters.addParameter(STR16("Send Volume"), STR16("dB"), 199, 1.,
                                 Vst::ParameterInfo::kCanAutomate,
                                 JackTripVSTParams::kParamVolSendId, 0, STR16("Send"));
 
-        parameters.addParameter(
-            STR16("Receive Volume"), STR16("dB"), 0, 1., Vst::ParameterInfo::kCanAutomate,
-            JackTripVSTParams::kParamVolReceiveId, 0, STR16("Receive"));
+        parameters.addParameter(STR16("Receive Volume"), STR16("dB"), 199, 1.,
+                                Vst::ParameterInfo::kCanAutomate,
+                                JackTripVSTParams::kParamVolReceiveId, 0,
+                                STR16("Receive"));
 
-        parameters.addParameter(STR16("Passthrough Volume"), STR16("dB"), 0, 1.,
+        parameters.addParameter(STR16("Passthrough Volume"), STR16("dB"), 199, 1.,
                                 Vst::ParameterInfo::kCanAutomate,
                                 JackTripVSTParams::kParamVolPassId, 0,
                                 STR16("Passthrough"));
 
         parameters.addParameter(
-            STR16("Connected"), STR16("On/Off"), 1, 1., Vst::ParameterInfo::kIsReadOnly,
+            STR16("Connected"), STR16("On/Off"), 1, 0, Vst::ParameterInfo::kIsReadOnly,
             JackTripVSTParams::kParamConnectedId, 0, STR16("Connected"));
 
         parameters.addParameter(
@@ -132,7 +134,7 @@ tresult PLUGIN_API JackTripVSTController::setComponentState(IBStream* state)
 }
 
 //------------------------------------------------------------------------
-tresult PLUGIN_API JackTripVSTController::setState(IBStream* state)
+tresult PLUGIN_API JackTripVSTController::setState([[maybe_unused]] IBStream* state)
 {
     // Here you get the state of the controller
 
@@ -140,12 +142,18 @@ tresult PLUGIN_API JackTripVSTController::setState(IBStream* state)
 }
 
 //------------------------------------------------------------------------
-tresult PLUGIN_API JackTripVSTController::getState(IBStream* state)
+tresult PLUGIN_API JackTripVSTController::getState([[maybe_unused]] IBStream* state)
 {
     // Here you are asked to deliver the state of the controller (if needed)
     // Note: the real state of your plug-in is saved in the processor
 
     return kResultTrue;
+}
+
+//------------------------------------------------------------------------
+int32 PLUGIN_API JackTripVSTController::getParameterCount()
+{
+    return JackTripVSTNumParameters;
 }
 
 //------------------------------------------------------------------------
@@ -188,4 +196,42 @@ tresult PLUGIN_API JackTripVSTController::getParamValueByString(
 }
 
 //------------------------------------------------------------------------
-}  // namespace Steinberg
+tresult PLUGIN_API JackTripVSTController::notify(Vst::IMessage* message)
+{
+    if (mDataExchangeHandler.onMessage(message))
+        return kResultTrue;
+    return EditControllerEx1::notify(message);
+}
+
+//------------------------------------------------------------------------
+void PLUGIN_API JackTripVSTController::queueOpened(
+    [[maybe_unused]] Vst::DataExchangeUserContextID userContextID,
+    [[maybe_unused]] uint32 blockSize, [[maybe_unused]] TBool& dispatchOnBackgroundThread)
+{
+    // qDebug() << "Data Exchange Queue opened.\n";
+}
+
+//------------------------------------------------------------------------
+void PLUGIN_API JackTripVSTController::queueClosed(
+    [[maybe_unused]] Vst::DataExchangeUserContextID userContextID)
+{
+    // qDebug() << "Data Exchange Queue closed.\n";
+}
+
+//------------------------------------------------------------------------
+void PLUGIN_API JackTripVSTController::onDataExchangeBlocksReceived(
+    [[maybe_unused]] Vst::DataExchangeUserContextID userContextID, uint32 numBlocks,
+    Vst::DataExchangeBlock* blocks, [[maybe_unused]] TBool onBackgroundThread)
+{
+    for (auto index = 0u; index < numBlocks; ++index) {
+        auto dataBlock = toDataBlock(blocks[index]);
+        beginEdit(JackTripVSTParams::kParamConnectedId);
+        Vst::ParamValue connectedState = dataBlock->connectedState ? 1 : 0;
+        if (setParamNormalized(JackTripVSTParams::kParamConnectedId, connectedState)
+            == kResultOk) {
+            performEdit(JackTripVSTParams::kParamConnectedId,
+                        getParamNormalized(JackTripVSTParams::kParamConnectedId));
+        }
+        endEdit(JackTripVSTParams::kParamConnectedId);
+    }
+}

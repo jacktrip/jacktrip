@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2022-2024 JackTrip Labs, Inc.
+  Copyright (c) 2024-2025 JackTrip Labs, Inc.
 
   Permission is hereby granted, free of charge, to any person
   obtaining a copy of this software and associated documentation
@@ -35,6 +35,7 @@
 
 #include "../AudioSocket.h"
 #include "JackTripVST.h"
+#include "JackTripVSTDataBlock.h"
 #include "base/source/fstreamer.h"
 #include "pluginterfaces/vst/ivstparameterchanges.h"
 
@@ -46,9 +47,6 @@
 
 using namespace std;
 using namespace Steinberg;
-
-namespace Steinberg
-{
 
 static QCoreApplication* sQtAppPtr = nullptr;
 
@@ -72,6 +70,8 @@ JackTripVSTProcessor::JackTripVSTProcessor()
 {
     //--- set the wanted controller for our processor
     setControllerClass(kJackTripVSTControllerUID);
+    mCurrentExchangeBlock =
+        Vst::DataExchangeBlock{nullptr, 0, Vst::InvalidDataExchangeBlockID};
 }
 
 //------------------------------------------------------------------------
@@ -90,8 +90,8 @@ tresult PLUGIN_API JackTripVSTProcessor::initialize(FUnknown* context)
     }
 
     //--- create Audio IO ------
-    addAudioInput(STR16("Stereo In"), Steinberg::Vst::SpeakerArr::kStereo);
-    addAudioOutput(STR16("Stereo Out"), Steinberg::Vst::SpeakerArr::kStereo);
+    addAudioInput(STR16("Stereo In"), Vst::SpeakerArr::kStereo);
+    addAudioOutput(STR16("Stereo Out"), Vst::SpeakerArr::kStereo);
 
     getQtAppPtr();
 
@@ -144,6 +144,35 @@ tresult PLUGIN_API JackTripVSTProcessor::terminate()
 }
 
 //------------------------------------------------------------------------
+tresult PLUGIN_API JackTripVSTProcessor::connect(Vst::IConnectionPoint* other)
+{
+    auto result = Vst::AudioEffect::connect(other);
+    if (result == kResultTrue) {
+        auto configCallback = [](Vst::DataExchangeHandler::Config& config,
+                                 [[maybe_unused]] const Vst::ProcessSetup& setup) {
+            config.blockSize     = sizeof(DataBlock);
+            config.numBlocks     = 2;  // max number of pending blocks allowed
+            config.alignment     = 32;
+            config.userContextID = 0;
+            return true;
+        };
+        mDataExchangePtr.reset(new Vst::DataExchangeHandler(this, configCallback));
+        mDataExchangePtr->onConnect(other, getHostContext());
+    }
+    return result;
+}
+
+//------------------------------------------------------------------------
+tresult PLUGIN_API JackTripVSTProcessor::disconnect(Vst::IConnectionPoint* other)
+{
+    if (!mDataExchangePtr.isNull()) {
+        mDataExchangePtr->onDisconnect(other);
+        mDataExchangePtr.reset();
+    }
+    return AudioEffect::disconnect(other);
+}
+
+//------------------------------------------------------------------------
 tresult PLUGIN_API JackTripVSTProcessor::setActive(TBool state)
 {
     if (state) {
@@ -159,9 +188,13 @@ tresult PLUGIN_API JackTripVSTProcessor::setActive(TBool state)
             mSocketPtr->setRetryConnection(true);
             mSocketPtr->connect(mSampleRate, mBufferSize);
         }
+        // activate data exchange API
+        mDataExchangePtr->onActivate(processSetup);
     } else {
         // disconnect from remote when inactive
         mSocketPtr.reset();
+        // deactivate data exchange API
+        mDataExchangePtr->onDeactivate();
     }
 
 #ifdef JACKTRIP_VST_LOG
@@ -241,15 +274,17 @@ tresult PLUGIN_API JackTripVSTProcessor::process(Vst::ProcessData& data)
 #endif
 
     // handle connection state change
-    if (mConnected != mSocketPtr->isConnected() && data.outputParameterChanges) {
-        int32 index = 0;
-        Steinberg::Vst::IParamValueQueue* paramQueue =
-            data.outputParameterChanges->addParameterData(kParamConnectedId, index);
-        if (paramQueue) {
-            mConnected          = mSocketPtr->isConnected();
-            int8 connectedState = mConnected ? 1 : 0;
-            int32 index2        = 0;
-            paramQueue->addPoint(0, connectedState, index2);
+    if (mConnected != mSocketPtr->isConnected()) {
+        if (mCurrentExchangeBlock.blockID == Vst::InvalidDataExchangeBlockID)
+            acquireNewExchangeBlock();
+        if (auto block = toDataBlock(mCurrentExchangeBlock)) {
+            block->connectedState = mSocketPtr->isConnected();
+            if (mDataExchangePtr->sendCurrentBlock()) {
+                // we can update our state after successfully deliver the change
+                mConnected = mSocketPtr->isConnected();
+            }
+            // you need to acquire a new block before the current one will be sent
+            acquireNewExchangeBlock();
         }
     }
 
@@ -271,7 +306,7 @@ tresult PLUGIN_API JackTripVSTProcessor::process(Vst::ProcessData& data)
              i++) {
             memcpy(data.outputs[0].channelBuffers32[i],
                    data.inputs[0].channelBuffers32[i],
-                   data.numSamples * sizeof(Steinberg::Vst::Sample32));
+                   data.numSamples * sizeof(Vst::Sample32));
         }
         data.outputs[0].silenceFlags = data.inputs[0].silenceFlags;
         return kResultOk;
@@ -285,14 +320,14 @@ tresult PLUGIN_API JackTripVSTProcessor::process(Vst::ProcessData& data)
 
     // copy input to buffer
     if (mSendVol >= 0.0000001) {
-        Steinberg::uint64 inSilentFlag = 1;
-        int channelsIn = min(data.inputs[0].numChannels, AudioSocketNumChannels);
+        uint64 isSilentFlag = 1;
+        int channelsIn      = min(data.inputs[0].numChannels, AudioSocketNumChannels);
         for (int i = 0; i < channelsIn; i++) {
-            bool isSilent = inSilentFlag & data.inputs[0].silenceFlags;
-            inSilentFlag <<= 1;
+            bool isSilent = isSilentFlag & data.inputs[0].silenceFlags;
+            isSilentFlag <<= 1;
             if (isSilent)
                 continue;
-            Steinberg::Vst::Sample32* inBuffer = data.inputs[0].channelBuffers32[i];
+            Vst::Sample32* inBuffer = data.inputs[0].channelBuffers32[i];
             for (int j = 0; j < data.numSamples; j++) {
                 mInputBuffer[i][j] = inBuffer[j] * mSendVol;
             }
@@ -306,10 +341,10 @@ tresult PLUGIN_API JackTripVSTProcessor::process(Vst::ProcessData& data)
     for (int i = 0; i < data.outputs[0].numChannels; i++) {
         bool silent = true;
         memset(data.outputs[0].channelBuffers32[i], 0,
-               data.numSamples * sizeof(Steinberg::Vst::Sample32));
+               data.numSamples * sizeof(Vst::Sample32));
         if (mPassVol >= 0.0000001
             || mReceiveVol >= 0.0000001) {  // silent output shortcut
-            Steinberg::Vst::Sample32* outBuffer = data.outputs[0].channelBuffers32[i];
+            Vst::Sample32* outBuffer = data.outputs[0].channelBuffers32[i];
             for (int j = 0; j < data.numSamples; j++) {
                 if (i < AudioSocketNumChannels && mReceiveVol >= 0.0000001) {
                     outBuffer[j] = mOutputBuffer[i][j] * mReceiveVol;
@@ -332,10 +367,19 @@ tresult PLUGIN_API JackTripVSTProcessor::process(Vst::ProcessData& data)
 }
 
 //------------------------------------------------------------------------
+void JackTripVSTProcessor::acquireNewExchangeBlock()
+{
+    mCurrentExchangeBlock = mDataExchangePtr->getCurrentOrNewBlock();
+    if (auto block = toDataBlock(mCurrentExchangeBlock)) {
+        block->connectedState = false;  // default
+    }
+}
+
+//------------------------------------------------------------------------
 tresult PLUGIN_API JackTripVSTProcessor::setupProcessing(Vst::ProcessSetup& newSetup)
 {
     mSampleRate = newSetup.sampleRate;
-    mBufferSize = newSetup.maxSamplesPerBlock;
+    mBufferSize = static_cast<int>(newSetup.maxSamplesPerBlock);
 
 #ifdef JACKTRIP_VST_LOG
     if (mLogFile.is_open()) {
@@ -422,6 +466,3 @@ tresult PLUGIN_API JackTripVSTProcessor::getState(IBStream* state)
 
     return kResultOk;
 }
-
-//------------------------------------------------------------------------
-}  // namespace Steinberg

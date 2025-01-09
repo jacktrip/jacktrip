@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2024-2025 JackTrip Labs, Inc.
+  Copyright (c) 2025 JackTrip Labs, Inc.
 
   Permission is hereby granted, free of charge, to any person
   obtaining a copy of this software and associated documentation
@@ -28,32 +28,24 @@
 */
 //*****************************************************************
 
-// Based on the Hello World VST 3 example from Steinberg
-// https://github.com/steinbergmedia/vst3_example_plugin_hello_world
+// Based on the VST3 SDK Data Exchange tutorial at
+// https://steinbergmedia.github.io/vst3_dev_portal/pages/Tutorials/Data+Exchange.html
 
 #pragma once
 
-#include "pluginterfaces/base/funknown.h"
-#include "pluginterfaces/vst/vsttypes.h"
+#include <cstdint>
 
-#define JackTripVSTVST3Category "Fx"
-#define stringOriginalFilename  "JackTrip.vst3"
-#define stringFileDescription   "JackTrip VST3"
-#define stringCompanyName       "JackTrip Labs\0"
-#define stringLegalCopyright    "Copyright (c) 2024-2025 JackTrip Labs, Inc."
-#define stringLegalTrademarks   "VST is a trademark of Steinberg Media Technologies GmbH"
+#include "public.sdk/source/vst/utility/dataexchange.h"
 
-//------------------------------------------------------------------------
-enum JackTripVSTParams : Steinberg::Vst::ParamID {
-    kParamVolSendId    = 100,
-    kParamVolReceiveId = 101,
-    kParamVolPassId    = 102,
-    kParamConnectedId  = 200,
-    kBypassId          = 1000
+// this is currently overkill for a bool, but we can use it for other things
+// such as volume meters in the future
+struct DataBlock {
+    bool connectedState;
 };
 
-//------------------------------------------------------------------------
-static const Steinberg::FUID kJackTripVSTProcessorUID(0x176F9AF4, 0xA56041A1, 0x890DD021,
-                                                      0x765ABCF0);
-static const Steinberg::FUID kJackTripVSTControllerUID(0x075C3106, 0xBC524686, 0xB63544CC,
-                                                       0xF88423FF);
+inline DataBlock* toDataBlock(const Steinberg::Vst::DataExchangeBlock& block)
+{
+    if (block.blockID != Steinberg::Vst::InvalidDataExchangeBlockID)
+        return reinterpret_cast<DataBlock*>(block.data);
+    return nullptr;
+}

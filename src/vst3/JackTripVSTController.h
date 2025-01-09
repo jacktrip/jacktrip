@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2022-2024 JackTrip Labs, Inc.
+  Copyright (c) 2024-2025 JackTrip Labs, Inc.
 
   Permission is hereby granted, free of charge, to any person
   obtaining a copy of this software and associated documentation
@@ -33,15 +33,15 @@
 
 #pragma once
 
+#include "public.sdk/source/vst/utility/dataexchange.h"
 #include "public.sdk/source/vst/vsteditcontroller.h"
-
-namespace Steinberg
-{
 
 //------------------------------------------------------------------------
 //  JackTripVSTController
 //------------------------------------------------------------------------
-class JackTripVSTController : public Steinberg::Vst::EditControllerEx1
+class JackTripVSTController
+    : public Steinberg::Vst::EditControllerEx1
+    , public Steinberg::Vst::IDataExchangeReceiver
 {
    public:
     //------------------------------------------------------------------------
@@ -64,6 +64,7 @@ class JackTripVSTController : public Steinberg::Vst::EditControllerEx1
     Steinberg::IPlugView* PLUGIN_API createView(Steinberg::FIDString name) SMTG_OVERRIDE;
     Steinberg::tresult PLUGIN_API setState(Steinberg::IBStream* state) SMTG_OVERRIDE;
     Steinberg::tresult PLUGIN_API getState(Steinberg::IBStream* state) SMTG_OVERRIDE;
+    Steinberg::int32 PLUGIN_API getParameterCount() SMTG_OVERRIDE;
     Steinberg::tresult PLUGIN_API setParamNormalized(
         Steinberg::Vst::ParamID tag, Steinberg::Vst::ParamValue value) SMTG_OVERRIDE;
     Steinberg::tresult PLUGIN_API getParamStringByValue(
@@ -73,13 +74,24 @@ class JackTripVSTController : public Steinberg::Vst::EditControllerEx1
     getParamValueByString(Steinberg::Vst::ParamID tag, Steinberg::Vst::TChar* string,
                           Steinberg::Vst::ParamValue& valueNormalized) SMTG_OVERRIDE;
 
+    // IDataExchangeReceiver
+    Steinberg::tresult PLUGIN_API notify(Steinberg::Vst::IMessage* message) override;
+    void PLUGIN_API queueOpened(Steinberg::Vst::DataExchangeUserContextID userContextID,
+                                Steinberg::uint32 blockSize,
+                                Steinberg::TBool& dispatchOnBackgroundThread) override;
+    void PLUGIN_API
+    queueClosed(Steinberg::Vst::DataExchangeUserContextID userContextID) override;
+    void PLUGIN_API onDataExchangeBlocksReceived(
+        Steinberg::Vst::DataExchangeUserContextID userContextID,
+        Steinberg::uint32 numBlocks, Steinberg::Vst::DataExchangeBlock* blocks,
+        Steinberg::TBool onBackgroundThread) override;
+
     //---Interface---------
     DEFINE_INTERFACES
-    // Here you can add more supported VST3 interfaces
-    // DEF_INTERFACE (Vst::IXXX)
+    DEF_INTERFACE(Steinberg::Vst::IDataExchangeReceiver)
     END_DEFINE_INTERFACES(EditController)
     DELEGATE_REFCOUNT(EditController)
-};
 
-//------------------------------------------------------------------------
-}  // namespace Steinberg
+   private:
+    Steinberg::Vst::DataExchangeReceiverHandler mDataExchangeHandler{this};
+};
