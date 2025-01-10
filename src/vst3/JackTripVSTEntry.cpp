@@ -49,7 +49,8 @@ using namespace Steinberg;
 // GetPluginFactory function!
 //------------------------------------------------------------------------
 
-BEGIN_FACTORY_DEF("JackTrip Labs", "www.jacktrip.com", "mailto:support@jacktrip.com")
+BEGIN_FACTORY_DEF("JackTrip Labs", "https://www.jacktrip.com",
+                  "mailto:support@jacktrip.com")
 
 //---First Plug-in included in this factory-------
 // its kVstAudioEffectClass component
@@ -71,7 +72,7 @@ DEF_CLASS2(INLINE_UID_FROM_FUID(kJackTripVSTControllerUID),
            PClassInfo::kManyInstances,    // cardinality
            kVstComponentControllerClass,  // the Controller category (do not changed this)
            stringPluginName
-           "Controller",       // controller name (could be the same than component name)
+           "",                 // controller name (could be the same than component name)
            0,                  // not used here
            "",                 // not used here
            gVersion,           // Plug-in version (to be changed)

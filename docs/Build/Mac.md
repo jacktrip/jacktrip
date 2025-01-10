@@ -115,14 +115,15 @@ If you see something like this, you have successfully installed Jacktrip:
 ## Building VST3 SDK for Mac
 
 ```
-git clone https://github.com/steinbergmedia/vst3sdk
+git clone clone --recursive https://github.com/steinbergmedia/vst3sdk
 mkdir vst3sdk/build
 cd vst3sdk/build
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" ../
 cmake --build . --config Release
-mkdir -p /opt/vst3sdk
-cp -r lib/Release /opt/vst3sdk/lib
-cp -r ../base ../pluginterfaces ../public.sdk ../vstgui4 /opt/vst3sdk
+sudo mkdir -p /opt/vst3sdk
+sudo cp -r lib/Release /opt/vst3sdk/lib
+sudo cp -r bin/Release /opt/vst3sdk/bin
+sudo cp -r ../base ../pluginterfaces ../public.sdk ../vstgui4 /opt/vst3sdk
 ```
 
 VST plugins are not allowed to have any shared library dependencies. If you
@@ -131,12 +132,12 @@ you may need to copy over a few static versions for a few of these so that
 the linker can find them:
 
 ```
-cp /opt/qt-6.2.6-static/lib/libQt6Core.a /opt/vst3sdk/lib
-cp /opt/qt-6.2.6-static/lib/libQt6Network.a /opt/vst3sdk/lib
-cp /opt/qt-6.2.6-static/lib/libQt6BundledPcre2.a /opt/vst3sdk/lib
+sudo cp /opt/qt-6.2.6-static/lib/libQt6Core.a /opt/vst3sdk/lib
+sudo cp /opt/qt-6.2.6-static/lib/libQt6Network.a /opt/vst3sdk/lib
+sudo cp /opt/qt-6.2.6-static/lib/libQt6BundledPcre2.a /opt/vst3sdk/lib
 ```
 
-When you run `meson setup` use `-Dvst-sdkdir=/path/to/vst3sdk -Dvst-libdir=/path/to/vst3sdk/lib`
+When you run `meson setup` use `-Dvst-sdkdir=/path/to/vst3sdk`
 
 Please note that redistribution of JackTrip's VST3 plugin requires a
 [license from Steinberg](https://www.steinberg.net/developers/).

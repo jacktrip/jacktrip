@@ -101,6 +101,8 @@ jobs:
             docker-image: ubuntu:jammy-20240911.1
             docker-platform: linux/amd64
             meson-library-type: shared
+            vst3sdk-version: '3.7.12'
+            vst3sdk-arch: amd64
 
           - name: Linux-arm64-docker-shared
             release-name: Linux-arm64
@@ -115,6 +117,8 @@ jobs:
             docker-image: ubuntu:jammy-20240911.1
             docker-platform: linux/arm64
             meson-library-type: shared
+            vst3sdk-version: '3.7.12'
+            vst3sdk-arch: arm64
 
           - name: Linux-x64-docker-nogui
             release-name: Linux-x64-nogui
@@ -442,17 +446,21 @@ jobs:
             VST3SDK_DOWNLOAD_ARCH="-${{ matrix.vst3sdk-arch }}"
           fi
           VST3SDK_DOWNLOAD_URL="$VST3SDK_DOWNLOAD_BASE_URL/vst3sdk-${{ matrix.vst3sdk-version }}-${VST3SDK_DOWNLOAD_OS}${VST3SDK_DOWNLOAD_ARCH}.$VST3SDK_DOWNLOAD_EXT"
-          mkdir -p $VST3SDK_INSTALL_PATH
-          cd $VST3SDK_INSTALL_PATH
-          echo "Downloading $VST3SDK_DOWNLOAD_URL"
-          curl -L $VST3SDK_DOWNLOAD_URL -o vst3sdk.$VST3SDK_DOWNLOAD_EXT
-          if [[ "${{ runner.os }}" == 'Windows' ]]; then
-            unzip vst3sdk.$VST3SDK_DOWNLOAD_EXT
+          if [[ "${{ matrix.build-system }}" == "docker" ]]; then
+            echo "VST3SDK_DOWNLOAD_URL=$VST3SDK_DOWNLOAD_URL" >> $GITHUB_ENV
           else
-            tar -xzf vst3sdk.$VST3SDK_DOWNLOAD_EXT
+            mkdir -p $VST3SDK_INSTALL_PATH
+            cd $VST3SDK_INSTALL_PATH
+            echo "Downloading $VST3SDK_DOWNLOAD_URL"
+            curl -L $VST3SDK_DOWNLOAD_URL -o vst3sdk.$VST3SDK_DOWNLOAD_EXT
+            if [[ "${{ runner.os }}" == 'Windows' ]]; then
+              unzip vst3sdk.$VST3SDK_DOWNLOAD_EXT
+            else
+              tar -xzf vst3sdk.$VST3SDK_DOWNLOAD_EXT
+            fi
+            echo "VST3SDK_INSTALL_PATH=$VST3SDK_INSTALL_PATH/vst3sdk" >> $GITHUB_ENV
+            rm vst3sdk.$VST3SDK_DOWNLOAD_EXT
           fi
-          echo "VST3SDK_PATH=$VST3SDK_INSTALL_PATH/vst3sdk" >> $GITHUB_ENV
-          rm vst3sdk.$VST3SDK_DOWNLOAD_EXT
       - name: Set up QEMU dependency
         if: matrix.build-system == 'docker' && needs.check-secrets.outputs.should_run == 'false'
         uses: docker/setup-qemu-action@v3
@@ -563,8 +571,8 @@ jobs:
           if [[ "${{ matrix.weakjack }}" == true ]]; then
             CONFIG_STRING="-Dweakjack=true $CONFIG_STRING"
           fi
-          if [[ -n "${{ matrix.vst3sdk-version }}" ]]; then
-            CONFIG_STRING="-Dvst-sdkdir=$VST3SDK_PATH $CONFIG_STRING"
+          if [[ -n "${{ matrix.vst3sdk-version }}" && "${{ matrix.build-system }}" != "docker" ]]; then
+            CONFIG_STRING="-Dvst-sdkdir=$VST3SDK_INSTALL_PATH $CONFIG_STRING"
           fi
           if [[ -n "${{ matrix.macosx-architectures }}" ]]; then
             # TODO: for now, just assume that we want universal if it is not empty
@@ -579,20 +587,23 @@ jobs:
           if [[ "${{ runner.os }}" == 'Windows' && "${{ matrix.qt-type }}" == "static" ]]; then
             CONFIG_STRING="-Db_vscrt=mt $CONFIG_STRING"
           fi
-          echo "Meson config: ${CONFIG_STRING}"
           if [[ "${{ matrix.build-system }}" == "docker" ]]; then
             mkdir -p $BUILD_PATH
             if [[ "${{ matrix.docker-platform }}" == "linux/arm/v7" ]]; then
               # should be implied, but this is necessary for broken compiler on arm32
               CONFIG_STRING="-Dcpp_link_args='-no-pie' $CONFIG_STRING"
-            else
+            elif [[ -z "${{ matrix.vst3sdk-version }}" ]]; then
+              # vst3 sdk has a lot of header warnings
               CONFIG_STRING="-Dwerror=true $CONFIG_STRING"
             fi
+            echo "Meson config: ${CONFIG_STRING}"
             docker buildx build --target=artifact --progress=plain -f linux/Dockerfile.build --output type=local,dest=$BUILD_PATH \
               --platform "${{ matrix.docker-platform }}" --build-arg BUILD_CONTAINER="${{ matrix.docker-image }}" \
               --build-arg MESON_ARGS="$CONFIG_STRING" \
+              --build-arg VST3SDK_DOWNLOAD_URL="$VST3SDK_DOWNLOAD_URL" \
               --build-arg QT_DOWNLOAD_URL="$QT_DOWNLOAD_URL" .
           else
+            echo "Meson config: ${CONFIG_STRING}"
             meson setup --buildtype release $CONFIG_STRING $BUILD_PATH
             meson compile -C $BUILD_PATH -v
           fi
@@ -698,6 +709,21 @@ jobs:
               strip $BINFILE
             fi
             zip -j $ZIPFILE $BINFILE
+            if [[ "${{ runner.os }}" == 'Linux' && -n "${{ matrix.vst3sdk-version }}" ]]; then
+              mkdir -p JackTrip.vst3/Contents/Resources
+              cp -f $GITHUB_WORKSPACE/LICENSE.md "JackTrip.vst3/Contents/Resources/"
+              cp -Rf $GITHUB_WORKSPACE/LICENSES "JackTrip.vst3/Contents/Resources/"
+              cp $GITHUB_WORKSPACE/src/vst3/resources/* "JackTrip.vst3/Contents/Resources/"
+              VERSION="$($BINFILE -v | awk '/VERSION/{print $NF}')"
+              sed -i "s/%VERSION%/$VERSION/" "JackTrip.vst3/Contents/Resources/moduleinfo.json"
+              VST3BINPATH="JackTrip.vst3/Contents/$(uname -m)-linux"
+              mkdir -p $VST3BINPATH
+              cp $BUILD_PATH/JackTrip.vst3 $VST3BINPATH/JackTrip.so
+              if [[ "${{ matrix.build-system }}" != "docker" ]]; then
+                strip $VST3BINPATH/JackTrip.so
+              fi
+              zip -r $ZIPFILE JackTrip.vst3
+            fi
             if [[ "${{ matrix.name }}" == "Linux-x64-docker-shared" || "${{ matrix.name }}" == "Linux-arm64-docker-shared" ]]; then
               cp $GITHUB_WORKSPACE/linux/icons/jacktrip.svg $BUILD_PATH/org.jacktrip.JackTrip.svg
               cp $GITHUB_WORKSPACE/linux/icons/jacktrip_48x48.png $BUILD_PATH/org.jacktrip.JackTrip.png

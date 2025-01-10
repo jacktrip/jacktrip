@@ -3,7 +3,7 @@
   "Version": "%VERSION%",
   "Factory Info": {
     "Vendor": "JackTrip Labs",
-    "URL": "http://www.jacktrip.com",
+    "URL": "https://www.jacktrip.com",
     "E-Mail": "mailto:support@jacktrip.com",
     "Flags": {
       "Unicode": true,
@@ -30,7 +30,7 @@
     {
       "CID": "075C3106BC524686B63544CCF88423FF",
       "Category": "Component Controller Class",
-      "Name": "JackTrip VST3Controller",
+      "Name": "JackTrip Audio Bridge",
       "Vendor": "JackTrip Labs",
       "Version": "%VERSION%",
       "SDKVersion": "VST 3.7.12",

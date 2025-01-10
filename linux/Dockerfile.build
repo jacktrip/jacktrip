@@ -42,6 +42,19 @@ RUN if [ -n "$QT_DOWNLOAD_URL" ]; then \
   qtchooser -install qt6 $(which qmake6); \
   fi
 
+# install vst3sdk
+ARG VST3SDK_DOWNLOAD_URL=""
+ENV VST3SDK_DOWNLOAD_URL=$VST3SDK_DOWNLOAD_URL
+ENV VST3SDK_INSTALL_PATH="/opt"
+RUN if [ -n "$VST3SDK_DOWNLOAD_URL" ]; then \
+  mkdir -p $VST3SDK_INSTALL_PATH; \
+  chmod a+rwx $VST3SDK_INSTALL_PATH; \
+  curl -k -L $VST3SDK_DOWNLOAD_URL -o vst3sdk.tar.gz; \
+  tar -C $VST3SDK_INSTALL_PATH -xzf vst3sdk.tar.gz; \
+  rm vst3sdk.tar.gz; \
+  ls -la $VST3SDK_INSTALL_PATH/vst3sdk/lib ; \
+  fi
+
 # build jacktrip using meson
 COPY . ./
 ARG MESON_ARGS=""
@@ -52,12 +65,15 @@ RUN if [ -n "$QT_DOWNLOAD_URL" ]; then \
   export PATH="$PATH:$QT_PATH/bin"; \
   export PKG_CONFIG_PATH="$QT_PATH/lib/pkgconfig"; \
   export CMAKE_PREFIX_PATH="$QT_PATH"; fi \
+  && if [ -n "$VST3SDK_DOWNLOAD_URL" ]; then \
+  export MESON_ARGS="-Dvst-sdkdir=${VST3SDK_INSTALL_PATH}/vst3sdk $MESON_ARGS"; fi \
   && export SSL_CERT_FILE=$(python3 -m certifi) \
   && meson setup --buildtype release $MESON_ARGS $BUILD_PATH \
   && meson compile -C $BUILD_PATH -v \
-  && strip $BUILD_PATH/jacktrip
-
+  && strip $BUILD_PATH/jacktrip \
+  && if [ -n "$VST3SDK_DOWNLOAD_URL" ]; then \
+  strip $BUILD_PATH/JackTrip.vst3; fi
 
 FROM scratch AS artifact
 
-COPY --from=builder /opt/jacktrip/builddir/jacktrip /opt/jacktrip/builddir/linux/org.jacktrip.JackTrip.desktop /
+COPY --from=builder /opt/jacktrip/builddir/jacktrip /opt/jacktrip/builddir/JackTrip.vs[t]3 /opt/jacktrip/builddir/linux/org.jacktrip.JackTrip.desktop /

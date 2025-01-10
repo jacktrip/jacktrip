@@ -106,8 +106,8 @@ if get_option('nooscpp') == true
 	defines += '-DNO_OSCPP'
 	c_defines += '-DNO_OSCPP'
 else
-	incdirs += include_directories('externals/oscpp')
-	incdirs += include_directories('externals/oscpp/include')
+	incdirs += include_directories('externals/oscpp', is_system: true)
+	incdirs += include_directories('externals/oscpp/include', is_system: true)
 	src += ['src/OscServer.cpp']
 	moc_h += ['src/OscServer.h']
 endif
@@ -133,7 +133,7 @@ else
 		'src/Patcher.cpp']
 	moc_h += ['src/Patcher.h']
 	if get_option('weakjack') == true
-		incdirs += include_directories('externals/weakjack')
+		incdirs += include_directories('externals/weakjack', is_system: true)
 		src += 'externals/weakjack/weak_libjack.c'
 		defines += '-DUSE_WEAK_JACK'
 		c_defines += '-DUSE_WEAK_JACK'
@@ -144,10 +144,13 @@ else
 	endif
 endif
 
+qmake = ''
 qt_core_deps = []
 if qt_version == '5'
+	qmake = find_program('qmake', required: true)
 	qt_core_deps = dependency('qt5', modules: ['Core', 'Network'], include_type: 'system')
 else
+	qmake = find_program('qmake6', required: true)
 	qt_core_deps = dependency('qt6', modules: ['Core', 'Network'], include_type: 'system')
 endif
 deps += qt_core_deps
@@ -267,7 +270,6 @@ endif
 if get_option('default_library') == 'static'
 	# use qmake to get paths for qt libraries and plugins
 	# seems like qt module should have a method for this, but it doesn't
-	qmake = find_program('qmake', required: true)
 	qt_libdir = run_command(qmake, '-query', 'QT_INSTALL_LIBS', check : true).stdout().strip()
 	qt_plugindir = run_command(qmake, '-query', 'QT_INSTALL_PLUGINS', check : true).stdout().strip()
 	if qt_version == '6'
@@ -367,9 +369,9 @@ if vst_sdkdir != ''
 	vst_includedir = '@0@/public.sdk/source'.format(vst_sdkdir)
 	vst_pluginterfaces_includedir = '@0@'.format(vst_sdkdir)
 	vst_incdirs = []
-	vst_incdirs += include_directories('@0@'.format(vst_includedir))
-	vst_incdirs += include_directories('@0@'.format(vst_pluginterfaces_includedir))
-	vst_incdirs += include_directories('@0@/vstgui4'.format(vst_pluginterfaces_includedir))
+	vst_incdirs += include_directories('@0@'.format(vst_includedir), is_system: true)
+	vst_incdirs += include_directories('@0@'.format(vst_pluginterfaces_includedir), is_system: true)
+	vst_incdirs += include_directories('@0@/vstgui4'.format(vst_pluginterfaces_includedir), is_system: true)
 
 	vst_libdir = get_option('vst-libdir')
 	if vst_libdir == ''
@@ -383,17 +385,41 @@ if vst_sdkdir != ''
 	libvstgui_uidescription_dep = compiler.find_library('vstgui_uidescription', required : true, dirs : [vst_libdir])
 	libpluginterfaces_dep = compiler.find_library('pluginterfaces', required : true, dirs : [vst_libdir])
 	vst_deps = [libbase_dep, libsdk_dep, libsdk_common_dep, libvstgui_dep, libvstgui_uidescription_dep, libvstgui_support_dep, libpluginterfaces_dep]
-	vst_deps += qt_core_deps
+
+	vst_sources = ['src/vst3/JackTripVSTController.cpp', 'src/vst3/JackTripVSTEntry.cpp', 'src/vst3/JackTripVSTProcessor.cpp']
+	if get_option('debug') == true
+		vst_sources += ['@0@/vstgui4/vstgui/vstgui_uidescription.cpp'.format(vst_sdkdir), '@0@/vstgui4/vstgui/plugin-bindings/vst3editor.cpp'.format(vst_sdkdir)]
+		defines += ['-DVSTGUI_LIVE_EDITING=1']
+	endif
 
 	vst_link_args = []
-	qmake = find_program('qmake', required: true)
-	qt_libdir = run_command(qmake, '-query', 'QT_INSTALL_LIBS', check : true).stdout().strip()
-	qt_incdir = run_command(qmake, '-query', 'QT_INSTALL_HEADERS', check : true).stdout().strip()
-
 	if (host_machine.system() == 'linux')
-		vst_entry = '@0@/main/linuxmain.cpp'.format(vst_includedir)
+		vst_sources += '@0@/main/linuxmain.cpp'.format(vst_includedir)
+		qt_headerdir = run_command(qmake, '-query', 'QT_INSTALL_HEADERS', check : true).stdout().strip()
+		vst_incdirs += include_directories('@0@'.format(qt_headerdir), is_system: true)
+		vst_incdirs += include_directories('@0@/QtCore'.format(qt_headerdir), is_system: true)
+		vst_incdirs += include_directories('@0@/QtNetwork'.format(qt_headerdir), is_system: true)
+		vst_deps += compiler.find_library('dl', required : true)
+		vst_deps += compiler.find_library('glib-2.0', required : true)
+		vst_deps += compiler.find_library('pthread', required : true)
+		vst_link_args += '@0@/libssl.a'.format(vst_libdir)
+		vst_link_args += '@0@/libcrypto.a'.format(vst_libdir)
+		if (qt_version == '5')
+			vst_link_args += '@0@/libQt5Core.a'.format(vst_libdir)
+			vst_link_args += '@0@/libQt5Network.a'.format(vst_libdir)
+		else
+			vst_link_args += '@0@/libQt6Core.a'.format(vst_libdir)
+			vst_link_args += '@0@/libQt6Network.a'.format(vst_libdir)
+			vst_link_args += '@0@/libQt6BundledPcre2.a'.format(vst_libdir)
+			vst_link_args += '@0@/libQt6BundledZLIB.a'.format(vst_libdir)
+			# we need a Q_IMPORT_LIBRARY for the openssl backend on linux
+			vst_link_args += '@0@/libqopensslbackend.a'.format(vst_libdir)
+			vst_deps += compiler.find_library('dbus-1', required : true)
+			vst_sources += ['src/QtStaticPlugins.cpp']
+		endif
 	elif (host_machine.system() == 'darwin')
-		vst_entry = '@0@/main/macmain.cpp'.format(vst_includedir)
+		vst_sources += '@0@/main/macmain.cpp'.format(vst_includedir)
+		vst_deps += qt_core_deps
 		vst_link_args += ['-framework', 'CoreServices']
 		vst_link_args += ['-framework', 'CFNetwork']
 		vst_link_args += ['-framework', 'AppKit']
@@ -405,18 +431,13 @@ if vst_sdkdir != ''
 		if (qt_version == '5')
 			vst_link_args += '@0@/libQt5Core.a'.format(vst_libdir)
 			vst_link_args += '@0@/libQt5Network.a'.format(vst_libdir)
-			#vst_link_args += '-lqtpcre2'
-			#vst_link_args += '-lm'
-			#vst_link_args += '-lexpat'
 		else
 			vst_link_args += '@0@/libQt6Core.a'.format(vst_libdir)
 			vst_link_args += '@0@/libQt6Network.a'.format(vst_libdir)
 			vst_link_args += '@0@/libQt6BundledPcre2.a'.format(vst_libdir)
-			#vst_link_args += '-lm'
-			#vst_link_args += '-lexpat'
 		endif
 	elif (host_machine.system() == 'windows')
-		vst_entry = '@0@/main/dllmain.cpp'.format(vst_includedir)
+		vst_sources += '@0@/main/dllmain.cpp'.format(vst_includedir)
 		vst_deps += compiler.find_library('bcrypt', required : true)
 		vst_deps += compiler.find_library('winmm', required : true)
 		vst_deps += compiler.find_library('Crypt32', required : true)
@@ -432,23 +453,17 @@ if vst_sdkdir != ''
 		vst_link_args += 'Dnsapi.lib'
 		vst_link_args += 'Iphlpapi.lib'
 		if (qt_version == '5')
-			vst_link_args += '@0@/Qt5Core.lib'.format(qt_libdir)
-			vst_link_args += '@0@/Qt5Network.lib'.format(qt_libdir)
+			vst_link_args += '@0@/Qt5Core.lib'.format(vst_libdir)
+			vst_link_args += '@0@/Qt5Network.lib'.format(vst_libdir)
 		else
-			vst_link_args += '@0@/Qt6Core.lib'.format(qt_libdir)
-			vst_link_args += '@0@/Qt6Network.lib'.format(qt_libdir)
-			vst_link_args += '@0@/Qt6BundledPcre2.lib'.format(qt_libdir)
-			vst_link_args += '@0@/Qt6BundledZLIB.lib'.format(qt_libdir)
+			vst_link_args += '@0@/Qt6Core.lib'.format(vst_libdir)
+			vst_link_args += '@0@/Qt6Network.lib'.format(vst_libdir)
+			vst_link_args += '@0@/Qt6BundledPcre2.lib'.format(vst_libdir)
+			vst_link_args += '@0@/Qt6BundledZLIB.lib'.format(vst_libdir)
 			vst_deps += compiler.find_library('Authz', required : true)
 		endif
 	else
 		error('Unsupported platform: ' + host_machine.system())
-	endif
-
-	vst_sources = ['src/vst3/JackTripVSTController.cpp', 'src/vst3/JackTripVSTEntry.cpp', 'src/vst3/JackTripVSTProcessor.cpp'] + vst_entry
-	if get_option('debug') == true
-		vst_sources += ['@0@/vstgui4/vstgui/vstgui_uidescription.cpp'.format(vst_sdkdir), '@0@/vstgui4/vstgui/plugin-bindings/vst3editor.cpp'.format(vst_sdkdir)]
-		defines += ['-DVSTGUI_LIVE_EDITING=1']
 	endif
 
 	audio_socket_moc_h = ['src/AudioSocket.h', 'src/SocketClient.h', 'src/ProcessPlugin.h']

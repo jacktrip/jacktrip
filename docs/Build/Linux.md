@@ -133,6 +133,7 @@ available:
 * BUILD_CONTAINER - Debian based container image to build with
 * MESON_ARGS - arguments to build using meson
 * QT_DOWNLOAD_URL - path to qt6 download (optional)
+* VST3SDK_DOWNLOAD_URL - path to the VST3 SDK (optional)
 
 For example:
 
@@ -227,3 +228,45 @@ $ pwd
 ```
 
 The new version's directory structure might look like this: ``` jacktrip-1.x.x/builddir``` and the old version ``` jacktrip/builddir```.
+
+## Building VST3 SDK for Linux
+
+You may need a few extra development libraries to build the VST3 SDK
+on Linux. Here are a few for Debian based platforms:
+
+```
+apt install -y libgtkmm-3.0-dev libsqlite3-dev
+```
+
+```
+git clone clone --recursive https://github.com/steinbergmedia/vst3sdk
+mkdir vst3sdk/build
+cd vst3sdk/build
+cmake -DCMAKE_BUILD_TYPE=Release ../vst3sdk
+cmake --build . --config Release
+sudo mkdir -p /opt/vst3sdk
+sudo cp -r lib/Release /opt/vst3sdk/lib
+sudo cp -r bin/Release /opt/vst3sdk/bin
+sudo cp -r ../base ../pluginterfaces ../public.sdk ../vstgui4 /opt/vst3sdk
+
+```
+
+VST plugins are not allowed to have any shared library dependencies. If you
+are using a shared/dynamic version of the Qt libraries to build JackTrip,
+you may need to copy over a few static versions for a few of these so that
+the linker can find them:
+
+```
+sudo cp /opt/qt-6.5.3-static/lib/libQt6Core.a /opt/vst3sdk/lib
+sudo cp /opt/qt-6.5.3-static/lib/libQt6Network.a /opt/vst3sdk/lib
+sudo cp /opt/qt-6.5.3-static/lib/libQt6BundledPcre2.a /opt/vst3sdk/lib
+sudo cp /opt/qt-6.5.3-static/lib/libQt6BundledZLIB.a /opt/vst3sdk/lib
+sudo cp /opt/qt-6.5.3-static/lib/libssl.a /opt/vst3sdk/lib
+sudo cp /opt/qt-6.5.3-static/lib/libcrypto.a /opt/vst3sdk/lib
+sudo cp /opt/qt-6.5.3-static/plugins/tls/libqopensslbackend.a /opt/vst3sdk/lib
+```
+
+When you run `meson setup` use `-Dvst-sdkdir=/path/to/vst3sdk`
+
+Please note that redistribution of JackTrip's VST3 plugin requires a
+[license from Steinberg](https://www.steinberg.net/developers/).
