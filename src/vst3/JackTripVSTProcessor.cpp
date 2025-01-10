@@ -48,6 +48,9 @@
 using namespace std;
 using namespace Steinberg;
 
+// any multiplier less than this is considered to be silent
+constexpr double kSilentMul = 0.0000001;
+
 static QCoreApplication* sQtAppPtr = nullptr;
 
 static QCoreApplication* getQtAppPtr()
@@ -234,20 +237,20 @@ tresult PLUGIN_API JackTripVSTProcessor::process(Vst::ProcessData& data)
                 int32 sampleOffset;
                 int32 numPoints = paramQueue->getPointCount();
                 switch (paramQueue->getParameterId()) {
-                case JackTripVSTParams::kParamVolSendId:
+                case JackTripVSTParams::kParamGainSendId:
                     if (paramQueue->getPoint(numPoints - 1, sampleOffset, value)
                         == kResultTrue)
-                        mSendVol = value;
+                        mSendGain = value;
                     break;
-                case JackTripVSTParams::kParamVolReceiveId:
+                case JackTripVSTParams::kParamGainReceiveId:
                     if (paramQueue->getPoint(numPoints - 1, sampleOffset, value)
                         == kResultTrue)
-                        mReceiveVol = value;
+                        mRecvGain = value;
                     break;
-                case JackTripVSTParams::kParamVolPassId:
+                case JackTripVSTParams::kParamGainPassId:
                     if (paramQueue->getPoint(numPoints - 1, sampleOffset, value)
                         == kResultTrue)
-                        mPassVol = value;
+                        mPassGain = value;
                     break;
                 case JackTripVSTParams::kParamConnectedId:
                     if (paramQueue->getPoint(numPoints - 1, sampleOffset, value)
@@ -262,6 +265,8 @@ tresult PLUGIN_API JackTripVSTProcessor::process(Vst::ProcessData& data)
                 }
             }
         }
+        if (numParamsChanged > 0)
+            updateVolumeMultipliers();
     }
 
 #if 0
@@ -300,6 +305,11 @@ tresult PLUGIN_API JackTripVSTProcessor::process(Vst::ProcessData& data)
         return kResultOk;
     }
 
+    if (data.numSamples > AudioSocketMaxSamplesPerBlock) {
+        // just a sanity check; shouldn't happen
+        data.numSamples = AudioSocketMaxSamplesPerBlock;
+    }
+
     if (mBypass) {
         // copy input to output
         for (int i = 0; i < data.inputs[0].numChannels && i < data.outputs[0].numChannels;
@@ -314,12 +324,12 @@ tresult PLUGIN_API JackTripVSTProcessor::process(Vst::ProcessData& data)
 
     // clear buffers
     for (int i = 0; i < AudioSocketNumChannels; i++) {
-        memset(mInputBuffer[i], 0, mBufferSize * sizeof(float));
-        memset(mOutputBuffer[i], 0, mBufferSize * sizeof(float));
+        memset(mInputBuffer[i], 0, data.numSamples * sizeof(float));
+        memset(mOutputBuffer[i], 0, data.numSamples * sizeof(float));
     }
 
     // copy input to buffer
-    if (mSendVol >= 0.0000001) {
+    if (mSendMul >= kSilentMul) {
         uint64 isSilentFlag = 1;
         int channelsIn      = min(data.inputs[0].numChannels, AudioSocketNumChannels);
         for (int i = 0; i < channelsIn; i++) {
@@ -329,7 +339,7 @@ tresult PLUGIN_API JackTripVSTProcessor::process(Vst::ProcessData& data)
                 continue;
             Vst::Sample32* inBuffer = data.inputs[0].channelBuffers32[i];
             for (int j = 0; j < data.numSamples; j++) {
-                mInputBuffer[i][j] = inBuffer[j] * mSendVol;
+                mInputBuffer[i][j] = inBuffer[j] * mSendMul;
             }
         }
     }
@@ -342,16 +352,14 @@ tresult PLUGIN_API JackTripVSTProcessor::process(Vst::ProcessData& data)
         bool silent = true;
         memset(data.outputs[0].channelBuffers32[i], 0,
                data.numSamples * sizeof(Vst::Sample32));
-        if (mPassVol >= 0.0000001
-            || mReceiveVol >= 0.0000001) {  // silent output shortcut
+        if (mPassMul >= kSilentMul || mRecvMul >= kSilentMul) {
             Vst::Sample32* outBuffer = data.outputs[0].channelBuffers32[i];
             for (int j = 0; j < data.numSamples; j++) {
-                if (i < AudioSocketNumChannels && mReceiveVol >= 0.0000001) {
-                    outBuffer[j] = mOutputBuffer[i][j] * mReceiveVol;
+                if (i < AudioSocketNumChannels && mRecvMul >= kSilentMul) {
+                    outBuffer[j] = mOutputBuffer[i][j] * mRecvMul;
                 }
-                // TODO: is addition sufficient for mixing audio?
-                if (i < data.inputs[0].numChannels && mPassVol >= 0.0000001) {
-                    outBuffer[j] += data.inputs[0].channelBuffers32[i][j] * mPassVol;
+                if (i < data.inputs[0].numChannels && mPassMul >= kSilentMul) {
+                    outBuffer[j] += data.inputs[0].channelBuffers32[i][j] * mPassMul;
                 }
                 if (silent && outBuffer[j] != 0) {
                     silent = false;
@@ -364,6 +372,35 @@ tresult PLUGIN_API JackTripVSTProcessor::process(Vst::ProcessData& data)
     }
 
     return kResultOk;
+}
+
+//------------------------------------------------------------------------
+float JackTripVSTProcessor::gainToVol(double gain)
+{
+    // handle min and max
+    if (gain < kSilentMul)
+        return 0;
+    if (gain > 0.9999999)
+        return 1.0;
+    // simple logarithmic conversion
+    return exp(log(1000) * gain) / 1000.0;
+}
+
+//------------------------------------------------------------------------
+void JackTripVSTProcessor::updateVolumeMultipliers()
+{
+    // convert [0-1.0] gain (dB) values into [0-1.0] volume multiplers
+    mSendMul = gainToVol(mSendGain);
+    mRecvMul = gainToVol(mRecvGain);
+    mPassMul = gainToVol(mPassGain);
+
+    // adjust for clipping when mixing receive + passthrough signals
+    float combined = mRecvMul + mPassMul;
+    if (combined > 1.0) {
+        // prevent clipping
+        mRecvMul /= combined;
+        mPassMul /= combined;
+    }
 }
 
 //------------------------------------------------------------------------
@@ -417,16 +454,16 @@ tresult PLUGIN_API JackTripVSTProcessor::setState(IBStream* state)
 
     IBStreamer streamer(state, kLittleEndian);
 
-    float sendVol = 1.f;
-    if (streamer.readFloat(sendVol) == false)
+    float sendGain = 1.f;
+    if (streamer.readFloat(sendGain) == false)
         return kResultFalse;
 
-    float receiveVol = 1.f;
-    if (streamer.readFloat(receiveVol) == false)
+    float recvGain = 1.f;
+    if (streamer.readFloat(recvGain) == false)
         return kResultFalse;
 
-    float passVol = 1.f;
-    if (streamer.readFloat(passVol) == false)
+    float passGain = 1.f;
+    if (streamer.readFloat(passGain) == false)
         return kResultFalse;
 
     int8 connectedState = 0;
@@ -437,11 +474,12 @@ tresult PLUGIN_API JackTripVSTProcessor::setState(IBStream* state)
     if (streamer.readInt32(bypassState) == false)
         return kResultFalse;
 
-    mSendVol    = sendVol;
-    mReceiveVol = receiveVol;
-    mPassVol    = passVol;
-    mConnected  = connectedState > 0;
-    mBypass     = bypassState > 0;
+    mSendGain  = sendGain;
+    mRecvGain  = recvGain;
+    mPassGain  = passGain;
+    mConnected = connectedState > 0;
+    mBypass    = bypassState > 0;
+    updateVolumeMultipliers();
 
     return kResultOk;
 }
@@ -451,16 +489,16 @@ tresult PLUGIN_API JackTripVSTProcessor::getState(IBStream* state)
 {
     // here we need to save the model (preset or project)
 
-    float sendVol       = mSendVol;
-    float receiveVol    = mReceiveVol;
-    float passVol       = mPassVol;
+    float sendGain      = mSendGain;
+    float recvGain      = mRecvGain;
+    float passGain      = mPassGain;
     int8 connectedState = mConnected ? 1 : 0;
     int32 bypassState   = mBypass ? 1 : 0;
 
     IBStreamer streamer(state, kLittleEndian);
-    streamer.writeFloat(sendVol);
-    streamer.writeFloat(receiveVol);
-    streamer.writeFloat(passVol);
+    streamer.writeFloat(sendGain);
+    streamer.writeFloat(recvGain);
+    streamer.writeFloat(passGain);
     streamer.writeInt8(connectedState);
     streamer.writeInt32(bypassState);
 

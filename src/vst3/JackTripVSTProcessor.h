@@ -105,13 +105,18 @@ class JackTripVSTProcessor : public Steinberg::Vst::AudioEffect
 
     //------------------------------------------------------------------------
    protected:
+    static float gainToVol(double gain);
+    void updateVolumeMultipliers();
     void acquireNewExchangeBlock();
 
-    Steinberg::Vst::ParamValue mSendVol    = 1.f;
-    Steinberg::Vst::ParamValue mReceiveVol = 1.f;
-    Steinberg::Vst::ParamValue mPassVol    = 1.f;
-    bool mConnected                        = false;
-    bool mBypass                           = false;
+    Steinberg::Vst::ParamValue mSendGain = 1.f;
+    Steinberg::Vst::ParamValue mRecvGain = 1.f;
+    Steinberg::Vst::ParamValue mPassGain = 1.f;
+    Steinberg::Vst::ParamValue mSendMul  = 1.f;
+    Steinberg::Vst::ParamValue mRecvMul  = 1.f;
+    Steinberg::Vst::ParamValue mPassMul  = 1.f;
+    bool mConnected                      = false;
+    bool mBypass                         = false;
 
    private:
     QScopedPointer<AudioSocket> mSocketPtr;

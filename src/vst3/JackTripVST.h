@@ -45,11 +45,11 @@
 
 //------------------------------------------------------------------------
 enum JackTripVSTParams : Steinberg::Vst::ParamID {
-    kParamVolSendId    = 100,
-    kParamVolReceiveId = 101,
-    kParamVolPassId    = 102,
-    kParamConnectedId  = 200,
-    kBypassId          = 1000
+    kParamGainSendId    = 100,
+    kParamGainReceiveId = 101,
+    kParamGainPassId    = 102,
+    kParamConnectedId   = 200,
+    kBypassId           = 1000
 };
 
 //------------------------------------------------------------------------

@@ -60,18 +60,17 @@ tresult PLUGIN_API JackTripVSTController::initialize(FUnknown* context)
     // Here you could register some parameters
     if (result == kResultTrue) {
         //---Create Parameters------------
-        parameters.addParameter(STR16("Send Volume"), STR16("dB"), 199, 1.,
+        parameters.addParameter(STR16("Send Gain"), STR16("dB"), 199, 1.,
                                 Vst::ParameterInfo::kCanAutomate,
-                                JackTripVSTParams::kParamVolSendId, 0, STR16("Send"));
+                                JackTripVSTParams::kParamGainSendId, 0, STR16("Send"));
 
-        parameters.addParameter(STR16("Receive Volume"), STR16("dB"), 199, 1.,
-                                Vst::ParameterInfo::kCanAutomate,
-                                JackTripVSTParams::kParamVolReceiveId, 0,
-                                STR16("Receive"));
+        parameters.addParameter(
+            STR16("Receive Gain"), STR16("dB"), 199, 1., Vst::ParameterInfo::kCanAutomate,
+            JackTripVSTParams::kParamGainReceiveId, 0, STR16("Receive"));
 
-        parameters.addParameter(STR16("Passthrough Volume"), STR16("dB"), 199, 1.,
+        parameters.addParameter(STR16("Passthrough Gain"), STR16("dB"), 199, 1.,
                                 Vst::ParameterInfo::kCanAutomate,
-                                JackTripVSTParams::kParamVolPassId, 0,
+                                JackTripVSTParams::kParamGainPassId, 0,
                                 STR16("Passthrough"));
 
         parameters.addParameter(
@@ -105,20 +104,20 @@ tresult PLUGIN_API JackTripVSTController::setComponentState(IBStream* state)
 
     IBStreamer streamer(state, kLittleEndian);
 
-    float sendVol = 1.f;
-    if (streamer.readFloat(sendVol) == false)
+    float sendGain = 1.f;
+    if (streamer.readFloat(sendGain) == false)
         return kResultFalse;
-    setParamNormalized(JackTripVSTParams::kParamVolSendId, sendVol);
+    setParamNormalized(JackTripVSTParams::kParamGainSendId, sendGain);
 
-    float receiveVol = 1.f;
-    if (streamer.readFloat(receiveVol) == false)
+    float receiveGain = 1.f;
+    if (streamer.readFloat(receiveGain) == false)
         return kResultFalse;
-    setParamNormalized(JackTripVSTParams::kParamVolReceiveId, receiveVol);
+    setParamNormalized(JackTripVSTParams::kParamGainReceiveId, receiveGain);
 
-    float passVol = 1.f;
-    if (streamer.readFloat(passVol) == false)
+    float passGain = 1.f;
+    if (streamer.readFloat(passGain) == false)
         return kResultFalse;
-    setParamNormalized(JackTripVSTParams::kParamVolPassId, passVol);
+    setParamNormalized(JackTripVSTParams::kParamGainPassId, passGain);
 
     int8 connectedState = 0;
     if (streamer.readInt8(connectedState) == false)
