@@ -716,7 +716,11 @@ jobs:
               cp $GITHUB_WORKSPACE/src/vst3/resources/* "JackTrip.vst3/Contents/Resources/"
               VERSION=$(cat $GITHUB_WORKSPACE/src/jacktrip_globals.h |grep gVersion |sed 's,.*"\(.*\)".*,\1,')
               sed -i "s/%VERSION%/$VERSION/" "JackTrip.vst3/Contents/Resources/moduleinfo.json"
-              VST3BINPATH="JackTrip.vst3/Contents/$(uname -m)-linux"
+              if [[ "${{ matrix.vst3sdk-arch }}" == "amd64" ]]; then
+                VST3BINPATH="JackTrip.vst3/Contents/x86_64-linux"
+              else
+                VST3BINPATH="JackTrip.vst3/Contents/aarch64-linux"
+              fi
               mkdir -p $VST3BINPATH
               cp $BUILD_PATH/JackTrip.vst3 $VST3BINPATH/JackTrip.so
               if [[ "${{ matrix.build-system }}" != "docker" ]]; then
