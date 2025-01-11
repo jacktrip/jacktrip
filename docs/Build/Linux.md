@@ -248,22 +248,6 @@ sudo mkdir -p /opt/vst3sdk
 sudo cp -r lib/Release /opt/vst3sdk/lib
 sudo cp -r bin/Release /opt/vst3sdk/bin
 sudo cp -r ../base ../pluginterfaces ../public.sdk ../vstgui4 /opt/vst3sdk
-
-```
-
-VST plugins are not allowed to have any shared library dependencies. If you
-are using a shared/dynamic version of the Qt libraries to build JackTrip,
-you may need to copy over a few static versions for a few of these so that
-the linker can find them:
-
-```
-sudo cp /opt/qt-6.5.3-static/lib/libQt6Core.a /opt/vst3sdk/lib
-sudo cp /opt/qt-6.5.3-static/lib/libQt6Network.a /opt/vst3sdk/lib
-sudo cp /opt/qt-6.5.3-static/lib/libQt6BundledPcre2.a /opt/vst3sdk/lib
-sudo cp /opt/qt-6.5.3-static/lib/libQt6BundledZLIB.a /opt/vst3sdk/lib
-sudo cp /opt/qt-6.5.3-static/lib/libssl.a /opt/vst3sdk/lib
-sudo cp /opt/qt-6.5.3-static/lib/libcrypto.a /opt/vst3sdk/lib
-sudo cp /opt/qt-6.5.3-static/plugins/tls/libqopensslbackend.a /opt/vst3sdk/lib
 ```
 
 When you run `meson setup` use `-Dvst-sdkdir=/path/to/vst3sdk`

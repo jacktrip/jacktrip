@@ -385,6 +385,7 @@ if vst_sdkdir != ''
 	libvstgui_uidescription_dep = compiler.find_library('vstgui_uidescription', required : true, dirs : [vst_libdir])
 	libpluginterfaces_dep = compiler.find_library('pluginterfaces', required : true, dirs : [vst_libdir])
 	vst_deps = [libbase_dep, libsdk_dep, libsdk_common_dep, libvstgui_dep, libvstgui_uidescription_dep, libvstgui_support_dep, libpluginterfaces_dep]
+	vst_deps += qt_core_deps
 
 	vst_sources = ['src/vst3/JackTripVSTController.cpp', 'src/vst3/JackTripVSTEntry.cpp', 'src/vst3/JackTripVSTProcessor.cpp']
 	if get_option('debug') == true
@@ -395,31 +396,8 @@ if vst_sdkdir != ''
 	vst_link_args = []
 	if (host_machine.system() == 'linux')
 		vst_sources += '@0@/main/linuxmain.cpp'.format(vst_includedir)
-		qt_headerdir = run_command(qmake, '-query', 'QT_INSTALL_HEADERS', check : true).stdout().strip()
-		vst_incdirs += include_directories('@0@'.format(qt_headerdir), is_system: true)
-		vst_incdirs += include_directories('@0@/QtCore'.format(qt_headerdir), is_system: true)
-		vst_incdirs += include_directories('@0@/QtNetwork'.format(qt_headerdir), is_system: true)
-		vst_deps += compiler.find_library('dl', required : true)
-		vst_deps += compiler.find_library('glib-2.0', required : true)
-		vst_deps += compiler.find_library('pthread', required : true)
-		vst_link_args += '@0@/libssl.a'.format(vst_libdir)
-		vst_link_args += '@0@/libcrypto.a'.format(vst_libdir)
-		if (qt_version == '5')
-			vst_link_args += '@0@/libQt5Core.a'.format(vst_libdir)
-			vst_link_args += '@0@/libQt5Network.a'.format(vst_libdir)
-		else
-			vst_link_args += '@0@/libQt6Core.a'.format(vst_libdir)
-			vst_link_args += '@0@/libQt6Network.a'.format(vst_libdir)
-			vst_link_args += '@0@/libQt6BundledPcre2.a'.format(vst_libdir)
-			vst_link_args += '@0@/libQt6BundledZLIB.a'.format(vst_libdir)
-			# we need a Q_IMPORT_LIBRARY for the openssl backend on linux
-			vst_link_args += '@0@/libqopensslbackend.a'.format(vst_libdir)
-			vst_deps += compiler.find_library('dbus-1', required : true)
-			vst_sources += ['src/QtStaticPlugins.cpp']
-		endif
 	elif (host_machine.system() == 'darwin')
 		vst_sources += '@0@/main/macmain.cpp'.format(vst_includedir)
-		vst_deps += qt_core_deps
 		vst_link_args += ['-framework', 'CoreServices']
 		vst_link_args += ['-framework', 'CFNetwork']
 		vst_link_args += ['-framework', 'AppKit']

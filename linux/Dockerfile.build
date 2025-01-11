@@ -52,7 +52,6 @@ RUN if [ -n "$VST3SDK_DOWNLOAD_URL" ]; then \
   curl -k -L $VST3SDK_DOWNLOAD_URL -o vst3sdk.tar.gz; \
   tar -C $VST3SDK_INSTALL_PATH -xzf vst3sdk.tar.gz; \
   rm vst3sdk.tar.gz; \
-  ls -la $VST3SDK_INSTALL_PATH/vst3sdk/lib ; \
   fi
 
 # build jacktrip using meson

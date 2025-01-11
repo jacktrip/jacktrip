@@ -714,7 +714,7 @@ jobs:
               cp -f $GITHUB_WORKSPACE/LICENSE.md "JackTrip.vst3/Contents/Resources/"
               cp -Rf $GITHUB_WORKSPACE/LICENSES "JackTrip.vst3/Contents/Resources/"
               cp $GITHUB_WORKSPACE/src/vst3/resources/* "JackTrip.vst3/Contents/Resources/"
-              VERSION="$($BINFILE -v | awk '/VERSION/{print $NF}')"
+              VERSION=$(cat $GITHUB_WORKSPACE/src/jacktrip_globals.h |grep gVersion |sed 's,.*"\(.*\)".*,\1,')
               sed -i "s/%VERSION%/$VERSION/" "JackTrip.vst3/Contents/Resources/moduleinfo.json"
               VST3BINPATH="JackTrip.vst3/Contents/$(uname -m)-linux"
               mkdir -p $VST3BINPATH
