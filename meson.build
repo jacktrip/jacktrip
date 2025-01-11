@@ -31,7 +31,10 @@ defines = ['-DWAIRTOHUB']
 c_defines = []
 incdirs = []
 
-if get_option('debug') == false
+if get_option('debug') == true
+	defines += ['-D_DEBUG']
+	c_defines += ['-D_DEBUG']
+else
 	defines += ['-DNDEBUG', '-DQT_NO_DEBUG']
 	c_defines += ['-DNDEBUG', '-DQT_NO_DEBUG']
 endif
@@ -396,6 +399,9 @@ if vst_sdkdir != ''
 	vst_link_args = []
 	if (host_machine.system() == 'linux')
 		vst_sources += '@0@/main/linuxmain.cpp'.format(vst_includedir)
+		vst_deps += compiler.find_library('xcb-util', required : true)
+		vst_deps += compiler.find_library('xcb-cursor', required : true)
+		vst_deps += compiler.find_library('xkbcommon-x11', required : true)
 	elif (host_machine.system() == 'darwin')
 		vst_sources += '@0@/main/macmain.cpp'.format(vst_includedir)
 		vst_link_args += ['-framework', 'CoreServices']
@@ -457,7 +463,8 @@ if vst_sdkdir != ''
 		cpp_args : defines,
 		dependencies : vst_deps,
 		include_directories: vst_incdirs + include_directories('src/'),
-		link_args: vst_link_args
+		link_args: vst_link_args,
+		cpp_args: defines
 	)
 
 	vst3 = shared_module('JackTrip',
@@ -470,7 +477,8 @@ if vst_sdkdir != ''
 					'-DGST_PACKAGE_ORIGIN="https://github.com/jacktrip/jacktrip"'],
 		dependencies : vst_deps,
 		include_directories: vst_incdirs,
-		link_args: vst_link_args
+		link_args: vst_link_args,
+		cpp_args: defines
 	)
 endif
 

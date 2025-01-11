@@ -37,8 +37,11 @@
 #include "SocketServer.h"
 
 #include <QDebug>
+#include <iostream>
 
 #include "SocketClient.h"
+
+using namespace std;
 
 bool SocketServer::start()
 {
@@ -65,11 +68,11 @@ bool SocketServer::start()
         QLocalServer::removeServer(serverName);
         m_serverStarted = m_instanceServer->listen(serverName);
         if (m_serverStarted) {
-            qDebug() << "Listening for local connections:"
-                     << m_instanceServer->fullServerName();
+            cout << "Listening for local connections: "
+                 << m_instanceServer->fullServerName().toStdString() << endl;
         } else {
-            qDebug() << "Error listening for local connections:"
-                     << m_instanceServer->errorString();
+            cerr << "Error listening for local connections: "
+                 << m_instanceServer->errorString().toStdString() << endl;
         }
     }
 
@@ -105,9 +108,10 @@ void SocketServer::handlePendingConnections()
         QString header(in);
         if (!header.startsWith("JackTrip/1.0 ")) {
             if (header.startsWith("JackTrip/")) {
-                qDebug() << "Socket server: unknown version: " << header;
+                cerr << "Socket server: unknown version: " << header.toStdString()
+                     << endl;
             } else {
-                qDebug() << "Socket server: invalid header: " << header;
+                cerr << "Socket server: invalid header: " << header.toStdString() << endl;
             }
             continue;
         }
@@ -115,7 +119,8 @@ void SocketServer::handlePendingConnections()
         handlerName.replace("JackTrip/1.0 ", "");
         handlerName.replace("\n", "");
 
-        qDebug() << "Socket server: received connection for" << handlerName;
+        cout << "Socket server: received connection for " << handlerName.toStdString()
+             << endl;
         connectedSocket->setParent(nullptr);
         QSharedPointer<QLocalSocket> sharedSocket(connectedSocket);
         handleConnection(handlerName, sharedSocket);
@@ -127,7 +132,8 @@ void SocketServer::handleConnection(const QString& name,
 {
     auto it = m_handlers.find(name);
     if (it == m_handlers.end()) {
-        qDebug() << "Socket server: request for unknown handler: " << name;
+        cerr << "Socket server: request for unknown handler: " << name.toStdString()
+             << endl;
         return;
     }
     it.value()(socket);

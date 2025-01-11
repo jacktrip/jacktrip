@@ -192,12 +192,16 @@ tresult PLUGIN_API JackTripVSTProcessor::setActive(TBool state)
             mSocketPtr->connect(mSampleRate, mBufferSize);
         }
         // activate data exchange API
-        mDataExchangePtr->onActivate(processSetup);
+        if (!mDataExchangePtr.isNull()) {
+            mDataExchangePtr->onActivate(processSetup);
+        }
     } else {
         // disconnect from remote when inactive
         mSocketPtr.reset();
         // deactivate data exchange API
-        mDataExchangePtr->onDeactivate();
+        if (!mDataExchangePtr.isNull()) {
+            mDataExchangePtr->onDeactivate();
+        }
     }
 
 #ifdef JACKTRIP_VST_LOG
@@ -280,16 +284,28 @@ tresult PLUGIN_API JackTripVSTProcessor::process(Vst::ProcessData& data)
 
     // handle connection state change
     if (mConnected != mSocketPtr->isConnected()) {
-        if (mCurrentExchangeBlock.blockID == Vst::InvalidDataExchangeBlockID)
-            acquireNewExchangeBlock();
-        if (auto block = toDataBlock(mCurrentExchangeBlock)) {
-            block->connectedState = mSocketPtr->isConnected();
-            if (mDataExchangePtr->sendCurrentBlock()) {
-                // we can update our state after successfully deliver the change
-                mConnected = mSocketPtr->isConnected();
+        if (data.outputParameterChanges) {
+            int32 index = 0;
+            Steinberg::Vst::IParamValueQueue* paramQueue =
+                data.outputParameterChanges->addParameterData(kParamConnectedId, index);
+            if (paramQueue) {
+                mConnected          = mSocketPtr->isConnected();
+                int8 connectedState = mConnected ? 1 : 0;
+                int32 index2        = 0;
+                paramQueue->addPoint(0, connectedState, index2);
             }
-            // you need to acquire a new block before the current one will be sent
-            acquireNewExchangeBlock();
+        } else if (!mDataExchangePtr.isNull()) {
+            if (mCurrentExchangeBlock.blockID == Vst::InvalidDataExchangeBlockID)
+                acquireNewExchangeBlock();
+            if (auto block = toDataBlock(mCurrentExchangeBlock)) {
+                block->connectedState = mSocketPtr->isConnected();
+                if (mDataExchangePtr->sendCurrentBlock()) {
+                    // we can update our state after successfully deliver the change
+                    mConnected = mSocketPtr->isConnected();
+                }
+                // you need to acquire a new block before the current one will be sent
+                acquireNewExchangeBlock();
+            }
         }
     }
 

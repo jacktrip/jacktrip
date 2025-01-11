@@ -43,6 +43,8 @@
 #include "SocketClient.h"
 #include "jacktrip_globals.h"
 
+using namespace std;
+
 //*******************************************************************************
 ToAudioSocketPlugin::ToAudioSocketPlugin(AudioSocketQueueT& sendQueue,
                                          AudioSocketQueueT& receiveQueue)
@@ -58,10 +60,10 @@ ToAudioSocketPlugin::~ToAudioSocketPlugin() {}
 //*******************************************************************************
 void ToAudioSocketPlugin::init(int samplingRate, int bufferSize)
 {
-    if (bufferSize < 2) {
-        std::cerr << "*** ToAudioSocketPlugin " << this << ": bufferSize (" << bufferSize
-                  << ") < 2! Setting to 2.\n";
-        bufferSize = 2;
+    if (bufferSize < 8) {
+        cerr << "*** ToAudioSocketPlugin " << this << ": bufferSize (" << bufferSize
+             << ") < 8! Setting to 8." << endl;
+        bufferSize = 8;
     }
     ProcessPlugin::init(samplingRate, bufferSize);
     inited = true;
@@ -72,8 +74,8 @@ void ToAudioSocketPlugin::compute(int nframes, float** inputs,
                                   [[maybe_unused]] float** outputs)
 {
     if (!inited) {
-        std::cerr << "*** ToAudioSocketPlugin " << this
-                  << ": init never called! Doing it now.\n";
+        cerr << "*** ToAudioSocketPlugin " << this << ": init never called! Doing it now."
+             << endl;
         init(0, 0);
     }
 
@@ -97,7 +99,7 @@ void ToAudioSocketPlugin::compute(int nframes, float** inputs,
 
     int nextSample = 0;
     do {
-        int newSamples = std::min(nframes - nextSample, getBufferSize() - mSamplesToSend);
+        int newSamples = min(nframes - nextSample, getBufferSize() - mSamplesToSend);
         int newBytes   = newSamples * sizeof(float);
         for (int i = 0; i < AudioSocketNumChannels; i++) {
             char* ptr = mSendBuffer.data() + (i * mBytesPerChannel)
@@ -180,10 +182,10 @@ FromAudioSocketPlugin::~FromAudioSocketPlugin()
 //*******************************************************************************
 void FromAudioSocketPlugin::init(int samplingRate, int bufferSize)
 {
-    if (bufferSize < 2) {
-        std::cerr << "*** FromAudioSocketPlugin " << this << ": bufferSize ("
-                  << bufferSize << ") < 2! Setting to 2.\n";
-        bufferSize = 2;
+    if (bufferSize < 8) {
+        cerr << "*** FromAudioSocketPlugin " << this << ": bufferSize (" << bufferSize
+             << ") < 8! Setting to 8." << endl;
+        bufferSize = 8;
     }
     ProcessPlugin::init(samplingRate, bufferSize);
     inited = true;
@@ -194,8 +196,8 @@ void FromAudioSocketPlugin::compute(int nframes, [[maybe_unused]] float** inputs
                                     float** outputs)
 {
     if (!inited) {
-        std::cerr << "*** FromAudioSocketPlugin " << this
-                  << ": init never called! Doing it now.\n";
+        cerr << "*** FromAudioSocketPlugin " << this
+             << ": init never called! Doing it now." << endl;
         init(0, 0);
     }
 
@@ -378,7 +380,7 @@ void AudioSocketWorker::connect()
         return;
     }
 
-    qDebug() << "Established audio socket connection";
+    cout << "Established audio socket connection" << endl;
     emit signalConnectionEstablished();
 }
 
@@ -423,7 +425,7 @@ void AudioSocketWorker::readAudioHeader()
             emit signalReadAudioHeader();
         } else {
             // lost audio socket connection
-            qDebug() << "Lost audio socket connection";
+            cout << "Lost audio socket connection" << endl;
             mSocketPtr->disconnect();
             emit signalLostConnection();
         }
@@ -443,20 +445,18 @@ void AudioSocketWorker::readAudioHeader()
 
     // sanity checks (should never happen)
     if (headSampleRate != 44100 && headSampleRate != 48000 && headSampleRate != 96000) {
-        std::cerr << "Audio socket received invalid sample rate = " << headSampleRate
-                  << std::endl;
+        cerr << "Audio socket received invalid sample rate = " << headSampleRate << endl;
         mSocketPtr->close();
         return;
     }
     if (headBufferSize < 2) {
-        std::cerr << "Audio socket received invalid buffer size = " << headBufferSize
-                  << std::endl;
+        cerr << "Audio socket received invalid buffer size = " << headBufferSize << endl;
         mSocketPtr->close();
         return;
     }
 
-    qDebug() << "Received audio socket header: sample rate =" << headSampleRate
-             << ", buffer size =" << headBufferSize;
+    cout << "Received audio socket header: sample rate = " << headSampleRate
+         << ", buffer size = " << headBufferSize << endl;
 
     QObject::connect(mSocketPtr.data(), &QLocalSocket::readyRead, this,
                      &AudioSocketWorker::receiveAudio, Qt::QueuedConnection);
@@ -471,7 +471,7 @@ void AudioSocketWorker::sendAudio()
 {
     if (!mSocketPtr->isValid() || mSocketPtr->state() != QLocalSocket::ConnectedState) {
         // lost audio socket connection
-        qDebug() << "Lost audio socket connection";
+        cout << "Lost audio socket connection" << endl;
         mSocketPtr->disconnect();
         emit signalLostConnection();
         return;
@@ -494,8 +494,8 @@ void AudioSocketWorker::receiveAudio()
 {
     while (mSocketPtr->bytesAvailable() > 0) {
         // read bytes into buffer
-        qint64 bytesToRead = std::min(mSocketPtr->bytesAvailable(),
-                                      qint64(mRemoteBytesPerPacket - mRecvBytes));
+        qint64 bytesToRead =
+            min(mSocketPtr->bytesAvailable(), qint64(mRemoteBytesPerPacket - mRecvBytes));
         mSocketPtr->read(mRecvBuffer.data() + mRecvBytes, bytesToRead);
         mRecvBytes += bytesToRead;
         // TODO: sample rate conversion
