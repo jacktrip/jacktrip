@@ -176,16 +176,15 @@ tresult PLUGIN_API JackTripVSTProcessor::disconnect(Vst::IConnectionPoint* other
 }
 
 //------------------------------------------------------------------------
-tresult PLUGIN_API JackTripVSTProcessor::setBusArrangements(Vst::SpeakerArrangement* inputs,
-                                                            int32 numIns,
-                                                            Vst::SpeakerArrangement* outputs,
-                                                            int32 numOuts)
+tresult PLUGIN_API
+JackTripVSTProcessor::setBusArrangements(Vst::SpeakerArrangement* inputs, int32 numIns,
+                                         Vst::SpeakerArrangement* outputs, int32 numOuts)
 {
     // based on again example from sdk (support 1->1 or 2->2)
     if (numIns == 1 && numOuts == 1) {
         // the host wants Mono => Mono (or 1 channel -> 1 channel)
-        if (Vst::SpeakerArr::getChannelCount(inputs[0]) == 1 &&
-            Vst::SpeakerArr::getChannelCount(outputs[0]) == 1) {
+        if (Vst::SpeakerArr::getChannelCount(inputs[0]) == 1
+            && Vst::SpeakerArr::getChannelCount(outputs[0]) == 1) {
             auto* bus = FCast<Steinberg::Vst::AudioBus>(audioInputs.at(0));
             if (bus) {
                 // check if we are Mono => Mono, if not we need to recreate the busses
@@ -204,15 +203,16 @@ tresult PLUGIN_API JackTripVSTProcessor::setBusArrangements(Vst::SpeakerArrangem
             if (bus) {
                 tresult result = kResultFalse;
                 // the host wants 2->2 (could be LsRs -> LsRs)
-                if (Vst::SpeakerArr::getChannelCount(inputs[0]) == 2 &&
-                    Vst::SpeakerArr::getChannelCount(outputs[0]) == 2) {
+                if (Vst::SpeakerArr::getChannelCount(inputs[0]) == 2
+                    && Vst::SpeakerArr::getChannelCount(outputs[0]) == 2) {
                     getAudioInput(0)->setArrangement(inputs[0]);
                     getAudioInput(0)->setName(STR16("Stereo In"));
                     getAudioOutput(0)->setArrangement(outputs[0]);
                     getAudioOutput(0)->setName(STR16("Stereo Out"));
                     result = kResultTrue;
                 } else if (bus->getArrangement() != Vst::SpeakerArr::kStereo) {
-                    // the host want something different than 1->1 or 2->2 : in this case we want stereo
+                    // the host want something different than 1->1 or 2->2 : in this case
+                    // we want stereo
                     getAudioInput(0)->setArrangement(Vst::SpeakerArr::kStereo);
                     getAudioInput(0)->setName(STR16("Stereo In"));
                     getAudioOutput(0)->setArrangement(Vst::SpeakerArr::kStereo);
@@ -335,28 +335,38 @@ tresult PLUGIN_API JackTripVSTProcessor::process(Vst::ProcessData& data)
 
     // handle connection state change
     if (mConnected != mSocketPtr->isConnected()) {
+        // try both methods because some hosts only support one or the other.
+        // first try to use data output parameters, if available.
+        bool updatedConnectedState = false;
         if (data.outputParameterChanges) {
             int32 index = 0;
             Steinberg::Vst::IParamValueQueue* paramQueue =
                 data.outputParameterChanges->addParameterData(kParamConnectedId, index);
             if (paramQueue) {
-                mConnected          = mSocketPtr->isConnected();
-                int8 connectedState = mConnected ? 1 : 0;
+                int8 connectedState = mSocketPtr->isConnected() ? 1 : 0;
                 int32 index2        = 0;
-                paramQueue->addPoint(0, connectedState, index2);
+                if (paramQueue->addPoint(0, connectedState, index2) == kResultOk) {
+                    updatedConnectedState = true;
+                }
             }
-        } else if (!mDataExchangePtr.isNull()) {
-            if (mCurrentExchangeBlock.blockID == Vst::InvalidDataExchangeBlockID)
+        }
+        // if unsuccessful, try to use data exchange API
+        if (!updatedConnectedState && !mDataExchangePtr.isNull()) {
+            if (mCurrentExchangeBlock.blockID == Vst::InvalidDataExchangeBlockID) {
                 acquireNewExchangeBlock();
+            }
             if (auto block = toDataBlock(mCurrentExchangeBlock)) {
                 block->connectedState = mSocketPtr->isConnected();
                 if (mDataExchangePtr->sendCurrentBlock()) {
-                    // we can update our state after successfully deliver the change
-                    mConnected = mSocketPtr->isConnected();
+                    updatedConnectedState = true;
                 }
-                // you need to acquire a new block before the current one will be sent
+                // we need to acquire a new block before the current one will be sent
                 acquireNewExchangeBlock();
             }
+        }
+        if (updatedConnectedState) {
+            // we can update our state after successfully deliver the change
+            mConnected = mSocketPtr->isConnected();
         }
     }
 
