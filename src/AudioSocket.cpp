@@ -389,7 +389,8 @@ void AudioSocketWorker::connect()
 //*******************************************************************************
 void AudioSocketWorker::close()
 {
-    if (!isConnected()) {
+    if (mSocketPtr->state() == QLocalSocket::UnconnectedState
+        || mSocketPtr->state() == QLocalSocket::ClosingState) {
         return;
     }
     mSocketPtr->close();
