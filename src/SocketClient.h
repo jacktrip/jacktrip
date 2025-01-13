@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2022-2024 JackTrip Labs, Inc.
+  Copyright (c) 2022-2025 JackTrip Labs, Inc.
 
   Permission is hereby granted, free of charge, to any person
   obtaining a copy of this software and associated documentation
@@ -38,7 +38,7 @@
 #define __SocketClient_H__
 
 #include <QLocalSocket>
-#include <QScopedPointer>
+#include <QSharedPointer>
 
 // name of the local socket used by JackTrip
 constexpr const char* JACKTRIP_SOCKET_NAME = "JackTrip";
@@ -50,13 +50,19 @@ class SocketClient : public QObject
 
    public:
     // default constructor
-    SocketClient();
+    SocketClient(QObject* parent = nullptr);
+
+    // construct with an existing socket
+    SocketClient(QSharedPointer<QLocalSocket>& s, QObject* parent = nullptr);
 
     // virtual destructor since it inherits from QObject
     virtual ~SocketClient();
 
     // return local socket connection
-    inline bool isConnected() const { return m_established; }
+    inline bool isConnected()
+    {
+        return m_socket->state() == QLocalSocket::ConnectedState;
+    }
 
     // return local socket connection
     inline QLocalSocket& getSocket() { return *m_socket; }
@@ -72,28 +78,12 @@ class SocketClient : public QObject
     // send connection header with name of handler to use
     bool sendHeader(const QString& handler);
 
-   signals:
-
-    // signalIsReady is emitted when the local socket server is ready
-    void signalIsReady();
-
-   private slots:
-
-    // called if a connection was established to another instance
-    void connectionEstablished();
-
-    // called if unable to connect to another instance
-    void connectionFailed(QLocalSocket::LocalSocketError socketError);
-
    private:
     // used to check if there is another server already running
-    QScopedPointer<QLocalSocket> m_socket;
+    QSharedPointer<QLocalSocket> m_socket;
 
-    // true after connection attempt has completed
-    bool m_ready = false;
-
-    // true if a local socket server was started, false if remote was detected
-    bool m_established = false;
+    // true if a this owns the socket and should close on destruction
+    bool m_owns_socket = false;
 };
 
 #endif  // __SocketClient_H__

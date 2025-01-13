@@ -133,6 +133,7 @@ available:
 * BUILD_CONTAINER - Debian based container image to build with
 * MESON_ARGS - arguments to build using meson
 * QT_DOWNLOAD_URL - path to qt6 download (optional)
+* VST3SDK_DOWNLOAD_URL - path to the VST3 SDK (optional)
 
 For example:
 
@@ -227,3 +228,35 @@ $ pwd
 ```
 
 The new version's directory structure might look like this: ``` jacktrip-1.x.x/builddir``` and the old version ``` jacktrip/builddir```.
+
+## Building VST3 SDK for Linux
+
+You may need a few extra development libraries to build the VST3 SDK:
+
+On Fedora:
+```
+sudo dnf install -y expat-devel freetype-devel pango-devel xcb-util-devel xcb-util-cursor-devel xcb-util-keysyms-devel libxkbcommon-x11-devel gtkmm3.0-devel libsqlite3x-devel
+```
+
+On Ubuntu and Debian/Raspbian:
+```
+sudo apt install -y libexpat-dev libxml2-dev libxcb-util-dev libxcb-cursor-dev libxcb-keysyms1-dev libxcb-xkb-dev libxkbcommon-dev libxkbcommon-x11-dev libgtkmm-3.0-dev libsqlite3-dev
+```
+
+To build and install the VST3 SDK:
+```
+git clone --recursive https://github.com/steinbergmedia/vst3sdk
+mkdir vst3sdk/build
+cd vst3sdk/build
+cmake -DCMAKE_BUILD_TYPE=Release ../
+cmake --build . --config Release
+sudo mkdir -p /opt/vst3sdk
+sudo cp -r lib/Release /opt/vst3sdk/lib
+sudo cp -r bin/Release /opt/vst3sdk/bin
+sudo cp -r ../base ../pluginterfaces ../public.sdk ../vstgui4 /opt/vst3sdk
+```
+
+When you run `meson setup` use `-Dvst-sdkdir=/path/to/vst3sdk`
+
+Please note that redistribution of JackTrip's VST3 plugin requires a
+[license from Steinberg](https://www.steinberg.net/developers/).

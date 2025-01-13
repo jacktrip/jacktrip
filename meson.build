@@ -31,7 +31,10 @@ defines = ['-DWAIRTOHUB']
 c_defines = []
 incdirs = []
 
-if get_option('debug') == false
+if get_option('debug') == true
+	defines += ['-D_DEBUG']
+	c_defines += ['-D_DEBUG']
+else
 	defines += ['-DNDEBUG', '-DQT_NO_DEBUG']
 	c_defines += ['-DNDEBUG', '-DQT_NO_DEBUG']
 endif
@@ -55,6 +58,7 @@ endif
 src = [	'src/DataProtocol.cpp',
 	'src/JackTrip.cpp',
 	'src/ProcessPlugin.cpp',
+	'src/AudioSocket.cpp',
 	'src/AudioTester.cpp',
 	'src/jacktrip_globals.cpp',
 	'src/JackTripWorker.cpp',
@@ -84,6 +88,7 @@ src = [	'src/DataProtocol.cpp',
 moc_h = ['src/DataProtocol.h',
 	'src/JackTrip.h',
 	'src/ProcessPlugin.h',
+	'src/AudioSocket.h',
 	'src/Meter.h',
 	'src/Monitor.h',
 	'src/StereoToMono.h',
@@ -104,8 +109,8 @@ if get_option('nooscpp') == true
 	defines += '-DNO_OSCPP'
 	c_defines += '-DNO_OSCPP'
 else
-	incdirs += include_directories('externals/oscpp')
-	incdirs += include_directories('externals/oscpp/include')
+	incdirs += include_directories('externals/oscpp', is_system: true)
+	incdirs += include_directories('externals/oscpp/include', is_system: true)
 	src += ['src/OscServer.cpp']
 	moc_h += ['src/OscServer.h']
 endif
@@ -131,7 +136,7 @@ else
 		'src/Patcher.cpp']
 	moc_h += ['src/Patcher.h']
 	if get_option('weakjack') == true
-		incdirs += include_directories('externals/weakjack')
+		incdirs += include_directories('externals/weakjack', is_system: true)
 		src += 'externals/weakjack/weak_libjack.c'
 		defines += '-DUSE_WEAK_JACK'
 		c_defines += '-DUSE_WEAK_JACK'
@@ -142,11 +147,16 @@ else
 	endif
 endif
 
+qmake = ''
+qt_core_deps = []
 if qt_version == '5'
-	deps += dependency('qt5', modules: ['Core', 'Network'], include_type: 'system')
+	qmake = find_program('qmake', required: true)
+	qt_core_deps = dependency('qt5', modules: ['Core', 'Network'], include_type: 'system')
 else
-	deps += dependency('qt6', modules: ['Core', 'Network'], include_type: 'system')
+	qmake = find_program('qmake6', required: true)
+	qt_core_deps = dependency('qt6', modules: ['Core', 'Network'], include_type: 'system')
 endif
+deps += qt_core_deps
 
 if get_option('nogui') == true or (get_option('noclassic') == true and get_option('novs') == true)
 	# command line only
@@ -260,53 +270,58 @@ else
 	endif
 endif
 
+static_deps = []
+static_src = []
+static_link_args = []
 if get_option('default_library') == 'static'
 	# use qmake to get paths for qt libraries and plugins
 	# seems like qt module should have a method for this, but it doesn't
-	qmake = find_program('qmake', required: true)
 	qt_libdir = run_command(qmake, '-query', 'QT_INSTALL_LIBS', check : true).stdout().strip()
 	qt_plugindir = run_command(qmake, '-query', 'QT_INSTALL_PLUGINS', check : true).stdout().strip()
 	if qt_version == '6'
 		# qt6 requires "Bundled*" modules for linking
-		deps += dependency('qt6', modules: ['DBus', 'BundledLibpng', 'BundledPcre2', 'BundledHarfbuzz', 'BundledZLIB'], include_type: 'system')
+		static_deps += dependency('qt6', modules: ['DBus', 'BundledLibpng', 'BundledPcre2', 'BundledHarfbuzz', 'BundledZLIB'], include_type: 'system')
 	else
-		deps += compiler.find_library('qtpcre2', required : true, dirs : [qt_libdir])
+		static_deps += compiler.find_library('qtpcre2', required : true, dirs : [qt_libdir])
 	endif
 	if (host_machine.system() == 'linux')
 		# linux static
-		deps += compiler.find_library('ssl', required : true, dirs : [qt_libdir])
-		deps += compiler.find_library('crypto', required : true, dirs : [qt_libdir])
-		deps += compiler.find_library('dl', required : true)
-		deps += compiler.find_library('glib-2.0', required : true)
+		static_deps += compiler.find_library('ssl', required : true, dirs : [qt_libdir])
+		static_deps += compiler.find_library('crypto', required : true, dirs : [qt_libdir])
+		static_deps += compiler.find_library('dl', required : true)
+		static_deps += compiler.find_library('glib-2.0', required : true)
 		if qt_version == '6'
 			# we need a Q_IMPORT_LIBRARY for the openssl backend on linux
-			deps += compiler.find_library('dbus-1', required : true)
-			deps += compiler.find_library('qopensslbackend', required : true, dirs : [qt_plugindir+'/tls'])
-			src += ['src/QtStaticPlugins.cpp']
+			static_deps += compiler.find_library('dbus-1', required : true)
+			static_deps += compiler.find_library('qopensslbackend', required : true, dirs : [qt_plugindir+'/tls'])
+			static_src += ['src/QtStaticPlugins.cpp']
 		endif
 	else
 		if (host_machine.system() == 'windows')
 			# windows static
-			deps += compiler.find_library('bcrypt', required : true)
-			deps += compiler.find_library('winmm', required : true)
-			deps += compiler.find_library('Crypt32', required : true)
+			static_deps += compiler.find_library('bcrypt', required : true)
+			static_deps += compiler.find_library('winmm', required : true)
+			static_deps += compiler.find_library('Crypt32', required : true)
 			if qt_version == '6'
-				deps += compiler.find_library('Authz', required : true)
+				static_deps += compiler.find_library('Authz', required : true)
 			endif
 		else
 			# mac static
 			# this approach fails for universal builds, so we have to just append to link_args
-			#deps += dependency('CoreServices', required : true)
-			link_args += ['-framework', 'CoreServices']
-			link_args += ['-framework', 'CFNetwork']
-			link_args += ['-framework', 'AppKit']
-			link_args += ['-framework', 'IOKit']
-			link_args += ['-framework', 'Security']
-			link_args += ['-framework', 'GSS']
-			link_args += ['-framework', 'SystemConfiguration']
-			deps += dependency('zlib', required : true)
+			#static_deps += dependency('CoreServices', required : true)
+			static_link_args += ['-framework', 'CoreServices']
+			static_link_args += ['-framework', 'CFNetwork']
+			static_link_args += ['-framework', 'AppKit']
+			static_link_args += ['-framework', 'IOKit']
+			static_link_args += ['-framework', 'Security']
+			static_link_args += ['-framework', 'GSS']
+			static_link_args += ['-framework', 'SystemConfiguration']
+			static_deps += dependency('zlib', required : true)
 		endif
 	endif
+	deps += static_deps
+	src += static_src
+	link_args += static_link_args
 endif
 
 # QT_OPENSOURCE should only be defined for open source Qt distribution
@@ -356,6 +371,121 @@ if ui_h.length() > 0
 endif
 
 jacktrip = executable('jacktrip', src, qres_files, ui_files, moc_files, include_directories: incdirs, dependencies: deps, link_args: link_args, c_args: c_defines, cpp_args: defines, install: true )
+
+vst_sdkdir = get_option('vst-sdkdir')
+if vst_sdkdir != ''
+	# adapted from https://github.com/centricular/gstreamer-vst3
+	vst_includedir = '@0@/public.sdk/source'.format(vst_sdkdir)
+	vst_pluginterfaces_includedir = '@0@'.format(vst_sdkdir)
+	vst_incdirs = []
+	vst_incdirs += include_directories('@0@'.format(vst_includedir), is_system: true)
+	vst_incdirs += include_directories('@0@'.format(vst_pluginterfaces_includedir), is_system: true)
+	vst_incdirs += include_directories('@0@/vstgui4'.format(vst_pluginterfaces_includedir), is_system: true)
+
+	vst_libdir = get_option('vst-libdir')
+	if vst_libdir == ''
+		vst_libdir = vst_sdkdir + '/lib'
+	endif
+	libbase_dep = compiler.find_library('base', required : true, dirs : [vst_libdir])
+	libsdk_dep = compiler.find_library('sdk', required : true, dirs : [vst_libdir])
+	libsdk_common_dep = compiler.find_library('sdk_common', required : true, dirs : [vst_libdir])
+	libvstgui_dep = compiler.find_library('vstgui', required : true, dirs : [vst_libdir])
+	libvstgui_support_dep = compiler.find_library('vstgui_support', required : true, dirs : [vst_libdir])
+	libvstgui_uidescription_dep = compiler.find_library('vstgui_uidescription', required : true, dirs : [vst_libdir])
+	libpluginterfaces_dep = compiler.find_library('pluginterfaces', required : true, dirs : [vst_libdir])
+	vst_deps = [libbase_dep, libsdk_dep, libsdk_common_dep, libvstgui_dep, libvstgui_uidescription_dep, libvstgui_support_dep, libpluginterfaces_dep]
+	vst_deps += qt_core_deps
+
+	vst_sources = ['src/vst3/JackTripVSTController.cpp', 'src/vst3/JackTripVSTEntry.cpp', 'src/vst3/JackTripVSTProcessor.cpp']
+	if get_option('debug') == true
+		vst_sources += ['@0@/vstgui4/vstgui/vstgui_uidescription.cpp'.format(vst_sdkdir), '@0@/vstgui4/vstgui/plugin-bindings/vst3editor.cpp'.format(vst_sdkdir)]
+		defines += ['-DVSTGUI_LIVE_EDITING=1']
+	endif
+
+	vst_link_args = []
+	if (host_machine.system() == 'linux')
+		vst_sources += '@0@/main/linuxmain.cpp'.format(vst_includedir)
+		vst_deps += static_deps
+		vst_sources += static_src
+		vst_link_args += static_link_args
+		vst_deps += compiler.find_library('xcb-util', required : true)
+		vst_deps += compiler.find_library('xcb-cursor', required : true)
+		vst_deps += compiler.find_library('xkbcommon-x11', required : true)
+		vst_deps += compiler.find_library('xml2', required : true)
+		vst_deps += compiler.find_library('cairo', required : true)
+		vst_deps += compiler.find_library('pango-1.0', required : true)
+		vst_deps += compiler.find_library('pangocairo-1.0', required : true)
+		vst_deps += compiler.find_library('expat', required : true)
+		vst_deps += compiler.find_library('fontconfig', required : true)
+	elif (host_machine.system() == 'darwin')
+		vst_sources += '@0@/main/macmain.cpp'.format(vst_includedir)
+		vst_link_args += ['-framework', 'CoreServices']
+		vst_link_args += ['-framework', 'CFNetwork']
+		vst_link_args += ['-framework', 'AppKit']
+		vst_link_args += ['-framework', 'IOKit']
+		vst_link_args += ['-framework', 'Security']
+		vst_link_args += ['-framework', 'GSS']
+		vst_link_args += ['-framework', 'SystemConfiguration']
+		vst_deps += dependency('zlib', required : true)
+		if (qt_version == '5')
+			vst_link_args += '@0@/libQt5Core.a'.format(vst_libdir)
+			vst_link_args += '@0@/libQt5Network.a'.format(vst_libdir)
+		else
+			vst_link_args += '@0@/libQt6Core.a'.format(vst_libdir)
+			vst_link_args += '@0@/libQt6Network.a'.format(vst_libdir)
+			vst_link_args += '@0@/libQt6BundledPcre2.a'.format(vst_libdir)
+		endif
+	elif (host_machine.system() == 'windows')
+		vst_sources += '@0@/main/dllmain.cpp'.format(vst_includedir)
+		vst_deps += static_deps
+		vst_sources += static_src
+		vst_link_args += static_link_args
+		vst_deps += compiler.find_library('bcrypt', required : true)
+		vst_deps += compiler.find_library('winmm', required : true)
+		vst_deps += compiler.find_library('Crypt32', required : true)
+		vst_deps += compiler.find_library('ws2_32', required: true)
+		vst_link_args += 'userenv.lib'
+		vst_link_args += 'Synchronization.lib'
+		vst_link_args += 'Netapi32.lib'
+		vst_link_args += 'Version.lib'
+		vst_link_args += 'Dwrite.lib'
+		vst_link_args += 'Iphlpapi.lib'
+		vst_link_args += 'Secur32.lib'
+		vst_link_args += 'Winhttp.lib'
+		vst_link_args += 'Dnsapi.lib'
+		vst_link_args += 'Iphlpapi.lib'
+	else
+		error('Unsupported platform: ' + host_machine.system())
+	endif
+
+	audio_socket_moc_h = ['src/AudioSocket.h', 'src/SocketClient.h', 'src/ProcessPlugin.h']
+	audio_socket_sources = qt.compile_moc(headers: audio_socket_moc_h, extra_args: defines)
+	audio_socket_sources += [
+		'src/AudioSocket.cpp',
+		'src/SocketClient.cpp',
+		'src/ProcessPlugin.cpp',
+		'src/jacktrip_globals.cpp'
+	]
+	audio_socket_test = executable('audio_socket_tests',
+		['tests/audio_socket_test.cpp'] + audio_socket_sources,
+		cpp_args : defines,
+		dependencies : vst_deps,
+		include_directories: vst_incdirs + include_directories('src/'),
+		link_args: vst_link_args,
+		cpp_args: defines
+	)
+
+	vst3 = shared_module('JackTrip',
+		vst_sources, audio_socket_sources,
+		name_prefix: '',
+		name_suffix: 'vst3',
+		cpp_args : defines,
+		dependencies : vst_deps,
+		include_directories: vst_incdirs,
+		link_args: vst_link_args,
+		cpp_args: defines
+	)
+endif
 
 help2man = find_program('help2man', required: false)
 if (host_machine.system() == 'linux')

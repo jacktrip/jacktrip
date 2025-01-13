@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2022-2024 JackTrip Labs, Inc.
+  Copyright (c) 2022-2025 JackTrip Labs, Inc.
 
   Permission is hereby granted, free of charge, to any person
   obtaining a copy of this software and associated documentation
@@ -41,10 +41,11 @@
 #include <QLocalServer>
 #include <QLocalSocket>
 #include <QScopedPointer>
+#include <QSharedPointer>
 #include <functional>
 
 // SocketHandler is used to handle a new socket connection
-typedef std::function<void(QLocalSocket&)> SocketHandler;
+typedef std::function<void(QSharedPointer<QLocalSocket>&)> SocketHandler;
 
 // SocketServer lists for local socket connections from remote JackTrip processes
 class SocketServer : public QObject
@@ -73,7 +74,7 @@ class SocketServer : public QObject
 
    private:
     // called by local socket server to handle requests
-    void handleConnection(const QString& name, QLocalSocket& socket);
+    void handleConnection(const QString& name, QSharedPointer<QLocalSocket>& socket);
 
     // used to listen for requests via local socket connections
     QScopedPointer<QLocalServer> m_instanceServer;

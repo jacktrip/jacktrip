@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2022-2024 JackTrip Labs, Inc.
+  Copyright (c) 2022-2025 JackTrip Labs, Inc.
 
   Permission is hereby granted, free of charge, to any person
   obtaining a copy of this software and associated documentation
@@ -37,8 +37,11 @@
 #include "SocketServer.h"
 
 #include <QDebug>
+#include <iostream>
 
 #include "SocketClient.h"
+
+using namespace std;
 
 bool SocketServer::start()
 {
@@ -57,13 +60,20 @@ bool SocketServer::start()
         m_serverStarted = false;
     } else {
         // confirmed that no other jacktrip instance is running
-        qDebug() << "Listening for deep link requests";
-        m_instanceServer.reset(new QLocalServer(this));
+        m_instanceServer.reset(new QLocalServer());
         m_instanceServer->setSocketOptions(QLocalServer::WorldAccessOption);
         QObject::connect(m_instanceServer.data(), &QLocalServer::newConnection, this,
                          &SocketServer::handlePendingConnections, Qt::QueuedConnection);
-        m_instanceServer->listen(JACKTRIP_SOCKET_NAME);
-        m_serverStarted = true;
+        QString serverName(JACKTRIP_SOCKET_NAME);
+        QLocalServer::removeServer(serverName);
+        m_serverStarted = m_instanceServer->listen(serverName);
+        if (m_serverStarted) {
+            cout << "Listening for local connections: "
+                 << m_instanceServer->fullServerName().toStdString() << endl;
+        } else {
+            cerr << "Error listening for local connections: "
+                 << m_instanceServer->errorString().toStdString() << endl;
+        }
     }
 
     // return true if a local socket server was started
@@ -98,24 +108,32 @@ void SocketServer::handlePendingConnections()
         QString header(in);
         if (!header.startsWith("JackTrip/1.0 ")) {
             if (header.startsWith("JackTrip/")) {
-                qDebug() << "Socket server: unknown version: " << header;
+                cerr << "Socket server: unknown version: " << header.toStdString()
+                     << endl;
             } else {
-                qDebug() << "Socket server: invalid header: " << header;
+                cerr << "Socket server: invalid header: " << header.toStdString() << endl;
             }
             continue;
         }
         QString handlerName(header);
         handlerName.replace("JackTrip/1.0 ", "");
         handlerName.replace("\n", "");
-        handleConnection(handlerName, *connectedSocket);
+
+        cout << "Socket server: received connection for " << handlerName.toStdString()
+             << endl;
+        connectedSocket->setParent(nullptr);
+        QSharedPointer<QLocalSocket> sharedSocket(connectedSocket);
+        handleConnection(handlerName, sharedSocket);
     }
 }
 
-void SocketServer::handleConnection(const QString& name, QLocalSocket& socket)
+void SocketServer::handleConnection(const QString& name,
+                                    QSharedPointer<QLocalSocket>& socket)
 {
     auto it = m_handlers.find(name);
     if (it == m_handlers.end()) {
-        qDebug() << "Socket server: request for unknown handler: " << name;
+        cerr << "Socket server: request for unknown handler: " << name.toStdString()
+             << endl;
         return;
     }
     it.value()(socket);

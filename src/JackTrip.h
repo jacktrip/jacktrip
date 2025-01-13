@@ -173,9 +173,9 @@ class JackTrip : public QObject
      * \param plugin Pointer to ProcessPlugin Class
      */
     // void appendProcessPlugin(const std::tr1::shared_ptr<ProcessPlugin> plugin);
-    virtual void appendProcessPluginToNetwork(ProcessPlugin* plugin);
-    virtual void appendProcessPluginFromNetwork(ProcessPlugin* plugin);
-    virtual void appendProcessPluginToMonitor(ProcessPlugin* plugin);
+    virtual void appendProcessPluginToNetwork(QSharedPointer<ProcessPlugin>& plugin);
+    virtual void appendProcessPluginFromNetwork(QSharedPointer<ProcessPlugin>& plugin);
+    virtual void appendProcessPluginToMonitor(QSharedPointer<ProcessPlugin>& plugin);
 
     /// \brief Start the processing threads
     virtual void startProcess(
@@ -718,11 +718,11 @@ class JackTrip : public QObject
     JackTrip::hubConnectionModeT
         mHubConnectionModeT;  ///< Hub Server Jack Audio Patch Connection Mode
 
-    QVector<ProcessPlugin*>
+    QVector<QSharedPointer<ProcessPlugin> >
         mProcessPluginsFromNetwork;  ///< Vector of ProcessPlugin<EM>s</EM>
-    QVector<ProcessPlugin*>
+    QVector<QSharedPointer<ProcessPlugin> >
         mProcessPluginsToNetwork;  ///< Vector of ProcessPlugin<EM>s</EM>
-    QVector<ProcessPlugin*>
+    QVector<QSharedPointer<ProcessPlugin> >
         mProcessPluginsToMonitor;  ///< Vector of ProcessPlugin<EM>s</EM>
     QTimer mTimeoutTimer;
     QTimer mRetryTimer;

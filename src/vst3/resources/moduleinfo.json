@@ -1,0 +1,43 @@
+{
+  "Name": "JackTrip",
+  "Version": "%VERSION%",
+  "Factory Info": {
+    "Vendor": "JackTrip Labs",
+    "URL": "https://www.jacktrip.com",
+    "E-Mail": "mailto:support@jacktrip.com",
+    "Flags": {
+      "Unicode": true,
+      "Classes Discardable": false,
+      "Component Non Discardable": false,
+    },
+  },
+  "Classes": [
+    {
+      "CID": "176F9AF4A56041A1890DD021765ABCF0",
+      "Category": "Audio Module Class",
+      "Name": "JackTrip Audio Bridge",
+      "Vendor": "JackTrip Labs",
+      "Version": "%VERSION%",
+      "SDKVersion": "VST 3.7.12",
+      "Sub Categories": [
+        "Fx",
+      ],
+      "Class Flags": 1,
+      "Cardinality": 2147483647,
+      "Snapshots": [
+      ],
+    },
+    {
+      "CID": "075C3106BC524686B63544CCF88423FF",
+      "Category": "Component Controller Class",
+      "Name": "JackTrip Audio Bridge",
+      "Vendor": "JackTrip Labs",
+      "Version": "%VERSION%",
+      "SDKVersion": "VST 3.7.12",
+      "Class Flags": 0,
+      "Cardinality": 2147483647,
+      "Snapshots": [
+      ],
+    },
+  ],
+}

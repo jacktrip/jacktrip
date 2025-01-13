@@ -1,0 +1,71 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+    <Fragment>
+        <DirectoryRef Id="VST3DIR">
+            <Directory Id="dirC529895EE77450F3C72B644D3B50C911" Name="JackTrip.vst3" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <ComponentGroup Id="jacktripvst3">
+            <Component Id="cmpA89E2B3B233F97AB53B4FE9FA684CAB2" Directory="dirD7DDD8DA90BC893A3523C3F478EDBFA5" Guid="{E1C88C7E-8D90-434C-940C-2A867C70CFDE}">
+                <File Id="fil0E885921A1CB51256D60C9E0024B88D2" KeyPath="yes" Source="SourceDir\JackTrip.vst3\Contents\Resources\background.png" />
+            </Component>
+            <Component Id="cmp3A3529091478AB40CC0D6F40EC0F7DB1" Directory="dirD7DDD8DA90BC893A3523C3F478EDBFA5" Guid="{09CF4480-E124-45E7-BBF9-878C695E4A40}">
+                <File Id="filB09E0C2581F99AFB520F0ADBA4A2DFB2" KeyPath="yes" Source="SourceDir\JackTrip.vst3\Contents\Resources\background_2x.png" />
+            </Component>
+            <Component Id="cmp542902F0C5B22695EE2E3E0A78590723" Directory="dirD7DDD8DA90BC893A3523C3F478EDBFA5" Guid="{353BA4A9-64F7-4609-B1B7-81EDDDECEC78}">
+                <File Id="filD75564B094910F7A9BC39FBC5B9DE70F" KeyPath="yes" Source="SourceDir\JackTrip.vst3\Contents\Resources\Dual_LED.png" />
+            </Component>
+            <Component Id="cmp811349B294D2CD0BB3FC552CCE42DD6B" Directory="dirD7DDD8DA90BC893A3523C3F478EDBFA5" Guid="{D7364DBB-E501-4B99-B7D1-58ED45702A5A}">
+                <File Id="filBC885E8370B8BD97431A54039D53EDED" KeyPath="yes" Source="SourceDir\JackTrip.vst3\Contents\Resources\JackTripEditor.uidesc" />
+            </Component>
+            <Component Id="cmp9F06646184EC3EA2FAF8242332D67338" Directory="dirD7DDD8DA90BC893A3523C3F478EDBFA5" Guid="{D061BD66-EC3F-4F6E-BEF9-8282D24FD046}">
+                <File Id="filD2134FEF8A44C8959D9A355ECB8D93A5" KeyPath="yes" Source="SourceDir\JackTrip.vst3\Contents\Resources\LICENSE.md" />
+            </Component>
+            <Component Id="cmpB981C2A08F9547568395028EB4709838" Directory="dirD7DDD8DA90BC893A3523C3F478EDBFA5" Guid="{366731F7-5AE7-4DA9-B3E7-73F0662AB52E}">
+                <File Id="fil710883FC5749D9E8A486068DAADEF594" KeyPath="yes" Source="SourceDir\JackTrip.vst3\Contents\Resources\moduleinfo.json" />
+            </Component>
+            <Component Id="cmpC5B85F125D058623BA6601590DCF5D45" Directory="dirD7DDD8DA90BC893A3523C3F478EDBFA5" Guid="{C336EFB0-3773-4F2C-82C2-3F6FA19E27F4}">
+                <File Id="filDCBF690BADDC59592CB00A70CB303639" KeyPath="yes" Source="SourceDir\JackTrip.vst3\Contents\Resources\Sercan_Moog_Knob.png" />
+            </Component>
+            <Component Id="cmp91C15F6937472EDADF18A3DF2850B68B" Directory="dirD7DDD8DA90BC893A3523C3F478EDBFA5" Guid="{F340688E-5925-4D32-9039-730CFFBA31F5}">
+                <File Id="filAFDCAB68DCCBE776AA6F238B56AA907F" KeyPath="yes" Source="SourceDir\JackTrip.vst3\Contents\Resources\win32resource.rc" />
+            </Component>
+            <Component Id="cmp695B40111D773D55335931EEDF9B3871" Directory="dir3E32C5B4E1995E12C8A983E30AC42ED0" Guid="{A385F0E4-A33B-4B1D-9701-E50A96933115}">
+                <File Id="fil8849A500FEBD18AD3169AF868F318EBF" KeyPath="yes" Source="SourceDir\JackTrip.vst3\Contents\Resources\LICENSES\AVC.txt" />
+            </Component>
+            <Component Id="cmp30746D59FCB8AB350A1516C27BC53EAC" Directory="dir3E32C5B4E1995E12C8A983E30AC42ED0" Guid="{E39D3840-A8C5-46DA-B312-598B24D7526B}">
+                <File Id="fil19A081EB090F775872B98B344AF8D03F" KeyPath="yes" Source="SourceDir\JackTrip.vst3\Contents\Resources\LICENSES\GPL-3.0.txt" />
+            </Component>
+            <Component Id="cmp2425D35CB0206AC69A746C931011450C" Directory="dir3E32C5B4E1995E12C8A983E30AC42ED0" Guid="{EF7ED563-EBE0-4301-947B-1CE45AC69F8C}">
+                <File Id="fil971B4767893F685F1E7D68C66CD9710E" KeyPath="yes" Source="SourceDir\JackTrip.vst3\Contents\Resources\LICENSES\LGPL-3.0-only.txt" />
+            </Component>
+            <Component Id="cmpF438EE21A995DA392086A47877FAEC24" Directory="dir3E32C5B4E1995E12C8A983E30AC42ED0" Guid="{60E31672-8BAC-4BC0-9221-B3AB9949B5AC}">
+                <File Id="fil56278695D7A872F1D231A820110CC704" KeyPath="yes" Source="SourceDir\JackTrip.vst3\Contents\Resources\LICENSES\MIT.txt" />
+            </Component>
+            <Component Id="cmpC4A0D6F318491F474FFDF80A46C53B24" Directory="dir7528754B446ECAFE2C3463C0916A775D" Guid="{BB89EFC4-CD0B-417B-9AC2-56444262C0ED}">
+                <File Id="fil5F012D81F27C3F619CE5A017C47B3727" KeyPath="yes" Source="SourceDir\JackTrip.vst3\Contents\x86_64-win\JackTrip.vst3" />
+            </Component>
+        </ComponentGroup>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirC529895EE77450F3C72B644D3B50C911">
+            <Directory Id="dir8DFAD377CE63CA353FD57A8086B458C5" Name="Contents" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dir8DFAD377CE63CA353FD57A8086B458C5">
+            <Directory Id="dir7528754B446ECAFE2C3463C0916A775D" Name="x86_64-win" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dir8DFAD377CE63CA353FD57A8086B458C5">
+            <Directory Id="dirD7DDD8DA90BC893A3523C3F478EDBFA5" Name="Resources" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dirD7DDD8DA90BC893A3523C3F478EDBFA5">
+            <Directory Id="dir3E32C5B4E1995E12C8A983E30AC42ED0" Name="LICENSES" />
+        </DirectoryRef>
+    </Fragment>
+</Wix>

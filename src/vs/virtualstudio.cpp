@@ -62,6 +62,7 @@
 // https://bugreports.qt.io/browse/QTBUG-55199
 #include <QSvgGenerator>
 
+#include "../AudioSocket.h"
 #include "../JackTrip.h"
 #include "../Settings.h"
 #include "../SocketClient.h"
@@ -234,9 +235,6 @@ VirtualStudio::VirtualStudio(UserInterface& parent)
     connect(m_view.get(), &VsQuickView::windowClose, this, &VirtualStudio::exit,
             Qt::QueuedConnection);
 
-    // initialize default QtWebEngineProfile
-    m_qwebEngineProfile = QWebEngineProfile::defaultProfile();
-
     // Log to file
     QString logPath(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
     QDir logDir;
@@ -259,11 +257,21 @@ VirtualStudio::VirtualStudio(UserInterface& parent)
         SocketClient c;
         if (c.connect()) {
             // existing instance found; send deeplink to it and exit
-            c.sendHeader("deeplink");
+            if (!c.sendHeader("deeplink")) {
+                c.close();
+                std::cerr << "Failed to send deeplink header" << std::endl;
+                std::exit(1);
+            }
             QLocalSocket& s          = c.getSocket();
             QByteArray deepLinkBytes = deepLinkStr.toLocal8Bit();
-            s.write(deepLinkBytes);
+            qint64 bytesWritten      = s.write(deepLinkBytes);
             s.flush();
+            s.waitForBytesWritten(1000);
+            if (bytesWritten != deepLinkBytes.size()) {
+                std::cerr << "Failed to send deeplink" << std::endl;
+                std::exit(1);
+            }
+            std::cout << "sent deeplink: " << deepLinkStr.toStdString() << std::endl;
             std::exit(0);
         }
     }
@@ -279,10 +287,16 @@ VirtualStudio::VirtualStudio(UserInterface& parent)
 
     // prepare handler for local socket connections
     m_socketServerPtr.reset(new SocketServer());
-    m_socketServerPtr->addHandler("deeplink", [=](QLocalSocket& socket) {
+    m_socketServerPtr->addHandler("deeplink", [=](QSharedPointer<QLocalSocket>& socket) {
         m_deepLinkPtr->handleVsDeeplinkRequest(socket);
     });
+    m_socketServerPtr->addHandler("audio", [=](QSharedPointer<QLocalSocket>& socket) {
+        this->handleAudioSocketRequest(socket);
+    });
     m_socketServerPtr->start();
+
+    // initialize default QtWebEngineProfile
+    m_qwebEngineProfile = QWebEngineProfile::defaultProfile();
 }
 
 void VirtualStudio::show()
@@ -1204,6 +1218,9 @@ void VirtualStudio::disconnect()
     // reset network statistics
     m_networkStats = QJsonObject();
 
+    // force audio sockets to reconnect, since audio has stopped
+    m_audioConfigPtr->clearAudioSockets();
+
     if (!m_currentStudio.id().isEmpty()) {
         emit openFeedbackSurveyModal(m_currentStudio.id());
         m_currentStudio.setId("");
@@ -1293,6 +1310,13 @@ void VirtualStudio::handleDeeplinkRequest(const QUrl& link)
     }
 
     // otherwise, assume we are on setup screens and can let the normal flow handle it
+}
+
+void VirtualStudio::handleAudioSocketRequest(QSharedPointer<QLocalSocket>& socket)
+{
+    QSharedPointer<AudioSocket> audioSocketPtr(new AudioSocket(socket));
+    m_audioConfigPtr->registerAudioSocket(audioSocketPtr);
+    triggerReconnect(true);
 }
 
 void VirtualStudio::exit()

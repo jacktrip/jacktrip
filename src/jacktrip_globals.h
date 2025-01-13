@@ -38,9 +38,9 @@
 #ifndef __JACKTRIP_GLOBALS_H__
 #define __JACKTRIP_GLOBALS_H__
 
-#include "AudioInterface.h"
+#include "jacktrip_types.h"
 
-constexpr const char* const gVersion = "2.4.1";  ///< JackTrip version
+constexpr const char* const gVersion = "2.5.0-beta1";  ///< JackTrip version
 
 //*******************************************************************************
 /// \name Default Values
@@ -75,10 +75,6 @@ constexpr int gDefaultAddCombFilterLength = 0;
 constexpr int gDefaultCombFilterFeedback  = 0;
 #endif  // endwhere
 
-// const JackAudioInterface::audioBitResolutionT gDefaultBitResolutionMode =
-//    JackAudioInterface::BIT16;
-constexpr AudioInterface::audioBitResolutionT gDefaultBitResolutionMode =
-    AudioInterface::BIT16;
 constexpr int gDefaultQueueLength              = 4;
 constexpr int gDefaultOutputQueueLength        = 4;
 constexpr uint32_t gDefaultSampleRate          = 48000;

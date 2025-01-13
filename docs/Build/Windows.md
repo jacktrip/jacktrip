@@ -82,3 +82,29 @@ If you see something like this, you have successfully installed Jacktrip:
 >     Copyright (c) 2008-2020 Juan-Pablo Caceres, Chris Chafe.
 >     SoundWIRE group at CCRMA, Stanford University
 
+
+## Building VST3 SDK for Windows
+
+```
+git clone --recursive https://github.com/steinbergmedia/vst3sdk
+mkdir vst3sdk/build
+cd vst3sdk/build
+cmake -G "Visual Studio 17 2022" -A x64 -DSMTG_CREATE_PLUGIN_LINK=0 ../
+cmake --build . -DCMAKE_CXX_FLAGS="/MD" --config Release
+mkdir c:\vst3sdk
+xcopy /E lib\Release c:\vst3sdk\lib\
+xcopy /E bin\Release c:\vst3sdk\bin\
+xcopy /E ..\base c:\vst3sdk\base\
+xcopy /E ..\pluginterfaces c:\vst3sdk\pluginterfaces\
+xcopy /E ..\public.sdk c:\vst3sdk\public.sdk\
+xcopy /E ..\vstgui4 c:\vst3sdk\vstgui4\
+```
+
+VST plugins are not allowed to have any shared library dependencies. You
+can currently only build it when using a static build of Qt. Note that
+this also requires configuring Meson without support for the GUI.
+
+When you run `meson setup` use `-Dnogui=true -Dvst-sdkdir=c:\vst3sdk`
+
+Please note that redistribution of JackTrip's VST3 plugin requires a
+[license from Steinberg](https://www.steinberg.net/developers/).

@@ -460,27 +460,27 @@ void JackTrip::setPeerAddress(const QString& PeerHostOrIP)
 }
 
 //*******************************************************************************
-void JackTrip::appendProcessPluginToNetwork(ProcessPlugin* plugin)
+void JackTrip::appendProcessPluginToNetwork(QSharedPointer<ProcessPlugin>& plugin)
 {
-    if (plugin) {
+    if (!plugin.isNull()) {
         mProcessPluginsToNetwork.append(plugin);  // ownership transferred
         // mAudioInterface->appendProcessPluginToNetwork(plugin);
     }
 }
 
 //*******************************************************************************
-void JackTrip::appendProcessPluginFromNetwork(ProcessPlugin* plugin)
+void JackTrip::appendProcessPluginFromNetwork(QSharedPointer<ProcessPlugin>& plugin)
 {
-    if (plugin) {
+    if (!plugin.isNull()) {
         mProcessPluginsFromNetwork.append(plugin);  // ownership transferred
         // mAudioInterface->appendProcessPluginFromNetwork(plugin);
     }
 }
 
 //*******************************************************************************
-void JackTrip::appendProcessPluginToMonitor(ProcessPlugin* plugin)
+void JackTrip::appendProcessPluginToMonitor(QSharedPointer<ProcessPlugin>& plugin)
 {
-    if (plugin) {
+    if (!plugin.isNull()) {
         mProcessPluginsToMonitor.append(plugin);  // ownership transferred
         // mAudioInterface->appendProcessPluginFromNetwork(plugin);
     }

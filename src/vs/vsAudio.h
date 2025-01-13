@@ -39,6 +39,7 @@
 
 #include <QJsonArray>
 #include <QList>
+#include <QMutex>
 #include <QObject>
 #include <QSharedPointer>
 #include <QString>
@@ -54,6 +55,7 @@
 #endif
 
 class Analyzer;
+class AudioSocket;
 class JackTrip;
 class Meter;
 class Monitor;
@@ -205,6 +207,11 @@ class VsAudio : public QObject
     const QString& getDevicesWarningHelpUrl() const { return m_devicesWarningHelpUrl; }
     const QString& getDevicesErrorHelpUrl() const { return m_devicesErrorHelpUrl; }
     bool getHighLatencyFlag() const { return m_highLatencyFlag; }
+
+    // called by local socket server to process audio requests
+    void registerAudioSocket(QSharedPointer<AudioSocket>& s);
+    void clearAudioSockets();
+
    public slots:
 
     // setters for state shared with QML
@@ -351,19 +358,12 @@ class VsAudio : public QObject
     // other state not shared with QML
     QSharedPointer<VsPermissions> m_permissionsPtr;
     QScopedPointer<VsAudioWorker> m_audioWorkerPtr;
+    QVector<QSharedPointer<AudioSocket>> m_audioSockets;
+    QMutex m_audioSocketMutex;
     QThread* m_workerThreadPtr;
     QTimer m_inputClipTimer;
     QTimer m_outputClipTimer;
-    Meter* m_inputMeterPluginPtr;
-    Meter* m_outputMeterPluginPtr;
-    Volume* m_inputVolumePluginPtr;
-    Volume* m_outputVolumePluginPtr;
-    Monitor* m_monitorPluginPtr;
     bool mHasErrors;  ///< true if one or more error callbacks have been triggered
-
-#ifndef NO_FEEDBACK
-    Analyzer* m_outputAnalyzerPluginPtr;
-#endif
 
     QStringList m_audioBackendComboModel = {"JACK", "RtAudio"};
     QStringList m_bufferSizeComboModel = {"16", "32", "64", "128", "256", "512", "1024"};

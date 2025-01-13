@@ -1,3 +1,18 @@
+- Version: "2.5.0-beta1"
+  Date: 2025-01-13
+  Description:
+  - (added) New JackTrip Audio Bridge VST3 Plugin
+  - (added) Automated arm64 and arm32 builds for Linux
+  - (added) Dynamic adjustment of PLC queues using OSC messages
+  - (updated) VS Mode remote control for audio quality slider
+  - (updated) VS Mode switch to using cookies for authentication
+  - (updated) PLC mode improvements in auto headroom calculations
+  - (fixed) PLC audio corruption when buffer sizes differ
+  - (fixed) PLC broadcast queue length when buffer sizes differ
+  - (fixed) Support for multiple commas in --audiodevice parameter
+  - (fixed) VS Mode access token expires after running for a day
+  - (fixed) VS Mode session feedback dialog closes on navigation
+  - (fixed) VS Mode deeplinks broken for first run after install
 - Version: "2.4.1"
   Date: 2024-09-27
   Description:

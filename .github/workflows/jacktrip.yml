@@ -101,6 +101,8 @@ jobs:
             docker-image: ubuntu:jammy-20240911.1
             docker-platform: linux/amd64
             meson-library-type: shared
+            vst3sdk-version: '3.7.12'
+            vst3sdk-arch: amd64
 
           - name: Linux-arm64-docker-shared
             release-name: Linux-arm64
@@ -115,6 +117,8 @@ jobs:
             docker-image: ubuntu:jammy-20240911.1
             docker-platform: linux/arm64
             meson-library-type: shared
+            vst3sdk-version: '3.7.12'
+            vst3sdk-arch: arm64
 
           - name: Linux-x64-docker-nogui
             release-name: Linux-x64-nogui
@@ -205,6 +209,7 @@ jobs:
             qt-version: '6.2.6'
             qt-download-commit: 'b09fbe4'
             qt-type: 'dynamic'
+            vst3sdk-version: '3.7.12'
             macosx-architectures: 'x86_64;arm64'
             macosx-deployment-target: 10.14
             xcode-directory: /Applications/Xcode_14.2.app
@@ -226,7 +231,7 @@ jobs:
 
           - name: Windows-x64-meson-msvc-shared
             release-name: Windows-x64
-            runs-on: windows-2019
+            runs-on: windows-2022
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
@@ -239,11 +244,13 @@ jobs:
             binary-path: binary
             build-system: meson
             meson-library-type: shared
+            vst3sdk-version: '3.7.12'
 
     env:
       BUILD_PATH: ${{ github.workspace }}/builddir
       CLANG_TIDY_NAME: clang-tidy-result
       CLANG_TIDY_PATH: ${{ github.workspace }}/clang-tidy-result
+      VST3SDK_DOWNLOAD_BASE_URL: 'https://files.jacktrip.org/contrib/vst3sdk'
       QT_DOWNLOAD_BASE_URL: 'https://files.jacktrip.org/contrib/qt'
       QT_DOWNLOAD_COMMIT: 'f82eab7'
 
@@ -338,6 +345,11 @@ jobs:
             python -m pip install --upgrade pip
             pip install meson
           fi
+      - name: Use Msys utils for Windows
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          echo "C:\msys64\usr\bin" >> $GITHUB_PATH
       - name: install dependencies for Windows
         if: runner.os == 'Windows'
         shell: bash
@@ -346,7 +358,9 @@ jobs:
             # hack to get rid of faulty patch.exe since it breaks meson diff_files
             rm -f c:/Strawberry/c/bin/patch.exe c:/Strawberry/perl/site/bin/patch.exe c:/Strawberry/perl/bin/patch.exe "C:/Program Files/Git/usr/bin/patch.exe"
             # use working version of patch.exe in msys, see https://github.com/actions/runner-images/issues/1552
-            echo "C:\msys64\usr\bin" >> $GITHUB_PATH
+            pacman -S patch --needed --noconfirm
+            which patch
+            patch --version
             # install older meson from choco which uses patch, since git is broken
             # see https://github.com/mesonbuild/meson/issues/12092 and https://github.com/mesonbuild/meson/pull/12248
             choco install meson --version=1.1.1 --no-progress
@@ -375,17 +389,13 @@ jobs:
             QT_DOWNLOAD_OS=osx
             QT_DOWNLOAD_EXT=tar.gz
           fi
-          if [[ -n "${{ matrix.qt-download-url }}" ]]; then
-            QT_DOWNLOAD_URL="${{ matrix.qt-download-url }}"
-          else
-            if [[ -n "${{ matrix.qt-download-commit }}" ]]; then
-              QT_DOWNLOAD_COMMIT="${{ matrix.qt-download-commit }}"
-            fi
-            if [[ -n "${{ matrix.qt-arch }}" ]]; then
-              QT_DOWNLOAD_ARCH="-${{ matrix.qt-arch }}"
-            fi
-            QT_DOWNLOAD_URL="$QT_DOWNLOAD_BASE_URL/qt-${{ matrix.qt-version }}-${{ matrix.qt-type }}-${QT_DOWNLOAD_OS}${QT_DOWNLOAD_ARCH}-$QT_DOWNLOAD_COMMIT.$QT_DOWNLOAD_EXT"
+          if [[ -n "${{ matrix.qt-download-commit }}" ]]; then
+            QT_DOWNLOAD_COMMIT="${{ matrix.qt-download-commit }}"
           fi
+          if [[ -n "${{ matrix.qt-arch }}" ]]; then
+            QT_DOWNLOAD_ARCH="-${{ matrix.qt-arch }}"
+          fi
+          QT_DOWNLOAD_URL="$QT_DOWNLOAD_BASE_URL/qt-${{ matrix.qt-version }}-${{ matrix.qt-type }}-${QT_DOWNLOAD_OS}${QT_DOWNLOAD_ARCH}-$QT_DOWNLOAD_COMMIT.$QT_DOWNLOAD_EXT"
           if [[ "${{ matrix.build-system }}" == "docker" ]]; then
             echo "QT_DOWNLOAD_URL=$QT_DOWNLOAD_URL" >> $GITHUB_ENV
           else
@@ -399,6 +409,16 @@ jobs:
               tar -xzf qt.$QT_DOWNLOAD_EXT
             fi
             rm qt.$QT_DOWNLOAD_EXT
+            if [[ -n "${{ matrix.vst3sdk-version }}" && "${{ runner.os }}" == 'Windows' ]]; then
+              # also download static version of qt to use when building the VST3 plugin
+              QT_DOWNLOAD_URL="$QT_DOWNLOAD_BASE_URL/qt-${{ matrix.qt-version }}-static-${QT_DOWNLOAD_OS}${QT_DOWNLOAD_ARCH}-$QT_DOWNLOAD_COMMIT.$QT_DOWNLOAD_EXT"
+              echo "Downloading $QT_DOWNLOAD_URL"
+              curl -L $QT_DOWNLOAD_URL -o qt.$QT_DOWNLOAD_EXT
+              unzip qt.$QT_DOWNLOAD_EXT
+              # make it inactive until we need it
+              mv "c:\qt\qt-${{ matrix.qt-version }}-static" "c:\qt\qt-${{ matrix.qt-version }}-static.bak"
+              rm qt.$QT_DOWNLOAD_EXT
+            fi
           fi
       - name: Set Qt environment variables # needed to find qmake depending on the way qt was installed
         shell: bash
@@ -407,6 +427,9 @@ jobs:
           if [[ "${{ runner.os }}" == 'Windows' ]]; then
             QT_PATH="c:\qt\qt-${{ matrix.qt-version }}-${{ matrix.qt-type }}"
             echo "$QT_PATH\bin" >> $GITHUB_PATH
+            if [[ -n "${{ matrix.vst3sdk-version}}" && "${{ matrix.qt-type }}" != "static" ]]; then
+              echo "c:\qt\qt-${{ matrix.qt-version }}-static\bin" >> $GITHUB_PATH
+            fi
             echo "QT_PATH=$QT_PATH" >> $GITHUB_ENV
             echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH;$QT_PATH/lib/pkgconfig;$GITHUB_WORKSPACE/win" >> $GITHUB_ENV
             echo "CMAKE_PREFIX_PATH=$QT_PATH" >> $GITHUB_ENV
@@ -419,6 +442,41 @@ jobs:
             if [[ "${{ runner.os }}" == 'macOS' ]]; then
               echo "DYLD_FRAMEWORK_PATH=$QT_PATH/lib" >> $GITHUB_ENV
             fi
+          fi
+      - name: Download VST3SDK build
+        if: matrix.vst3sdk-version
+        shell: bash
+        run: |
+          VST3SDK_INSTALL_PATH=/opt
+          if [[ "${{ runner.os }}" == 'Windows' ]]; then
+            VST3SDK_INSTALL_PATH=/c
+            VST3SDK_DOWNLOAD_OS=win
+            VST3SDK_DOWNLOAD_EXT=zip
+          elif [[ "${{ runner.os }}" == 'Linux' ]]; then
+            VST3SDK_DOWNLOAD_OS=linux
+            VST3SDK_DOWNLOAD_EXT=tar.gz
+          else
+            VST3SDK_DOWNLOAD_OS=osx
+            VST3SDK_DOWNLOAD_EXT=tar.gz
+          fi
+          if [[ -n "${{ matrix.vst3sdk-arch }}" ]]; then
+            VST3SDK_DOWNLOAD_ARCH="-${{ matrix.vst3sdk-arch }}"
+          fi
+          VST3SDK_DOWNLOAD_URL="$VST3SDK_DOWNLOAD_BASE_URL/vst3sdk-${{ matrix.vst3sdk-version }}-${VST3SDK_DOWNLOAD_OS}${VST3SDK_DOWNLOAD_ARCH}.$VST3SDK_DOWNLOAD_EXT"
+          if [[ "${{ matrix.build-system }}" == "docker" ]]; then
+            echo "VST3SDK_DOWNLOAD_URL=$VST3SDK_DOWNLOAD_URL" >> $GITHUB_ENV
+          else
+            mkdir -p $VST3SDK_INSTALL_PATH
+            cd $VST3SDK_INSTALL_PATH
+            echo "Downloading $VST3SDK_DOWNLOAD_URL"
+            curl -L $VST3SDK_DOWNLOAD_URL -o vst3sdk.$VST3SDK_DOWNLOAD_EXT
+            if [[ "${{ runner.os }}" == 'Windows' ]]; then
+              unzip vst3sdk.$VST3SDK_DOWNLOAD_EXT
+            else
+              tar -xzf vst3sdk.$VST3SDK_DOWNLOAD_EXT
+            fi
+            echo "VST3SDK_INSTALL_PATH=$VST3SDK_INSTALL_PATH/vst3sdk" >> $GITHUB_ENV
+            rm vst3sdk.$VST3SDK_DOWNLOAD_EXT
           fi
       - name: Set up QEMU dependency
         if: matrix.build-system == 'docker' && needs.check-secrets.outputs.should_run == 'false'
@@ -482,37 +540,55 @@ jobs:
           else
             ./build $CONFIG_STRING
           fi
-      - name: build JackTrip with Meson
+      - name: prepare meson config
         if: matrix.build-system == 'meson' || matrix.build-system == 'docker'
         shell: bash
         run: |
-          CONFIG_STRING="-Ddefault_library=${{ matrix.meson-library-type }}"
           if [[ "${{ matrix.system-rtaudio }}" == true ]] || [[ "${{ matrix.bundled-rtaudio }}" == true ]]; then 
-            CONFIG_STRING="-Drtaudio=enabled $CONFIG_STRING"
+            MESON_CONFIG="-Drtaudio=enabled $MESON_CONFIG"
           fi
           if [[ "${{ matrix.bundled-rtaudio }}" == true ]]; then 
-            CONFIG_STRING="-Drtaudio:jack=disabled -Drtaudio:default_library=static $CONFIG_STRING"
+            MESON_CONFIG="-Drtaudio:jack=disabled -Drtaudio:default_library=static $MESON_CONFIG"
             if [[ "${{ runner.os }}" == 'Windows' ]]; then 
-              CONFIG_STRING="-Drtaudio:wasapi=enabled $CONFIG_STRING"
+              MESON_CONFIG="-Drtaudio:wasapi=enabled $MESON_CONFIG"
               # ASIO builds require Steinberg license; disable it if not CLI or signed builds from JackTrip Labs
               if [[ "${{ matrix.nogui }}" == true ]] || [[ "${{ needs.check-secrets.outputs.should_run }}" == "true" ]]; then
-                CONFIG_STRING="-Drtaudio:asio=enabled $CONFIG_STRING"
+                MESON_CONFIG="-Drtaudio:asio=enabled $MESON_CONFIG"
               else
-                CONFIG_STRING="-Drtaudio:asio=disabled $CONFIG_STRING"
+                MESON_CONFIG="-Drtaudio:asio=disabled $MESON_CONFIG"
               fi
             elif [[ "${{ runner.os }}" == 'Linux' ]]; then
-              CONFIG_STRING="-Drtaudio:alsa=enabled -Drtaudio:werror=false $CONFIG_STRING"
+              MESON_CONFIG="-Drtaudio:alsa=enabled -Drtaudio:werror=false $MESON_CONFIG"
               if [[ "${{ matrix.meson-library-type }}" == "static" ]]; then
                 # PulseAudio is SLOW and brings in a lot of extra deps, so exclude it from static builds
-                CONFIG_STRING="-Drtaudio:pulse=disabled $CONFIG_STRING"
+                MESON_CONFIG="-Drtaudio:pulse=disabled $MESON_CONFIG"
               else
-                CONFIG_STRING="-Drtaudio:pulse=enabled $CONFIG_STRING"
+                MESON_CONFIG="-Drtaudio:pulse=enabled $MESON_CONFIG"
               fi
             fi
           fi
           if [[ "${{ matrix.nojack }}" == true ]]; then 
-            CONFIG_STRING="-Djack=disabled $CONFIG_STRING"
+            MESON_CONFIG="-Djack=disabled $MESON_CONFIG"
           fi
+          if [[ "${{ matrix.weakjack }}" == true ]]; then
+            MESON_CONFIG="-Dweakjack=true $MESON_CONFIG"
+          fi
+          if [[ -n "${{ matrix.macosx-architectures }}" ]]; then
+            # TODO: for now, just assume that we want universal if it is not empty
+            if [[ -n "${{ matrix.macosx-deployment-target }}" ]]; then
+              MESON_CONFIG="--native-file macos/meson_native_universal_${{ matrix.macosx-deployment-target }}.ini $MESON_CONFIG"
+            else
+              MESON_CONFIG="--native-file macos/meson_native_universal.ini $MESON_CONFIG"
+            fi
+          elif [[ -n "${{ matrix.macosx-deployment-target }}" ]]; then
+            MESON_CONFIG="--native-file macos/meson_native_minversion_${{ matrix.macosx-deployment-target }}.ini $MESON_CONFIG"
+          fi
+          echo "MESON_CONFIG=$MESON_CONFIG" >> $GITHUB_ENV
+      - name: build JackTrip with Meson
+        if: matrix.build-system == 'meson' || matrix.build-system == 'docker'
+        shell: bash
+        run: |
+          CONFIG_STRING="-Ddefault_library=${{ matrix.meson-library-type }} $MESON_CONFIG"
           if [[ "${{ matrix.nogui }}" == true ]]; then 
             CONFIG_STRING="-Dnogui=true $CONFIG_STRING"
           elif [[ "${{ matrix.novs }}" == true ]]; then
@@ -527,39 +603,49 @@ jobs:
               CONFIG_STRING="-Dvsftux=true $CONFIG_STRING"
             fi
           fi
-          if [[ "${{ matrix.weakjack }}" == true ]]; then 
-            CONFIG_STRING="-Dweakjack=true $CONFIG_STRING"
-          fi
-          if [[ -n "${{ matrix.macosx-architectures }}" ]]; then
-            # TODO: for now, just assume that we want universal if it is not empty
-            if [[ -n "${{ matrix.macosx-deployment-target }}" ]]; then
-              CONFIG_STRING="--native-file macos/meson_native_universal_${{ matrix.macosx-deployment-target }}.ini $CONFIG_STRING"
-            else
-              CONFIG_STRING="--native-file macos/meson_native_universal.ini $CONFIG_STRING"
-            fi
-          elif [[ -n "${{ matrix.macosx-deployment-target }}" ]]; then
-            CONFIG_STRING="--native-file macos/meson_native_minversion_${{ matrix.macosx-deployment-target }}.ini $CONFIG_STRING"
+          if [[ -n "${{ matrix.vst3sdk-version }}" && "${{ matrix.build-system }}" != "docker" && "${{ runner.os }}" != 'Windows' ]]; then
+            CONFIG_STRING="-Dvst-sdkdir=$VST3SDK_INSTALL_PATH $CONFIG_STRING"
           fi
           if [[ "${{ runner.os }}" == 'Windows' && "${{ matrix.qt-type }}" == "static" ]]; then
             CONFIG_STRING="-Db_vscrt=mt $CONFIG_STRING"
           fi
-          echo "Meson config: ${CONFIG_STRING}"
           if [[ "${{ matrix.build-system }}" == "docker" ]]; then
             mkdir -p $BUILD_PATH
             if [[ "${{ matrix.docker-platform }}" == "linux/arm/v7" ]]; then
               # should be implied, but this is necessary for broken compiler on arm32
               CONFIG_STRING="-Dcpp_link_args='-no-pie' $CONFIG_STRING"
-            else
+            elif [[ -z "${{ matrix.vst3sdk-version }}" ]]; then
+              # vst3 sdk has a lot of header warnings
               CONFIG_STRING="-Dwerror=true $CONFIG_STRING"
             fi
+            echo "Meson config: ${CONFIG_STRING}"
             docker buildx build --target=artifact --progress=plain -f linux/Dockerfile.build --output type=local,dest=$BUILD_PATH \
               --platform "${{ matrix.docker-platform }}" --build-arg BUILD_CONTAINER="${{ matrix.docker-image }}" \
               --build-arg MESON_ARGS="$CONFIG_STRING" \
+              --build-arg VST3SDK_DOWNLOAD_URL="$VST3SDK_DOWNLOAD_URL" \
               --build-arg QT_DOWNLOAD_URL="$QT_DOWNLOAD_URL" .
           else
+            echo "Meson config: ${CONFIG_STRING}"
             meson setup --buildtype release $CONFIG_STRING $BUILD_PATH
             meson compile -C $BUILD_PATH -v
-          fi
+          fi  
+      - name: build VST3 Plugin (Windows)
+        if: runner.os == 'Windows' && matrix.build-system == 'meson' && matrix.vst3sdk-version != ''
+        shell: bash
+        run: |
+          # switch qt path to static
+          mv $QT_PATH $QT_PATH.bak
+          mv "c:\qt\qt-${{ matrix.qt-version }}-static.bak" "c:\qt\qt-${{ matrix.qt-version }}-static"
+          # reconfigure meson to build the VST plugin using static qt
+          CONFIG_STRING="-Dnogui=true -Ddefault_library=static -Dvst-sdkdir=$VST3SDK_INSTALL_PATH $MESON_CONFIG"
+          echo "Meson config: ${CONFIG_STRING}"
+          BUILD_STATIC="${{ github.workspace }}/buildstatic"
+          meson setup --buildtype release $CONFIG_STRING $BUILD_STATIC
+          meson compile -C $BUILD_STATIC -v
+          # move plugin to primary build path and restore qt path back to dynamic
+          mv "$BUILD_STATIC/JackTrip.vst3" $BUILD_PATH
+          mv $QT_PATH.bak $QT_PATH
+          mv "c:\qt\qt-${{ matrix.qt-version }}-static" "c:\qt\qt-${{ matrix.qt-version }}-static.bak"
       - name: validate desktop file
         if: runner.os == 'Linux' && !matrix.nogui
         shell: bash
@@ -625,6 +711,9 @@ jobs:
           if [[ -n ${{ matrix.bundle-path }} ]]; then
             mkdir -p $BUILD_PATH/${{ matrix.bundle-path }}
             zip --symlinks -r $BUILD_PATH/${{ matrix.bundle-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}$SIGNED-application.zip *.app
+            if [[ -n "${{ matrix.vst3sdk-version }}" ]]; then
+              zip -r $BUILD_PATH/${{ matrix.bundle-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}$SIGNED-application.zip *.vst3
+            fi
             cd $GITHUB_WORKSPACE # we need to be in the root project directory for adding licenses
             zip -r $BUILD_PATH/${{ matrix.bundle-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}$SIGNED-application.zip LICENSE.md LICENSES
           fi
@@ -659,6 +748,25 @@ jobs:
               strip $BINFILE
             fi
             zip -j $ZIPFILE $BINFILE
+            if [[ "${{ runner.os }}" == 'Linux' && -n "${{ matrix.vst3sdk-version }}" ]]; then
+              mkdir -p JackTrip.vst3/Contents/Resources
+              cp -f $GITHUB_WORKSPACE/LICENSE.md "JackTrip.vst3/Contents/Resources/"
+              cp -Rf $GITHUB_WORKSPACE/LICENSES "JackTrip.vst3/Contents/Resources/"
+              cp $GITHUB_WORKSPACE/src/vst3/resources/* "JackTrip.vst3/Contents/Resources/"
+              VERSION=$(cat $GITHUB_WORKSPACE/src/jacktrip_globals.h |grep gVersion |sed 's,.*"\(.*\)".*,\1,')
+              sed -i "s/%VERSION%/$VERSION/" "JackTrip.vst3/Contents/Resources/moduleinfo.json"
+              if [[ "${{ matrix.vst3sdk-arch }}" == "amd64" ]]; then
+                VST3BINPATH="JackTrip.vst3/Contents/x86_64-linux"
+              else
+                VST3BINPATH="JackTrip.vst3/Contents/aarch64-linux"
+              fi
+              mkdir -p $VST3BINPATH
+              cp $BUILD_PATH/JackTrip.vst3 $VST3BINPATH/JackTrip.so
+              if [[ "${{ matrix.build-system }}" != "docker" ]]; then
+                strip $VST3BINPATH/JackTrip.so
+              fi
+              zip -r $ZIPFILE JackTrip.vst3
+            fi
             if [[ "${{ matrix.name }}" == "Linux-x64-docker-shared" || "${{ matrix.name }}" == "Linux-arm64-docker-shared" ]]; then
               cp $GITHUB_WORKSPACE/linux/icons/jacktrip.svg $BUILD_PATH/org.jacktrip.JackTrip.svg
               cp $GITHUB_WORKSPACE/linux/icons/jacktrip_48x48.png $BUILD_PATH/org.jacktrip.JackTrip.png
