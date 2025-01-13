@@ -176,6 +176,57 @@ tresult PLUGIN_API JackTripVSTProcessor::disconnect(Vst::IConnectionPoint* other
 }
 
 //------------------------------------------------------------------------
+tresult PLUGIN_API JackTripVSTProcessor::setBusArrangements(Vst::SpeakerArrangement* inputs,
+                                                            int32 numIns,
+                                                            Vst::SpeakerArrangement* outputs,
+                                                            int32 numOuts)
+{
+    // based on again example from sdk (support 1->1 or 2->2)
+    if (numIns == 1 && numOuts == 1) {
+        // the host wants Mono => Mono (or 1 channel -> 1 channel)
+        if (Vst::SpeakerArr::getChannelCount(inputs[0]) == 1 &&
+            Vst::SpeakerArr::getChannelCount(outputs[0]) == 1) {
+            auto* bus = FCast<Steinberg::Vst::AudioBus>(audioInputs.at(0));
+            if (bus) {
+                // check if we are Mono => Mono, if not we need to recreate the busses
+                if (bus->getArrangement() != inputs[0]) {
+                    getAudioInput(0)->setArrangement(inputs[0]);
+                    getAudioInput(0)->setName(STR16("Mono In"));
+                    getAudioOutput(0)->setArrangement(outputs[0]);
+                    getAudioOutput(0)->setName(STR16("Mono Out"));
+                }
+                return kResultOk;
+            }
+        } else {
+            // the host wants something else than Mono => Mono,
+            // in this case we are always Stereo => Stereo
+            auto* bus = FCast<Steinberg::Vst::AudioBus>(audioInputs.at(0));
+            if (bus) {
+                tresult result = kResultFalse;
+                // the host wants 2->2 (could be LsRs -> LsRs)
+                if (Vst::SpeakerArr::getChannelCount(inputs[0]) == 2 &&
+                    Vst::SpeakerArr::getChannelCount(outputs[0]) == 2) {
+                    getAudioInput(0)->setArrangement(inputs[0]);
+                    getAudioInput(0)->setName(STR16("Stereo In"));
+                    getAudioOutput(0)->setArrangement(outputs[0]);
+                    getAudioOutput(0)->setName(STR16("Stereo Out"));
+                    result = kResultTrue;
+                } else if (bus->getArrangement() != Vst::SpeakerArr::kStereo) {
+                    // the host want something different than 1->1 or 2->2 : in this case we want stereo
+                    getAudioInput(0)->setArrangement(Vst::SpeakerArr::kStereo);
+                    getAudioInput(0)->setName(STR16("Stereo In"));
+                    getAudioOutput(0)->setArrangement(Vst::SpeakerArr::kStereo);
+                    getAudioOutput(0)->setName(STR16("Stereo Out"));
+                    result = kResultFalse;
+                }
+                return result;
+            }
+        }
+    }
+    return kResultFalse;
+}
+
+//------------------------------------------------------------------------
 tresult PLUGIN_API JackTripVSTProcessor::setActive(TBool state)
 {
     if (state) {

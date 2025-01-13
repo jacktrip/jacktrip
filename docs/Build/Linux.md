@@ -235,14 +235,15 @@ You may need a few extra development libraries to build the VST3 SDK:
 
 On Fedora:
 ```
-sudo dnf install -y freetype-devel pango-devel xcb-util-devel xcb-util-cursor-devel xcb-util-keysyms-devel libxkbcommon-x11-devel gtkmm3.0-devel libsqlite3x-devel
+sudo dnf install -y expat-devel freetype-devel pango-devel xcb-util-devel xcb-util-cursor-devel xcb-util-keysyms-devel libxkbcommon-x11-devel gtkmm3.0-devel libsqlite3x-devel
 ```
 
 On Ubuntu and Debian/Raspbian:
 ```
-sudo apt install -y libxcb-util-dev libxcb-cursor-dev libxcb-keysyms1-dev libxcb-xkb-dev libxkbcommon-dev libxkbcommon-x11-dev libgtkmm-3.0-dev libsqlite3-dev
+sudo apt install -y libexpat-dev libxml2-dev libxcb-util-dev libxcb-cursor-dev libxcb-keysyms1-dev libxcb-xkb-dev libxkbcommon-dev libxkbcommon-x11-dev libgtkmm-3.0-dev libsqlite3-dev
 ```
 
+To build and install the VST3 SDK:
 ```
 git clone --recursive https://github.com/steinbergmedia/vst3sdk
 mkdir vst3sdk/build
@@ -253,21 +254,6 @@ sudo mkdir -p /opt/vst3sdk
 sudo cp -r lib/Release /opt/vst3sdk/lib
 sudo cp -r bin/Release /opt/vst3sdk/bin
 sudo cp -r ../base ../pluginterfaces ../public.sdk ../vstgui4 /opt/vst3sdk
-```
-
-VST plugins are not allowed to have any shared library dependencies. If you
-are using a shared/dynamic version of the Qt libraries to build JackTrip,
-you may need to copy over a few static versions for a few of these so that
-the linker can find them:
-
-```
-sudo cp /opt/qt-6.5.3-static/lib/libQt6Core.a /opt/vst3sdk/lib
-sudo cp /opt/qt-6.5.3-static/lib/libQt6Network.a /opt/vst3sdk/lib
-sudo cp /opt/qt-6.5.3-static/lib/libQt6BundledPcre2.a /opt/vst3sdk/lib
-sudo cp /opt/qt-6.5.3-static/lib/libQt6BundledZLIB.a /opt/vst3sdk/lib
-sudo cp /opt/qt-6.5.3-static/lib/libssl.a /opt/vst3sdk/lib
-sudo cp /opt/qt-6.5.3-static/lib/libcrypto.a /opt/vst3sdk/lib
-sudo cp /opt/qt-6.5.3-static/plugins/tls/libqopensslbackend.a /opt/vst3sdk/lib
 ```
 
 When you run `meson setup` use `-Dvst-sdkdir=/path/to/vst3sdk`

@@ -270,6 +270,9 @@ else
 	endif
 endif
 
+static_deps = []
+static_src = []
+static_link_args = []
 if get_option('default_library') == 'static'
 	# use qmake to get paths for qt libraries and plugins
 	# seems like qt module should have a method for this, but it doesn't
@@ -277,45 +280,48 @@ if get_option('default_library') == 'static'
 	qt_plugindir = run_command(qmake, '-query', 'QT_INSTALL_PLUGINS', check : true).stdout().strip()
 	if qt_version == '6'
 		# qt6 requires "Bundled*" modules for linking
-		deps += dependency('qt6', modules: ['DBus', 'BundledLibpng', 'BundledPcre2', 'BundledHarfbuzz', 'BundledZLIB'], include_type: 'system')
+		static_deps += dependency('qt6', modules: ['DBus', 'BundledLibpng', 'BundledPcre2', 'BundledHarfbuzz', 'BundledZLIB'], include_type: 'system')
 	else
-		deps += compiler.find_library('qtpcre2', required : true, dirs : [qt_libdir])
+		static_deps += compiler.find_library('qtpcre2', required : true, dirs : [qt_libdir])
 	endif
 	if (host_machine.system() == 'linux')
 		# linux static
-		deps += compiler.find_library('ssl', required : true, dirs : [qt_libdir])
-		deps += compiler.find_library('crypto', required : true, dirs : [qt_libdir])
-		deps += compiler.find_library('dl', required : true)
-		deps += compiler.find_library('glib-2.0', required : true)
+		static_deps += compiler.find_library('ssl', required : true, dirs : [qt_libdir])
+		static_deps += compiler.find_library('crypto', required : true, dirs : [qt_libdir])
+		static_deps += compiler.find_library('dl', required : true)
+		static_deps += compiler.find_library('glib-2.0', required : true)
 		if qt_version == '6'
 			# we need a Q_IMPORT_LIBRARY for the openssl backend on linux
-			deps += compiler.find_library('dbus-1', required : true)
-			deps += compiler.find_library('qopensslbackend', required : true, dirs : [qt_plugindir+'/tls'])
-			src += ['src/QtStaticPlugins.cpp']
+			static_deps += compiler.find_library('dbus-1', required : true)
+			static_deps += compiler.find_library('qopensslbackend', required : true, dirs : [qt_plugindir+'/tls'])
+			static_src += ['src/QtStaticPlugins.cpp']
 		endif
 	else
 		if (host_machine.system() == 'windows')
 			# windows static
-			deps += compiler.find_library('bcrypt', required : true)
-			deps += compiler.find_library('winmm', required : true)
-			deps += compiler.find_library('Crypt32', required : true)
+			static_deps += compiler.find_library('bcrypt', required : true)
+			static_deps += compiler.find_library('winmm', required : true)
+			static_deps += compiler.find_library('Crypt32', required : true)
 			if qt_version == '6'
-				deps += compiler.find_library('Authz', required : true)
+				static_deps += compiler.find_library('Authz', required : true)
 			endif
 		else
 			# mac static
 			# this approach fails for universal builds, so we have to just append to link_args
-			#deps += dependency('CoreServices', required : true)
-			link_args += ['-framework', 'CoreServices']
-			link_args += ['-framework', 'CFNetwork']
-			link_args += ['-framework', 'AppKit']
-			link_args += ['-framework', 'IOKit']
-			link_args += ['-framework', 'Security']
-			link_args += ['-framework', 'GSS']
-			link_args += ['-framework', 'SystemConfiguration']
-			deps += dependency('zlib', required : true)
+			#static_deps += dependency('CoreServices', required : true)
+			static_link_args += ['-framework', 'CoreServices']
+			static_link_args += ['-framework', 'CFNetwork']
+			static_link_args += ['-framework', 'AppKit']
+			static_link_args += ['-framework', 'IOKit']
+			static_link_args += ['-framework', 'Security']
+			static_link_args += ['-framework', 'GSS']
+			static_link_args += ['-framework', 'SystemConfiguration']
+			static_deps += dependency('zlib', required : true)
 		endif
 	endif
+	deps += static_deps
+	src += static_src
+	link_args += static_link_args
 endif
 
 # QT_OPENSOURCE should only be defined for open source Qt distribution
@@ -399,9 +405,18 @@ if vst_sdkdir != ''
 	vst_link_args = []
 	if (host_machine.system() == 'linux')
 		vst_sources += '@0@/main/linuxmain.cpp'.format(vst_includedir)
+		vst_deps += static_deps
+		vst_sources += static_src
+		vst_link_args += static_link_args
 		vst_deps += compiler.find_library('xcb-util', required : true)
 		vst_deps += compiler.find_library('xcb-cursor', required : true)
 		vst_deps += compiler.find_library('xkbcommon-x11', required : true)
+		vst_deps += compiler.find_library('xml2', required : true)
+		vst_deps += compiler.find_library('cairo', required : true)
+		vst_deps += compiler.find_library('pango-1.0', required : true)
+		vst_deps += compiler.find_library('pangocairo-1.0', required : true)
+		vst_deps += compiler.find_library('expat', required : true)
+		vst_deps += compiler.find_library('fontconfig', required : true)
 	elif (host_machine.system() == 'darwin')
 		vst_sources += '@0@/main/macmain.cpp'.format(vst_includedir)
 		vst_link_args += ['-framework', 'CoreServices']
