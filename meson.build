@@ -437,6 +437,9 @@ if vst_sdkdir != ''
 		endif
 	elif (host_machine.system() == 'windows')
 		vst_sources += '@0@/main/dllmain.cpp'.format(vst_includedir)
+		vst_deps += static_deps
+		vst_sources += static_src
+		vst_link_args += static_link_args
 		vst_deps += compiler.find_library('bcrypt', required : true)
 		vst_deps += compiler.find_library('winmm', required : true)
 		vst_deps += compiler.find_library('Crypt32', required : true)
@@ -451,16 +454,6 @@ if vst_sdkdir != ''
 		vst_link_args += 'Winhttp.lib'
 		vst_link_args += 'Dnsapi.lib'
 		vst_link_args += 'Iphlpapi.lib'
-		if (qt_version == '5')
-			vst_link_args += '@0@/Qt5Core.lib'.format(vst_libdir)
-			vst_link_args += '@0@/Qt5Network.lib'.format(vst_libdir)
-		else
-			vst_link_args += '@0@/Qt6Core.lib'.format(vst_libdir)
-			vst_link_args += '@0@/Qt6Network.lib'.format(vst_libdir)
-			vst_link_args += '@0@/Qt6BundledPcre2.lib'.format(vst_libdir)
-			vst_link_args += '@0@/Qt6BundledZLIB.lib'.format(vst_libdir)
-			vst_deps += compiler.find_library('Authz', required : true)
-		endif
 	else
 		error('Unsupported platform: ' + host_machine.system())
 	endif
