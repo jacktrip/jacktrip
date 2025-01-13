@@ -210,6 +210,7 @@ class AudioSocketWorker : public QObject
     QSharedPointer<QLocalSocket> mSocketPtr;
     QByteArray mSendBuffer;
     QByteArray mRecvBuffer;
+    QByteArray mPopBuffer;
     int mLocalBytesPerPacket  = 0;
     int mRemoteBytesPerPacket = 0;
     int mRecvBytes            = 0;

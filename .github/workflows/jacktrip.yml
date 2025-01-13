@@ -629,22 +629,21 @@ jobs:
             meson setup --buildtype release $CONFIG_STRING $BUILD_PATH
             meson compile -C $BUILD_PATH -v
           fi  
-      - name: build JackTrip VST3 Plugin (Windows)
+      - name: build VST3 Plugin (Windows)
         if: runner.os == 'Windows' && matrix.build-system == 'meson' && matrix.vst3sdk-version != ''
         shell: bash
         run: |
-          # backup shared binary and switch qt path
-          mv builddir/jacktrip.exe .
-          rm -rf builddir
+          # switch qt path to static
           mv $QT_PATH $QT_PATH.bak
           mv "c:\qt\qt-${{ matrix.qt-version }}-static.bak" "c:\qt\qt-${{ matrix.qt-version }}-static"
           # reconfigure meson to build the VST plugin using static qt
           CONFIG_STRING="-Dnogui=true -Ddefault_library=static -Dvst-sdkdir=$VST3SDK_INSTALL_PATH $MESON_CONFIG"
           echo "Meson config: ${CONFIG_STRING}"
-          meson setup --buildtype release $CONFIG_STRING $BUILD_PATH
-          meson compile -C $BUILD_PATH -v
-          # restore shared binary and path
-          mv jacktrip.exe builddir
+          BUILD_STATIC="${{ github.workspace }}/buildstatic"
+          meson setup --buildtype release $CONFIG_STRING $BUILD_STATIC
+          meson compile -C $BUILD_STATIC -v
+          # move plugin to primary build path and restore qt path back to dynamic
+          mv "$BUILD_STATIC/JackTrip.vst3" $BUILD_PATH
           mv $QT_PATH.bak $QT_PATH
           mv "c:\qt\qt-${{ matrix.qt-version }}-static" "c:\qt\qt-${{ matrix.qt-version }}-static.bak"
       - name: validate desktop file

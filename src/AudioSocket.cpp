@@ -261,7 +261,7 @@ void FromAudioSocketPlugin::compute(int nframes, [[maybe_unused]] float** inputs
     }
 
     // update receive queue stats
-    int remainingPackets = mReceiveQueue.size();
+    int remainingPackets = static_cast<int>(mReceiveQueue.size());
     if (remainingPackets < mMinQueuePackets) {
         mMinQueuePackets = remainingPackets;
     }
@@ -349,6 +349,8 @@ AudioSocketWorker::AudioSocketWorker(AudioSocketQueueT& sendQueue,
                        * sizeof(float));
     mRecvBuffer.resize(AudioSocketMaxSamplesPerBlock * AudioSocketNumChannels
                        * sizeof(float));
+    mPopBuffer.resize(AudioSocketMaxSamplesPerBlock * AudioSocketNumChannels
+                      * sizeof(float));
 }
 
 //*******************************************************************************
@@ -482,8 +484,10 @@ void AudioSocketWorker::sendAudio()
     }
 
     // send local audio packets to remote
-    int8_t* sendPtr = reinterpret_cast<int8_t*>(mSendBuffer.data());
-    while (mSendQueue.pop(sendPtr)) {
+    // TODO: why is this extra copy? audacity crashes on windows without it
+    int8_t* popPtr = reinterpret_cast<int8_t*>(mPopBuffer.data());
+    while (mSendQueue.pop(popPtr)) {
+        memcpy(mSendBuffer.data(), mPopBuffer.data(), mLocalBytesPerPacket);
         mSocketPtr->write(mSendBuffer);
     }
     mSocketPtr->waitForBytesWritten(-1);

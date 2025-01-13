@@ -281,6 +281,10 @@ tresult PLUGIN_API JackTripVSTProcessor::setProcessing(TBool state)
 //------------------------------------------------------------------------
 tresult PLUGIN_API JackTripVSTProcessor::process(Vst::ProcessData& data)
 {
+    // sanity check; should never happen
+    if (mSocketPtr.isNull())
+        return kResultFalse;
+
     //--- Read inputs parameter changes-----------
     if (data.inputParameterChanges) {
         int32 numParamsChanged = data.inputParameterChanges->getParameterCount();
@@ -444,7 +448,7 @@ tresult PLUGIN_API JackTripVSTProcessor::process(Vst::ProcessData& data)
             }
         }
         if (silent) {
-            data.outputs[0].silenceFlags |= 1 << i;
+            data.outputs[0].silenceFlags |= static_cast<Steinberg::uint64>(1) << i;
         }
     }
 
