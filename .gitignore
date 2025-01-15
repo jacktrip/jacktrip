@@ -35,3 +35,4 @@ subprojects/packagecache/
 subprojects/rtaudio-5.*/
 subprojects/rtaudio-6.*/
 subprojects/wingetopt/
+subprojects/libsamplerate-0.*/

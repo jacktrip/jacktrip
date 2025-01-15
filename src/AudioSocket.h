@@ -48,6 +48,10 @@
 #include "ProcessPlugin.h"
 #include "WaitFreeFrameBuffer.h"
 
+#ifdef HAVE_LIBSAMPLERATE
+#include "samplerate.h"
+#endif
+
 // assume stereo audio for this implementation
 constexpr int AudioSocketNumChannels = 2;
 
@@ -207,6 +211,14 @@ class AudioSocketWorker : public QObject
     QByteArray mRecvBuffer;
     QByteArray mPopBuffer;
     bool mRetryConnection     = false;
+    int mLocalSampleRate      = 0;
+    int mRemoteSampleRate     = 0;
+#ifdef HAVE_LIBSAMPLERATE
+    SRC_DATA mSrcData;
+    SRC_STATE* mSrcStatePtr   = nullptr;
+    float *mSrcInDataPtr      = nullptr;
+    int mSrcInSamples         = 0;
+#endif
 };
 
 /** \brief An AudioSocket is used to exchange audio with another processes via a local

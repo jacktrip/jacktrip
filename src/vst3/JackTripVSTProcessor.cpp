@@ -39,14 +39,47 @@
 #include "base/source/fstreamer.h"
 #include "pluginterfaces/vst/ivstparameterchanges.h"
 
-#ifdef JACKTRIP_VST_LOG
-#include <filesystem>
-#define JACKTRIP_VST_LOG_PATH "/tmp/jacktrip"
-#define JACKTRIP_VST_LOG_FILE "/tmp/jacktrip/vst.log"
-#endif
-
 using namespace std;
 using namespace Steinberg;
+
+// uncomment to generate log file, for debugging purposes
+// #define JACKTRIP_VST_LOG
+
+#ifdef JACKTRIP_VST_LOG
+#define JACKTRIP_VST_LOG_PATH "/tmp/jacktrip"
+#define JACKTRIP_VST_LOG_FILE "/tmp/jacktrip/vst.log"
+#include <filesystem>
+#include <fstream>
+#include <iostream>
+
+static ofstream kLogFile;
+
+void qtMessageHandler([[maybe_unused]] QtMsgType type,
+                      [[maybe_unused]] const QMessageLogContext& context,
+                      const QString& msg)
+{
+    kLogFile << msg.toStdString() << endl;
+}
+
+void initializeLog()
+{
+    if (!filesystem::is_directory(JACKTRIP_VST_LOG_PATH)) {
+        if (!filesystem::create_directory(JACKTRIP_VST_LOG_PATH)) {
+            qDebug() << "Failed to create VST log directory: " << JACKTRIP_VST_LOG_PATH;
+        }
+    }
+    kLogFile.open(JACKTRIP_VST_LOG_FILE, ios::app);
+    if (kLogFile.is_open()) {
+        kLogFile << "JackTrip VST initialized" << endl;
+        kLogFile.flush();
+        cout.rdbuf(kLogFile.rdbuf());
+        cerr.rdbuf(kLogFile.rdbuf());
+    } else {
+        qDebug() << "Failed to open VST log file: " << JACKTRIP_VST_LOG_FILE;
+    }
+    qInstallMessageHandler(qtMessageHandler);
+}
+#endif
 
 // any multiplier less than this is considered to be silent
 constexpr double kSilentMul = 0.0000001;
@@ -106,18 +139,8 @@ tresult PLUGIN_API JackTripVSTProcessor::initialize(FUnknown* context)
     }
 
 #ifdef JACKTRIP_VST_LOG
-    if (!filesystem::is_directory(JACKTRIP_VST_LOG_PATH)) {
-        if (!filesystem::create_directory(JACKTRIP_VST_LOG_PATH)) {
-            qDebug() << "Failed to create VST log directory: " << JACKTRIP_VST_LOG_PATH;
-        }
-    }
-    mLogFile.open(JACKTRIP_VST_LOG_FILE, ios::app);
-    if (mLogFile.is_open()) {
-        mLogFile << "JackTrip VST initialized" << endl;
-        mLogFile.flush();
-    } else {
-        qDebug() << "Failed to open VST log file: " << JACKTRIP_VST_LOG_FILE;
-    }
+    initializeLog();
+    qDebug() << "JackTrip VST initialized";
 #endif
 
     return kResultOk;
@@ -136,10 +159,8 @@ tresult PLUGIN_API JackTripVSTProcessor::terminate()
     delete[] mOutputBuffer;
 
 #ifdef JACKTRIP_VST_LOG
-    if (mLogFile.is_open()) {
-        mLogFile << "JackTrip VST terminated" << endl;
-        mLogFile.close();
-    }
+    qDebug() << "JackTrip VST terminated";
+    kLogFile.close();
 #endif
 
     //---do not forget to call parent ------
@@ -256,10 +277,7 @@ tresult PLUGIN_API JackTripVSTProcessor::setActive(TBool state)
     }
 
 #ifdef JACKTRIP_VST_LOG
-    if (mLogFile.is_open()) {
-        mLogFile << "JackTrip VST setActive(" << int(state) << ")" << endl;
-        mLogFile.flush();
-    }
+    qDebug() << "JackTrip VST setActive(" << int(state) << ")";
 #endif
 
     //--- called when the Plug-in is enable/disable (On/Off) -----
@@ -270,10 +288,7 @@ tresult PLUGIN_API JackTripVSTProcessor::setActive(TBool state)
 tresult PLUGIN_API JackTripVSTProcessor::setProcessing(TBool state)
 {
 #ifdef JACKTRIP_VST_LOG
-    if (mLogFile.is_open()) {
-        mLogFile << "JackTrip VST setProcessing(" << int(state) << ")" << endl;
-        mLogFile.flush();
-    }
+    qDebug() << "JackTrip VST setProcessing(" << int(state) << ")";
 #endif
     return AudioEffect::setProcessing(state);
 }
@@ -500,11 +515,8 @@ tresult PLUGIN_API JackTripVSTProcessor::setupProcessing(Vst::ProcessSetup& newS
     mBufferSize = static_cast<int>(newSetup.maxSamplesPerBlock);
 
 #ifdef JACKTRIP_VST_LOG
-    if (mLogFile.is_open()) {
-        mLogFile << "JackTrip VST setupProcessing: mSampleRate=" << mSampleRate
-                 << ", mbufferSize=" << mBufferSize << endl;
-        mLogFile.flush();
-    }
+    qDebug() << "JackTrip VST setupProcessing: mSampleRate=" << mSampleRate
+             << ", mbufferSize=" << mBufferSize;
 #endif
 
     //--- called before any processing ----

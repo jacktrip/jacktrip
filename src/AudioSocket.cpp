@@ -347,7 +347,15 @@ AudioSocketWorker::AudioSocketWorker(AudioSocketQueueT& sendQueue,
 }
 
 //*******************************************************************************
-AudioSocketWorker::~AudioSocketWorker() {}
+AudioSocketWorker::~AudioSocketWorker()
+{
+#ifdef HAVE_LIBSAMPLERATE
+    if (mSrcStatePtr != nullptr) {
+        src_delete(mSrcStatePtr);
+    }
+    delete[] mSrcInDataPtr;
+#endif
+}
 
 //****************************************************************************
 void AudioSocketWorker::start()
@@ -393,6 +401,8 @@ void AudioSocketWorker::close()
 //*******************************************************************************
 void AudioSocketWorker::sendAudioHeader(uint32_t sampleRate, uint16_t bufferSize)
 {
+    mLocalSampleRate = sampleRate;
+
     // send audio socket header
     QByteArray headerBuffer;
     headerBuffer.resize(AudioSocketHeaderSize);
@@ -450,9 +460,44 @@ void AudioSocketWorker::readAudioHeader()
     cout << "Received audio socket header: sample rate = " << headSampleRate
          << ", buffer size = " << headBufferSize << endl;
 
+    mRemoteSampleRate = headSampleRate;
+
+#ifdef HAVE_LIBSAMPLERATE
+    if (mRemoteSampleRate != mLocalSampleRate) {
+        if (mSrcStatePtr == nullptr) {
+            int srcErr;
+            mSrcStatePtr = src_new(SRC_SINC_BEST_QUALITY, 2, &srcErr);
+            if (mSrcStatePtr == nullptr) {
+                cerr << "Failed to prepare sample rate converter: "
+                     << src_strerror(srcErr) << endl;
+                mSocketPtr->close();
+                return;
+            }
+            if (mSrcInDataPtr == nullptr) {
+                mSrcInDataPtr  = new float[AudioSocketMaxSamplesPerBlock
+                    * AudioSocketNumChannels * BytesPerSample];
+            }
+            mSrcData.data_in = mSrcInDataPtr;
+            mSrcData.data_out = reinterpret_cast<float*>(mRecvBuffer.data() + BytesPerSample);
+            mSrcData.output_frames = AudioSocketMaxSamplesPerBlock;
+            mSrcData.end_of_input = 0;
+            mSrcData.src_ratio = static_cast<double>(mLocalSampleRate) / mRemoteSampleRate;
+            mSrcInSamples  = 0;
+        } else {
+            src_reset(mSrcStatePtr);
+        }
+    }
+#else
+    if (mRemoteSampleRate != mLocalSampleRate) {
+        cerr << "Audio socket sample rate conversion not supported: "
+             << mRemoteSampleRate << " != " << mLocalSampleRate << endl;
+        mSocketPtr->close();
+        return;
+    }
+#endif
+
     QObject::connect(mSocketPtr.data(), &QLocalSocket::readyRead, this,
                      &AudioSocketWorker::receiveAudio, Qt::QueuedConnection);
-
     emit signalRemoteIsReady();
 }
 
@@ -493,11 +538,45 @@ void AudioSocketWorker::receiveAudio()
             bytesToRead = mRecvBuffer.size() - BytesPerSample;
         if (bytesToRead % BytesForFullSample > 0)
             bytesToRead -= (bytesToRead % BytesForFullSample);
+        int newSamples = bytesToRead / BytesForFullSample;;
+
+#ifdef HAVE_LIBSAMPLERATE
+        if (mRemoteSampleRate == mLocalSampleRate) {
+            mSocketPtr->read(mRecvBuffer.data() + BytesPerSample, bytesToRead);
+        } else {
+            // convert remote to local sample rate
+            mSrcData.input_frames = newSamples + mSrcInSamples;
+            mSocketPtr->read(reinterpret_cast<char*>(mSrcInDataPtr)
+                + (mSrcInSamples * BytesForFullSample), bytesToRead);
+            int srcErr = src_process(mSrcStatePtr, &mSrcData);
+            if (srcErr != 0) {
+                cerr << "Sample rate conversion failure: "
+                     << src_strerror(srcErr) << endl;
+                mSocketPtr->close();
+                return;
+            }
+            mSrcInSamples = mSrcData.input_frames - mSrcData.input_frames_used;
+            if (mSrcInSamples > 0) {
+                // save remaining input frames for later
+                if (mSrcData.input_frames_used > 0) {
+                    // shift samples in memory buffer
+                    char* nextFramePtr = reinterpret_cast<char*>(mSrcInDataPtr)
+                        + (mSrcData.input_frames_used * BytesForFullSample);
+                    memmove(mSrcInDataPtr, nextFramePtr, mSrcInSamples
+                        * BytesForFullSample);
+                }
+            }
+            newSamples = mSrcData.output_frames_gen;
+            if (newSamples == 0)
+                continue;
+        }
+#else
+        mSocketPtr->read(mRecvBuffer.data() + BytesPerSample, bytesToRead);
+#endif
+
         // first value represents number of samples
         float* framePtr = reinterpret_cast<float*>(mRecvBuffer.data());
-        *framePtr = bytesToRead / BytesForFullSample;
-        mSocketPtr->read(mRecvBuffer.data() + BytesPerSample, bytesToRead);
-        // TODO: sample rate conversion
+        *framePtr = newSamples;
         mReceiveQueue.push(reinterpret_cast<int8_t*>(mRecvBuffer.data()));
     }
 }

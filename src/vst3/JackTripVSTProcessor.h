@@ -40,13 +40,6 @@
 #include "public.sdk/source/vst/utility/dataexchange.h"
 #include "public.sdk/source/vst/vstaudioeffect.h"
 
-// uncomment to generate log file, for debugging purposes
-// #define JACKTRIP_VST_LOG
-
-#ifdef JACKTRIP_VST_LOG
-#include <fstream>
-#endif
-
 class AudioSocket;
 
 //------------------------------------------------------------------------
@@ -132,7 +125,4 @@ class JackTripVSTProcessor : public Steinberg::Vst::AudioEffect
     float** mOutputBuffer;
     Steinberg::Vst::SampleRate mSampleRate = 0;
     int mBufferSize                        = 0;
-#ifdef JACKTRIP_VST_LOG
-    std::ofstream mLogFile;
-#endif
 };
