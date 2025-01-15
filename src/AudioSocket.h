@@ -86,7 +86,7 @@ class ToAudioSocketPlugin : public ProcessPlugin
     void signalSendAudio();
 
    public slots:
-    void gotAudioHeader(int samplingRate, int bufferSize);
+    void remoteIsReady();
     void gotConnection();
     void lostConnection();
 
@@ -95,9 +95,6 @@ class ToAudioSocketPlugin : public ProcessPlugin
     AudioSocketQueueT& mReceiveQueue;
     QByteArray mSendBuffer;
     int mNumChannels      = AudioSocketNumChannels;
-    int mBytesPerChannel  = 0;
-    int mBytesPerPacket   = 0;
-    int mSamplesToSend    = 0;
     bool mSentAudioHeader = false;
     bool mRemoteIsReady   = false;
     bool mIsConnected     = false;
@@ -124,11 +121,12 @@ class FromAudioSocketPlugin : public ProcessPlugin
     void setPassthrough(bool b) { mPassthrough = b; }
 
    public slots:
-    void gotAudioHeader(int samplingRate, int bufferSize);
+    void remoteIsReady();
     void gotConnection();
     void lostConnection();
 
    protected:
+    void updateQueueStats(int nframes);
     void resetQueueStats();
 
    private:
@@ -137,9 +135,6 @@ class FromAudioSocketPlugin : public ProcessPlugin
     QByteArray mRecvBuffer;
     float** mExtraSamples      = nullptr;
     int mNumChannels           = AudioSocketNumChannels;
-    int mRemoteSampleRate      = 0;
-    int mRemoteBufferSize      = 0;
-    int mRemoteBytesPerChannel = 0;
     int mNextExtraSample       = 0;
     int mLastExtraSample       = 0;
     int mMinQueuePackets       = 0;
@@ -174,7 +169,7 @@ class AudioSocketWorker : public QObject
     void signalConnectionEstablished();
     void signalConnectionFailed();
     void signalLostConnection();
-    void signalGotAudioHeader(int samplingRate, int bufferSize);
+    void signalRemoteIsReady();
 
    public slots:
     // sets a few things up at startup
@@ -211,9 +206,6 @@ class AudioSocketWorker : public QObject
     QByteArray mSendBuffer;
     QByteArray mRecvBuffer;
     QByteArray mPopBuffer;
-    int mLocalBytesPerPacket  = 0;
-    int mRemoteBytesPerPacket = 0;
-    int mRecvBytes            = 0;
     bool mRetryConnection     = false;
 };
 
