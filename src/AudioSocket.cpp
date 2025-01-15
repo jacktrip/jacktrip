@@ -45,15 +45,16 @@
 
 using namespace std;
 
-constexpr int BytesPerSample = sizeof(float);
+constexpr int BytesPerSample     = sizeof(float);
+constexpr int BytesForFullSample = BytesPerSample * AudioSocketNumChannels;
 
 //*******************************************************************************
 ToAudioSocketPlugin::ToAudioSocketPlugin(AudioSocketQueueT& sendQueue,
                                          AudioSocketQueueT& receiveQueue)
     : mSendQueue(sendQueue), mReceiveQueue(receiveQueue)
 {
-    mSendBuffer.resize(AudioSocketMaxSamplesPerBlock * AudioSocketNumChannels
-                       * BytesPerSample + BytesPerSample);
+    mSendBuffer.resize(AudioSocketMaxSamplesPerBlock * BytesForFullSample
+                       + BytesPerSample);
 }
 
 //*******************************************************************************
@@ -104,10 +105,10 @@ void ToAudioSocketPlugin::compute(int nframes, float** inputs,
 
     // interleave samples into send buffer
     float* framePtr = reinterpret_cast<float*>(mSendBuffer.data());
-    *(framePtr++) = nframes;  // first value represents number of samples
+    *(framePtr++)   = nframes;  // first value represents number of samples
     for (int nextSample = 0; nextSample < nframes; ++nextSample) {
         for (int i = 0; i < AudioSocketNumChannels; i++) {
-            int chan = i < getNumInputs() ? i : 0;  // mono => dual mono
+            int chan      = i < getNumInputs() ? i : 0;  // mono => dual mono
             *(framePtr++) = inputs[chan][nextSample];
         }
     }
@@ -155,8 +156,8 @@ FromAudioSocketPlugin::FromAudioSocketPlugin(AudioSocketQueueT& sendQueue,
                                              bool passthrough)
     : mSendQueue(sendQueue), mReceiveQueue(receiveQueue), mPassthrough(passthrough)
 {
-    mRecvBuffer.resize(AudioSocketMaxSamplesPerBlock * AudioSocketNumChannels
-                       * BytesPerSample + BytesPerSample);
+    mRecvBuffer.resize(AudioSocketMaxSamplesPerBlock * BytesForFullSample
+                       + BytesPerSample);
     mExtraSamples = new float*[AudioSocketNumChannels];
     for (int i = 0; i < AudioSocketNumChannels; i++) {
         mExtraSamples[i] = new float[AudioSocketMaxSamplesPerBlock];
@@ -213,7 +214,7 @@ void FromAudioSocketPlugin::compute(int nframes, [[maybe_unused]] float** inputs
         return;
     }
 
-    int nextSample  = 0;
+    int nextSample = 0;
     while (true) {
         // use extra samples first
         while (mNextExtraSample != mLastExtraSample && nextSample < nframes) {
@@ -241,7 +242,7 @@ void FromAudioSocketPlugin::compute(int nframes, [[maybe_unused]] float** inputs
 
         // copy bytes from packet to extras
         float* framePtr = reinterpret_cast<float*>(mRecvBuffer.data());
-        int newSamples = static_cast<int>(*(framePtr++));
+        int newSamples  = static_cast<int>(*(framePtr++));
         for (int j = 0; j < newSamples; j++) {
             for (int i = 0; i < AudioSocketNumChannels; i++) {
                 mExtraSamples[i][mLastExtraSample] = *(framePtr++);
@@ -268,18 +269,18 @@ void FromAudioSocketPlugin::updateNumChannels(int nChansIn, int nChansOut)
 //*******************************************************************************
 void FromAudioSocketPlugin::remoteIsReady()
 {
-    mNextExtraSample       = 0;
-    mLastExtraSample       = 0;
-    mQueueCheckSec         = 2;
-    mRemoteIsReady         = true;
+    mNextExtraSample = 0;
+    mLastExtraSample = 0;
+    mQueueCheckSec   = 2;
+    mRemoteIsReady   = true;
     resetQueueStats();
 }
 
 //*******************************************************************************
 void FromAudioSocketPlugin::gotConnection()
 {
-    mRemoteIsReady         = false;
-    mIsConnected           = true;
+    mRemoteIsReady = false;
+    mIsConnected   = true;
 }
 
 //*******************************************************************************
@@ -338,12 +339,12 @@ AudioSocketWorker::AudioSocketWorker(AudioSocketQueueT& sendQueue,
                                      QSharedPointer<QLocalSocket>& s)
     : mSendQueue(sendQueue), mReceiveQueue(receiveQueue), mSocketPtr(s)
 {
-    mSendBuffer.resize(AudioSocketMaxSamplesPerBlock * AudioSocketNumChannels
-                       * BytesPerSample + BytesPerSample);
-    mRecvBuffer.resize(AudioSocketMaxSamplesPerBlock * AudioSocketNumChannels
-                       * BytesPerSample + BytesPerSample);
-    mPopBuffer.resize(AudioSocketMaxSamplesPerBlock * AudioSocketNumChannels
-                      * BytesPerSample + BytesPerSample);
+    mSendBuffer.resize(AudioSocketMaxSamplesPerBlock * BytesForFullSample
+                       + BytesPerSample);
+    mRecvBuffer.resize(AudioSocketMaxSamplesPerBlock * BytesForFullSample
+                       + BytesPerSample);
+    mPopBuffer.resize(AudioSocketMaxSamplesPerBlock * BytesForFullSample
+                      + BytesPerSample);
 }
 
 //*******************************************************************************
@@ -474,23 +475,24 @@ void AudioSocketWorker::readAudioHeader()
                 return;
             }
             if (mSrcInDataPtr == nullptr) {
-                mSrcInDataPtr  = new float[AudioSocketMaxSamplesPerBlock
-                    * AudioSocketNumChannels * BytesPerSample];
+                mSrcInDataPtr =
+                    new float[AudioSocketMaxSamplesPerBlock * BytesForFullSample];
             }
             mSrcData.data_in = mSrcInDataPtr;
-            mSrcData.data_out = reinterpret_cast<float*>(mRecvBuffer.data() + BytesPerSample);
+            mSrcData.data_out =
+                reinterpret_cast<float*>(mRecvBuffer.data() + BytesPerSample);
             mSrcData.output_frames = AudioSocketMaxSamplesPerBlock;
-            mSrcData.end_of_input = 0;
-            mSrcData.src_ratio = static_cast<double>(mLocalSampleRate) / mRemoteSampleRate;
-            mSrcInSamples  = 0;
         } else {
             src_reset(mSrcStatePtr);
         }
+        mSrcData.src_ratio    = static_cast<double>(mLocalSampleRate) / mRemoteSampleRate;
+        mSrcData.end_of_input = 0;
+        mSrcInSamples         = 0;
     }
 #else
     if (mRemoteSampleRate != mLocalSampleRate) {
-        cerr << "Audio socket sample rate conversion not supported: "
-             << mRemoteSampleRate << " != " << mLocalSampleRate << endl;
+        cerr << "Audio socket sample rate conversion not supported: " << mRemoteSampleRate
+             << " != " << mLocalSampleRate << endl;
         mSocketPtr->close();
         return;
     }
@@ -520,7 +522,7 @@ void AudioSocketWorker::sendAudio()
     int8_t* popPtr = reinterpret_cast<int8_t*>(mPopBuffer.data());
     while (mSendQueue.pop(popPtr)) {
         float* framePtr = reinterpret_cast<float*>(mPopBuffer.data());
-        int bytesToSend = *(framePtr++) * BytesPerSample * AudioSocketNumChannels;
+        int bytesToSend = *(framePtr++) * BytesForFullSample;
         mSendBuffer.resize(bytesToSend);
         memcpy(mSendBuffer.data(), framePtr, bytesToSend);
         mSocketPtr->write(mSendBuffer);
@@ -531,14 +533,13 @@ void AudioSocketWorker::sendAudio()
 //*******************************************************************************
 void AudioSocketWorker::receiveAudio()
 {
-    constexpr int BytesForFullSample = BytesPerSample * AudioSocketNumChannels;
     while (mSocketPtr->bytesAvailable() > BytesForFullSample) {
         qint64 bytesToRead = mSocketPtr->bytesAvailable();
         if (bytesToRead + BytesPerSample > mRecvBuffer.size())
             bytesToRead = mRecvBuffer.size() - BytesPerSample;
         if (bytesToRead % BytesForFullSample > 0)
             bytesToRead -= (bytesToRead % BytesForFullSample);
-        int newSamples = bytesToRead / BytesForFullSample;;
+        int newSamples = bytesToRead / BytesForFullSample;
 
 #ifdef HAVE_LIBSAMPLERATE
         if (mRemoteSampleRate == mLocalSampleRate) {
@@ -547,11 +548,12 @@ void AudioSocketWorker::receiveAudio()
             // convert remote to local sample rate
             mSrcData.input_frames = newSamples + mSrcInSamples;
             mSocketPtr->read(reinterpret_cast<char*>(mSrcInDataPtr)
-                + (mSrcInSamples * BytesForFullSample), bytesToRead);
+                                 + (mSrcInSamples * BytesForFullSample),
+                             bytesToRead);
             int srcErr = src_process(mSrcStatePtr, &mSrcData);
             if (srcErr != 0) {
-                cerr << "Sample rate conversion failure: "
-                     << src_strerror(srcErr) << endl;
+                cerr << "Sample rate conversion failure: " << src_strerror(srcErr)
+                     << endl;
                 mSocketPtr->close();
                 return;
             }
@@ -560,24 +562,25 @@ void AudioSocketWorker::receiveAudio()
                 // save remaining input frames for later
                 if (mSrcData.input_frames_used > 0) {
                     // shift samples in memory buffer
-                    char* nextFramePtr = reinterpret_cast<char*>(mSrcInDataPtr)
+                    char* nextFramePtr =
+                        reinterpret_cast<char*>(mSrcInDataPtr)
                         + (mSrcData.input_frames_used * BytesForFullSample);
-                    memmove(mSrcInDataPtr, nextFramePtr, mSrcInSamples
-                        * BytesForFullSample);
+                    memmove(mSrcInDataPtr, nextFramePtr,
+                            mSrcInSamples * BytesForFullSample);
                 }
             }
             newSamples = mSrcData.output_frames_gen;
-            if (newSamples == 0)
-                continue;
         }
 #else
         mSocketPtr->read(mRecvBuffer.data() + BytesPerSample, bytesToRead);
 #endif
 
-        // first value represents number of samples
-        float* framePtr = reinterpret_cast<float*>(mRecvBuffer.data());
-        *framePtr = newSamples;
-        mReceiveQueue.push(reinterpret_cast<int8_t*>(mRecvBuffer.data()));
+        if (newSamples > 0) {
+            // first value represents number of samples
+            float* framePtr = reinterpret_cast<float*>(mRecvBuffer.data());
+            *framePtr       = newSamples;
+            mReceiveQueue.push(reinterpret_cast<int8_t*>(mRecvBuffer.data()));
+        }
     }
 }
 
@@ -598,10 +601,8 @@ void AudioSocketWorker::scheduleReconnect()
 //*******************************************************************************
 AudioSocket::AudioSocket(bool retryConnection)
     : mThread()
-    , mSendQueue(AudioSocketMaxSamplesPerBlock * AudioSocketNumChannels
-                 * BytesPerSample + BytesPerSample)
-    , mReceiveQueue(AudioSocketMaxSamplesPerBlock * AudioSocketNumChannels
-                    * BytesPerSample + BytesPerSample)
+    , mSendQueue(AudioSocketMaxSamplesPerBlock * BytesForFullSample + BytesPerSample)
+    , mReceiveQueue(AudioSocketMaxSamplesPerBlock * BytesForFullSample + BytesPerSample)
     , mToAudioSocketPluginPtr(new ToAudioSocketPlugin(mSendQueue, mReceiveQueue))
     , mFromAudioSocketPluginPtr(new FromAudioSocketPlugin(mSendQueue, mReceiveQueue))
 {
@@ -621,9 +622,8 @@ AudioSocket::AudioSocket(bool retryConnection)
 //*******************************************************************************
 AudioSocket::AudioSocket(QSharedPointer<QLocalSocket>& s)
     : mThread()
-    , mSendQueue(AudioSocketMaxSamplesPerBlock * AudioSocketNumChannels * BytesPerSample)
-    , mReceiveQueue(AudioSocketMaxSamplesPerBlock * AudioSocketNumChannels
-                    * BytesPerSample)
+    , mSendQueue(AudioSocketMaxSamplesPerBlock * BytesForFullSample + BytesPerSample)
+    , mReceiveQueue(AudioSocketMaxSamplesPerBlock * BytesForFullSample + BytesPerSample)
     , mToAudioSocketPluginPtr(new ToAudioSocketPlugin(mSendQueue, mReceiveQueue))
     , mFromAudioSocketPluginPtr(new FromAudioSocketPlugin(mSendQueue, mReceiveQueue))
     , mWorkerPtr(new AudioSocketWorker(mSendQueue, mReceiveQueue, s))

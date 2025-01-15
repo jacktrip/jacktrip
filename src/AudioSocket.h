@@ -137,17 +137,17 @@ class FromAudioSocketPlugin : public ProcessPlugin
     AudioSocketQueueT& mSendQueue;
     AudioSocketQueueT& mReceiveQueue;
     QByteArray mRecvBuffer;
-    float** mExtraSamples      = nullptr;
-    int mNumChannels           = AudioSocketNumChannels;
-    int mNextExtraSample       = 0;
-    int mLastExtraSample       = 0;
-    int mMinQueuePackets       = 0;
-    int mMaxQueuePackets       = 0;
-    int mQueueCheckSec         = 0;
-    uint32_t mNextQueueCheck   = 0;
-    bool mRemoteIsReady        = false;
-    bool mIsConnected          = false;
-    bool mPassthrough          = false;
+    float** mExtraSamples    = nullptr;
+    int mNumChannels         = AudioSocketNumChannels;
+    int mNextExtraSample     = 0;
+    int mLastExtraSample     = 0;
+    int mMinQueuePackets     = 0;
+    int mMaxQueuePackets     = 0;
+    int mQueueCheckSec       = 0;
+    uint32_t mNextQueueCheck = 0;
+    bool mRemoteIsReady      = false;
+    bool mIsConnected        = false;
+    bool mPassthrough        = false;
 };
 
 /** \brief AudioSocketWorker is used to perform socket operations in a separate thread
@@ -210,14 +210,14 @@ class AudioSocketWorker : public QObject
     QByteArray mSendBuffer;
     QByteArray mRecvBuffer;
     QByteArray mPopBuffer;
-    bool mRetryConnection     = false;
-    int mLocalSampleRate      = 0;
-    int mRemoteSampleRate     = 0;
+    bool mRetryConnection = false;
+    int mLocalSampleRate  = 0;
+    int mRemoteSampleRate = 0;
 #ifdef HAVE_LIBSAMPLERATE
     SRC_DATA mSrcData;
-    SRC_STATE* mSrcStatePtr   = nullptr;
-    float *mSrcInDataPtr      = nullptr;
-    int mSrcInSamples         = 0;
+    SRC_STATE* mSrcStatePtr = nullptr;
+    float* mSrcInDataPtr    = nullptr;
+    int mSrcInSamples       = 0;
 #endif
 };
 
