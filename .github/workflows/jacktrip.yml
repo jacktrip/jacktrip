@@ -95,6 +95,7 @@ jobs:
             bundled-rtaudio: true
             nogui: false
             weakjack: false
+            libsamplerate: true
             jacktrip-path: jacktrip # needed for binary upload
             binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
             build-system: docker
@@ -111,6 +112,7 @@ jobs:
             bundled-rtaudio: true
             nogui: false
             weakjack: false
+            libsamplerate: true
             jacktrip-path: jacktrip
             binary-path: binary
             build-system: docker
@@ -128,6 +130,7 @@ jobs:
             nogui: true
             novs: true
             weakjack: false
+            libsamplerate: true
             jacktrip-path: jacktrip
             binary-path: binary
             build-system: docker
@@ -146,6 +149,7 @@ jobs:
             nogui: true
             novs: true
             weakjack: false
+            libsamplerate: true
             jacktrip-path: jacktrip
             binary-path: binary
             build-system: docker
@@ -164,6 +168,7 @@ jobs:
             nogui: true
             novs: true
             weakjack: false
+            libsamplerate: false
             jacktrip-path: jacktrip
             binary-path: binary
             build-system: docker
@@ -182,6 +187,7 @@ jobs:
             nogui: true
             novs: true
             weakjack: true
+            libsamplerate: true
             jacktrip-path: jacktrip
             binary-path: binary
             build-system: meson
@@ -200,6 +206,7 @@ jobs:
             nogui: false
             novs: false
             weakjack: true
+            libsamplerate: true
             jacktrip-path: jacktrip
             # binary-path: binary # don't upload the binary itself since we upload the bundle
             bundle-path: bundle
@@ -222,6 +229,7 @@ jobs:
             nogui: true
             novs: true
             weakjack: true
+            libsamplerate: true
             qt-version: '5.15.13'
             qt-type: 'static'
             jacktrip-path: jacktrip.exe
@@ -237,6 +245,7 @@ jobs:
             nogui: false
             novs: false
             weakjack: true
+            libsamplerate: true
             qt-version: '6.5.3'
             qt-type: 'dynamic'
             jacktrip-path: jacktrip.exe
@@ -572,6 +581,11 @@ jobs:
           fi
           if [[ "${{ matrix.weakjack }}" == true ]]; then
             MESON_CONFIG="-Dweakjack=true $MESON_CONFIG"
+          fi
+          if [[ "${{ matrix.libsamplerate }}" == true ]]; then
+            MESON_CONFIG="-Dlibsamplerate=enabled $MESON_CONFIG"
+          else
+            MESON_CONFIG="-Dlibsamplerate=disabled $MESON_CONFIG"
           fi
           if [[ -n "${{ matrix.macosx-architectures }}" ]]; then
             # TODO: for now, just assume that we want universal if it is not empty

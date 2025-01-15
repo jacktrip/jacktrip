@@ -346,22 +346,23 @@ endif
 libsamplerate_dep = []
 found_libsamplerate = false
 if get_option('libsamplerate').allowed()
-       if get_option('libsamplerate').auto()
-               libsamplerate_dep = dependency('libsamplerate', required: false)
-               found_libsamplerate = libsamplerate_dep.found()
-       endif
-       if not found_libsamplerate
-               libsamplerate_subproject = cmake.subproject('libsamplerate')
-               libsamplerate_dep = libsamplerate_subproject.dependency('samplerate')
-               found_libsamplerate = libsamplerate_dep.found()
-               if not found_libsamplerate and not get_option('libsamplerate').auto()
-                       error('failed to configure libsamplerate')
-               endif
-       endif
-       if found_libsamplerate
-               defines += '-DHAVE_LIBSAMPLERATE'
-               deps += libsamplerate_dep
-       endif
+	opt_var = cmake.subproject_options()
+	if get_option('buildtype') == 'release'
+		opt_var.add_cmake_defines({'CMAKE_BUILD_TYPE': 'Release'})
+	else
+		opt_var.add_cmake_defines({'CMAKE_BUILD_TYPE': 'Debug'})
+	endif
+	opt_var.add_cmake_defines({'CMAKE_POSITION_INDEPENDENT_CODE': 'ON'})
+	libsamplerate_subproject = cmake.subproject('libsamplerate', options: opt_var)
+	libsamplerate_dep = libsamplerate_subproject.dependency('samplerate')
+	found_libsamplerate = libsamplerate_dep.found()
+	if not found_libsamplerate and not get_option('libsamplerate').auto()
+		error('failed to configure libsamplerate')
+	endif
+	if found_libsamplerate
+		defines += '-DHAVE_LIBSAMPLERATE'
+		deps += libsamplerate_dep
+	endif
 endif
 
 if host_machine.system() == 'darwin'
