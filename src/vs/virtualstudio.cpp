@@ -189,10 +189,13 @@ VirtualStudio::VirtualStudio(UserInterface& parent)
 
         qint64 maxElapsedTimeInMs      = 1000 * 60 * 60;  // 1 hour
         QDateTime accessTokenTimestamp = m_auth->accessTokenTimestamp();
-        QDateTime accessTokenDeadline  = QDateTime::fromMSecsSinceEpoch(
-             accessTokenTimestamp.toMSecsSinceEpoch() + maxElapsedTimeInMs);
-        if (QDateTime::currentDateTime() > accessTokenDeadline) {
-            m_auth->refreshAccessToken(refreshToken);
+        // only refresh after auth process completed the first time
+        if (accessTokenTimestamp.toMSecsSinceEpoch() > 0) {
+            QDateTime accessTokenDeadline = QDateTime::fromMSecsSinceEpoch(
+                accessTokenTimestamp.toMSecsSinceEpoch() + maxElapsedTimeInMs);
+            if (QDateTime::currentDateTime() > accessTokenDeadline) {
+                m_auth->refreshAccessToken(refreshToken);
+            }
         }
     });
 

@@ -419,10 +419,10 @@ if vst_sdkdir != ''
 	vst_deps += qt_core_deps
 
 	vst_sources = ['src/vst3/JackTripVSTController.cpp', 'src/vst3/JackTripVSTEntry.cpp', 'src/vst3/JackTripVSTProcessor.cpp']
-	if get_option('debug') == true
-		vst_sources += ['@0@/vstgui4/vstgui/vstgui_uidescription.cpp'.format(vst_sdkdir), '@0@/vstgui4/vstgui/plugin-bindings/vst3editor.cpp'.format(vst_sdkdir)]
-		defines += ['-DVSTGUI_LIVE_EDITING=1']
-	endif
+
+	# uncomment for live editor
+	# vst_sources += ['@0@/vstgui4/vstgui/vstgui_uidescription.cpp'.format(vst_sdkdir), '@0@/vstgui4/vstgui/plugin-bindings/vst3editor.cpp'.format(vst_sdkdir)]
+	# defines += ['-DVSTGUI_LIVE_EDITING=1']
 
 	vst_link_args = []
 	if (host_machine.system() == 'linux')

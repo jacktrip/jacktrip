@@ -64,14 +64,13 @@ tresult PLUGIN_API JackTripVSTController::initialize(FUnknown* context)
                                 Vst::ParameterInfo::kCanAutomate,
                                 JackTripVSTParams::kParamGainSendId, 0, STR16("Send"));
 
-        parameters.addParameter(
-            STR16("Receive Gain"), STR16("dB"), 199, 1., Vst::ParameterInfo::kCanAutomate,
-            JackTripVSTParams::kParamGainReceiveId, 0, STR16("Receive"));
-
-        parameters.addParameter(STR16("Passthrough Gain"), STR16("dB"), 199, 1.,
+        parameters.addParameter(STR16("Output Mix"), STR16("dB"), 199, 0,
                                 Vst::ParameterInfo::kCanAutomate,
-                                JackTripVSTParams::kParamGainPassId, 0,
-                                STR16("Passthrough"));
+                                JackTripVSTParams::kParamMixOutputId, 0, STR16("Mix"));
+
+        parameters.addParameter(STR16("Output Gain"), STR16("dB"), 199, 1.,
+                                Vst::ParameterInfo::kCanAutomate,
+                                JackTripVSTParams::kParamGainOutputId, 0, STR16("Gain"));
 
         parameters.addParameter(
             STR16("Connected"), STR16("On/Off"), 1, 0, Vst::ParameterInfo::kIsReadOnly,
@@ -109,15 +108,15 @@ tresult PLUGIN_API JackTripVSTController::setComponentState(IBStream* state)
         return kResultFalse;
     setParamNormalized(JackTripVSTParams::kParamGainSendId, sendGain);
 
-    float receiveGain = 1.f;
-    if (streamer.readFloat(receiveGain) == false)
+    float outputMix = 1.f;
+    if (streamer.readFloat(outputMix) == false)
         return kResultFalse;
-    setParamNormalized(JackTripVSTParams::kParamGainReceiveId, receiveGain);
+    setParamNormalized(JackTripVSTParams::kParamMixOutputId, outputMix);
 
-    float passGain = 1.f;
-    if (streamer.readFloat(passGain) == false)
+    float outputGain = 1.f;
+    if (streamer.readFloat(outputGain) == false)
         return kResultFalse;
-    setParamNormalized(JackTripVSTParams::kParamGainPassId, passGain);
+    setParamNormalized(JackTripVSTParams::kParamGainOutputId, outputGain);
 
     int8 connectedState = 0;
     if (streamer.readInt8(connectedState) == false)
