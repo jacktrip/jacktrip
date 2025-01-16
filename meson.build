@@ -343,6 +343,28 @@ if rtaudio_dep.found() == false and jack_dep.found() == false
 	configure.''')
 endif
 
+libsamplerate_dep = []
+found_libsamplerate = false
+if get_option('libsamplerate').allowed()
+	opt_var = cmake.subproject_options()
+	if get_option('buildtype') == 'release'
+		opt_var.add_cmake_defines({'CMAKE_BUILD_TYPE': 'Release'})
+	else
+		opt_var.add_cmake_defines({'CMAKE_BUILD_TYPE': 'Debug'})
+	endif
+	opt_var.add_cmake_defines({'CMAKE_POSITION_INDEPENDENT_CODE': 'ON'})
+	libsamplerate_subproject = cmake.subproject('libsamplerate', options: opt_var)
+	libsamplerate_dep = libsamplerate_subproject.dependency('samplerate')
+	found_libsamplerate = libsamplerate_dep.found()
+	if not found_libsamplerate and not get_option('libsamplerate').auto()
+		error('failed to configure libsamplerate')
+	endif
+	if found_libsamplerate
+		defines += '-DHAVE_LIBSAMPLERATE'
+		deps += libsamplerate_dep
+	endif
+endif
+
 if host_machine.system() == 'darwin'
 	src += ['src/NoNap.mm']
 	# Adding CoreAudio here is a workaround and should be removed
@@ -458,6 +480,10 @@ if vst_sdkdir != ''
 		error('Unsupported platform: ' + host_machine.system())
 	endif
 
+	if found_libsamplerate
+		vst_deps += libsamplerate_dep
+	endif
+
 	audio_socket_moc_h = ['src/AudioSocket.h', 'src/SocketClient.h', 'src/ProcessPlugin.h']
 	audio_socket_sources = qt.compile_moc(headers: audio_socket_moc_h, extra_args: defines)
 	audio_socket_sources += [
@@ -471,8 +497,7 @@ if vst_sdkdir != ''
 		cpp_args : defines,
 		dependencies : vst_deps,
 		include_directories: vst_incdirs + include_directories('src/'),
-		link_args: vst_link_args,
-		cpp_args: defines
+		link_args: vst_link_args
 	)
 
 	vst3 = shared_module('JackTrip',
@@ -518,4 +543,5 @@ summary({'JACK': jack_dep.found(),
 summary({'Application ID': application_id,
 	'GUI': not get_option('nogui'),
 	'WAIR': get_option('wair'),
+	'Sample rate conversions': found_libsamplerate,
 	'Manpage': help2man.found()}, bool_yn: true, section: 'Configuration')

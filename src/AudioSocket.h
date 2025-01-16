@@ -48,6 +48,10 @@
 #include "ProcessPlugin.h"
 #include "WaitFreeFrameBuffer.h"
 
+#ifdef HAVE_LIBSAMPLERATE
+#include "samplerate.h"
+#endif
+
 // assume stereo audio for this implementation
 constexpr int AudioSocketNumChannels = 2;
 
@@ -86,7 +90,7 @@ class ToAudioSocketPlugin : public ProcessPlugin
     void signalSendAudio();
 
    public slots:
-    void gotAudioHeader(int samplingRate, int bufferSize);
+    void remoteIsReady();
     void gotConnection();
     void lostConnection();
 
@@ -95,9 +99,6 @@ class ToAudioSocketPlugin : public ProcessPlugin
     AudioSocketQueueT& mReceiveQueue;
     QByteArray mSendBuffer;
     int mNumChannels      = AudioSocketNumChannels;
-    int mBytesPerChannel  = 0;
-    int mBytesPerPacket   = 0;
-    int mSamplesToSend    = 0;
     bool mSentAudioHeader = false;
     bool mRemoteIsReady   = false;
     bool mIsConnected     = false;
@@ -124,31 +125,29 @@ class FromAudioSocketPlugin : public ProcessPlugin
     void setPassthrough(bool b) { mPassthrough = b; }
 
    public slots:
-    void gotAudioHeader(int samplingRate, int bufferSize);
+    void remoteIsReady();
     void gotConnection();
     void lostConnection();
 
    protected:
+    void updateQueueStats(int nframes);
     void resetQueueStats();
 
    private:
     AudioSocketQueueT& mSendQueue;
     AudioSocketQueueT& mReceiveQueue;
     QByteArray mRecvBuffer;
-    float** mExtraSamples      = nullptr;
-    int mNumChannels           = AudioSocketNumChannels;
-    int mRemoteSampleRate      = 0;
-    int mRemoteBufferSize      = 0;
-    int mRemoteBytesPerChannel = 0;
-    int mNextExtraSample       = 0;
-    int mLastExtraSample       = 0;
-    int mMinQueuePackets       = 0;
-    int mMaxQueuePackets       = 0;
-    int mQueueCheckSec         = 0;
-    uint32_t mNextQueueCheck   = 0;
-    bool mRemoteIsReady        = false;
-    bool mIsConnected          = false;
-    bool mPassthrough          = false;
+    float** mExtraSamples    = nullptr;
+    int mNumChannels         = AudioSocketNumChannels;
+    int mNextExtraSample     = 0;
+    int mLastExtraSample     = 0;
+    int mMinQueuePackets     = 0;
+    int mMaxQueuePackets     = 0;
+    int mQueueCheckSec       = 0;
+    uint32_t mNextQueueCheck = 0;
+    bool mRemoteIsReady      = false;
+    bool mIsConnected        = false;
+    bool mPassthrough        = false;
 };
 
 /** \brief AudioSocketWorker is used to perform socket operations in a separate thread
@@ -174,7 +173,7 @@ class AudioSocketWorker : public QObject
     void signalConnectionEstablished();
     void signalConnectionFailed();
     void signalLostConnection();
-    void signalGotAudioHeader(int samplingRate, int bufferSize);
+    void signalRemoteIsReady();
 
    public slots:
     // sets a few things up at startup
@@ -211,10 +210,15 @@ class AudioSocketWorker : public QObject
     QByteArray mSendBuffer;
     QByteArray mRecvBuffer;
     QByteArray mPopBuffer;
-    int mLocalBytesPerPacket  = 0;
-    int mRemoteBytesPerPacket = 0;
-    int mRecvBytes            = 0;
-    bool mRetryConnection     = false;
+    bool mRetryConnection = false;
+    int mLocalSampleRate  = 0;
+    int mRemoteSampleRate = 0;
+#ifdef HAVE_LIBSAMPLERATE
+    SRC_DATA mSrcData;
+    SRC_STATE* mSrcStatePtr = nullptr;
+    float* mSrcInDataPtr    = nullptr;
+    int mSrcInSamples       = 0;
+#endif
 };
 
 /** \brief An AudioSocket is used to exchange audio with another processes via a local
