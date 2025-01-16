@@ -17,7 +17,7 @@ ARG JACK_VERSION=latest
 FROM registry.fedoraproject.org/fedora:${FEDORA_VERSION} AS builder
 
 # install tools require to build jacktrip
-RUN dnf install -y --nodocs gcc gcc-c++ meson git python3-pyyaml python3-jinja2 glib2-devel jack-audio-connection-kit-devel dbus-devel
+RUN dnf install -y --nodocs cmake gcc gcc-c++ meson git python3-pyyaml python3-jinja2 glib2-devel jack-audio-connection-kit-devel dbus-devel
 
 ENV QT_VERSION=6.5.3
 RUN if [ "$(uname -m)" = "x86_64" ]; then export ARCH=amd64; else export ARCH=arm64; fi \
