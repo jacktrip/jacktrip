@@ -327,10 +327,14 @@ void VsAuth::logout()
     }
     qDebug() << "Logging out";
 
+    // stop timer to refresh token
+    m_refreshTimer->stop();
+
     // reset auth state
     m_userId               = QStringLiteral("");
     m_verificationCode     = QStringLiteral("");
     m_accessToken          = QStringLiteral("");
+    m_refreshToken         = QStringLiteral("");
     m_authenticationStage  = QStringLiteral("unauthenticated");
     m_errorMessage         = QStringLiteral("");
     m_isAuthenticated      = false;
