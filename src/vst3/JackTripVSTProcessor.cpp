@@ -46,8 +46,13 @@ using namespace Steinberg;
 // #define JACKTRIP_VST_LOG
 
 #ifdef JACKTRIP_VST_LOG
+#if defined(_WIN32)
+#define JACKTRIP_VST_LOG_PATH "c:/JackTripTemp"
+#define JACKTRIP_VST_LOG_FILE "c:/JackTripTemp/vst.log"
+#else
 #define JACKTRIP_VST_LOG_PATH "/tmp/jacktrip"
 #define JACKTRIP_VST_LOG_FILE "/tmp/jacktrip/vst.log"
+#endif
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -59,25 +64,6 @@ void qtMessageHandler([[maybe_unused]] QtMsgType type,
                       const QString& msg)
 {
     kLogFile << msg.toStdString() << endl;
-}
-
-void initializeLog()
-{
-    if (!filesystem::is_directory(JACKTRIP_VST_LOG_PATH)) {
-        if (!filesystem::create_directory(JACKTRIP_VST_LOG_PATH)) {
-            qDebug() << "Failed to create VST log directory: " << JACKTRIP_VST_LOG_PATH;
-        }
-    }
-    kLogFile.open(JACKTRIP_VST_LOG_FILE, ios::app);
-    if (kLogFile.is_open()) {
-        kLogFile << "JackTrip VST initialized" << endl;
-        kLogFile.flush();
-        cout.rdbuf(kLogFile.rdbuf());
-        cerr.rdbuf(kLogFile.rdbuf());
-    } else {
-        qDebug() << "Failed to open VST log file: " << JACKTRIP_VST_LOG_FILE;
-    }
-    qInstallMessageHandler(qtMessageHandler);
 }
 #endif
 
@@ -139,9 +125,24 @@ tresult PLUGIN_API JackTripVSTProcessor::initialize(FUnknown* context)
     }
 
 #ifdef JACKTRIP_VST_LOG
-    initializeLog();
-    qDebug() << "JackTrip VST initialized";
+    if (!filesystem::is_directory(JACKTRIP_VST_LOG_PATH)) {
+        if (!filesystem::create_directory(JACKTRIP_VST_LOG_PATH)) {
+            qDebug() << "Failed to create VST log directory: " << JACKTRIP_VST_LOG_PATH;
+        }
+    }
+    kLogFile.open(JACKTRIP_VST_LOG_FILE, ios::app);
+    if (kLogFile.is_open()) {
+        kLogFile << "JackTrip VST initialized" << endl;
+        kLogFile.flush();
+        cout.rdbuf(kLogFile.rdbuf());
+        cerr.rdbuf(kLogFile.rdbuf());
+    } else {
+        qDebug() << "Failed to open VST log file: " << JACKTRIP_VST_LOG_FILE;
+    }
+    qInstallMessageHandler(qtMessageHandler);
 #endif
+
+    qDebug() << "JackTrip VST initialized";
 
     return kResultOk;
 }
@@ -158,8 +159,9 @@ tresult PLUGIN_API JackTripVSTProcessor::terminate()
     delete[] mInputBuffer;
     delete[] mOutputBuffer;
 
-#ifdef JACKTRIP_VST_LOG
     qDebug() << "JackTrip VST terminated";
+
+#ifdef JACKTRIP_VST_LOG
     kLogFile.close();
 #endif
 
@@ -276,9 +278,7 @@ tresult PLUGIN_API JackTripVSTProcessor::setActive(TBool state)
         }
     }
 
-#ifdef JACKTRIP_VST_LOG
     qDebug() << "JackTrip VST setActive(" << int(state) << ")";
-#endif
 
     //--- called when the Plug-in is enable/disable (On/Off) -----
     return AudioEffect::setActive(state);
@@ -287,9 +287,7 @@ tresult PLUGIN_API JackTripVSTProcessor::setActive(TBool state)
 //------------------------------------------------------------------------
 tresult PLUGIN_API JackTripVSTProcessor::setProcessing(TBool state)
 {
-#ifdef JACKTRIP_VST_LOG
     qDebug() << "JackTrip VST setProcessing(" << int(state) << ")";
-#endif
     return AudioEffect::setProcessing(state);
 }
 
@@ -316,15 +314,15 @@ tresult PLUGIN_API JackTripVSTProcessor::process(Vst::ProcessData& data)
                         == kResultTrue)
                         mSendGain = value;
                     break;
-                case JackTripVSTParams::kParamGainReceiveId:
+                case JackTripVSTParams::kParamMixOutputId:
                     if (paramQueue->getPoint(numPoints - 1, sampleOffset, value)
                         == kResultTrue)
-                        mRecvGain = value;
+                        mOutputMix = value;
                     break;
-                case JackTripVSTParams::kParamGainPassId:
+                case JackTripVSTParams::kParamGainOutputId:
                     if (paramQueue->getPoint(numPoints - 1, sampleOffset, value)
                         == kResultTrue)
-                        mPassGain = value;
+                        mOutputGain = value;
                     break;
                 case JackTripVSTParams::kParamConnectedId:
                     if (paramQueue->getPoint(numPoints - 1, sampleOffset, value)
@@ -486,17 +484,14 @@ float JackTripVSTProcessor::gainToVol(double gain)
 void JackTripVSTProcessor::updateVolumeMultipliers()
 {
     // convert [0-1.0] gain (dB) values into [0-1.0] volume multiplers
-    mSendMul = gainToVol(mSendGain);
-    mRecvMul = gainToVol(mRecvGain);
-    mPassMul = gainToVol(mPassGain);
+    float outMul = gainToVol(mOutputGain);
+    mSendMul     = gainToVol(mSendGain);
+    mRecvMul     = mOutputMix * outMul;
+    mPassMul     = (1.0f - mOutputMix) * outMul;
 
-    // adjust for clipping when mixing receive + passthrough signals
-    float combined = mRecvMul + mPassMul;
-    if (combined > 1.0) {
-        // prevent clipping
-        mRecvMul /= combined;
-        mPassMul /= combined;
-    }
+    qDebug() << "JackTrip VST send =" << mSendMul << "(" << mSendGain
+             << "), out =" << outMul << "(" << mOutputGain << "), mix =" << mOutputMix
+             << ", recv =" << mRecvMul << ", pass =" << mPassMul;
 }
 
 //------------------------------------------------------------------------
@@ -514,10 +509,8 @@ tresult PLUGIN_API JackTripVSTProcessor::setupProcessing(Vst::ProcessSetup& newS
     mSampleRate = newSetup.sampleRate;
     mBufferSize = static_cast<int>(newSetup.maxSamplesPerBlock);
 
-#ifdef JACKTRIP_VST_LOG
     qDebug() << "JackTrip VST setupProcessing: mSampleRate=" << mSampleRate
              << ", mbufferSize=" << mBufferSize;
-#endif
 
     //--- called before any processing ----
     return AudioEffect::setupProcessing(newSetup);
@@ -551,12 +544,12 @@ tresult PLUGIN_API JackTripVSTProcessor::setState(IBStream* state)
     if (streamer.readFloat(sendGain) == false)
         return kResultFalse;
 
-    float recvGain = 1.f;
-    if (streamer.readFloat(recvGain) == false)
+    float outputMix = 1.f;
+    if (streamer.readFloat(outputMix) == false)
         return kResultFalse;
 
-    float passGain = 1.f;
-    if (streamer.readFloat(passGain) == false)
+    float outputGain = 1.f;
+    if (streamer.readFloat(outputGain) == false)
         return kResultFalse;
 
     int8 connectedState = 0;
@@ -567,11 +560,12 @@ tresult PLUGIN_API JackTripVSTProcessor::setState(IBStream* state)
     if (streamer.readInt32(bypassState) == false)
         return kResultFalse;
 
-    mSendGain  = sendGain;
-    mRecvGain  = recvGain;
-    mPassGain  = passGain;
-    mConnected = connectedState > 0;
-    mBypass    = bypassState > 0;
+    mSendGain   = sendGain;
+    mOutputMix  = outputMix;
+    mOutputGain = outputGain;
+    mConnected  = connectedState > 0;
+    mBypass     = bypassState > 0;
+
     updateVolumeMultipliers();
 
     return kResultOk;
@@ -583,15 +577,15 @@ tresult PLUGIN_API JackTripVSTProcessor::getState(IBStream* state)
     // here we need to save the model (preset or project)
 
     float sendGain      = mSendGain;
-    float recvGain      = mRecvGain;
-    float passGain      = mPassGain;
+    float outputMix     = mOutputMix;
+    float outputGain    = mOutputGain;
     int8 connectedState = mConnected ? 1 : 0;
     int32 bypassState   = mBypass ? 1 : 0;
 
     IBStreamer streamer(state, kLittleEndian);
     streamer.writeFloat(sendGain);
-    streamer.writeFloat(recvGain);
-    streamer.writeFloat(passGain);
+    streamer.writeFloat(outputMix);
+    streamer.writeFloat(outputGain);
     streamer.writeInt8(connectedState);
     streamer.writeInt32(bypassState);
 
