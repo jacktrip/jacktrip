@@ -343,9 +343,10 @@ if rtaudio_dep.found() == false and jack_dep.found() == false
 	configure.''')
 endif
 
-libsamplerate_dep = []
-found_libsamplerate = false
-if get_option('libsamplerate').allowed()
+libsamplerate_dep = dependency('samplerate', required: get_option('libsamplerate'))
+found_libsamplerate = libsamplerate_dep.found()
+
+if get_option('libsamplerate').allowed() and found_libsamplerate == false
 	opt_var = cmake.subproject_options()
 	if get_option('buildtype') == 'release'
 		opt_var.add_cmake_defines({'CMAKE_BUILD_TYPE': 'Release'})
@@ -359,10 +360,11 @@ if get_option('libsamplerate').allowed()
 	if not found_libsamplerate and not get_option('libsamplerate').auto()
 		error('failed to configure libsamplerate')
 	endif
-	if found_libsamplerate
-		defines += '-DHAVE_LIBSAMPLERATE'
-		deps += libsamplerate_dep
-	endif
+endif
+
+if found_libsamplerate
+	defines += '-DHAVE_LIBSAMPLERATE'
+	deps += libsamplerate_dep
 endif
 
 if host_machine.system() == 'darwin'
