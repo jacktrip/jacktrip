@@ -22,8 +22,8 @@
 		"control-tags": {
 			"Bypass": "1000",
 			"Connected": "200",
-			"Gain": "102",
-			"Mix": "101",
+			"Output Gain": "102",
+			"Output Mix": "101",
 			"Send": "100"
 		},
 		"custom": {
@@ -187,7 +187,7 @@
 							"origin": "170, 80",
 							"size": "72, 92",
 							"transparent": "true",
-							"uidesc-label": "Mix",
+							"uidesc-label": "Output Mix",
 							"wants-focus": "false"
 						},
 						"children": {
@@ -197,7 +197,7 @@
 									"angle-start": "135",
 									"bitmap": "Sercan_Moog_Knob",
 									"class": "CAnimKnob",
-									"control-tag": "Mix",
+									"control-tag": "Output Mix",
 									"height-of-one-image": "72",
 									"inverse-bitmap": "false",
 									"knob-range": "200",
@@ -207,7 +207,7 @@
 									"sub-pixmaps": "120",
 									"tooltip": "Mix output between source and JackTrip",
 									"transparent": "false",
-									"uidesc-label": "Mix Knob",
+									"uidesc-label": "Output Mix Knob",
 									"value-inset": "0",
 									"wants-focus": "false",
 									"wheel-inc-value": "0.1",
@@ -244,9 +244,9 @@
 									"text-inset": "0, 0",
 									"text-rotation": "0",
 									"text-shadow-offset": "1, 1",
-									"title": "Mix",
+									"title": "Output Mix",
 									"transparent": "true",
-									"uidesc-label": "Mix Label",
+									"uidesc-label": "Output Mix Label",
 									"value-precision": "2",
 									"wants-focus": "false",
 									"wheel-inc-value": "0.1"
@@ -264,7 +264,7 @@
 							"origin": "270, 80",
 							"size": "112, 92",
 							"transparent": "true",
-							"uidesc-label": "Gain",
+							"uidesc-label": "Output Gain",
 							"wants-focus": "false"
 						},
 						"children": {
@@ -274,7 +274,7 @@
 									"angle-start": "135",
 									"bitmap": "Sercan_Moog_Knob",
 									"class": "CAnimKnob",
-									"control-tag": "Gain",
+									"control-tag": "Output Gain",
 									"height-of-one-image": "72",
 									"inverse-bitmap": "false",
 									"knob-range": "200",
@@ -284,7 +284,7 @@
 									"sub-pixmaps": "120",
 									"tooltip": "Gain applied to output audio",
 									"transparent": "false",
-									"uidesc-label": "Gain Knob",
+									"uidesc-label": "Output Gain Knob",
 									"value-inset": "0",
 									"wants-focus": "false",
 									"wheel-inc-value": "0.1",
@@ -321,9 +321,9 @@
 									"text-inset": "0, 0",
 									"text-rotation": "0",
 									"text-shadow-offset": "1, 1",
-									"title": "Gain",
+									"title": "Output Gain",
 									"transparent": "true",
-									"uidesc-label": "Gain Label",
+									"uidesc-label": "Output Gain Label",
 									"value-precision": "2",
 									"wants-focus": "false",
 									"wheel-inc-value": "0.1"
