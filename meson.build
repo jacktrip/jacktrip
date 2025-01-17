@@ -343,7 +343,7 @@ if rtaudio_dep.found() == false and jack_dep.found() == false
 	configure.''')
 endif
 
-libsamplerate_dep = dependency('samplerate', required: get_option('libsamplerate'))
+libsamplerate_dep = dependency('samplerate', required: false)
 found_libsamplerate = libsamplerate_dep.found()
 
 if get_option('libsamplerate').allowed() and found_libsamplerate == false
