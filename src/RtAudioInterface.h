@@ -52,7 +52,10 @@
 #include "AudioInterface.h"
 #include "StereoToMono.h"
 #include "jacktrip_globals.h"
-class JackTrip;  // Forward declaration
+
+// Forward declarations
+class JackTrip;
+class SampleRateConverter;
 
 /// \brief Simple Class that represents an audio interface available via RtAudio
 class RtAudioDevice : public RtAudio::DeviceInfo
@@ -64,7 +67,9 @@ class RtAudioDevice : public RtAudio::DeviceInfo
     RtAudio::Api api;
     void print() const;
     void printVerbose() const;
+    bool isAirpods() const;
     bool checkSampleRate(unsigned int srate) const;
+    unsigned int getClosestSampleRate(unsigned int srate) const;
     RtAudioDevice& operator=(const RtAudio::DeviceInfo& info);
 };
 
@@ -125,6 +130,8 @@ class RtAudioInterface : public AudioInterface
    private:
     int RtAudioCallback(void* outputBuffer, void* inputBuffer, unsigned int nFrames,
                         double streamTime, RtAudioStreamStatus status);
+    void prepareInputBuffer(sample_t* ptr, unsigned int nframes);
+    void prepareOutputBuffer(sample_t* ptr, unsigned int nframes);
     static int wrapperRtAudioCallback(void* outputBuffer, void* inputBuffer,
                                       unsigned int nFrames, double streamTime,
                                       RtAudioStreamStatus status, void* userData);
@@ -155,6 +162,11 @@ class RtAudioInterface : public AudioInterface
     bool mDuplexMode;  ///< true if using duplex stream mode (input device == output
                        ///< device)
     QScopedPointer<StereoToMono> mStereoToMonoMixerPtr;
+    QScopedPointer<SampleRateConverter> mInSrcPtr;
+    QScopedPointer<SampleRateConverter> mOutSrcPtr;
+    QScopedPointer<float> mOutTmpPtr;
+    uint32_t mInSampleRate;   ///< Actual sampling rate for input device
+    uint32_t mOutSampleRate;  ///< Actual sampling rate for output device
 };
 
 #endif  // __RTAUDIOINTERFACE_H__

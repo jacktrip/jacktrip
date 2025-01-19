@@ -42,6 +42,7 @@
 #include <cstdlib>
 
 #include "JackTrip.h"
+#include "SampleRateConverter.h"
 #include "StereoToMono.h"
 #include "jacktrip_globals.h"
 
@@ -84,6 +85,13 @@ void RtAudioDevice::printVerbose() const
 }
 
 //*******************************************************************************
+bool RtAudioDevice::isAirpods() const
+{
+    return name.substr(0, 11) == "Apple Inc.:"
+           && name.find("AirPods") != std::string::npos;
+}
+
+//*******************************************************************************
 bool RtAudioDevice::checkSampleRate(unsigned int srate) const
 {
     for (unsigned int i = 0; i < this->sampleRates.size(); i++) {
@@ -91,6 +99,22 @@ bool RtAudioDevice::checkSampleRate(unsigned int srate) const
             return true;
     }
     return false;
+}
+
+//*******************************************************************************
+unsigned int RtAudioDevice::getClosestSampleRate(unsigned int srate) const
+{
+    unsigned int bestResult        = 0;
+    const unsigned int doubleSrate = srate * 2;
+    for (unsigned int i = 0; i < this->sampleRates.size(); i++) {
+        if (this->sampleRates[i] == srate)
+            return srate;
+        // pick the next highest rate available, or 2x if available
+        if (this->sampleRates[i] == doubleSrate
+            || (bestResult<srate&& this->sampleRates[i]> bestResult))
+            bestResult = this->sampleRates[i];
+    }
+    return bestResult;
 }
 
 //*******************************************************************************
@@ -243,6 +267,31 @@ void RtAudioInterface::setup(bool verbose)
         }
     }
 
+    mInSampleRate = mOutSampleRate = getSampleRate();
+#ifdef HAVE_LIBSAMPLERATE
+    if (!in_device.checkSampleRate(getSampleRate())) {
+        mInSampleRate = in_device.getClosestSampleRate(getSampleRate());
+        mInSrcPtr.reset(new SampleRateConverter(mInSampleRate, getSampleRate(),
+                                                in_chans_num, getBufferSizeInSamples()));
+        cout << "Converting input sample rate from " << mInSampleRate << " to "
+             << getSampleRate() << endl;
+    }
+    // special hack for apple's airpods. these work at 48khz ONLY for output.
+    // they will only run at 24k for input, and if input is active, they will
+    // also run output at 24k, despite claiming to be working at 48k.
+    if (in_device.isAirpods() && out_device.isAirpods()) {
+        mOutSampleRate = 24000;
+    } else if (!out_device.checkSampleRate(getSampleRate())) {
+        mOutSampleRate = out_device.getClosestSampleRate(getSampleRate());
+    }
+    if (mOutSampleRate != getSampleRate()) {
+        mOutSrcPtr.reset(new SampleRateConverter(
+            getSampleRate(), mOutSampleRate, out_chans_num, getBufferSizeInSamples()));
+        mOutTmpPtr.reset(new float[getBufferSizeInSamples() * out_chans_num]);
+        cout << "Converting output sample rate from " << mOutSampleRate << " to "
+             << getSampleRate() << endl;
+    }
+#else
     if (!in_device.checkSampleRate(getSampleRate())) {
         QString errorMsg;
         QTextStream(&errorMsg) << "Input device \"" << QString::fromStdString(in_name)
@@ -257,6 +306,7 @@ void RtAudioInterface::setup(bool verbose)
                                << getSampleRate();
         throw std::runtime_error(errorMsg.toStdString());
     }
+#endif
 
     // provide warnings for common known failure cases
     const QString out_device_lower_name =
@@ -325,8 +375,6 @@ void RtAudioInterface::setup(bool verbose)
     // Setup buffers
     mInBuffer.resize(in_chans_num);
     mOutBuffer.resize(out_chans_num);
-
-    unsigned int sampleRate   = getSampleRate();           // mSamplingRate;
     unsigned int bufferFrames = getBufferSizeInSamples();  // mBufferSize;
 
     if (in_device.api != out_device.api)
@@ -348,15 +396,15 @@ void RtAudioInterface::setup(bool verbose)
     try {
         if (mDuplexMode) {
             mRtAudioInput->openStream(
-                &out_params, &in_params, RTAUDIO_FLOAT32, sampleRate, &bufferFrames,
+                &out_params, &in_params, RTAUDIO_FLOAT32, mInSampleRate, &bufferFrames,
                 &RtAudioInterface::wrapperRtAudioCallback, this, &options, errorFunc);
         } else {
             mRtAudioInput->openStream(
-                nullptr, &in_params, RTAUDIO_FLOAT32, sampleRate, &bufferFrames,
+                nullptr, &in_params, RTAUDIO_FLOAT32, mInSampleRate, &bufferFrames,
                 &RtAudioInterface::wrapperRtAudioCallback, this, &options, errorFunc);
             const unsigned int inputBufferFrames = bufferFrames;
             mRtAudioOutput->openStream(
-                &out_params, nullptr, RTAUDIO_FLOAT32, sampleRate, &bufferFrames,
+                &out_params, nullptr, RTAUDIO_FLOAT32, mOutSampleRate, &bufferFrames,
                 &RtAudioInterface::wrapperRtAudioCallback, this, &options, errorFunc);
             if (inputBufferFrames != bufferFrames) {
                 // output device doesn't support the same buffer size
@@ -364,7 +412,7 @@ void RtAudioInterface::setup(bool verbose)
                 const unsigned int outputBufferFrames = bufferFrames;
                 mRtAudioInput->closeStream();
                 mRtAudioInput->openStream(
-                    nullptr, &in_params, RTAUDIO_FLOAT32, sampleRate, &bufferFrames,
+                    nullptr, &in_params, RTAUDIO_FLOAT32, mInSampleRate, &bufferFrames,
                     &RtAudioInterface::wrapperRtAudioCallback, this, &options, errorFunc);
                 if (outputBufferFrames != bufferFrames) {
                     // just give up if this still doesn't work
@@ -385,7 +433,7 @@ void RtAudioInterface::setup(bool verbose)
     if (mDuplexMode) {
         if (RTAUDIO_NO_ERROR
             != mRtAudioInput->openStream(
-                &out_params, &in_params, RTAUDIO_FLOAT32, sampleRate, &bufferFrames,
+                &out_params, &in_params, RTAUDIO_FLOAT32, mInSampleRate, &bufferFrames,
                 &RtAudioInterface::wrapperRtAudioCallback, this, &options)) {
             errorText = mRtAudioInput->getErrorText();
         }
@@ -393,14 +441,14 @@ void RtAudioInterface::setup(bool verbose)
         mRtAudioOutput->setErrorCallback(errorFunc);
         if (RTAUDIO_NO_ERROR
             != mRtAudioInput->openStream(
-                nullptr, &in_params, RTAUDIO_FLOAT32, sampleRate, &bufferFrames,
+                nullptr, &in_params, RTAUDIO_FLOAT32, mInSampleRate, &bufferFrames,
                 &RtAudioInterface::wrapperRtAudioCallback, this, &options)) {
             errorText = mRtAudioInput->getErrorText();
         } else {
             const unsigned int inputBufferFrames = bufferFrames;
             if (RTAUDIO_NO_ERROR
                 != mRtAudioOutput->openStream(
-                    &out_params, nullptr, RTAUDIO_FLOAT32, sampleRate, &bufferFrames,
+                    &out_params, nullptr, RTAUDIO_FLOAT32, mOutSampleRate, &bufferFrames,
                     &RtAudioInterface::wrapperRtAudioCallback, this, &options)) {
                 errorText = mRtAudioOutput->getErrorText();
             } else if (inputBufferFrames != bufferFrames) {
@@ -410,8 +458,9 @@ void RtAudioInterface::setup(bool verbose)
                 mRtAudioInput->closeStream();
                 if (RTAUDIO_NO_ERROR
                     != mRtAudioInput->openStream(
-                        nullptr, &in_params, RTAUDIO_FLOAT32, sampleRate, &bufferFrames,
-                        &RtAudioInterface::wrapperRtAudioCallback, this, &options)) {
+                        nullptr, &in_params, RTAUDIO_FLOAT32, mInSampleRate,
+                        &bufferFrames, &RtAudioInterface::wrapperRtAudioCallback, this,
+                        &options)) {
                     errorText = mRtAudioInput->getErrorText();
                 } else if (outputBufferFrames != bufferFrames) {
                     // just give up if this still doesn't work
@@ -450,7 +499,7 @@ void RtAudioInterface::setup(bool verbose)
     // Setup StereoToMonoMixer
     // This MUST be after RtAudio::openSteram in case bufferFrames changes
     mStereoToMonoMixerPtr.reset(new StereoToMono());
-    mStereoToMonoMixerPtr->init(sampleRate, bufferFrames);
+    mStereoToMonoMixerPtr->init(getSampleRate(), bufferFrames);
 }
 
 //*******************************************************************************
@@ -550,45 +599,83 @@ long RtAudioInterface::getDefaultDeviceForLinuxPulseAudio(bool isInput)
 
 //*******************************************************************************
 int RtAudioInterface::RtAudioCallback(void* outputBuffer, void* inputBuffer,
-                                      unsigned int nFrames, double /*streamTime*/,
+                                      unsigned int nframes, double /*streamTime*/,
                                       RtAudioStreamStatus /*status*/)
 {
-    sample_t* inputBuffer_sample  = static_cast<sample_t*>(inputBuffer);
-    sample_t* outputBuffer_sample = static_cast<sample_t*>(outputBuffer);
-    int in_chans_num              = getNumInputChannels();
-
     if (mDuplexMode) {
-        if (inputBuffer_sample == NULL || outputBuffer_sample == NULL) {
+        if (inputBuffer == NULL || outputBuffer == NULL) {
             return 0;
         }
-    } else if (inputBuffer_sample == NULL && outputBuffer_sample == NULL) {
+    } else if (inputBuffer == NULL && outputBuffer == NULL) {
         return 0;
     }
 
+#ifdef HAVE_LIBSAMPLERATE
+    uint32_t bufferSize = getBufferSizeInSamples();
+    if (inputBuffer != NULL && getSampleRate() != mInSampleRate) {
+        int framesAvailable = mInSrcPtr->push(inputBuffer, nframes);
+        if (framesAvailable < 0) {
+            std::cerr << "RtAudioInterface sample rate conversion error" << std::endl;
+            return -1;
+        }
+        while (static_cast<uint32_t>(framesAvailable) >= bufferSize) {
+            prepareInputBuffer(mInSrcPtr->pop(bufferSize), bufferSize);
+            AudioInterface::audioInputCallback(mInBuffer, bufferSize);
+            framesAvailable -= bufferSize;
+        }
+        inputBuffer = NULL;
+    }
+    if (outputBuffer != NULL && getSampleRate() != mOutSampleRate) {
+        prepareOutputBuffer(mOutTmpPtr.get(), bufferSize);
+        int framesAvailable = mOutSrcPtr->getFramesAvailable();
+        while (static_cast<unsigned int>(framesAvailable) < nframes) {
+            AudioInterface::audioOutputCallback(mOutBuffer, bufferSize);
+            framesAvailable = mOutSrcPtr->push(mOutTmpPtr.get(), bufferSize);
+            if (framesAvailable < 0) {
+                std::cerr << "RtAudioInterface sample rate conversion error" << std::endl;
+                return -1;
+            }
+        }
+        memcpy(outputBuffer, mOutSrcPtr->pop(nframes),
+               nframes * mOutBuffer.size() * sizeof(float));
+        outputBuffer = NULL;
+    }
+#endif
+
     // process input before output to minimize monitor latency on duplex devices
-    if (inputBuffer_sample != NULL) {
-        // copy samples to input buffer
-        for (int i = 0; i < mInBuffer.size(); i++) {
-            // Input Ports are READ ONLY
-            mInBuffer[i] = inputBuffer_sample + (nFrames * i);
-        }
-        if (in_chans_num == 2 && mInBuffer.size() == in_chans_num
-            && mInputMixMode == AudioInterface::MIXTOMONO) {
-            mStereoToMonoMixerPtr->compute(nFrames, mInBuffer.data(), mInBuffer.data());
-        }
-        AudioInterface::audioInputCallback(mInBuffer, nFrames);
+    if (inputBuffer != NULL) {
+        prepareInputBuffer(static_cast<sample_t*>(inputBuffer), nframes);
+        AudioInterface::audioInputCallback(mInBuffer, nframes);
     }
 
-    if (outputBuffer_sample != NULL) {
-        // copy samples to output buffer
-        for (int i = 0; i < mOutBuffer.size(); i++) {
-            // Output Ports are WRITABLE
-            mOutBuffer[i] = outputBuffer_sample + (nFrames * i);
-        }
-        AudioInterface::audioOutputCallback(mOutBuffer, nFrames);
+    if (outputBuffer != NULL) {
+        prepareOutputBuffer(static_cast<sample_t*>(outputBuffer), nframes);
+        AudioInterface::audioOutputCallback(mOutBuffer, nframes);
     }
 
     return 0;
+}
+
+//*******************************************************************************
+void RtAudioInterface::prepareInputBuffer(sample_t* ptr, unsigned int nframes)
+{
+    for (int i = 0; i < mInBuffer.size(); i++) {
+        // Input Ports are READ ONLY
+        mInBuffer[i] = ptr + (nframes * i);
+    }
+    if (getNumInputChannels() == 2 && mInBuffer.size() == getNumInputChannels()
+        && mInputMixMode == AudioInterface::MIXTOMONO) {
+        mStereoToMonoMixerPtr->compute(nframes, mInBuffer.data(), mInBuffer.data());
+    }
+}
+
+//*******************************************************************************
+void RtAudioInterface::prepareOutputBuffer(sample_t* ptr, unsigned int nframes)
+{
+    for (int i = 0; i < mOutBuffer.size(); i++) {
+        // Output Ports are WRITABLE
+        mOutBuffer[i] = ptr + (nframes * i);
+    }
 }
 
 //*******************************************************************************
