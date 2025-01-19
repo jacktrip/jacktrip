@@ -146,6 +146,7 @@ set(qjacktrip_SRC
   src/DataProtocol.cpp
   src/UdpDataProtocol.cpp
   src/AudioInterface.cpp
+  src/AudioSocket.cpp
   src/JackAudioInterface.cpp
   src/JMess.cpp
   src/LoopBack.cpp
@@ -153,6 +154,7 @@ set(qjacktrip_SRC
   src/RingBuffer.cpp
   src/JitterBuffer.cpp
   src/Regulator.cpp
+  src/SampleRateConverter.cpp
   src/Compressor.cpp
   src/Limiter.cpp
   src/Reverb.cpp
