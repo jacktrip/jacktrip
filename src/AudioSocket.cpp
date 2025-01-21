@@ -235,8 +235,7 @@ void FromAudioSocketPlugin::compute(int nframes, [[maybe_unused]] float** inputs
         // get bytes from next packet
         int8_t* recvPtr = reinterpret_cast<int8_t*>(mRecvBuffer.data());
         if (!mReceiveQueue.pop(recvPtr)) {
-            // TODO: comment out qDebug()
-            qDebug() << "Audio socket glitch: receive queue empty";
+            // qDebug() << "Audio socket glitch: receive queue empty";
             break;
         }
 
@@ -305,15 +304,13 @@ void FromAudioSocketPlugin::updateQueueStats(int nframes)
         return;
     }
 
-    // TODO: comment out qDebug()
-    qDebug() << "Audio socket receive queue: min =" << mMinQueuePackets
-             << ", max =" << mMaxQueuePackets;
+    // qDebug() << "Audio socket receive queue: min =" << mMinQueuePackets
+    //          << ", max =" << mMaxQueuePackets;
 
     if (mMinQueuePackets > 0) {
         // drain the queue to minimize latency
-        // TODO: comment out qDebug()
-        qDebug() << "Audio socket draining" << mMinQueuePackets
-                 << "packets from receive queue";
+        // qDebug() << "Audio socket draining" << mMinQueuePackets
+        //          << "packets from receive queue";
         int8_t* recvPtr = reinterpret_cast<int8_t*>(mRecvBuffer.data());
         do {
             mReceiveQueue.pop(recvPtr);
