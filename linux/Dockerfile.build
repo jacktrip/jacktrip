@@ -1,0 +1,79 @@
+# JackTrip build container for Linux
+#
+# this Dockerfile is used by GitHub CI to create linux builds
+# it requires these environment variables:
+#
+# BUILD_CONTAINER - Debian based container image to build with
+# MESON_ARGS      - arguments to build using meson
+# QT_DOWNLOAD_URL - path to qt download (optional)
+
+# container image versions
+ARG BUILD_CONTAINER=ubuntu:20.04
+
+FROM ${BUILD_CONTAINER} AS builder
+
+# install required packages
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update \
+  && apt-get install -yq --no-install-recommends curl python3-pip build-essential git libclang-dev libdbus-1-dev cmake ninja-build libjack-dev \
+  && apt-get install -yq --no-install-recommends libfreetype6-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev libx11-xcb-dev libdrm-dev libglu1-mesa-dev libwayland-dev libwayland-egl1-mesa libgles2-mesa-dev libwayland-server0 libwayland-egl-backend-dev libxcb1-dev libxext-dev libfontconfig1-dev libxrender-dev libxcb-keysyms1-dev libxcb-image0-dev libxcb-shm0-dev libxcb-icccm4-dev '^libxcb.*-dev' libxcb-render-util0-dev libxcomposite-dev libgtk-3-dev \
+  && apt-get install -yq --no-install-recommends libasound2-dev libpulse-dev \
+  && apt-get install -yq --no-install-recommends help2man clang-tidy desktop-file-utils
+RUN python3 -m pip install --upgrade pip \
+  && python3 -m pip install --upgrade certifi \
+  && python3 -m pip install meson pyyaml Jinja2
+
+WORKDIR /opt/jacktrip
+
+# install qt
+ARG QT_DOWNLOAD_URL=""
+ENV QT_DOWNLOAD_URL=$QT_DOWNLOAD_URL
+ENV QT_INSTALL_PATH="/opt"
+RUN if [ -n "$QT_DOWNLOAD_URL" ]; then \
+  mkdir -p $QT_INSTALL_PATH; \
+  chmod a+rwx $QT_INSTALL_PATH; \
+  curl -k -L $QT_DOWNLOAD_URL -o qt.tar.gz; \
+  tar -C $QT_INSTALL_PATH -xzf qt.tar.gz; \
+  rm qt.tar.gz; \
+  else \
+  add-apt-repository universe; \
+  apt-get update; \
+  apt-get install -yq --no-install-recommends qt6-base-dev qt6-base-dev-tools qmake6 qt6-tools-dev qt6-declarative-dev qt6-webengine-dev qt6-webview-dev qt6-webview-plugins libqt6svg6-dev libqt6websockets6-dev libgl1-mesa-dev libqt6core5compat6-dev libqt6shadertools6-dev; \
+  qtchooser -install qt6 $(which qmake6); \
+  fi
+
+# install vst3sdk
+ARG VST3SDK_DOWNLOAD_URL=""
+ENV VST3SDK_DOWNLOAD_URL=$VST3SDK_DOWNLOAD_URL
+ENV VST3SDK_INSTALL_PATH="/opt"
+RUN if [ -n "$VST3SDK_DOWNLOAD_URL" ]; then \
+  mkdir -p $VST3SDK_INSTALL_PATH; \
+  chmod a+rwx $VST3SDK_INSTALL_PATH; \
+  curl -k -L $VST3SDK_DOWNLOAD_URL -o vst3sdk.tar.gz; \
+  tar -C $VST3SDK_INSTALL_PATH -xzf vst3sdk.tar.gz; \
+  rm vst3sdk.tar.gz; \
+  apt-get install -yq --no-install-recommends libexpat-dev libxml2-dev libxcb-util-dev libxcb-cursor-dev libxcb-keysyms1-dev libxcb-xkb-dev libxkbcommon-dev libxkbcommon-x11-dev libgtkmm-3.0-dev libsqlite3-dev; \
+  fi
+
+# build jacktrip using meson
+COPY . ./
+ARG MESON_ARGS=""
+ENV MESON_ARGS=$MESON_ARGS
+ENV BUILD_PATH="/opt/jacktrip/builddir"
+RUN if [ -n "$QT_DOWNLOAD_URL" ]; then \
+  export QT_PATH="/opt/$(echo $QT_DOWNLOAD_URL | sed -e 's,.*/qt/\(qt-[.0-9]*\-[a-z]*\).*,\1,')"; \
+  export PATH="$PATH:$QT_PATH/bin"; \
+  export PKG_CONFIG_PATH="$QT_PATH/lib/pkgconfig"; \
+  export CMAKE_PREFIX_PATH="$QT_PATH"; fi \
+  && if [ -n "$VST3SDK_DOWNLOAD_URL" ]; then \
+  export MESON_ARGS="-Dvst-sdkdir=${VST3SDK_INSTALL_PATH}/vst3sdk $MESON_ARGS"; fi \
+  && export SSL_CERT_FILE=$(python3 -m certifi) \
+  && meson setup --buildtype release $MESON_ARGS $BUILD_PATH \
+  && meson compile -C $BUILD_PATH -v \
+  && strip $BUILD_PATH/jacktrip \
+  && if [ -n "$VST3SDK_DOWNLOAD_URL" ]; then \
+  strip $BUILD_PATH/JackTrip.vst3; fi
+
+FROM scratch AS artifact
+
+COPY --from=builder /opt/jacktrip/builddir/jacktrip /opt/jacktrip/builddir/JackTrip.vs[t]3 /opt/jacktrip/builddir/linux/org.jacktrip.JackTrip.desktop /

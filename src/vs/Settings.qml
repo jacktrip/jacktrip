@@ -59,13 +59,6 @@ Item {
         return idx;
     }
 
-    function getQueueBufferString () {
-        if (audio.queueBuffer == 0) {
-            return "auto";
-        }
-        return audio.queueBuffer + " ms";
-    }
-
     Rectangle {
         id: audioSettingsView
         width: 0.8 * parent.width
@@ -480,83 +473,12 @@ Item {
             color: textColour
         }
 
-        Slider {
-            id: queueBufferSlider
-            value: audio.queueBuffer
-            onMoved: {
-                audio.queueBuffer = value;
-            }
-            from: 0
-            to: 128
-            stepSize: 1
-            padding: 0
-            x: updateChannelCombo.x + queueBufferText.width
-            y: bufferCombo.y + (54 * virtualstudio.uiScale)
-            width: updateChannelCombo.width - queueBufferText.width
-
-            background: Rectangle {
-                x: queueBufferSlider.leftPadding
-                y: queueBufferSlider.topPadding + queueBufferSlider.availableHeight / 2 - height / 2
-                implicitWidth: parent.width
-                implicitHeight: 6
-                width: queueBufferSlider.availableWidth
-                height: implicitHeight
-                radius: 4
-                color: sliderTrackColour
-
-                Rectangle {
-                    width: queueBufferSlider.visualPosition * parent.width
-                    height: parent.height
-                    color: sliderActiveTrackColour
-                    radius: 4
-                }
-            }
-
-            handle: Rectangle {
-                x: queueBufferSlider.leftPadding + queueBufferSlider.visualPosition * (queueBufferSlider.availableWidth - width)
-                y: queueBufferSlider.topPadding + queueBufferSlider.availableHeight / 2 - height / 2
-                implicitWidth: 26 * virtualstudio.uiScale
-                implicitHeight: 26 * virtualstudio.uiScale
-                radius: 13 * virtualstudio.uiScale
-                color: queueBufferSlider.pressed ? sliderPressedColour : sliderColour
-                border.color: buttonStroke
-            }
-        }
-
-        Text {
-            id: queueBufferText
-            width: (64 * virtualstudio.uiScale)
-            x: updateChannelCombo.x;
-            anchors.verticalCenter: queueBufferSlider.verticalCenter
-            text: getQueueBufferString()
-            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-            color: textColour
-        }
-
-        Text {
-            id: queueBufferLabel
-            anchors.verticalCenter: queueBufferSlider.verticalCenter
-            x: leftMargin * virtualstudio.uiScale
-            text: "Adjust Latency"
-            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-            color: textColour
-        }
-
-        InfoTooltip {
-            id: tooltip
-            content: "JackTrip analyzes your Internet connection to find the best balance between audio latency and quality. Add additional latency to further improve quality."
-            size: 16
-            anchors.left: queueBufferLabel.right
-            anchors.leftMargin: 2 * virtualstudio.uiScale
-            anchors.verticalCenter: queueBufferSlider.verticalCenter
-        }
-
         CheckBox {
             id: feedbackDetection
             checked: audio.feedbackDetectionEnabled
             text: qsTr("Automatically mute when feedback is detected")
             x: updateChannelCombo.x;
-            y: queueBufferSlider.y + (48 * virtualstudio.uiScale)
+            y: bufferCombo.y + (48 * virtualstudio.uiScale)
             onClicked: { audio.feedbackDetectionEnabled = feedbackDetection.checkState == Qt.Checked; }
             indicator: Rectangle {
                 implicitWidth: 16 * virtualstudio.uiScale

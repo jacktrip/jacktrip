@@ -189,6 +189,8 @@ void VsDevice::sendHeartbeat()
         json.insert(QLatin1String("high_latency"),
                     m_audioConfigPtr->getHighLatencyFlag());
         json.insert(QLatin1String("network_outage"), m_networkOutage);
+        json.insert(QLatin1String("recv_latency"),
+                    m_jackTrip.isNull() ? -1 : m_jackTrip->getLatency());
 
         // For the internal application UI, ms will suffice. No conversion needed
         QJsonObject pingStats = {};
@@ -201,6 +203,8 @@ void VsDevice::sendHeartbeat()
                          ((int)(10 * stats.stdDevRtt)) / 10.0);
         pingStats.insert(QLatin1String("highLatency"),
                          m_audioConfigPtr->getHighLatencyFlag());
+        pingStats.insert(QLatin1String("recvLatency"),
+                         m_jackTrip.isNull() ? -1 : m_jackTrip->getLatency());
         emit updateNetworkStats(pingStats);
     }
 
@@ -277,8 +281,7 @@ JackTrip* VsDevice::initJackTrip(
     [[maybe_unused]] std::string output, [[maybe_unused]] int baseInputChannel,
     [[maybe_unused]] int numChannelsIn, [[maybe_unused]] int baseOutputChannel,
     [[maybe_unused]] int numChannelsOut, [[maybe_unused]] int inputMixMode,
-    [[maybe_unused]] int bufferSize, [[maybe_unused]] int queueBuffer,
-    VsServerInfo* studioInfo)
+    [[maybe_unused]] int bufferSize, VsServerInfo* studioInfo)
 {
     m_jackTrip.reset(
         new JackTrip(JackTrip::CLIENTTOPINGSERVER, JackTrip::UDP, baseInputChannel,
@@ -305,7 +308,16 @@ JackTrip* VsDevice::initJackTrip(
     m_jackTrip->setBindPorts(bindPort);
     m_jackTrip->setRemoteClientName(m_appID);
     m_jackTrip->setBufferStrategy(3);  // PLC
+
+    // adjust queueBuffer config setting to map to auto headroom
+    int queueBuffer = m_queueBuffer;
+    if (queueBuffer <= 0) {
+        queueBuffer = -500;
+    } else {
+        queueBuffer *= -1;
+    }
     m_jackTrip->setBufferQueueLength(queueBuffer);
+
     m_jackTrip->setUseRtUdpPriority(
         true);  // rt udp priority reduces glitches on desktops
     m_jackTrip->setPeerAddress(studioInfo->host());
@@ -410,6 +422,24 @@ void VsDevice::reconcileAgentConfig(QJsonDocument newState)
 void VsDevice::syncDeviceSettings()
 {
     m_sendVolumeTimer.start(100);
+}
+
+// setQueueBuffer updates balance between latency and quality for audio received
+void VsDevice::setQueueBuffer(int queueBuffer)
+{
+    if (m_queueBuffer == queueBuffer)
+        return;
+    if (queueBuffer < 0)
+        queueBuffer = 0;
+    m_queueBuffer = queueBuffer;
+    if (!m_jackTrip.isNull()) {
+        if (queueBuffer <= 0) {
+            queueBuffer = -500;
+        } else {
+            queueBuffer *= -1;
+        }
+        m_jackTrip->setBufferQueueLength(queueBuffer);
+    }
 }
 
 // handleJackTripError is a slot intended to be triggered on jacktrip process signals

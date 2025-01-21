@@ -1,6 +1,7 @@
 <RCC>
   <qresource prefix="images">
     <file>icon_256.png</file>
+    <file alias="icon_128@2x.png">icon_256.png</file>
     <file>icon_128.png</file>
     <file>icon_32.png</file>
   </qresource>

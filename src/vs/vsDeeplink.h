@@ -29,19 +29,20 @@
 //*****************************************************************
 
 /**
- * \file vsDeeplink.h
+ * \file VsDeeplink.h
  * \author Mike Dickey, based on code by Aaron Wyatt and Matt Horton
- * \date August 2023
+ * \date December 2024
  */
 
 #ifndef __VSDEEPLINK_H__
 #define __VSDEEPLINK_H__
 
-#include <QLocalServer>
-#include <QLocalSocket>
-#include <QScopedPointer>
+#include <QObject>
+#include <QSharedPointer>
 #include <QString>
 #include <QUrl>
+
+class QLocalSocket;
 
 class VsDeeplink : public QObject
 {
@@ -49,64 +50,26 @@ class VsDeeplink : public QObject
 
    public:
     // construct with an instance of the application, to parse command line args
-    VsDeeplink(const QString& deeplink);
+    VsDeeplink();
 
     // virtual destructor since it inherits from QObject
     // this is used to unregister url handler
     virtual ~VsDeeplink();
 
-    // blocks main thread until local socket server is ready
-    // returns true if a deeplink was handled and we should exit now
-    bool waitForReady();
-
-    // used to let us know VirtualStudio is ready to process deeplink signals
-    void readyForSignals();
-
-    // returns deeplink extracted from command line, if any
-    const QUrl& getDeeplink() const { return m_deeplink; }
-
-   signals:
-
-    // signalIsReady is emitted when the local socket server is ready
-    void signalIsReady();
-
-    // signalDeeplink is emitted when we want the local instance to process a deeplink
-    void signalDeeplink(const QUrl& url);
-
-   private slots:
-
-    // handleUrl is called to trigger processing of a deeplink
+   public slots:
+    // handleUrl is called to trigger processing of a VsDeeplink
     void handleUrl(const QUrl& url);
 
-    // checks to see if another instance of jacktrip is available to process requests.
-    // if there is, this will send any command line deeplinks to it and exit.
-    // if there isn't, this will start listening for requests.
-    void checkForInstance();
+    // called by local socket server to process VsDeeplink requests
+    void handleVsDeeplinkRequest(QSharedPointer<QLocalSocket>& socket);
 
-    // called if a connection was established with another instance of VS
-    void connectionReceived();
-
-    // called if unable to connect to another instance of VS
-    void connectionFailed(QLocalSocket::LocalSocketError socketError);
-
-    // called by local socket server to process deeplink requests
-    void handleDeeplinkRequest();
+   signals:
+    // signalVsDeeplink is emitted when we want the local instance to process a VsDeeplink
+    void signalVsDeeplink(const QUrl& url);
 
    private:
     // sets url scheme for windows machines; does nothing on other platforms
     static void setUrlScheme();
-
-    // used to check if there is a virtual studio instance already running
-    QScopedPointer<QLocalSocket> m_instanceCheckSocket;
-
-    // used to listen for deeplink requests via local socket connections
-    QScopedPointer<QLocalServer> m_instanceServer;
-
-    // used to synchronize with main thread at startup
-    bool m_isReady         = false;
-    bool m_readyForSignals = false;
-    bool m_readyToExit     = false;
-    QUrl m_deeplink;
 };
 
 #endif  // __VSDEEPLINK_H__

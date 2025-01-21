@@ -148,7 +148,7 @@ border: 4px solid black; </string>
   </layout>
  </widget>
  <resources>
-  <include location="qjacktrip.qrc"/>
+  <include location="../images/images.qrc"/>
  </resources>
  <connections/>
 </ui>

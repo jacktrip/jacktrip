@@ -18,6 +18,12 @@
                 <Directory Id='INSTALLDIR' Name='JackTrip'>
                 </Directory>
             </Directory>
+            <?ifdef vst?>
+            <Directory Id="CommonFiles64Folder" Name="CFiles">
+                <Directory Id='VST3DIR' Name='VST3'>
+                </Directory>
+            </Directory>
+            <?endif?>
             <Directory Id='ProgramMenuFolder' Name='Programs'>
                 <Directory Id='ProgramMenuDir' Name='JackTrip'>
                     <Component Id="ProgramMenuDir" Guid="2f25e96a-47a5-4eca-b367-a78ce536d9b9">
@@ -33,6 +39,12 @@
             <ComponentGroupRef Id='jacktrip' />
             <ComponentRef Id='ProgramMenuDir' />
         </Feature>
+
+        <?ifdef vst?>
+        <Feature Id='VST3Install' Title='JackTrip VST3 Plugin' Description='VST3 Plugin' Level='1'>
+            <ComponentGroupRef Id='jacktripvst3' />
+        </Feature>
+        <?endif?>
 
         <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch JackTrip" />
         <Property Id="WixShellExecTarget" Value="[INSTALLDIR]\jacktrip.exe" />

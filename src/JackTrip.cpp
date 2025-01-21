@@ -460,27 +460,27 @@ void JackTrip::setPeerAddress(const QString& PeerHostOrIP)
 }
 
 //*******************************************************************************
-void JackTrip::appendProcessPluginToNetwork(ProcessPlugin* plugin)
+void JackTrip::appendProcessPluginToNetwork(QSharedPointer<ProcessPlugin>& plugin)
 {
-    if (plugin) {
+    if (!plugin.isNull()) {
         mProcessPluginsToNetwork.append(plugin);  // ownership transferred
         // mAudioInterface->appendProcessPluginToNetwork(plugin);
     }
 }
 
 //*******************************************************************************
-void JackTrip::appendProcessPluginFromNetwork(ProcessPlugin* plugin)
+void JackTrip::appendProcessPluginFromNetwork(QSharedPointer<ProcessPlugin>& plugin)
 {
-    if (plugin) {
+    if (!plugin.isNull()) {
         mProcessPluginsFromNetwork.append(plugin);  // ownership transferred
         // mAudioInterface->appendProcessPluginFromNetwork(plugin);
     }
 }
 
 //*******************************************************************************
-void JackTrip::appendProcessPluginToMonitor(ProcessPlugin* plugin)
+void JackTrip::appendProcessPluginToMonitor(QSharedPointer<ProcessPlugin>& plugin)
 {
-    if (plugin) {
+    if (!plugin.isNull()) {
         mProcessPluginsToMonitor.append(plugin);  // ownership transferred
         // mAudioInterface->appendProcessPluginFromNetwork(plugin);
     }
@@ -769,7 +769,9 @@ void JackTrip::onStatTimer()
             //                     pkt_stat.lost << "/"
             //                     << pkt_stat.outOfOrder << "/" << pkt_stat.revived
             << " \n tot: " << pkt_stat.tot << " \t tol: " << setw(5)
-            << INVFLOATFACTOR * recv_io_stat.autoq_corr << " \t dsp (max): " << setw(5)
+            << INVFLOATFACTOR * recv_io_stat.autoq_corr
+            << " \t latency (max): " << setw(5) << std::setprecision(3)
+            << mReceiveRingBuffer->getLatency() << " \t dsp (max): " << setw(5)
             << INVFLOATFACTOR * recv_io_stat.autoq_rate
             //                     << " sync: " << recv_io_stat.level << "/"
             //                     << recv_io_stat.buf_inc_underrun << "/"

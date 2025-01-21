@@ -112,6 +112,15 @@ class JackTripWorker : public QObject
     }
     void setBroadcast(int broadcast_queue) { mBroadcastQueue = broadcast_queue; }
     void setUseRtUdpPriority(bool use) { mUseRtUdpPriority = use; }
+    void setBufferQueueLength(int queueBufferLength)
+    {
+        QMutexLocker lock(&mMutex);
+        if (mJackTrip.isNull() || mBufferQueueLength == queueBufferLength) {
+            return;
+        }
+        mBufferQueueLength = queueBufferLength;
+        mJackTrip->setBufferQueueLength(mBufferQueueLength);
+    }
 
     void setIOStatTimeout(int timeout) { mIOStatTimeout = timeout; }
     void setIOStatStream(QSharedPointer<std::ostream> statStream)

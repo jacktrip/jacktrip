@@ -70,7 +70,7 @@ Volume::~Volume()
 void Volume::init(int samplingRate, int bufferSize)
 {
     ProcessPlugin::init(samplingRate, bufferSize);
-    fs = float(fSamplingFreq);
+    fs = float(mSampleRate);
 
     for (int i = 0; i < mNumChannels; i++) {
         static_cast<volumedsp*>(volumeP[i])

@@ -54,6 +54,7 @@
 #include "Patcher.h"
 #endif
 #include "Auth.h"
+#include "OscServer.h"
 #include "SslServer.h"
 
 class JackTripWorker;  // forward declaration
@@ -109,6 +110,7 @@ class UdpHubListener : public QObject
     }
     void receivedNewConnection();
     void stopCheck();
+    void queueBufferChanged(int queueBufferSize);
 
    signals:
     void signalStarted();
@@ -128,6 +130,16 @@ class UdpHubListener : public QObject
     int readClientUdpPort(QSslSocket* clientConnection, QString& clientName);
     int checkAuthAndReadPort(QSslSocket* clientConnection, QString& clientName);
     int sendUdpPort(QSslSocket* clientConnection, qint32 udp_port);
+
+    void startOscServer()
+    {
+        // start osc server to listen to config updates
+        mOscServer = new OscServer(mServerPort, this);
+        mOscServer->start();
+
+        QObject::connect(mOscServer, &OscServer::signalQueueBufferChanged, this,
+                         &UdpHubListener::queueBufferChanged, Qt::QueuedConnection);
+    };
 
     /**
      * \brief Send the JackTripWorker to the thread pool. This will run
@@ -156,6 +168,8 @@ class UdpHubListener : public QObject
 
     // JackTripWorker* mJTWorker; ///< Class that will be used as prototype
     QVector<JackTripWorker*>* mJTWorkers;  ///< Vector of JackTripWorkers
+    // Pointer to OscServer
+    OscServer* mOscServer;
 
     SslServer mTcpServer;
     int mServerPort;     //< Server known port number

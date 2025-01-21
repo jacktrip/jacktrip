@@ -1,0 +1,8 @@
+[wrap-file]
+directory = libsamplerate-0.2.2
+source_url = https://github.com/libsndfile/libsamplerate/archive/refs/tags/0.2.2.tar.gz
+source_filename = libsamplerate-0.2.2.tar.gz
+source_hash = 16e881487f184250deb4fcb60432d7556ab12cb58caea71ef23960aec6c0405a
+
+[provide]
+dependency_names = libsamplerate

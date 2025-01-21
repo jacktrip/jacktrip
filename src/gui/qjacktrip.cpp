@@ -497,7 +497,11 @@ void QJackTrip::processFinished()
 
     if (m_ui->disconnectScriptCheckBox->isChecked()) {
         QStringList arguments = m_ui->disconnectScriptEdit->text().split(
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
             QStringLiteral(" "), Qt::SkipEmptyParts);
+#else
+            QStringLiteral(" "), QString::SkipEmptyParts);
+#endif
         if (!arguments.isEmpty()) {
             QProcess disconnectScript;
             disconnectScript.setProgram(arguments.takeFirst());
@@ -547,7 +551,12 @@ void QJackTrip::receivedConnectionFromPeer()
     m_assignedClientName = m_jackTrip->getAssignedClientName();
     if (m_ui->connectScriptCheckBox->isChecked()) {
         QStringList arguments = m_ui->connectScriptEdit->text().split(QStringLiteral(" "),
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
                                                                       Qt::SkipEmptyParts);
+#else
+                                                                      QString::
+                                                                          SkipEmptyParts);
+#endif
         if (!arguments.isEmpty()) {
             QProcess connectScript;
             connectScript.setProgram(arguments.takeFirst());
@@ -1631,53 +1640,61 @@ void QJackTrip::appendPlugins(JackTrip* jackTrip, int numSendChannels,
     // These effects are currently deleted by the AudioInterface of jacktrip.
     // May need to change this code if we move to smart pointers.
     if (m_ui->outCompressorCheckBox->isChecked()) {
-        jackTrip->appendProcessPluginToNetwork(
+        QSharedPointer<ProcessPlugin> pluginPtr(
             new Compressor(numSendChannels, false, CompressorPresets::voice));
+        jackTrip->appendProcessPluginToNetwork(pluginPtr);
     }
     if (m_ui->inCompressorCheckBox->isChecked()) {
-        jackTrip->appendProcessPluginFromNetwork(
+        QSharedPointer<ProcessPlugin> pluginPtr(
             new Compressor(numRecvChannels, false, CompressorPresets::voice));
+        jackTrip->appendProcessPluginFromNetwork(pluginPtr);
     }
 
     if (m_ui->outZitarevCheckBox->isChecked()) {
         qreal wetness = m_ui->outZitarevWetnessSlider->value() / 100.0;
-        jackTrip->appendProcessPluginToNetwork(
+        QSharedPointer<ProcessPlugin> pluginPtr(
             new Reverb(numSendChannels, numSendChannels, 1.0 + wetness));
+        jackTrip->appendProcessPluginToNetwork(pluginPtr);
     }
     if (m_ui->inZitarevCheckBox->isChecked()) {
         qreal wetness = m_ui->inZitarevWetnessSlider->value() / 100.0;
-        jackTrip->appendProcessPluginFromNetwork(
+        QSharedPointer<ProcessPlugin> pluginPtr(
             new Reverb(numRecvChannels, numRecvChannels, 1.0 + wetness));
+        jackTrip->appendProcessPluginFromNetwork(pluginPtr);
     }
 
     if (m_ui->outFreeverbCheckBox->isChecked()) {
         qreal wetness = m_ui->outFreeverbWetnessSlider->value() / 100.0;
-        jackTrip->appendProcessPluginToNetwork(
+        QSharedPointer<ProcessPlugin> pluginPtr(
             new Reverb(numSendChannels, numSendChannels, wetness));
+        jackTrip->appendProcessPluginToNetwork(pluginPtr);
     }
     if (m_ui->inFreeverbCheckBox->isChecked()) {
         qreal wetness = m_ui->inFreeverbWetnessSlider->value() / 100.0;
-        jackTrip->appendProcessPluginFromNetwork(
+        QSharedPointer<ProcessPlugin> pluginPtr(
             new Reverb(numRecvChannels, numRecvChannels, wetness));
+        jackTrip->appendProcessPluginFromNetwork(pluginPtr);
     }
 
     // Limiters go last in the plugin sequence.
     if (m_ui->outLimiterCheckBox->isChecked()) {
-        jackTrip->appendProcessPluginToNetwork(
+        QSharedPointer<ProcessPlugin> pluginPtr(
             new Limiter(numSendChannels, m_ui->outClientsSpinBox->value()));
+        jackTrip->appendProcessPluginToNetwork(pluginPtr);
     }
     if (m_ui->inLimiterCheckBox->isChecked()) {
-        jackTrip->appendProcessPluginFromNetwork(new Limiter(numRecvChannels, 1));
+        QSharedPointer<ProcessPlugin> pluginPtr(new Limiter(numRecvChannels, 1));
+        jackTrip->appendProcessPluginFromNetwork(pluginPtr);
     }
 }
 
 void QJackTrip::createMeters(quint32 inputChannels, quint32 outputChannels)
 {
     // These pointers are also deleted by AudioInterface.
-    Meter* inputMeter  = new Meter(inputChannels);
-    Meter* outputMeter = new Meter(outputChannels);
-    m_jackTrip->appendProcessPluginToNetwork(inputMeter);
-    m_jackTrip->appendProcessPluginFromNetwork(outputMeter);
+    QSharedPointer<ProcessPlugin> inputMeterPtr(new Meter(inputChannels));
+    QSharedPointer<ProcessPlugin> outputMeterPtr(new Meter(outputChannels));
+    m_jackTrip->appendProcessPluginToNetwork(inputMeterPtr);
+    m_jackTrip->appendProcessPluginFromNetwork(outputMeterPtr);
 
     // Create our widgets.
     for (quint32 i = 0; i < inputChannels; i++) {
@@ -1703,9 +1720,11 @@ void QJackTrip::createMeters(quint32 inputChannels, quint32 outputChannels)
     }
     m_outputLayout->setRowStretch(outputChannels, 100);
 
-    QObject::connect(inputMeter, &Meter::onComputedVolumeMeasurements, this,
+    QObject::connect(static_cast<Meter*>(inputMeterPtr.get()),
+                     &Meter::onComputedVolumeMeasurements, this,
                      &QJackTrip::updatedInputMeasurements);
-    QObject::connect(outputMeter, &Meter::onComputedVolumeMeasurements, this,
+    QObject::connect(static_cast<Meter*>(outputMeterPtr.get()),
+                     &Meter::onComputedVolumeMeasurements, this,
                      &QJackTrip::updatedOutputMeasurements);
 }
 
@@ -1956,8 +1975,12 @@ QString QJackTrip::commandLineFromCurrentOptions()
         if (m_ui->outputDeviceComboBox->currentIndex() > 0) {
             outDevice = m_ui->outputDeviceComboBox->currentText();
         }
-        commandLine.append(
-            QStringLiteral(" --audiodevice \"%1\",\"%2\"").arg(inDevice, outDevice));
+        QString inDeviceEscaped =
+            QString(inDevice).replace(QStringLiteral(","), QStringLiteral("\\,"));
+        QString outDeviceEscaped =
+            QString(outDevice).replace(QStringLiteral(","), QStringLiteral("\\,"));
+        commandLine.append(QStringLiteral(" --audiodevice \"%1\",\"%2\"")
+                               .arg(inDeviceEscaped, outDeviceEscaped));
     }
 #endif
 

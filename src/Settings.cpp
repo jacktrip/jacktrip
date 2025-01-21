@@ -981,19 +981,56 @@ void Settings::setDevicesByString(std::string nameArg)
 {
     size_t commaPos;
     char delim = ',';
-    if (std::count(nameArg.begin(), nameArg.end(), delim) > 1) {
+
+    // Some audio device names contain commas. Allow these to be escaped with a backslash.
+    int delimCount      = std::count(nameArg.begin(), nameArg.end(), delim);
+    std::string escaped = "\\,";
+    std::vector<size_t> escapedPositions;
+
+    size_t position = nameArg.find(escaped, 0);
+    while (position != std::string::npos) {
+        // Store our comma locations for future reference.
+        escapedPositions.push_back(position + 1);
+        cout << position + 1 << endl;
+        position = nameArg.find(escaped, position + escaped.length());
+    }
+
+    if (delimCount - escapedPositions.size() > 1) {
         throw std::invalid_argument(
-            "Found multiple commas in the --audiodevice argument, cannot parse "
+            "Found multiple unescaped commas in the --audiodevice argument, cannot parse "
             "reliably.");
     }
-    commaPos = nameArg.rfind(delim);
+    int index = escapedPositions.size() - 1;
+    commaPos  = nameArg.rfind(delim);
+    while (commaPos > 0 && index >= 0 && commaPos == escapedPositions.at(index)) {
+        commaPos = nameArg.rfind(delim, commaPos - 1);
+        index--;
+    }
+
     if (commaPos || nameArg[0] == delim) {
         mInputDeviceName  = nameArg.substr(0, commaPos);
         mOutputDeviceName = nameArg.substr(commaPos + 1);
     } else {
         mInputDeviceName = mOutputDeviceName = nameArg;
     }
+
+    if (escapedPositions.size() > 0) {
+        // We have to get rid of instances of our escape character.
+        position = 0;
+        while ((position = mInputDeviceName.find(escaped, position))
+               != std::string::npos) {
+            mInputDeviceName.replace(position, escaped.length(), ",");
+            position++;
+        }
+        position = 0;
+        while ((position = mOutputDeviceName.find(escaped, position))
+               != std::string::npos) {
+            mOutputDeviceName.replace(position, escaped.length(), ",");
+            position++;
+        }
+    }
 }
+
 #endif
 
 //*******************************************************************************
@@ -1226,13 +1263,15 @@ JackTrip* Settings::getConfiguredJackTrip()
     std::vector<ProcessPlugin*> outgoingEffects =
         mEffects.allocateOutgoingEffects(mNumAudioInputChans - nReservedChans);
     for (auto p : outgoingEffects) {
-        jackTrip->appendProcessPluginToNetwork(p);
+        QSharedPointer<ProcessPlugin> pShared(p);
+        jackTrip->appendProcessPluginToNetwork(pShared);
     }
 
     std::vector<ProcessPlugin*> incomingEffects =
         mEffects.allocateIncomingEffects(mNumAudioOutputChans - nReservedChans);
     for (auto p : incomingEffects) {
-        jackTrip->appendProcessPluginFromNetwork(p);
+        QSharedPointer<ProcessPlugin> pShared(p);
+        jackTrip->appendProcessPluginFromNetwork(pShared);
     }
 
 #ifdef WAIR  // WAIR

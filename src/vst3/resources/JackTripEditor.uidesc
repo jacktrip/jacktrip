@@ -1,0 +1,373 @@
+{
+	"vstgui-ui-description": {
+		"version": "1",
+		"bitmaps": {
+			"background": {
+				"path": "background.png"
+			},
+			"background_2x": {
+				"path": "background_2x.png",
+				"scale-factor": "2"
+			},
+			"Dual_LED": {
+				"path": "Dual_LED.png"
+			},
+			"Sercan_Moog_Knob": {
+				"path": "Sercan_Moog_Knob.png"
+			}
+		},
+		"fonts": {},
+		"colors": {},
+		"gradients": {},
+		"control-tags": {
+			"Bypass": "1000",
+			"Connected": "200",
+			"Output Gain": "102",
+			"Output Mix": "101",
+			"Send": "100"
+		},
+		"custom": {
+			"FocusDrawing": {},
+			"VST3Editor": {
+				"Path": "JackTripEditor.uidesc"
+			},
+			"UIGridController": {
+				"Grids": "1x 1,5x 5,10x 10,12x 12,15x 15",
+				"Size": "10, 10"
+			},
+			"UITemplateController": {
+				"SelectedTemplate": "view"
+			},
+			"UIEditController": {
+				"EditViewScale": "1",
+				"EditorSize": "0, 0, 1391, 803",
+				"SplitViewSize_0_0": "0.5894465894465894528764238202711567282677",
+				"SplitViewSize_0_1": "0.3848133848133848400330236927402438595891",
+				"SplitViewSize_1_0": "0.5109395109395109546568392033805139362812",
+				"SplitViewSize_1_1": "0.4851994851994851920551354851340875029564",
+				"SplitViewSize_2_0": "0.7239396117900790406096689366677310317755",
+				"SplitViewSize_2_1": "0.2724658519051042504521831233432749286294",
+				"TabSwitchValue": "0",
+				"Version": "1"
+			},
+			"UIAttributesController": {},
+			"UIViewCreatorDataSource": {
+				"SelectedRow": "9"
+			},
+			"UIBitmapsDataSource": {
+				"SelectedRow": "3"
+			},
+			"UITagsDataSource": {
+				"SelectedRow": "1"
+			},
+			"UIFontsDataSource": {
+				"SelectedRow": "-1"
+			},
+			"UIGradientsDataSource": {
+				"SelectedRow": "-1"
+			},
+			"UIColorsDataSource": {
+				"SelectedRow": "-1"
+			}
+		},
+		"templates": {
+			"view": {
+				"attributes": {
+					"background-color": "~ BlackCColor",
+					"background-color-draw-style": "filled and stroked",
+					"bitmap": "background",
+					"class": "CViewContainer",
+					"mouse-enabled": "true",
+					"opacity": "1",
+					"origin": "0, 0",
+					"size": "400, 200",
+					"transparent": "false",
+					"wants-focus": "false"
+				},
+				"children": {
+					"COnOffButton": {
+						"attributes": {
+							"bitmap": "Dual_LED",
+							"class": "COnOffButton",
+							"control-tag": "Connected",
+							"opacity": "1",
+							"origin": "335, 8",
+							"size": "62, 62",
+							"tooltip": "Green when connected to JackTrip",
+							"transparent": "false",
+							"uidesc-label": "Connected",
+							"wants-focus": "false",
+							"wheel-inc-value": "0.1"
+						}
+					},
+					"CViewContainer": {
+						"attributes": {
+							"background-color": "~ BlackCColor",
+							"background-color-draw-style": "filled and stroked",
+							"class": "CViewContainer",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "70, 80",
+							"size": "72, 112",
+							"transparent": "true",
+							"uidesc-label": "Send",
+							"wants-focus": "false"
+						},
+						"children": {
+							"CAnimKnob": {
+								"attributes": {
+									"angle-range": "270",
+									"angle-start": "135",
+									"bitmap": "Sercan_Moog_Knob",
+									"class": "CAnimKnob",
+									"control-tag": "Send",
+									"height-of-one-image": "72",
+									"inverse-bitmap": "false",
+									"knob-range": "200",
+									"opacity": "1",
+									"origin": "0, 20",
+									"size": "72, 72",
+									"sub-pixmaps": "120",
+									"tooltip": "Gain applied to audio sent to JackTrip",
+									"transparent": "false",
+									"uidesc-label": "Send Knob",
+									"value-inset": "0",
+									"wants-focus": "false",
+									"wheel-inc-value": "0.1",
+									"zoom-factor": "1.5"
+								}
+							},
+							"CTextLabel": {
+								"attributes": {
+									"back-color": "~ BlackCColor",
+									"background-offset": "0, 0",
+									"class": "CTextLabel",
+									"default-value": "0.5",
+									"font": "~ NormalFontBig",
+									"font-antialias": "true",
+									"font-color": "~ WhiteCColor",
+									"frame-color": "~ BlackCColor",
+									"frame-width": "1",
+									"max-value": "1",
+									"min-value": "0",
+									"mouse-enabled": "false",
+									"opacity": "1",
+									"origin": "5, 0",
+									"round-rect-radius": "6",
+									"shadow-color": "~ RedCColor",
+									"size": "60, 20",
+									"style-3D-in": "false",
+									"style-3D-out": "false",
+									"style-no-draw": "false",
+									"style-no-frame": "false",
+									"style-no-text": "false",
+									"style-round-rect": "false",
+									"style-shadow-text": "false",
+									"text-alignment": "center",
+									"text-inset": "0, 0",
+									"text-rotation": "0",
+									"text-shadow-offset": "1, 1",
+									"title": "Send",
+									"transparent": "true",
+									"uidesc-label": "Send Label",
+									"value-precision": "2",
+									"wants-focus": "false",
+									"wheel-inc-value": "0.1"
+								}
+							},
+							"CTextLabel": {
+								"attributes": {
+									"back-color": "~ BlackCColor",
+									"background-offset": "0, 0",
+									"class": "CTextLabel",
+									"default-value": "0.5",
+									"font": "~ NormalFontSmaller",
+									"font-antialias": "true",
+									"font-color": "~ WhiteCColor",
+									"frame-width": "1",
+									"max-value": "1",
+									"min-value": "0",
+									"mouse-enabled": "false",
+									"opacity": "1",
+									"origin": "-10, 80",
+									"round-rect-radius": "6",
+									"size": "90, 30",
+									"style-3D-in": "false",
+									"style-3D-out": "false",
+									"style-no-draw": "false",
+									"style-no-frame": "false",
+									"style-no-text": "false",
+									"style-round-rect": "false",
+									"style-shadow-text": "false",
+									"text-alignment": "center",
+									"text-inset": "0, 0",
+									"text-rotation": "0",
+									"text-shadow-offset": "1, 1",
+									"title": "To JackTrip",
+									"transparent": "true",
+									"uidesc-label": "To JackTrip Label",
+									"value-precision": "2",
+									"wants-focus": "false",
+									"wheel-inc-value": "0.1"
+								}
+							}
+						}
+					},
+					"CViewContainer": {
+						"attributes": {
+							"background-color": "~ BlackCColor",
+							"background-color-draw-style": "filled and stroked",
+							"class": "CViewContainer",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "200, 80",
+							"size": "172, 112",
+							"transparent": "true",
+							"uidesc-label": "Output Mix",
+							"wants-focus": "false"
+						},
+						"children": {
+							"CAnimKnob": {
+								"attributes": {
+									"angle-range": "270",
+									"angle-start": "135",
+									"bitmap": "Sercan_Moog_Knob",
+									"class": "CAnimKnob",
+									"control-tag": "Output Mix",
+									"height-of-one-image": "72",
+									"inverse-bitmap": "false",
+									"knob-range": "200",
+									"opacity": "1",
+									"origin": "50, 20",
+									"size": "72, 72",
+									"sub-pixmaps": "120",
+									"tooltip": "Mix output between source and JackTrip",
+									"transparent": "false",
+									"uidesc-label": "Output Mix Knob",
+									"value-inset": "0",
+									"wants-focus": "false",
+									"wheel-inc-value": "0.1",
+									"zoom-factor": "1.5"
+								}
+							},
+							"CTextLabel": {
+								"attributes": {
+									"back-color": "~ BlackCColor",
+									"background-offset": "0, 0",
+									"class": "CTextLabel",
+									"default-value": "0.5",
+									"font": "~ NormalFontBig",
+									"font-antialias": "true",
+									"font-color": "~ WhiteCColor",
+									"frame-color": "~ BlackCColor",
+									"frame-width": "1",
+									"max-value": "1",
+									"min-value": "0",
+									"mouse-enabled": "false",
+									"opacity": "1",
+									"origin": "35, 0",
+									"round-rect-radius": "6",
+									"shadow-color": "~ RedCColor",
+									"size": "100, 20",
+									"style-3D-in": "false",
+									"style-3D-out": "false",
+									"style-no-draw": "false",
+									"style-no-frame": "false",
+									"style-no-text": "false",
+									"style-round-rect": "false",
+									"style-shadow-text": "false",
+									"text-alignment": "center",
+									"text-inset": "0, 0",
+									"text-rotation": "0",
+									"text-shadow-offset": "1, 1",
+									"title": "Output Mix",
+									"transparent": "true",
+									"uidesc-label": "Output Mix Label",
+									"value-precision": "2",
+									"wants-focus": "false",
+									"wheel-inc-value": "0.1"
+								}
+							},
+							"CTextLabel": {
+								"attributes": {
+									"back-color": "~ BlackCColor",
+									"background-offset": "0, 0",
+									"class": "CTextLabel",
+									"default-value": "0.5",
+									"font": "~ NormalFontSmaller",
+									"font-antialias": "true",
+									"font-color": "~ WhiteCColor",
+									"frame-color": "~ BlackCColor",
+									"frame-width": "1",
+									"max-value": "1",
+									"min-value": "0",
+									"mouse-enabled": "false",
+									"opacity": "1",
+									"origin": "90, 80",
+									"round-rect-radius": "6",
+									"shadow-color": "~ RedCColor",
+									"size": "70, 30",
+									"style-3D-in": "false",
+									"style-3D-out": "false",
+									"style-no-draw": "false",
+									"style-no-frame": "false",
+									"style-no-text": "false",
+									"style-round-rect": "false",
+									"style-shadow-text": "false",
+									"text-alignment": "center",
+									"text-inset": "0, 0",
+									"text-rotation": "0",
+									"text-shadow-offset": "1, 1",
+									"title": "From JackTrip",
+									"transparent": "true",
+									"uidesc-label": "Mix JackTrip Label",
+									"value-precision": "2",
+									"wants-focus": "false",
+									"wheel-inc-value": "0.1"
+								}
+							},
+							"CTextLabel": {
+								"attributes": {
+									"back-color": "~ BlackCColor",
+									"background-offset": "0, 0",
+									"class": "CTextLabel",
+									"default-value": "0.5",
+									"font": "~ NormalFontSmaller",
+									"font-antialias": "true",
+									"font-color": "~ WhiteCColor",
+									"frame-color": "~ BlackCColor",
+									"frame-width": "1",
+									"max-value": "1",
+									"min-value": "0",
+									"mouse-enabled": "false",
+									"opacity": "1",
+									"origin": "10, 80",
+									"round-rect-radius": "6",
+									"shadow-color": "~ RedCColor",
+									"size": "70, 30",
+									"style-3D-in": "false",
+									"style-3D-out": "false",
+									"style-no-draw": "false",
+									"style-no-frame": "false",
+									"style-no-text": "false",
+									"style-round-rect": "false",
+									"style-shadow-text": "false",
+									"text-alignment": "center",
+									"text-inset": "0, 0",
+									"text-rotation": "0",
+									"text-shadow-offset": "1, 1",
+									"title": "Pass-Through",
+									"transparent": "true",
+									"uidesc-label": "Mix Passthrough Label",
+									"value-precision": "2",
+									"wants-focus": "false",
+									"wheel-inc-value": "0.1"
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}

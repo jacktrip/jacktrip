@@ -17,6 +17,7 @@ KEY_STORE="AC_PASSWORD"
 TEMP_KEYCHAIN=""
 USE_DEFAULT_KEYCHAIN=false
 BINARY="../builddir/jacktrip"
+VST_BINARY="../builddir/$APPNAME.vst3"
 PSI=false
 
 OPTIND=1
@@ -140,7 +141,7 @@ sed -i '' "s/%BUNDLEID%/$BUNDLE_ID/" "$APPNAME.app/Contents/Info.plist"
 
 if [ -n "$DYNAMIC_QT" ]; then
     QT_VERSION="qt$(echo "$DYNAMIC_QT" | sed -E '1!d;s/.*compatibility version ([0-9]+)\.[0-9]+\.[0-9]+.*/\1/g')"
-    echo "Detected a dynamic Qt$QT_VERSION binary"
+    echo "Detected a dynamic $QT_VERSION binary"
     DEPLOY_CMD="$(which macdeployqt)"
     if [ -z "$DEPLOY_CMD" ]; then
         # Attempt to find macdeployqt. Try macports location first, then brew.
@@ -171,6 +172,24 @@ if [ -n "$DYNAMIC_QT" ]; then
     fi
 fi
 
+if [ -f "$VST_BINARY" ]; then
+    echo "Building bundle $APPNAME.vst3 (id: $BUNDLE_ID.vst3)"
+    rm -rf "$APPNAME.vst3"
+    [ ! -d "JackTrip.vst3_template/Contents/MacOS" ] && mkdir JackTrip.vst3_template/Contents/MacOS
+    [ ! -d "JackTrip.vst3_template/Contents/Resources" ] && mkdir JackTrip.vst3_template/Contents/Resources
+    [ ! -d "JackTrip.app_template/Contents/Resources" ] && mkdir JackTrip.vst3_template/Contents/Resources
+    cp -a JackTrip.vst3_template "$APPNAME.vst3"
+    cp -f $VST_BINARY "$APPNAME.vst3/Contents/MacOS/"
+    # copy licenses
+    cp -f ../LICENSE.md "$APPNAME.vst3/Contents/Resources/"
+    cp -Rf ../LICENSES "$APPNAME.vst3/Contents/Resources/"
+    cp ../src/vst3/resources/* "$APPNAME.vst3/Contents/Resources/"
+    sed -i '' "s/%VERSION%/$VERSION/" "$APPNAME.vst3/Contents/Resources/moduleinfo.json"
+    sed -i '' "s/%VERSION%/$VERSION/" "$APPNAME.vst3/Contents/Info.plist"
+    sed -i '' "s/%BUNDLENAME%/$APPNAME.vst3/" "$APPNAME.vst3/Contents/Info.plist"
+    sed -i '' "s/%BUNDLEID%/$BUNDLE_ID.vst3/" "$APPNAME.vst3/Contents/Info.plist"
+fi
+
 [ $BUILD_INSTALLER = true ] || exit 0
 
 # If you have Packages installed, you can build an installer for the newly created app bundle.
@@ -185,6 +204,10 @@ fi
 if [ -n "$CERTIFICATE" ]; then
     echo "Signing $APPNAME.app"
     codesign -f -s "$CERTIFICATE" --timestamp --entitlements entitlements.plist --options "runtime" "$APPNAME.app"
+    if [ -f "$VST_BINARY" ]; then
+      echo "Signing $APPNAME.vst3"
+      codesign -f -s "$CERTIFICATE" --timestamp --entitlements entitlements.plist --options "runtime" "$APPNAME.vst3"
+    fi
 fi
 
 # prepare license
@@ -206,7 +229,11 @@ cp ../README.md "$README_PATH"
 sed -i '' "s/# //" "$README_PATH" # remove markdown header
 perl -ane 'chop;print "\n\n" if(/^\s*$/); map{print "$_ ";}@F;' "$README_PATH" > tmp && mv tmp "$README_PATH" # unwrap lines
 
-cp package/JackTrip.pkgproj_template package/JackTrip.pkgproj
+if [ -f "$VST_BINARY" ]; then
+  cp package/JackTrip.pkgproj_template_with_vst3 package/JackTrip.pkgproj
+else
+  cp package/JackTrip.pkgproj_template package/JackTrip.pkgproj
+fi
 sed -i '' "s/%VERSION%/$VERSION/" package/JackTrip.pkgproj
 sed -i '' "s/%BUNDLENAME%/$APPNAME/" package/JackTrip.pkgproj
 sed -i '' "s/%BUNDLEID%/$BUNDLE_ID/" package/JackTrip.pkgproj

@@ -72,7 +72,7 @@ class VsDevice : public QObject
     JackTrip* initJackTrip(bool useRtAudio, std::string input, std::string output,
                            int baseInputChannel, int numChannelsIn, int baseOutputChannel,
                            int numChannelsOut, int inputMixMode, int bufferSize,
-                           int queueBuffer, VsServerInfo* studioInfo);
+                           VsServerInfo* studioInfo);
     void startJackTrip(const VsServerInfo& studioInfo);
     void stopJackTrip(bool isReconnecting = false);
     void reconcileAgentConfig(QJsonDocument newState);
@@ -84,6 +84,7 @@ class VsDevice : public QObject
 
    public slots:
     void syncDeviceSettings();
+    void setQueueBuffer(int queueBuffer);
 
    private slots:
     void handleJackTripError();
@@ -114,6 +115,7 @@ class VsDevice : public QObject
     QScopedPointer<JackTrip> m_jackTrip;
     QRandomGenerator m_randomizer;
     QTimer m_sendVolumeTimer;
+    int m_queueBuffer    = 0;
     bool m_networkOutage = false;
     bool m_stopping      = false;
 };

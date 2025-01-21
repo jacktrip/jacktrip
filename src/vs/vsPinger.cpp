@@ -79,13 +79,10 @@ void VsPinger::start()
 
     mTimer.setInterval(mPingInterval);
 
-    QString authVal = "Bearer ";
-    authVal.append(mToken);
-
     QNetworkRequest req = QNetworkRequest(QUrl(mURL));
     req.setRawHeader(QByteArray("Upgrade"), QByteArray("websocket"));
     req.setRawHeader(QByteArray("Connection"), QByteArray("upgrade"));
-    req.setRawHeader(QByteArray("Authorization"), authVal.toUtf8());
+
     mSocket.open(req);
 
     mStarted = true;

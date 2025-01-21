@@ -20,7 +20,7 @@ Optional:
 dnf install qt5-qtbase-devel qt5-qtnetworkauth-devel qt5-qtwebsockets-devel qt5-qtquickcontrols2-devel qt5-qtsvg-devel
 dnf groupinstall "C Development Tools and Libraries"
 dnf groupinstall "Development Tools"
-dnf install "pkgconfig(jack)" rtaudio-devel git help2man python3-jinja2
+dnf install "pkgconfig(jack)" rtaudio-devel git help2man python3-jinja2 dbus-devel
 ```
 
 ### Fedora (Qt6)
@@ -28,7 +28,7 @@ dnf install "pkgconfig(jack)" rtaudio-devel git help2man python3-jinja2
 dnf install qt6-qtbase-devel qt5-qtnetworkauth-devel qt5-qtwebsockets-devel qt5-qtquickcontrols2-devel qt5-qtsvg-devel qt6-qtwebengine-devel qt6-qtwebchannel-devel qt6-qt5compat-devel qt6-qtshadertools-devel
 dnf groupinstall "C Development Tools and Libraries"
 dnf groupinstall "Development Tools"
-dnf install "pkgconfig(jack)" rtaudio-devel git help2man python3-jinja2
+dnf install "pkgconfig(jack)" rtaudio-devel git help2man python3-jinja2 dbus-devel
 ```
 
 Clone the git repo with submodules and run `./build install` in the project
@@ -124,6 +124,57 @@ $ meson install -C builddir
 # enter your password when prompted
 ```
 
+### Building with Docker
+
+You can also build JackTrip using Docker, which especially makes it easier
+to build for alternative architectures. The following build arguments are
+available:
+
+* BUILD_CONTAINER - Debian based container image to build with
+* MESON_ARGS - arguments to build using meson
+* QT_DOWNLOAD_URL - path to qt6 download (optional)
+* VST3SDK_DOWNLOAD_URL - path to the VST3 SDK (optional)
+
+For example:
+
+amd64 dynamic
+```
+docker buildx build --target=artifact -f linux/Dockerfile.build --output type=local,dest=./ \
+  --platform linux/amd64 --build-arg BUILD_CONTAINER=ubuntu:22.04 \
+  --build-arg MESON_ARGS="-Ddefault_library=shared -Drtaudio=enabled -Drtaudio:jack=disabled -Drtaudio:default_library=static -Drtaudio:alsa=enabled -Drtaudio:pulse=enabled -Drtaudio:werror=false" .
+```
+
+amd64 static
+```
+docker buildx build --target=artifact -f linux/Dockerfile.build --output type=local,dest=./ \
+  --platform linux/amd64 --build-arg BUILD_CONTAINER=ubuntu:20.04 \
+  --build-arg MESON_ARGS="-Ddefault_library=static -Drtaudio=enabled -Drtaudio:jack=disabled -Drtaudio:default_library=static -Drtaudio:alsa=enabled -Drtaudio:pulse=disabled -Drtaudio:werror=false -Dnogui=true" \
+  --build-arg QT_DOWNLOAD_URL=https://files.jacktrip.org/contrib/qt/qt-6.5.3-static-linux-amd64.tar.gz .
+```
+
+arm64 dynamic
+```
+docker buildx build --target=artifact -f linux/Dockerfile.build --output type=local,dest=./ \
+  --platform linux/arm64 --build-arg BUILD_CONTAINER=ubuntu:22.04 \
+  --build-arg MESON_ARGS="-Ddefault_library=shared -Drtaudio=enabled -Drtaudio:jack=disabled -Drtaudio:default_library=static -Drtaudio:alsa=enabled -Drtaudio:pulse=enabled -Drtaudio:werror=false" .
+```
+
+arm64 static
+```
+docker buildx build --target=artifact -f linux/Dockerfile.build --output type=local,dest=./ \
+  --platform linux/arm64 --build-arg BUILD_CONTAINER=ubuntu:20.04 \
+  --build-arg MESON_ARGS="-Ddefault_library=static -Drtaudio=enabled -Drtaudio:jack=disabled -Drtaudio:default_library=static -Drtaudio:alsa=enabled -Drtaudio:pulse=disabled -Drtaudio:werror=false -Dnogui=true" \
+  --build-arg QT_DOWNLOAD_URL=https://files.jacktrip.org/contrib/qt/qt-6.5.3-static-linux-arm64.tar.gz .
+```
+
+arm32 static
+```
+docker buildx build --target=artifact -f linux/Dockerfile.build --output type=local,dest=./ \
+  --platform linux/arm/v7 --build-arg BUILD_CONTAINER=debian:buster \
+  --build-arg MESON_ARGS="-Ddefault_library=static -Drtaudio=enabled -Drtaudio:jack=disabled -Drtaudio:default_library=static -Drtaudio:alsa=enabled -Drtaudio:pulse=disabled -Drtaudio:werror=false -Dnogui=true -Dcpp_link_args='-no-pie'" \
+  --build-arg QT_DOWNLOAD_URL=https://files.jacktrip.org/contrib/qt/qt-5.15.13-static-linux-arm32.tar.gz .
+```
+
 ### Verification
 
 If you have installed jacktrip, from anywhere in the Terminal, type:
@@ -177,3 +228,35 @@ $ pwd
 ```
 
 The new version's directory structure might look like this: ``` jacktrip-1.x.x/builddir``` and the old version ``` jacktrip/builddir```.
+
+## Building VST3 SDK for Linux
+
+You may need a few extra development libraries to build the VST3 SDK:
+
+On Fedora:
+```
+sudo dnf install -y expat-devel freetype-devel pango-devel xcb-util-devel xcb-util-cursor-devel xcb-util-keysyms-devel libxkbcommon-x11-devel gtkmm3.0-devel libsqlite3x-devel
+```
+
+On Ubuntu and Debian/Raspbian:
+```
+sudo apt install -y libexpat-dev libxml2-dev libxcb-util-dev libxcb-cursor-dev libxcb-keysyms1-dev libxcb-xkb-dev libxkbcommon-dev libxkbcommon-x11-dev libgtkmm-3.0-dev libsqlite3-dev
+```
+
+To build and install the VST3 SDK:
+```
+git clone --recursive https://github.com/steinbergmedia/vst3sdk
+mkdir vst3sdk/build
+cd vst3sdk/build
+cmake -DCMAKE_BUILD_TYPE=Release ../
+cmake --build . --config Release
+sudo mkdir -p /opt/vst3sdk
+sudo cp -r lib/Release /opt/vst3sdk/lib
+sudo cp -r bin/Release /opt/vst3sdk/bin
+sudo cp -r ../base ../pluginterfaces ../public.sdk ../vstgui4 /opt/vst3sdk
+```
+
+When you run `meson setup` use `-Dvst-sdkdir=/path/to/vst3sdk`
+
+Please note that redistribution of JackTrip's VST3 plugin requires a
+[license from Steinberg](https://www.steinberg.net/developers/).

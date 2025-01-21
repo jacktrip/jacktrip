@@ -19,6 +19,7 @@ site/
 
 # app bundle and installer
 macos/*.app
+macos/*.vst3
 macos/package/build
 macos/package/*.pkgproj
 macos/package/*.txt
@@ -34,3 +35,4 @@ subprojects/packagecache/
 subprojects/rtaudio-5.*/
 subprojects/rtaudio-6.*/
 subprojects/wingetopt/
+subprojects/libsamplerate-0.*/

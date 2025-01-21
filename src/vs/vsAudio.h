@@ -39,6 +39,7 @@
 
 #include <QJsonArray>
 #include <QList>
+#include <QMutex>
 #include <QObject>
 #include <QSharedPointer>
 #include <QString>
@@ -54,6 +55,7 @@
 #endif
 
 class Analyzer;
+class AudioSocket;
 class JackTrip;
 class Meter;
 class Monitor;
@@ -81,8 +83,6 @@ class VsAudio : public QObject
         int sampleRate READ getSampleRate WRITE setSampleRate NOTIFY sampleRateChanged)
     Q_PROPERTY(
         int bufferSize READ getBufferSize WRITE setBufferSize NOTIFY bufferSizeChanged)
-    Q_PROPERTY(int queueBuffer READ getQueueBuffer WRITE setQueueBuffer NOTIFY
-                   queueBufferChanged)
     Q_PROPERTY(int numInputChannels READ getNumInputChannels WRITE setNumInputChannels
                    NOTIFY numInputChannelsChanged)
     Q_PROPERTY(int numOutputChannels READ getNumOutputChannels WRITE setNumOutputChannels
@@ -168,7 +168,6 @@ class VsAudio : public QObject
     }
     int getSampleRate() const { return m_audioSampleRate; }
     int getBufferSize() const { return m_audioBufferSize; }
-    int getQueueBuffer() const { return m_queueBuffer; }
     int getNumInputChannels() const { return getUseRtAudio() ? m_numInputChannels : 2; }
     int getNumOutputChannels() const { return getUseRtAudio() ? m_numOutputChannels : 2; }
     int getBaseInputChannel() const { return getUseRtAudio() ? m_baseInputChannel : 0; }
@@ -208,6 +207,11 @@ class VsAudio : public QObject
     const QString& getDevicesWarningHelpUrl() const { return m_devicesWarningHelpUrl; }
     const QString& getDevicesErrorHelpUrl() const { return m_devicesErrorHelpUrl; }
     bool getHighLatencyFlag() const { return m_highLatencyFlag; }
+
+    // called by local socket server to process audio requests
+    void registerAudioSocket(QSharedPointer<AudioSocket>& s);
+    void clearAudioSockets();
+
    public slots:
 
     // setters for state shared with QML
@@ -215,7 +219,6 @@ class VsAudio : public QObject
     void setAudioBackend(const QString& backend);
     void setSampleRate(int sampleRate);
     void setBufferSize(int bufSize);
-    void setQueueBuffer(int queueBuffer);
     void setNumInputChannels(int numChannels);
     void setNumOutputChannels(int numChannels);
     void setBaseInputChannel(int baseChannel);
@@ -252,7 +255,6 @@ class VsAudio : public QObject
     void audioBackendChanged(bool useRtAudio);
     void sampleRateChanged();
     void bufferSizeChanged();
-    void queueBufferChanged();
     void numInputChannelsChanged(int numChannels);
     void numOutputChannelsChanged(int numChannels);
     void baseInputChannelChanged(int baseChannel);
@@ -326,7 +328,6 @@ class VsAudio : public QObject
     int m_audioSampleRate           = gDefaultSampleRate;
     int m_audioBufferSize =
         gDefaultBufferSizeInSamples;  ///< Audio buffer size to process on each callback
-    int m_queueBuffer       = 0;
     int m_numInputChannels  = gDefaultNumInChannels;
     int m_numOutputChannels = gDefaultNumOutChannels;
     int m_baseInputChannel  = 0;
@@ -357,19 +358,12 @@ class VsAudio : public QObject
     // other state not shared with QML
     QSharedPointer<VsPermissions> m_permissionsPtr;
     QScopedPointer<VsAudioWorker> m_audioWorkerPtr;
+    QVector<QSharedPointer<AudioSocket>> m_audioSockets;
+    QMutex m_audioSocketMutex;
     QThread* m_workerThreadPtr;
     QTimer m_inputClipTimer;
     QTimer m_outputClipTimer;
-    Meter* m_inputMeterPluginPtr;
-    Meter* m_outputMeterPluginPtr;
-    Volume* m_inputVolumePluginPtr;
-    Volume* m_outputVolumePluginPtr;
-    Monitor* m_monitorPluginPtr;
     bool mHasErrors;  ///< true if one or more error callbacks have been triggered
-
-#ifndef NO_FEEDBACK
-    Analyzer* m_outputAnalyzerPluginPtr;
-#endif
 
     QStringList m_audioBackendComboModel = {"JACK", "RtAudio"};
     QStringList m_bufferSizeComboModel = {"16", "32", "64", "128", "256", "512", "1024"};

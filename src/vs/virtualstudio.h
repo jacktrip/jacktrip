@@ -41,6 +41,7 @@
 #include <QMap>
 #include <QMutex>
 #include <QNetworkAccessManager>
+#include <QNetworkCookie>
 #include <QObject>
 #include <QScopedPointer>
 #include <QSharedPointer>
@@ -50,6 +51,8 @@
 #include <QUrl>
 #include <QVector>
 #include <QWebChannel>
+#include <QWebEngineCookieStore>
+#include <QWebEngineProfile>
 #include <QWebSocketServer>
 
 #include "../Settings.h"
@@ -59,6 +62,8 @@
 #include "vsServerInfo.h"
 
 class JackTrip;
+class QLocalSocket;
+class SocketServer;
 class VsAudio;
 class VsApi;
 class VsAuth;
@@ -72,7 +77,6 @@ class VirtualStudio : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(int webChannelPort READ webChannelPort NOTIFY webChannelPortChanged)
-    Q_PROPERTY(bool hasRefreshToken READ hasRefreshToken NOTIFY hasRefreshTokenChanged)
     Q_PROPERTY(QString versionString READ versionString CONSTANT)
     Q_PROPERTY(QString buildString READ buildString CONSTANT)
     Q_PROPERTY(QString copyrightString READ copyrightString CONSTANT)
@@ -94,6 +98,10 @@ class VirtualStudio : public QObject
     Q_PROPERTY(QString connectionState READ connectionState NOTIFY connectionStateChanged)
     Q_PROPERTY(QJsonObject networkStats READ networkStats NOTIFY networkStatsChanged)
     Q_PROPERTY(bool networkOutage READ networkOutage NOTIFY updatedNetworkOutage)
+    Q_PROPERTY(int queueBuffer READ getQueueBuffer WRITE setQueueBuffer NOTIFY
+                   queueBufferChanged)
+    Q_PROPERTY(bool useStudioQueueBuffer READ useStudioQueueBuffer WRITE
+                   setUseStudioQueueBuffer NOTIFY useStudioQueueBufferChanged)
 
     Q_PROPERTY(QString updateChannel READ updateChannel WRITE setUpdateChannel NOTIFY
                    updateChannelChanged)
@@ -130,7 +138,6 @@ class VirtualStudio : public QObject
     void raiseToTop();
 
     int webChannelPort();
-    bool hasRefreshToken();
     QString versionString();
     QString buildString();
     QString copyrightString();
@@ -168,6 +175,10 @@ class VirtualStudio : public QObject
     bool psiBuild();
     QString failedMessage();
     bool networkOutage();
+    int getQueueBuffer() const;
+    void setQueueBuffer(int queueBuffer);
+    bool useStudioQueueBuffer();
+    void setUseStudioQueueBuffer(bool b);
     bool backendAvailable();
     QString windowState();
     QString apiHost();
@@ -198,6 +209,7 @@ class VirtualStudio : public QObject
     void showAbout();
     void openLink(const QString& url);
     void handleDeeplinkRequest(const QUrl& url);
+    void handleAudioSocketRequest(QSharedPointer<QLocalSocket>& socket);
     void udpWaitingTooLong();
     void setWindowState(QString state);
     void joinStudio();
@@ -210,7 +222,6 @@ class VirtualStudio : public QObject
     void disconnected();
     void refreshFinished(int index);
     void webChannelPortChanged(int webChannelPort);
-    void hasRefreshTokenChanged();
     void logoSectionChanged();
     void connectedErrorMsgChanged();
     void serverModelChanged();
@@ -233,6 +244,8 @@ class VirtualStudio : public QObject
     void failedMessageChanged();
     void studioToJoinChanged();
     void updatedNetworkOutage(bool outage);
+    void queueBufferChanged(int queueBuffer);
+    void useStudioQueueBufferChanged(bool b);
     void windowStateUpdated();
     void isExitingChanged();
     void scheduleStudioRefresh(int index, bool signalRefresh);
@@ -240,10 +253,12 @@ class VirtualStudio : public QObject
     void apiHostChanged();
     void feedbackDetected();
     void openFeedbackSurveyModal(QString serverId);
+    void closeFeedbackSurveyModal();
     void openAboutWindow();
 
    private slots:
     void slotAuthSucceeded();
+    void slotAccessTokenUpdated(QString accessToken);
     void receivedConnectionFromPeer();
     void handleWebsocketMessage(const QString& msg);
     void restartStudioSocket();
@@ -274,6 +289,8 @@ class VirtualStudio : public QObject
     UserInterface& m_interface;
     VsServerInfo m_currentStudio;
     QNetworkAccessManager* m_networkAccessManagerPtr;
+    QWebEngineProfile* m_qwebEngineProfile;
+    QSharedPointer<SocketServer> m_socketServerPtr;
     QScopedPointer<VsQuickView> m_view;
     QSharedPointer<VsDeeplink> m_deepLinkPtr;
     QSharedPointer<VsAuth> m_auth;
@@ -314,6 +331,8 @@ class VirtualStudio : public QObject
     bool m_collapseDeviceControls = false;
     bool m_testMode               = false;
     bool m_authenticated          = false;
+    bool m_useStudioQueueBuffer   = true;
+    int m_queueBuffer             = 0;
     float m_fontScale             = 1;
     float m_uiScale               = 1;
     uint32_t m_webChannelPort     = 1;

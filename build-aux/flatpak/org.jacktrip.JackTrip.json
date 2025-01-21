@@ -28,6 +28,7 @@
             "buildsystem": "meson",
             "config-opts": [
                 "-Dbuildtype=debugoptimized",
+                "-Dlibsamplerate=disabled",
                 "-Dpkg_config_path=/app/lib/x86_64-linux-gnu/pkgconfig"
             ],
             "sources": [

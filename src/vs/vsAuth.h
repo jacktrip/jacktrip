@@ -37,10 +37,12 @@
 #ifndef VSAUTH_H
 #define VSAUTH_H
 
+#include <QDateTime>
 #include <QNetworkAccessManager>
 #include <QQmlContext>
 #include <QQmlEngine>
 #include <QString>
+#include <QTimer>
 #include <iostream>
 
 #include "vsApi.h"
@@ -86,6 +88,7 @@ class VsAuth : public QObject
     QString refreshToken() { return m_refreshToken; };
     QString authenticationMethod() { return m_authenticationMethod; }
     bool attemptingRefreshToken() { return m_attemptingRefreshToken; }
+    QDateTime accessTokenTimestamp() { return m_accessTokenTimestamp; }
 
    signals:
     void updatedAuthenticationStage(QString authenticationStage);
@@ -96,6 +99,8 @@ class VsAuth : public QObject
     void updatedUserId(QString userId);
     void updatedAuthenticationMethod(QString grant);
     void updatedAttemptingRefreshToken(bool attemptingRefreshToken);
+    void updatedAccessToken(QString accessToken);
+    void updatedAccessTokenTimestamp(QDateTime accessTokenTimestamp);
     void authSucceeded();
     void authFailed();
     void refreshTokenFailed();
@@ -104,11 +109,13 @@ class VsAuth : public QObject
 
    private slots:
     void handleRefreshSucceeded(QString accessToken);
+    void handleRefreshFailed();
     void handleAuthSucceeded(QString userId, QString accessToken);
     void handleAuthFailed(QString errorMessage);
     void initializedCodeFlow(QString code, QString verificationUrl);
     void codeFlowCompleted(QString accessToken, QString refreshToken);
     void codeExpired();
+    void refreshTimerTimedOut();
 
    private:
     void fetchUserInfo(QString accessToken);
@@ -127,10 +134,12 @@ class VsAuth : public QObject
     QString m_userId;
     QString m_accessToken;
     QString m_refreshToken;
+    QDateTime m_accessTokenTimestamp = QDateTime::fromMSecsSinceEpoch(0);
 
     QNetworkAccessManager* m_networkAccessManager;
     VsApi* m_api;
     QScopedPointer<VsDeviceCodeFlow> m_deviceCodeFlow;
+    QScopedPointer<QTimer> m_refreshTimer;
 };
 
 #endif

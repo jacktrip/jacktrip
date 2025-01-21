@@ -25,6 +25,12 @@ Rectangle {
     property string shadowColour: virtualstudio.darkMode ? "#40000000" : "#80A1A1A1"
     property string toolTipBackgroundColour: virtualstudio.darkMode ? "#323232" : "#F3F3F3"
     property string toolTipTextColour: textColour
+    property string sliderColour: virtualstudio.darkMode ? "#BABCBC" :  "#EAECEC"
+    property string sliderPressedColour: virtualstudio.darkMode ? "#ACAFAF" : "#DEE0E0"
+    property string sliderTrackColour: virtualstudio.darkMode ? "#5B5858" : "light gray"
+    property string sliderActiveTrackColour: virtualstudio.darkMode ? "light gray" : "black"
+    property string checkboxStroke: "#0062cc"
+    property string checkboxPressedStroke: "#007AFF"
 
     property string browserButtonColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
     property string browserButtonHoverColour: virtualstudio.darkMode ? "#5B5858" : "#D3D4D4"
@@ -35,6 +41,13 @@ Rectangle {
 
     property string linkText: virtualstudio.darkMode ? "#8B8D8D" : "#272525"
 
+    function getQueueBufferString () {
+        if (virtualstudio.queueBuffer == 0) {
+            return "auto";
+        }
+        return virtualstudio.queueBuffer + " ms";
+    }
+
     MouseArea {
         anchors.fill: parent
         propagateComposedEvents: false
@@ -43,7 +56,6 @@ Rectangle {
     Rectangle {
         id: audioSettingsView
         width: parent.width;
-        height: parent.height;
         color: backgroundColour
         radius: 6 * virtualstudio.uiScale
 
@@ -77,6 +89,149 @@ Rectangle {
             height: 300 * virtualstudio.uiScale
             anchors.top: refreshButton.bottom;
             anchors.topMargin: 16 * virtualstudio.uiScale;
+        }
+
+        Rectangle {
+            id: latencyDivider
+            anchors.top: audioSettings.bottom
+            anchors.topMargin: 54 * virtualstudio.uiScale
+            x: 24 * virtualstudio.uiScale
+            width: parent.width - x - (24 * virtualstudio.uiScale);
+            height: 2 * virtualstudio.uiScale
+            color: "#E0E0E0"
+        }
+
+        Text {
+            id: queueBufferLabel
+            anchors.top: latencyDivider.bottom
+            anchors.topMargin: 16 * virtualstudio.uiScale
+            x: 24 * virtualstudio.uiScale
+            text: "Audio Quality"
+            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+        }
+
+        InfoTooltip {
+            id: queueBufferTooltip
+            content: "JackTrip analyzes your Internet connection to find the best balance between audio latency and quality. Add additional latency to further improve quality."
+            size: 16 * virtualstudio.uiScale
+            anchors.left: queueBufferLabel.right
+            anchors.bottom: queueBufferLabel.top
+            anchors.bottomMargin: -8 * virtualstudio.uiScale
+        }
+
+        AppIcon {
+            id: balanceIcon
+            anchors.left: queueBufferLabel.left
+            anchors.top: queueBufferLabel.bottom
+            width: 32 * virtualstudio.uiScale
+            height: 32 * virtualstudio.uiScale
+            icon.source: "balance.svg"
+        }
+
+        CheckBox {
+            id: useStudioQueueBuffer
+            checked: virtualstudio.useStudioQueueBuffer
+            text: qsTr("Use Studio settings")
+            anchors.top: latencyDivider.bottom
+            anchors.topMargin: 16 * virtualstudio.uiScale
+            x: 168 * virtualstudio.uiScale;
+            onClicked: { virtualstudio.useStudioQueueBuffer = useStudioQueueBuffer.checkState == Qt.Checked; }
+            indicator: Rectangle {
+                implicitWidth: 16 * virtualstudio.uiScale
+                implicitHeight: 16 * virtualstudio.uiScale
+                x: useStudioQueueBuffer.leftPadding
+                y: parent.height / 2 - height / 2
+                radius: 3 * virtualstudio.uiScale
+                border.color: useStudioQueueBuffer.down || useStudioQueueBuffer.hovered ? checkboxPressedStroke : checkboxStroke
+
+                Rectangle {
+                    width: 10 * virtualstudio.uiScale
+                    height: 10 * virtualstudio.uiScale
+                    x: 3 * virtualstudio.uiScale
+                    y: 3 * virtualstudio.uiScale
+                    radius: 2 * virtualstudio.uiScale
+                    color: useStudioQueueBuffer.down || useStudioQueueBuffer.hovered ? checkboxPressedStroke : checkboxStroke
+                    visible: useStudioQueueBuffer.checked
+                }
+            }
+            contentItem: Text {
+                text: useStudioQueueBuffer.text
+                font.family: "Poppins"
+                font.pixelSize: 10 * virtualstudio.fontScale * virtualstudio.uiScale
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.verticalCenter
+                leftPadding: useStudioQueueBuffer.indicator.width + useStudioQueueBuffer.spacing
+                color: textColour
+            }
+        }
+
+        Text {
+            id: currentLatency
+            anchors.top: latencyDivider.bottom
+            anchors.topMargin: 16 * virtualstudio.uiScale
+            anchors.right: parent.right
+            anchors.rightMargin: 24 * virtualstudio.uiScale
+            text: "Buffer Latency: " + Math.round(virtualstudio.networkStats.recvLatency) + " ms"
+            font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+        }
+
+        Slider {
+            id: queueBufferSlider
+            value: virtualstudio.queueBuffer
+            onMoved: {
+                virtualstudio.queueBuffer = value;
+            }
+            from: 0
+            to: 250
+            stepSize: 1
+            padding: 0
+            visible: useStudioQueueBuffer.checkState != Qt.Checked
+
+            anchors.top: useStudioQueueBuffer.bottom
+            anchors.topMargin: 16 * virtualstudio.uiScale
+            x: queueBufferText.x + queueBufferText.width
+            width: parent.width - x - (16 * virtualstudio.uiScale) - queueBufferText.width;
+
+            background: Rectangle {
+                x: queueBufferSlider.leftPadding
+                y: queueBufferSlider.topPadding + queueBufferSlider.availableHeight / 2 - height / 2
+                implicitWidth: parent.width
+                implicitHeight: 6
+                width: queueBufferSlider.availableWidth
+                height: implicitHeight
+                radius: 4
+                color: sliderTrackColour
+
+                Rectangle {
+                    width: queueBufferSlider.visualPosition * parent.width
+                    height: parent.height
+                    color: sliderActiveTrackColour
+                    radius: 4
+                }
+            }
+
+            handle: Rectangle {
+                x: queueBufferSlider.leftPadding + queueBufferSlider.visualPosition * (queueBufferSlider.availableWidth - width)
+                y: queueBufferSlider.topPadding + queueBufferSlider.availableHeight / 2 - height / 2
+                implicitWidth: 26 * virtualstudio.uiScale
+                implicitHeight: 26 * virtualstudio.uiScale
+                radius: 13 * virtualstudio.uiScale
+                color: queueBufferSlider.pressed ? sliderPressedColour : sliderColour
+                border.color: buttonStroke
+            }
+        }
+
+        Text {
+            id: queueBufferText
+            width: (64 * virtualstudio.uiScale)
+            anchors.left: useStudioQueueBuffer.left
+            anchors.verticalCenter: queueBufferSlider.verticalCenter
+            text: getQueueBufferString()
+            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+            visible: useStudioQueueBuffer.checkState != Qt.Checked
         }
     }
 

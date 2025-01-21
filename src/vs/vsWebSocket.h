@@ -38,6 +38,7 @@
 #define VSWEBSOCKET_H
 
 #include <QList>
+#include <QNetworkRequest>
 #include <QObject>
 #include <QScopedPointer>
 #include <QSslError>

@@ -41,7 +41,9 @@
 #include <cmath>
 #include <iostream>
 
+#include "AudioSocket.h"
 #include "JackTrip.h"
+#include "ProcessPlugin.h"
 
 using std::cout;
 using std::endl;
@@ -95,18 +97,10 @@ AudioInterface::~AudioInterface()
         delete[] mAPInBuffer[i];
     }
 #endif  // endwhere
-    for (auto* i : std::as_const(mProcessPluginsFromNetwork)) {
-        i->disconnect();
-        delete i;
-    }
-    for (auto* i : std::as_const(mProcessPluginsToNetwork)) {
-        i->disconnect();
-        delete i;
-    }
-    for (auto* i : std::as_const(mProcessPluginsToMonitor)) {
-        i->disconnect();
-        delete i;
-    }
+    mProcessPluginsFromNetwork.clear();
+    mProcessPluginsToNetwork.clear();
+    mProcessPluginsToMonitor.clear();
+    mAudioSockets.clear();
 }
 
 //*******************************************************************************
@@ -195,6 +189,10 @@ void AudioInterface::audioInputCallback(QVarLengthArray<sample_t*>& in_buffer,
     }
 
 #ifndef WAIR
+    for (auto& s : qAsConst(mAudioSockets)) {
+        s->getFromAudioSocketPlugin()->compute(n_frames, in_buffer.data(),
+                                               in_buffer.data());
+    }
     if (mMonitorQueuePtr != nullptr && mProcessPluginsToMonitor.size() > 0) {
         // copy audio input to monitor queue
         for (int i = 0; i < mInputChans.size(); i++) {
@@ -206,7 +204,7 @@ void AudioInterface::audioInputCallback(QVarLengthArray<sample_t*>& in_buffer,
 #endif  // not WAIR
 
     // process incoming signal from audio interface using process plugins
-    for (auto* p : std::as_const(mProcessPluginsToNetwork)) {
+    for (auto& p : qAsConst(mProcessPluginsToNetwork)) {
         if (p->getInited()) {
             p->compute(n_frames, in_buffer.data(), in_buffer.data());
         }
@@ -268,7 +266,7 @@ void AudioInterface::audioOutputCallback(QVarLengthArray<sample_t*>& out_buffer,
     /// with one. do it chaining outputs to inputs in the buffers. May need a tempo buffer
 
 #ifndef WAIR  // NOT WAIR:
-    for (auto* p : std::as_const(mProcessPluginsFromNetwork)) {
+    for (auto& p : qAsConst(mProcessPluginsFromNetwork)) {
         if (p->getInited()) {
             p->compute(n_frames, out_buffer.data(), out_buffer.data());
         }
@@ -302,12 +300,17 @@ void AudioInterface::audioOutputCallback(QVarLengthArray<sample_t*>& out_buffer,
             std::memcpy(mOutProcessBuffer[i], sample_ptr, sizeof(sample_t) * n_frames);
         }
         for (int i = 0; i < mProcessPluginsToMonitor.size(); i++) {
-            ProcessPlugin* p = mProcessPluginsToMonitor[i];
+            ProcessPlugin* p = mProcessPluginsToMonitor[i].get();
             if (p->getInited()) {
                 // note: for monitor plugins, the output is out_buffer (to the speakers)
                 p->compute(n_frames, mOutProcessBuffer.data(), out_buffer.data());
             }
         }
+    }
+
+    for (auto& s : qAsConst(mAudioSockets)) {
+        s->getToAudioSocketPlugin()->compute(n_frames, out_buffer.data(),
+                                             out_buffer.data());
     }
 
 #else  // WAIR:
@@ -642,9 +645,9 @@ void AudioInterface::setPipewireLatency(unsigned int bufferSize, unsigned int sa
 }
 
 //*******************************************************************************
-void AudioInterface::appendProcessPluginToNetwork(ProcessPlugin* plugin)
+void AudioInterface::appendProcessPluginToNetwork(QSharedPointer<ProcessPlugin>& plugin)
 {
-    if (!plugin) {
+    if (plugin.isNull()) {
         return;
     }
 
@@ -663,9 +666,9 @@ void AudioInterface::appendProcessPluginToNetwork(ProcessPlugin* plugin)
     mProcessPluginsToNetwork.append(plugin);
 }
 
-void AudioInterface::appendProcessPluginFromNetwork(ProcessPlugin* plugin)
+void AudioInterface::appendProcessPluginFromNetwork(QSharedPointer<ProcessPlugin>& plugin)
 {
-    if (!plugin) {
+    if (plugin.isNull()) {
         return;
     }
 
@@ -684,9 +687,9 @@ void AudioInterface::appendProcessPluginFromNetwork(ProcessPlugin* plugin)
     mProcessPluginsFromNetwork.append(plugin);
 }
 
-void AudioInterface::appendProcessPluginToMonitor(ProcessPlugin* plugin)
+void AudioInterface::appendProcessPluginToMonitor(QSharedPointer<ProcessPlugin>& plugin)
 {
-    if (!plugin) {
+    if (plugin.isNull()) {
         return;
     }
 
@@ -715,32 +718,51 @@ void AudioInterface::appendProcessPluginToMonitor(ProcessPlugin* plugin)
     mProcessPluginsToMonitor.append(plugin);
 }
 
+void AudioInterface::appendAudioSocket(QSharedPointer<AudioSocket>& s)
+{
+    if (s.isNull())
+        return;
+    static_cast<FromAudioSocketPlugin*>(s->getFromAudioSocketPlugin().data())
+        ->setPassthrough(true);
+    mAudioSockets.append(s);
+}
+
 void AudioInterface::initPlugins(bool verbose)
 {
     const int nChansIn  = (MIXTOMONO == mInputMixMode) ? 1 : mInputChans.size();
     const int nChansOut = mOutputChans.size();
     const int nChansMon = getNumMonChannels();
     int nPlugins = mProcessPluginsFromNetwork.size() + mProcessPluginsToNetwork.size()
-                   + mProcessPluginsToMonitor.size();
+                   + mProcessPluginsToMonitor.size() + (mAudioSockets.size() * 2);
     if (nPlugins > 0) {
         if (verbose) {
             std::cout << "Initializing Faust plugins (have " << nPlugins
                       << ") at sampling rate " << mSampleRate << "\n";
         }
 
-        for (ProcessPlugin* plugin : std::as_const(mProcessPluginsFromNetwork)) {
+        for (auto& plugin : qAsConst(mProcessPluginsFromNetwork)) {
             plugin->setOutgoingToNetwork(false);
             plugin->updateNumChannels(nChansIn, nChansOut);
             plugin->init(mSampleRate, mBufferSizeInSamples);
         }
-        for (ProcessPlugin* plugin : std::as_const(mProcessPluginsToNetwork)) {
+        for (auto& plugin : qAsConst(mProcessPluginsToNetwork)) {
             plugin->setOutgoingToNetwork(true);
             plugin->updateNumChannels(nChansIn, nChansOut);
             plugin->init(mSampleRate, mBufferSizeInSamples);
         }
-        for (ProcessPlugin* plugin : std::as_const(mProcessPluginsToMonitor)) {
+        for (auto& plugin : qAsConst(mProcessPluginsToMonitor)) {
             plugin->setOutgoingToNetwork(false);
             plugin->updateNumChannels(nChansMon, nChansMon);
+            plugin->init(mSampleRate, mBufferSizeInSamples);
+        }
+        for (auto& s : qAsConst(mAudioSockets)) {
+            auto* plugin = s->getFromAudioSocketPlugin().get();
+            plugin->setOutgoingToNetwork(true);
+            plugin->updateNumChannels(nChansIn, nChansOut);
+            plugin->init(mSampleRate, mBufferSizeInSamples);
+            plugin = s->getToAudioSocketPlugin().get();
+            plugin->setOutgoingToNetwork(false);
+            plugin->updateNumChannels(nChansIn, nChansOut);
             plugin->init(mSampleRate, mBufferSizeInSamples);
         }
     }

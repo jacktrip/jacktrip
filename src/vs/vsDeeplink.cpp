@@ -29,9 +29,9 @@
 //*****************************************************************
 
 /**
- * \file vsDeeplink.cpp
- * \author Aaron Wyatt, based on code by Matt Horton
- * \date February 2023
+ * \file VsDeeplink.cpp
+ * \author Mike Dickey, based on code by Aaron Wyatt and Matt Horton
+ * \date December 2024
  */
 
 #include "vsDeeplink.h"
@@ -41,14 +41,14 @@
 #include <QDesktopServices>
 #include <QDir>
 #include <QEventLoop>
+#include <QLocalSocket>
 #include <QMutexLocker>
 #include <QSettings>
 #include <QTimer>
 
-VsDeeplink::VsDeeplink(const QString& deeplink) : m_deeplink(deeplink)
+VsDeeplink::VsDeeplink()
 {
     setUrlScheme();
-    checkForInstance();
     QDesktopServices::setUrlHandler(QStringLiteral("jacktrip"), this, "handleUrl");
 }
 
@@ -57,140 +57,30 @@ VsDeeplink::~VsDeeplink()
     QDesktopServices::unsetUrlHandler(QStringLiteral("jacktrip"));
 }
 
-bool VsDeeplink::waitForReady()
-{
-    while (!m_isReady) {
-        QTimer timer;
-        timer.setTimerType(Qt::CoarseTimer);
-        timer.setSingleShot(true);
-
-        QEventLoop loop;
-        QObject::connect(this, &VsDeeplink::signalIsReady, &loop, &QEventLoop::quit);
-        QObject::connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
-        timer.start(100);  // wait for 100ms
-        loop.exec();
-    }
-    return m_readyToExit;
-}
-
-void VsDeeplink::readyForSignals()
-{
-    m_readyForSignals = true;
-    if (!m_deeplink.isEmpty()) {
-        emit signalDeeplink(m_deeplink);
-        m_deeplink.clear();
-    }
-}
-
 void VsDeeplink::handleUrl(const QUrl& url)
 {
-    if (m_readyForSignals) {
-        emit signalDeeplink(url);
-    } else {
-        m_deeplink = url;
-    }
+    emit signalVsDeeplink(url);
 }
 
-void VsDeeplink::checkForInstance()
+void VsDeeplink::handleVsDeeplinkRequest(QSharedPointer<QLocalSocket>& socket)
 {
-    // Create socket
-    m_instanceCheckSocket.reset(new QLocalSocket(this));
-    QObject::connect(m_instanceCheckSocket.data(), &QLocalSocket::connected, this,
-                     &VsDeeplink::connectionReceived, Qt::QueuedConnection);
-    // Create instanceServer to prevent new instances from being created
-    void (QLocalSocket::*errorFunc)(QLocalSocket::LocalSocketError);
-#if (QT_VERSION < QT_VERSION_CHECK(5, 15, 0))
-    errorFunc = &QLocalSocket::error;
-#else
-    errorFunc = &QLocalSocket::errorOccurred;
-#endif
-    QObject::connect(m_instanceCheckSocket.data(), errorFunc, this,
-                     &VsDeeplink::connectionFailed);
-    // Check for existing instance
-    m_instanceCheckSocket->connectToServer("jacktripExists");
-}
-
-void VsDeeplink::connectionReceived()
-{
-    // another jacktrip instance is running
-    if (!m_deeplink.isEmpty()) {
-        // pass deeplink to existing instance before quitting
-        QString deeplinkStr   = m_deeplink.toString();
-        QByteArray baDeeplink = deeplinkStr.toLocal8Bit();
-        qint64 writeBytes     = m_instanceCheckSocket->write(baDeeplink);
-        if (writeBytes < 0) {
-            qDebug() << "sending deeplink failed";
-        } else {
-            qDebug() << "Sent deeplink request to remote instance";
-        }
-
-        // make sure it isn't processed again
-        m_deeplink.clear();
-
-        // End process if another instance exists
-        m_readyToExit = true;
+    if (!socket->waitForReadyRead() && socket->bytesAvailable() <= 0) {
+        qDebug() << "VsDeeplink socket: not ready and no bytes available: "
+                 << socket->errorString();
+        socket->close();
+        return;
     }
 
-    m_instanceCheckSocket->waitForBytesWritten();
-    m_instanceCheckSocket->disconnectFromServer();  // remove next
-
-    // let main thread know we are finished
-    m_isReady = true;
-    emit signalIsReady();
-}
-
-void VsDeeplink::connectionFailed(QLocalSocket::LocalSocketError socketError)
-{
-    switch (socketError) {
-    case QLocalSocket::ServerNotFoundError:
-    case QLocalSocket::SocketTimeoutError:
-    case QLocalSocket::ConnectionRefusedError:
-        // no other jacktrip instance is running, so we will take over handling deep links
-        qDebug() << "Listening for deep link requests";
-        m_instanceServer.reset(new QLocalServer(this));
-        m_instanceServer->setSocketOptions(QLocalServer::WorldAccessOption);
-        m_instanceServer->listen("jacktripExists");
-        QObject::connect(m_instanceServer.data(), &QLocalServer::newConnection, this,
-                         &VsDeeplink::handleDeeplinkRequest, Qt::QueuedConnection);
-        break;
-    case QLocalSocket::PeerClosedError:
-        break;
-    default:
-        qDebug() << m_instanceCheckSocket->errorString();
+    if (socket->bytesAvailable() < (int)sizeof(quint16)) {
+        qDebug() << "VsDeeplink socket: ready but no bytes available";
+        socket->close();
+        return;
     }
 
-    // let main thread know we are finished
-    m_isReady = true;
-    emit signalIsReady();
-}
-
-void VsDeeplink::handleDeeplinkRequest()
-{
-    while (m_instanceServer->hasPendingConnections()) {
-        // Receive URL from 2nd instance
-        QLocalSocket* connectedSocket = m_instanceServer->nextPendingConnection();
-
-        if (connectedSocket == nullptr || !connectedSocket->waitForConnected()) {
-            qDebug() << "Deeplink socket: never received connection";
-            return;
-        }
-
-        if (!connectedSocket->waitForReadyRead()
-            && connectedSocket->bytesAvailable() <= 0) {
-            qDebug() << "Deeplink socket: not ready and no bytes available: "
-                     << connectedSocket->errorString();
-            return;
-        }
-
-        if (connectedSocket->bytesAvailable() < (int)sizeof(quint16)) {
-            qDebug() << "Deeplink socket: ready but no bytes available";
-            break;
-        }
-
-        QByteArray in(connectedSocket->readAll());
-        QString urlString(in);
-        handleUrl(urlString);
-    }
+    QByteArray in(socket->readAll());
+    socket->close();
+    QString urlString(in);
+    handleUrl(urlString);
 }
 
 void VsDeeplink::setUrlScheme()

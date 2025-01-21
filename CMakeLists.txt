@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 set(CMAKE_OSX_DEPLOYMENT_TARGET 10.14)
+set(CMAKE_OSX_ARCHITECTURES arm64;x86_64)
 set(CMAKE_CXX_STANDARD 17)
 project(QJackTrip)
 
@@ -7,14 +8,16 @@ set(nogui FALSE)
 set(rtaudio TRUE)
 set(weakjack TRUE)
 set(novs FALSE)
+set(nooscpp FALSE)
 set(vsftux FALSE)
 set(noupdater FALSE)
 set(psi FALSE)
-set(QtVersion "5")
+set(QtVersion "6")
 
 if (${QtVersion} MATCHES "5")
   set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13)
-  set(CMAKE_OSX_ARCHITECTURES arm64;x86_64)
+elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  list(APPEND CMAKE_PREFIX_PATH "/opt/local/libexec/qt6/lib/cmake")
 endif ()
 
 message(STATUS "Hello Aaron! For anyone else, heed the following warning:")
@@ -55,9 +58,10 @@ if (psi)
   endif ()
 
   file(READ "${QRC_FILE}" QRC_CONTENTS)
-  string(REPLACE "<file>about@2x.png" "<file alias=\"about@2x.png\">alt/about@2x.png" QRC_CONTENTS "${QRC_CONTENTS}")
-  string(REPLACE "<file>about.png" "<file alias=\"about.png\">alt/about.png" QRC_CONTENTS "${QRC_CONTENTS}")
-  string(REPLACE "<file>icon.png" "<file alias=\"icon.png\">alt/icon.png" QRC_CONTENTS "${QRC_CONTENTS}")
+  string(REPLACE "<file>icon_256.png" "<file alias=\"icon_256.png\">../gui/alt/icon_256.png" QRC_CONTENTS "${QRC_CONTENTS}")
+  string(REPLACE "<file alias=\"icon_128@2x.png\">icon_256.png" "<file alias=\"icon_128@2x.png\">../gui/alt/icon_256.png" QRC_CONTENTS "${QRC_CONTENTS}")
+  string(REPLACE "<file>icon_128.png" "<file alias=\"icon_128.png\">../gui/alt/icon_128.png" QRC_CONTENTS "${QRC_CONTENTS}")
+  string(REPLACE "<file>icon_32.png" "<file alias=\"icon_32.png\">../gui/alt/icon_32.png" QRC_CONTENTS "${QRC_CONTENTS}")
   file(WRITE "${QRC_FILE}" "${QRC_CONTENTS}")
   string(TIMESTAMP BUILD_DATE "%Y%m%d")
   set(BUILD_NUMBER "00")
@@ -65,9 +69,10 @@ if (psi)
   add_compile_definitions(NDEBUG)
 else ()
   file(READ "${QRC_FILE}" QRC_CONTENTS)
-  string(REPLACE "<file alias=\"about@2x.png\">alt/about@2x.png" "<file>about@2x.png" QRC_CONTENTS "${QRC_CONTENTS}")
-  string(REPLACE "<file alias=\"about.png\">alt/about.png" "<file>about.png" QRC_CONTENTS "${QRC_CONTENTS}")
-  string(REPLACE "<file alias=\"icon.png\">alt/icon.png" "<file>icon.png" QRC_CONTENTS "${QRC_CONTENTS}")
+  string(REPLACE "<file alias=\"icon_256.png\">../gui/alt/icon_256.png" "<file>icon_256.png" QRC_CONTENTS "${QRC_CONTENTS}")
+  string(REPLACE "<file alias=\"icon_128@2x.png\">../gui/alt/icon_256.png" "<file alias=\"icon_128@2x.png\">icon_256.png" QRC_CONTENTS "${QRC_CONTENTS}")
+  string(REPLACE "<file alias=\"icon_128.png\">../gui/alt/icon_128.png" "<file>icon_128.png" QRC_CONTENTS "${QRC_CONTENTS}")
+  string(REPLACE "<file alias=\"icon_32.png\">../gui/alt/icon_32.png" "<file>icon_32.png" QRC_CONTENTS "${QRC_CONTENTS}")
   file(WRITE "${QRC_FILE}" "${QRC_CONTENTS}")
 endif ()
 
@@ -87,7 +92,7 @@ elseif (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
   file(GLOB QtDirs "C:/Qt/${QtVersion}.*.*/mingw*_64")
   list(GET QtDirs 0 QtDir)
   message(STATUS "Using Qt found at ${QtDir}")
-  set (CMAKE_PREFIX_PATH "${QtDir}")
+  list(APPEND CMAKE_PREFIX_PATH "${QtDir}")
   if (rtaudio)
     include_directories("C:/Program Files (x86)/RtAudio/include")
     set (rtaudiolib "C:/Program Files (x86)/RtAudio/lib/librtaudio.dll.a")
@@ -132,6 +137,8 @@ find_package(${QtVersion}Network CONFIG REQUIRED)
 set(qjacktrip_SRC
   src/main.cpp
   src/Settings.cpp
+  src/SocketClient.cpp
+  src/SocketServer.cpp
   src/jacktrip_globals.cpp
   src/JackTrip.cpp
   src/UdpHubListener.cpp
@@ -139,6 +146,7 @@ set(qjacktrip_SRC
   src/DataProtocol.cpp
   src/UdpDataProtocol.cpp
   src/AudioInterface.cpp
+  src/AudioSocket.cpp
   src/JackAudioInterface.cpp
   src/JMess.cpp
   src/LoopBack.cpp
@@ -146,6 +154,7 @@ set(qjacktrip_SRC
   src/RingBuffer.cpp
   src/JitterBuffer.cpp
   src/Regulator.cpp
+  src/SampleRateConverter.cpp
   src/Compressor.cpp
   src/Limiter.cpp
   src/Reverb.cpp
@@ -155,6 +164,16 @@ set(qjacktrip_SRC
   src/Auth.cpp
   src/ProcessPlugin.cpp
 )
+
+if (nooscpp)
+  add_compile_definitions(NO_OSCPP)
+else ()
+  include_directories("externals/oscpp")
+  include_directories("externals/oscpp/include")
+  set (qjacktrip_SRC ${qjacktrip_SRC}
+    src/OscServer.cpp
+  )
+endif ()
 
 if (rtaudio)
   add_compile_definitions(RT_AUDIO)
@@ -182,7 +201,7 @@ if (NOT nogui)
     src/Meter.cpp
     src/UserInterface.cpp
   )
-  
+
   if (NOT novs)
     set (qjacktrip_SRC ${qjacktrip_SRC}
       src/vs/virtualstudio.cpp
@@ -214,7 +233,7 @@ if (NOT nogui)
   else ()
     set (qjacktrip_SRC ${qjacktrip_SRC} src/images/images.qrc)
   endif ()
-  
+
   if (NOT noupdater)
     set (qjacktrip_SRC ${qjacktrip_SRC}
       src/dblsqd/feed.cpp
