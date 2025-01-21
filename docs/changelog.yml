@@ -1,17 +1,8 @@
-- Version: "2.5.0-beta3"
-  Date: 2025-01-19
-  Description:
-  - (added) Sample rate conversion for RTAudio interfaces
-  - (updated) Simplified knobs for Audio Bridge VST3 plugin
-- Version: "2.5.0-beta2"
-  Date: 2025-01-16
-  Description:
-  - (added) Sample rate conversion in Audio Bridge VST3 Plugin
-  - (fixed) VS mode logout was immediately triggering re-login
-- Version: "2.5.0-beta1"
-  Date: 2025-01-13
+- Version: "2.5.0"
+  Date: 2025-01-21
   Description:
   - (added) New JackTrip Audio Bridge VST3 Plugin
+  - (added) Sample rate conversion for audio interfaces
   - (added) Automated arm64 and arm32 builds for Linux
   - (added) Dynamic adjustment of PLC queues using OSC messages
   - (updated) VS Mode remote control for audio quality slider
