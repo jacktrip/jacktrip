@@ -1039,9 +1039,13 @@ void VirtualStudio::connectToStudio()
             &VirtualStudio::restartStudioSocket);
     m_studioSocketPtr->openSocket();
 
-    // Wait for websocket to respond with studio data before connecting
-    m_connectionState = QStringLiteral("Waiting...");
-    emit connectionStateChanged();
+    // Check if we have an address for our server
+    if (m_currentStudio.status() != "Ready" || m_currentStudio.host().isEmpty()) {
+        m_connectionState = QStringLiteral("Waiting...");
+        emit connectionStateChanged();
+    } else {
+        completeConnection();
+    }
 
     m_reconnectState = ReconnectState::NOT_RECONNECTING;
 }
