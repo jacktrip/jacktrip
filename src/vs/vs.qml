@@ -226,13 +226,13 @@ Rectangle {
         x: window.width
     }
 
-    CreateStudio {
-        id: createStudioScreen
+    Failed {
+        id: failedScreen
         x: window.width
     }
 
-    Failed {
-        id: failedScreen
+    CreateStudio {
+        id: createStudioScreen
         x: window.width
     }
 
