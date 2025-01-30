@@ -213,8 +213,8 @@ jobs:
             installer-path: installer
             build-system: meson
             meson-library-type: both
-            qt-version: '6.2.6'
-            qt-download-commit: 'b09fbe4'
+            qt-version: '6.2.11'
+            qt-download-commit: '50d9952'
             qt-type: 'dynamic'
             vst3sdk-version: '3.7.12'
             macosx-architectures: 'x86_64;arm64'

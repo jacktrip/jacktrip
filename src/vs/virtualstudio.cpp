@@ -1039,13 +1039,9 @@ void VirtualStudio::connectToStudio()
             &VirtualStudio::restartStudioSocket);
     m_studioSocketPtr->openSocket();
 
-    // Check if we have an address for our server
-    if (m_currentStudio.status() != "Ready") {
-        m_connectionState = QStringLiteral("Waiting...");
-        emit connectionStateChanged();
-    } else {
-        completeConnection();
-    }
+    // Wait for websocket to respond with studio data before connecting
+    m_connectionState = QStringLiteral("Waiting...");
+    emit connectionStateChanged();
 
     m_reconnectState = ReconnectState::NOT_RECONNECTING;
 }
@@ -1226,7 +1222,7 @@ void VirtualStudio::disconnect()
 
     if (!m_currentStudio.id().isEmpty()) {
         emit openFeedbackSurveyModal(m_currentStudio.id());
-        m_currentStudio.setId("");
+        m_currentStudio.clear();
         emit currentStudioChanged();
     }
 
@@ -1680,10 +1676,14 @@ void VirtualStudio::handleServerUpdate(QNetworkReply* reply, bool signalRefresh,
             QSharedPointer<VsServerInfo> serverInfo(new VsServerInfo(this));
             serverInfo->setIsAdmin(servers.at(i)[QStringLiteral("admin")].toBool());
             serverInfo->setName(servers.at(i)[QStringLiteral("name")].toString());
-            serverInfo->setHost(servers.at(i)[QStringLiteral("serverHost")].toString());
+            // force these to be refreshed on connection
+            // they will only be set for the current studio
+            // serverInfo->setHost(servers.at(i)[QStringLiteral("serverHost")].toString());
+            // serverInfo->setPort(servers.at(i)[QStringLiteral("serverPort")].toInt());
+            // serverInfo->setSessionId(
+            //   servers.at(i)[QStringLiteral("sessionId")].toString());
             serverInfo->setIsManaged(servers.at(i)[QStringLiteral("managed")].toBool());
             serverInfo->setStatus(servers.at(i)[QStringLiteral("status")].toString());
-            serverInfo->setPort(servers.at(i)[QStringLiteral("serverPort")].toInt());
             serverInfo->setIsPublic(servers.at(i)[QStringLiteral("public")].toBool());
             serverInfo->setRegion(servers.at(i)[QStringLiteral("region")].toString());
             serverInfo->setPeriod(servers.at(i)[QStringLiteral("period")].toInt());
@@ -1694,8 +1694,6 @@ void VirtualStudio::handleServerUpdate(QNetworkReply* reply, bool signalRefresh,
             serverInfo->setBannerURL(
                 servers.at(i)[QStringLiteral("bannerURL")].toString());
             serverInfo->setId(servers.at(i)[QStringLiteral("id")].toString());
-            serverInfo->setSessionId(
-                servers.at(i)[QStringLiteral("sessionId")].toString());
             serverInfo->setStreamId(servers.at(i)[QStringLiteral("streamId")].toString());
             serverInfo->setInviteKey(
                 servers.at(i)[QStringLiteral("inviteKey")].toString());
@@ -1885,6 +1883,12 @@ QApplication* VirtualStudio::createApplication(int& argc, char* argv[])
 #endif
 
     QQuickStyle::setStyle("Basic");
+
+#if defined(Q_OS_MACOS) && (QT_VERSION > QT_VERSION_CHECK(6, 2, 6)) \
+    && (QT_VERSION < QT_VERSION_CHECK(6, 8, 0))
+    // work-around for screen sharing bugs in qtwebengine 6.2.7-6.7.x
+    qputenv("QTWEBENGINE_CHROMIUM_FLAGS", "--disable-features=DesktopCaptureMacV2");
+#endif
 
     // Initialize webengine
     QtWebEngineQuick::initialize();

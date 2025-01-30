@@ -119,6 +119,7 @@ class VsServerInfo : public QObject
     QString cloudId() const;
     void setCloudId(const QString& cloudId);
     bool operator<(const VsServerInfo& other) const;
+    void clear();
 
    signals:
     void canConnectChanged();

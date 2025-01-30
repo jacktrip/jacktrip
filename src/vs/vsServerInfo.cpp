@@ -106,7 +106,7 @@ QString VsServerInfo::status() const
 
 bool VsServerInfo::canConnect() const
 {
-    return !m_host.isEmpty() && m_status == "Ready";
+    return m_status == "Ready";
 }
 
 bool VsServerInfo::canStart() const
@@ -117,13 +117,11 @@ bool VsServerInfo::canStart() const
 void VsServerInfo::setHost(const QString& host)
 {
     m_host = host;
-    emit canConnectChanged();
 }
 
 void VsServerInfo::setStatus(const QString& status)
 {
     m_status = status;
-    emit canConnectChanged();
 }
 
 quint16 VsServerInfo::port() const
@@ -315,6 +313,14 @@ bool VsServerInfo::operator<(const VsServerInfo& other) const
         return false;
     }
     return name() < other.name();
+}
+
+void VsServerInfo::clear()
+{
+    setId("");
+    setHost("");
+    setPort(0);
+    setSessionId("");
 }
 
 VsServerInfo::~VsServerInfo() = default;
