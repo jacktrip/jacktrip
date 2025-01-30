@@ -30,8 +30,13 @@ jobs:
         submodules: true
     - name: Add SHORT_SHA environment variable
       run: echo "SHORT_SHA=`echo ${GITHUB_SHA::7}`" >> $GITHUB_ENV
-    - uses: flatpak/flatpak-github-actions/flatpak-builder@v6.3
+    - uses: flatpak/flatpak-github-actions/flatpak-builder@master
       with:
         bundle: JackTrip-${{ env.SHORT_SHA }}.flatpak
         manifest-path: build-aux/flatpak/org.jacktrip.JackTrip.json
         cache-key: flatpak-builder-${{ github.sha }}
+        upload-artifact: false
+    - uses: actions/upload-artifact@v4
+      with:
+        name: JackTrip-${{ env.SHORT_SHA }}-x86_64
+        path: JackTrip-${{ env.SHORT_SHA }}.flatpak

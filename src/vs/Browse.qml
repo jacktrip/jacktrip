@@ -52,7 +52,10 @@ Item {
 
     ListView {
         id: studioListView
-        x:0; y: 0; width: parent.width - (2 * x); height: parent.height - 36 * virtualstudio.uiScale
+        x:0;
+        y: 0;
+        width: parent.width
+        height: parent.height - (36 * virtualstudio.uiScale)
         spacing: 16 * virtualstudio.uiScale
         header: footer
         footer: footer
@@ -60,8 +63,9 @@ Item {
         clip: true
         boundsBehavior: Flickable.StopAtBounds
         delegate: Studio {
-            x: 16 * virtualstudio.uiScale
-            width: studioListView.width - (2 * x)
+            anchors.left: parent ? parent.left : undefined
+            anchors.leftMargin: 16 * virtualstudio.uiScale
+            width: studioListView.width - (32 * virtualstudio.uiScale)
             serverLocation: virtualstudio.regions[modelData.location] ? "in " + virtualstudio.regions[modelData.location].label : ""
             flagImage: modelData.bannerURL ? modelData.bannerURL : modelData.flag
             studioName: modelData.name

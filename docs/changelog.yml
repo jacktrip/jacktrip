@@ -2,6 +2,8 @@
   Date: 2025-01-30
   Description:
   - (fixed) Updating Qt in Mac builds from 6.2.6 to 6.2.11
+  - (fixed) Strange error message during startup on Linux
+  - (fixed) VS Mode studio padding when browsing on Linux
   - (fixed) VS Mode ensure studio data is fresh before connecting
 - Version: "2.5.0"
   Date: 2025-01-21
