@@ -52,9 +52,6 @@ Item {
         anchors.fill: parent
         color: backgroundColour
 
-        property string accessToken: auth.isAuthenticated && Boolean(auth.accessToken) ? auth.accessToken : ""
-        property string studioId: virtualstudio.currentStudio.id
-
         WebEngineView {
             id: webEngineView
             anchors.fill: parent
@@ -62,7 +59,7 @@ Item {
             settings.javascriptCanPaste: true
             settings.screenCaptureEnabled: true
             profile.httpUserAgent: `JackTrip/${virtualstudio.versionString}`
-            url: `https://${virtualstudio.apiHost}/studios/${studioId}/live`
+            url: `https://${virtualstudio.apiHost}/studios/${virtualstudio.currentStudio.id}/live`
 
             // useful for debugging
             // onJavaScriptConsoleMessage: function(level, message, lineNumber, sourceID) {
