@@ -281,7 +281,17 @@ if get_option('default_library') == 'static'
 	qt_plugindir = run_command(qmake, '-query', 'QT_INSTALL_PLUGINS', check : true).stdout().strip()
 	if qt_version == '6'
 		# qt6 requires "Bundled*" modules for linking
-		static_deps += dependency('qt6', modules: ['DBus', 'BundledLibpng', 'BundledPcre2', 'BundledHarfbuzz', 'BundledZLIB'], include_type: 'system')
+		static_deps += compiler.find_library('Qt6BundledLibpng', required : true, dirs : [qt_libdir])
+		static_deps += compiler.find_library('Qt6BundledPcre2', required : true, dirs : [qt_libdir])
+		static_deps += compiler.find_library('Qt6BundledHarfbuzz', required : true, dirs : [qt_libdir])
+		zlib_dep = compiler.find_library('Qt6BundledZLIB', required : false, dirs : [qt_libdir])
+		if zlib_dep.found()
+			static_deps += zlib_dep
+		endif
+		dbus_dep = compiler.find_library('Qt6DBus', required : false, dirs : [qt_libdir])
+		if dbus_dep.found()
+			static_deps += dbus_dep
+		endif
 	else
 		static_deps += compiler.find_library('qtpcre2', required : true, dirs : [qt_libdir])
 	endif
@@ -317,6 +327,8 @@ if get_option('default_library') == 'static'
 			static_link_args += ['-framework', 'Security']
 			static_link_args += ['-framework', 'GSS']
 			static_link_args += ['-framework', 'SystemConfiguration']
+			static_link_args += ['-framework', 'UniformTypeIdentifiers']
+			static_link_args += '-lresolv'
 			static_deps += dependency('zlib', required : true)
 		endif
 	endif

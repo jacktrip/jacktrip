@@ -73,6 +73,7 @@ jobs:
             # meson-library-type: shared # shared, static, both
             # static-analysis: true # run clang-tidy static analysis (meson/Linux only)
             qt-version: '5.15.13'
+            qt-download-commit: 'f82eab7'
             qt-type: 'static'
             qt-arch: 'amd64'
 
@@ -134,10 +135,10 @@ jobs:
             jacktrip-path: jacktrip
             binary-path: binary
             build-system: docker
-            docker-image: ubuntu:focal-20241011
+            docker-image: ubuntu:jammy-20240911.1
             docker-platform: linux/amd64
             meson-library-type: static
-            qt-version: '6.5.3'
+            qt-version: '6.8.1'
             qt-type: 'static'
             qt-arch: 'amd64'
 
@@ -153,10 +154,10 @@ jobs:
             jacktrip-path: jacktrip
             binary-path: binary
             build-system: docker
-            docker-image: ubuntu:focal-20241011
+            docker-image: ubuntu:jammy-20240911.1
             docker-platform: linux/arm64
             meson-library-type: static
-            qt-version: '6.5.3'
+            qt-version: '6.8.1'
             qt-type: 'static'
             qt-arch: 'arm64'
 
@@ -176,12 +177,13 @@ jobs:
             docker-platform: linux/arm/v7
             meson-library-type: static
             qt-version: '5.15.13'
+            qt-download-commit: 'f82eab7'
             qt-type: 'static'
             qt-arch: 'arm32'
 
           - name: macOS-x64-meson-clang-static
             release-name: macOS-x64-nogui
-            runs-on: macos-13
+            runs-on: macos-14
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: true
@@ -192,15 +194,15 @@ jobs:
             binary-path: binary
             build-system: meson
             meson-library-type: static
-            qt-version: '5.15.13'
+            qt-version: '6.8.1'
             qt-type: 'static'
             macosx-architectures: 'x86_64;arm64'
-            macosx-deployment-target: 10.13
-            xcode-directory: /Applications/Xcode_14.2.app
+            macosx-deployment-target: 12
+            xcode-directory: /Applications/Xcode_16.2.app
 
           - name: macOS-x64-meson-clang-shared
             release-name: macOS-x64
-            runs-on: macos-13
+            runs-on: macos-14
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
@@ -213,24 +215,23 @@ jobs:
             installer-path: installer
             build-system: meson
             meson-library-type: both
-            qt-version: '6.2.11'
-            qt-download-commit: '50d9952'
+            qt-version: '6.8.1'
             qt-type: 'dynamic'
             vst3sdk-version: '3.7.12'
             macosx-architectures: 'x86_64;arm64'
-            macosx-deployment-target: 10.14
-            xcode-directory: /Applications/Xcode_14.2.app
+            macosx-deployment-target: 12
+            xcode-directory: /Applications/Xcode_16.2.app
 
           - name: Windows-x64-meson-msvc-static
             release-name: Windows-x64-nogui
-            runs-on: windows-2019
+            runs-on: windows-2022
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: true
             novs: true
             weakjack: true
             libsamplerate: true
-            qt-version: '5.15.13'
+            qt-version: '6.8.1'
             qt-type: 'static'
             jacktrip-path: jacktrip.exe
             binary-path: binary
@@ -246,7 +247,7 @@ jobs:
             novs: false
             weakjack: true
             libsamplerate: true
-            qt-version: '6.5.3'
+            qt-version: '6.8.1'
             qt-type: 'dynamic'
             jacktrip-path: jacktrip.exe
             installer-path: installer
@@ -261,7 +262,7 @@ jobs:
       CLANG_TIDY_PATH: ${{ github.workspace }}/clang-tidy-result
       VST3SDK_DOWNLOAD_BASE_URL: 'https://files.jacktrip.org/contrib/vst3sdk'
       QT_DOWNLOAD_BASE_URL: 'https://files.jacktrip.org/contrib/qt'
-      QT_DOWNLOAD_COMMIT: 'f82eab7'
+      QT_DOWNLOAD_COMMIT: '3e1fab2'
 
     steps:
       - uses: actions/checkout@v3
@@ -628,7 +629,7 @@ jobs:
             if [[ "${{ matrix.docker-platform }}" == "linux/arm/v7" ]]; then
               # should be implied, but this is necessary for broken compiler on arm32
               CONFIG_STRING="-Dcpp_link_args='-no-pie' $CONFIG_STRING"
-            elif [[ -z "${{ matrix.vst3sdk-version }}" ]]; then
+            elif [[ -z "${{ matrix.vst3sdk-version }}" && "${{ matrix.qt-version}}" == "5.15.13" ]]; then
               # vst3 sdk has a lot of header warnings
               CONFIG_STRING="-Dwerror=true $CONFIG_STRING"
             fi
