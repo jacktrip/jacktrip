@@ -380,6 +380,7 @@ jobs:
           fi
           choco install jack --version=1.9.17 --no-progress
           choco install pkgconfiglite --no-progress
+          choco install zip --no-progress
       - name: setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
         if: runner.os == 'Windows'
@@ -620,9 +621,6 @@ jobs:
           fi
           if [[ -n "${{ matrix.vst3sdk-version }}" && "${{ matrix.build-system }}" != "docker" && "${{ runner.os }}" != 'Windows' ]]; then
             CONFIG_STRING="-Dvst-sdkdir=$VST3SDK_INSTALL_PATH $CONFIG_STRING"
-          fi
-          if [[ "${{ runner.os }}" == 'Windows' && "${{ matrix.qt-type }}" == "static" ]]; then
-            CONFIG_STRING="-Db_vscrt=mt $CONFIG_STRING"
           fi
           if [[ "${{ matrix.build-system }}" == "docker" ]]; then
             mkdir -p $BUILD_PATH
