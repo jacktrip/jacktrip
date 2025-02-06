@@ -857,17 +857,13 @@ void VirtualStudio::joinStudio()
         return;
     }
 
-    // pop studioToJoin
-    const QString targetId = m_studioToJoin;
-    setStudioToJoin("");
-
     // stop audio if already running (settings or setup windows)
     m_audioConfigPtr->stopAudio(true);
 
     // find and populate data for current studio
     VsServerInfoPointer sPtr;
     for (const VsServerInfoPointer& s : m_servers) {
-        if (s->id() == targetId) {
+        if (s->id() == m_studioToJoin) {
             sPtr = s;
             break;
         }
@@ -875,20 +871,22 @@ void VirtualStudio::joinStudio()
     locker.unlock();
 
     if (sPtr.isNull()) {
-        m_failedMessage = "Unable to find studio " + targetId;
+        m_failedMessage = "Unable to find studio " + m_studioToJoin;
+        setStudioToJoin("");
         emit failedMessageChanged();
         emit failed();
         return;
     }
 
-    m_currentStudio = *sPtr;
-    emit currentStudioChanged();
-
     if (m_windowState == "setup") {
-        m_audioConfigPtr->setSampleRate(m_currentStudio.sampleRate());
+        m_audioConfigPtr->setSampleRate(sPtr->sampleRate());
         m_audioConfigPtr->startAudio();
         return;
     }
+
+    setStudioToJoin("");
+    m_currentStudio = *sPtr;
+    emit currentStudioChanged();
 
     // m_windowState == "connected"
     connectToStudio();
@@ -1522,6 +1520,7 @@ void VirtualStudio::handleWebsocketMessage(const QString& msg)
     m_currentStudio.setQueueBuffer(queueBuffer);
     if (!m_jackTripRunning) {
         if (serverStatus == QLatin1String("Ready") && m_onConnectedScreen) {
+            std::cout << "Received websocket message with server info" << std::endl;
             m_currentStudio.setHost(serverState[QStringLiteral("serverHost")].toString());
             m_currentStudio.setPort(serverState[QStringLiteral("serverPort")].toInt());
             m_currentStudio.setSessionId(
@@ -1891,7 +1890,13 @@ QApplication* VirtualStudio::createApplication(int& argc, char* argv[])
 #if defined(Q_OS_MACOS) && (QT_VERSION > QT_VERSION_CHECK(6, 2, 6)) \
     && (QT_VERSION < QT_VERSION_CHECK(6, 8, 0))
     // work-around for screen sharing bugs in qtwebengine 6.2.7-6.7.x
-    qputenv("QTWEBENGINE_CHROMIUM_FLAGS", "--disable-features=DesktopCaptureMacV2");
+    QString chromiumFlags("--disable-features=DesktopCaptureMacV2");
+    char* existingFlags = getenv("QTWEBENGINE_CHROMIUM_FLAGS");
+    if (existingFlags != nullptr) {
+        chromiumFlags.append(" ");
+        chromiumFlags.append(existingFlags);
+    }
+    qputenv("QTWEBENGINE_CHROMIUM_FLAGS", chromiumFlags.toUtf8());
 #endif
 
     // Initialize webengine

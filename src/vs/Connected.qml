@@ -67,10 +67,7 @@ Item {
         anchors.left: parent.left
         anchors.bottom: deviceControlsGroup.top
 
-        property string accessToken: auth.isAuthenticated && Boolean(auth.accessToken) ? auth.accessToken : ""
-        property string studioId: virtualstudio.currentStudio.id
-
-        source: accessToken && studioId ? "Web.qml" : "WebNull.qml"
+        source: auth.isAuthenticated && Boolean(auth.accessToken) && Boolean(virtualstudio.currentStudio.id) ? "Web.qml" : "WebNull.qml"
     }
 
     DeviceControlsGroup {
