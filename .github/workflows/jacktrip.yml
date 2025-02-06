@@ -65,6 +65,7 @@ jobs:
             nogui: false
             novs: true
             weakjack: false
+            libsamplerate: true
             # jacktrip-path: jacktrip # needed for binary upload
             # binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
             # bundle-path: bundle # directory relative to build path; triggers application bundle creation and upload (macOS)
@@ -82,6 +83,7 @@ jobs:
             bundled-rtaudio: false
             nogui: false
             weakjack: false
+            libsamplerate: true
             # jacktrip-path: jacktrip
             # binary-path: binary
             build-system: meson
@@ -322,6 +324,9 @@ jobs:
             sudo apt-get install --yes help2man
             python -m pip install --upgrade pip
             pip install meson pyyaml Jinja2
+          fi
+          if [[ "${{ matrix.libsamplerate }}" == true ]]; then
+            sudo apt-get install --yes libsamplerate-dev
           fi
       - name: install dependencies for macOS
         if: runner.os == 'macOS'
