@@ -343,25 +343,27 @@ if rtaudio_dep.found() == false and jack_dep.found() == false
 	configure.''')
 endif
 
-libsamplerate_dep = dependency('samplerate', required: false)
-found_libsamplerate = libsamplerate_dep.found()
-
-if get_option('libsamplerate').allowed() and found_libsamplerate == false
-	opt_var = cmake.subproject_options()
-	if get_option('buildtype') == 'release'
-		opt_var.add_cmake_defines({'CMAKE_BUILD_TYPE': 'Release'})
+found_libsamplerate = false
+if get_option('libsamplerate').allowed()
+	libsamplerate_dep = dependency('samplerate', required: false)
+	if libsamplerate_dep.found()
+		found_libsamplerate = true
 	else
-		opt_var.add_cmake_defines({'CMAKE_BUILD_TYPE': 'Debug'})
-	endif
-	opt_var.add_cmake_defines({'CMAKE_POSITION_INDEPENDENT_CODE': 'ON'})
-	libsamplerate_subproject = cmake.subproject('libsamplerate', options: opt_var)
-	libsamplerate_dep = libsamplerate_subproject.dependency('samplerate')
-	found_libsamplerate = libsamplerate_dep.found()
-	if not found_libsamplerate and not get_option('libsamplerate').auto()
-		error('failed to configure libsamplerate')
+		opt_var = cmake.subproject_options()
+		if get_option('buildtype') == 'release'
+			opt_var.add_cmake_defines({'CMAKE_BUILD_TYPE': 'Release'})
+		else
+			opt_var.add_cmake_defines({'CMAKE_BUILD_TYPE': 'Debug'})
+		endif
+		opt_var.add_cmake_defines({'CMAKE_POSITION_INDEPENDENT_CODE': 'ON'})
+		libsamplerate_subproject = cmake.subproject('libsamplerate', options: opt_var)
+		libsamplerate_dep = libsamplerate_subproject.dependency('samplerate')
+		found_libsamplerate = libsamplerate_dep.found()
+		if not found_libsamplerate and not get_option('libsamplerate').auto()
+			error('failed to configure libsamplerate')
+		endif
 	endif
 endif
-
 if found_libsamplerate
 	defines += '-DHAVE_LIBSAMPLERATE'
 	deps += libsamplerate_dep
