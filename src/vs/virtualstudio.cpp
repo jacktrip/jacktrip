@@ -1514,6 +1514,8 @@ void VirtualStudio::handleWebsocketMessage(const QString& msg)
     if (m_currentStudio.id() == "") {
         return;
     }
+    const QString newServerHost = serverState[QStringLiteral("serverHost")].toString();
+
     m_currentStudio.setStatus(serverStatus);
     m_currentStudio.setEnabled(serverEnabled);
     m_currentStudio.setCloudId(serverCloudId);
@@ -1521,7 +1523,7 @@ void VirtualStudio::handleWebsocketMessage(const QString& msg)
     if (!m_jackTripRunning) {
         if (serverStatus == QLatin1String("Ready") && m_onConnectedScreen) {
             std::cout << "Received websocket message with server info" << std::endl;
-            m_currentStudio.setHost(serverState[QStringLiteral("serverHost")].toString());
+            m_currentStudio.setHost(newServerHost);
             m_currentStudio.setPort(serverState[QStringLiteral("serverPort")].toInt());
             m_currentStudio.setSessionId(
                 serverState[QStringLiteral("sessionId")].toString());
@@ -1529,6 +1531,11 @@ void VirtualStudio::handleWebsocketMessage(const QString& msg)
         }
     } else if (m_useStudioQueueBuffer && !m_devicePtr.isNull()) {
         m_devicePtr->setQueueBuffer(m_currentStudio.queueBuffer());
+    }
+
+    if (!newServerHost.isEmpty() && m_currentStudio.host() != newServerHost) {
+        m_currentStudio.setHost(newServerHost);
+        triggerReconnect(true);
     }
 
     emit currentStudioChanged();
