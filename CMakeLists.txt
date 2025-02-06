@@ -101,7 +101,7 @@ endif ()
 
 string(PREPEND QtVersion "Qt")
 
-if (${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin" OR ${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
   find_package(PkgConfig REQUIRED)
   pkg_check_modules(JACK REQUIRED IMPORTED_TARGET jack)
   if (weakjack)
@@ -218,6 +218,7 @@ if (NOT nogui)
       src/vs/vsWebSocket.cpp
       src/vs/vsPermissions.cpp
       src/vs/vs.qrc
+      src/vs/WebSocketTransport.cpp
       src/images/images.qrc
       src/Analyzer.cpp
       src/Monitor.cpp
