@@ -1879,6 +1879,7 @@ VirtualStudio::~VirtualStudio()
 QApplication* VirtualStudio::createApplication(int& argc, char* argv[])
 {
 #if defined(Q_OS_WIN)
+#if QT_VERSION < QT_VERSION_CHECK(6, 6, 0)
     // Fix for display scaling like 125% or 150% on Windows
     QGuiApplication::setHighDpiScaleFactorRoundingPolicy(
         Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
@@ -1888,8 +1889,12 @@ QApplication* VirtualStudio::createApplication(int& argc, char* argv[])
     // QCoreApplication::setAttribute(Qt::AA_UseDesktopOpenGL);
     // QCoreApplication::setAttribute(Qt::AA_UseOpenGLES);
 
+    // Direct3D11 is still broken as of Qt 6.8.1
     // QQuickWindow::setGraphicsApi(QSGRendererInterface::Direct3D11);
     QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
+#else  // Qt 6.6.0 or later supports Direct3D 12, which works well
+    QQuickWindow::setGraphicsApi(QSGRendererInterface::Direct3D12);
+#endif
 #endif
 
     QQuickStyle::setStyle("Basic");
