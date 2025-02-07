@@ -138,7 +138,7 @@ jobs:
             docker-image: ubuntu:jammy-20240911.1
             docker-platform: linux/amd64
             meson-library-type: static
-            qt-version: '6.8.1'
+            qt-version: '6.8.2'
             qt-type: 'static'
             qt-arch: 'amd64'
 
@@ -157,7 +157,7 @@ jobs:
             docker-image: ubuntu:jammy-20240911.1
             docker-platform: linux/arm64
             meson-library-type: static
-            qt-version: '6.8.1'
+            qt-version: '6.8.2'
             qt-type: 'static'
             qt-arch: 'arm64'
 
@@ -194,7 +194,7 @@ jobs:
             binary-path: binary
             build-system: meson
             meson-library-type: static
-            qt-version: '6.8.1'
+            qt-version: '6.8.2'
             qt-type: 'static'
             macosx-architectures: 'x86_64;arm64'
             macosx-deployment-target: 12
@@ -215,7 +215,7 @@ jobs:
             installer-path: installer
             build-system: meson
             meson-library-type: both
-            qt-version: '6.8.1'
+            qt-version: '6.8.2'
             qt-type: 'dynamic'
             vst3sdk-version: '3.7.12'
             macosx-architectures: 'x86_64;arm64'
@@ -231,7 +231,7 @@ jobs:
             novs: true
             weakjack: true
             libsamplerate: true
-            qt-version: '6.8.1'
+            qt-version: '6.8.2'
             qt-type: 'static'
             jacktrip-path: jacktrip.exe
             binary-path: binary
@@ -247,7 +247,7 @@ jobs:
             novs: false
             weakjack: true
             libsamplerate: true
-            qt-version: '6.8.1'
+            qt-version: '6.8.2'
             qt-type: 'dynamic'
             jacktrip-path: jacktrip.exe
             installer-path: installer
@@ -262,7 +262,7 @@ jobs:
       CLANG_TIDY_PATH: ${{ github.workspace }}/clang-tidy-result
       VST3SDK_DOWNLOAD_BASE_URL: 'https://files.jacktrip.org/contrib/vst3sdk'
       QT_DOWNLOAD_BASE_URL: 'https://files.jacktrip.org/contrib/qt'
-      QT_DOWNLOAD_COMMIT: '3e1fab2'
+      QT_DOWNLOAD_COMMIT: '7934713'
 
     steps:
       - uses: actions/checkout@v3
