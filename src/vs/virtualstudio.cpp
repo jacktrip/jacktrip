@@ -1499,11 +1499,18 @@ void VirtualStudio::receivedConnectionFromPeer()
 
 void VirtualStudio::handleWebsocketMessage(const QString& msg)
 {
-    QJsonObject serverState = QJsonDocument::fromJson(msg.toUtf8()).object();
-    QString serverStatus    = serverState[QStringLiteral("status")].toString();
-    bool serverEnabled      = serverState[QStringLiteral("enabled")].toBool();
-    QString serverCloudId   = serverState[QStringLiteral("cloudId")].toString();
-    int queueBuffer         = serverState[QStringLiteral("queueBuffer")].toInt();
+    if (m_currentStudio.id() == "") {
+        return;
+    }
+
+    QJsonObject serverState      = QJsonDocument::fromJson(msg.toUtf8()).object();
+    const QString& serverHost    = serverState[QStringLiteral("serverHost")].toString();
+    const QString& serverStatus  = serverState[QStringLiteral("status")].toString();
+    const QString& serverCloudId = serverState[QStringLiteral("cloudId")].toString();
+    const QString& sessionId     = serverState[QStringLiteral("sessionId")].toString();
+    const bool serverEnabled     = serverState[QStringLiteral("enabled")].toBool();
+    const int serverPort         = serverState[QStringLiteral("serverPort")].toInt();
+    const int queueBuffer        = serverState[QStringLiteral("queueBuffer")].toInt();
 
     // server notifications are also transmitted along this websocket, so ignore data if
     // it contains "message"
@@ -1511,34 +1518,63 @@ void VirtualStudio::handleWebsocketMessage(const QString& msg)
     if (!message.isEmpty()) {
         return;
     }
-    if (m_currentStudio.id() == "") {
-        return;
-    }
-    const QString newServerHost = serverState[QStringLiteral("serverHost")].toString();
 
-    m_currentStudio.setStatus(serverStatus);
-    m_currentStudio.setEnabled(serverEnabled);
-    m_currentStudio.setCloudId(serverCloudId);
-    m_currentStudio.setQueueBuffer(queueBuffer);
-    if (!m_jackTripRunning) {
-        if (serverStatus == QLatin1String("Ready") && m_onConnectedScreen) {
-            std::cout << "Received websocket message with server info" << std::endl;
-            m_currentStudio.setHost(newServerHost);
-            m_currentStudio.setPort(serverState[QStringLiteral("serverPort")].toInt());
-            m_currentStudio.setSessionId(
-                serverState[QStringLiteral("sessionId")].toString());
-            completeConnection();
+    bool currentStudioUpdated    = false;
+    bool serverHostOrPortUpdated = false;
+    if (serverHost != m_currentStudio.host()) {
+        m_currentStudio.setHost(serverHost);
+        currentStudioUpdated    = true;
+        serverHostOrPortUpdated = true;
+    }
+    if (serverStatus != m_currentStudio.status()) {
+        m_currentStudio.setStatus(serverStatus);
+        currentStudioUpdated = true;
+    }
+    if (serverCloudId != m_currentStudio.cloudId()) {
+        m_currentStudio.setCloudId(serverCloudId);
+        currentStudioUpdated = true;
+    }
+    if (sessionId != m_currentStudio.sessionId()) {
+        m_currentStudio.setSessionId(sessionId);
+        currentStudioUpdated = true;
+    }
+    if (serverEnabled != m_currentStudio.enabled()) {
+        m_currentStudio.setEnabled(serverEnabled);
+        currentStudioUpdated = true;
+    }
+    if (serverPort != m_currentStudio.port()) {
+        m_currentStudio.setPort(serverPort);
+        currentStudioUpdated    = true;
+        serverHostOrPortUpdated = true;
+    }
+    if (queueBuffer != m_currentStudio.queueBuffer()) {
+        m_currentStudio.setQueueBuffer(queueBuffer);
+        currentStudioUpdated = true;
+        if (m_useStudioQueueBuffer && !m_devicePtr.isNull()) {
+            m_devicePtr->setQueueBuffer(m_currentStudio.queueBuffer());
         }
-    } else if (m_useStudioQueueBuffer && !m_devicePtr.isNull()) {
-        m_devicePtr->setQueueBuffer(m_currentStudio.queueBuffer());
     }
 
-    if (!newServerHost.isEmpty() && m_currentStudio.host() != newServerHost) {
-        m_currentStudio.setHost(newServerHost);
-        triggerReconnect(true);
+    if (currentStudioUpdated) {
+        emit currentStudioChanged();
     }
 
-    emit currentStudioChanged();
+    if (m_onConnectedScreen) {
+        if (m_jackTripRunning) {
+            if (serverEnabled && serverHostOrPortUpdated) {
+                std::cout << "Reconnecting audio to " << serverHost.toStdString() << ":"
+                          << serverPort << std::endl;
+                triggerReconnect(true);
+            }
+        } else {
+            if (serverEnabled && serverStatus == QLatin1String("Ready")
+                && serverHost != "" && serverPort != 0) {
+                std::cout << "Connecting audio to " << serverHost.toStdString() << ":"
+                          << serverPort << std::endl;
+                completeConnection();
+            }
+        }
+    }
 }
 
 void VirtualStudio::restartStudioSocket()

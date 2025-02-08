@@ -60,6 +60,14 @@ Item {
 
     property bool isUsingRtAudio: audio.audioBackend == "RtAudio"
 
+    function hasAccessToken () {
+        return typeof auth.accessToken === 'string' && auth.accessToken !== null && auth.accessToken.length > 0;
+    }
+
+    function hasStudioId () {
+        return typeof virtualstudio.currentStudio.id === 'string' && virtualstudio.currentStudio.id !== null && virtualstudio.currentStudio.id.length > 0
+    }
+
     Loader {
         id: studioWebLoader
         anchors.top: parent.top
@@ -67,7 +75,7 @@ Item {
         anchors.left: parent.left
         anchors.bottom: deviceControlsGroup.top
 
-        source: auth.isAuthenticated && Boolean(auth.accessToken) && Boolean(virtualstudio.currentStudio.id) ? "Web.qml" : "WebNull.qml"
+        source: auth.isAuthenticated && hasAccessToken() && hasStudioId() ? "Web.qml" : "WebNull.qml"
     }
 
     DeviceControlsGroup {
