@@ -1,7 +1,7 @@
-- Version: "2.6.0"
+- Version: "2.6.0-beta0"
   Date: 2025-xx-xx
   Description:
-  - (updated) Updating to Qt 6.8.1 for most builds
+  - (updated) Updating to Qt 6.8.2 for most builds
 - Version: "2.5.1"
   Date: 2025-01-30
   Description:
