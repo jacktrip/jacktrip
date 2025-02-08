@@ -385,7 +385,6 @@ jobs:
           fi
           choco install jack --version=1.9.17 --no-progress
           choco install pkgconfiglite --no-progress
-          choco install zip --no-progress
       - name: setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
         if: runner.os == 'Windows'
@@ -765,7 +764,11 @@ jobs:
             if [[ "${{ matrix.build-system }}" != "docker" ]]; then
               strip $BINFILE
             fi
-            zip -j $ZIPFILE $BINFILE
+            if [[ "${{ runner.os }}" == "Windows" ]]; then
+              7z a $ZIPFILE -tzip $BINFILE
+            else
+              zip -j $ZIPFILE $BINFILE
+            fi
             if [[ "${{ runner.os }}" == 'Linux' && -n "${{ matrix.vst3sdk-version }}" ]]; then
               mkdir -p JackTrip.vst3/Contents/Resources
               cp -f $GITHUB_WORKSPACE/LICENSE.md "JackTrip.vst3/Contents/Resources/"
@@ -791,7 +794,11 @@ jobs:
               zip -j $ZIPFILE $DESKTOP_FILE_PATH $BUILD_PATH/jacktrip.1.gz $BUILD_PATH/org.jacktrip.JackTrip.svg $BUILD_PATH/org.jacktrip.JackTrip.png $GITHUB_WORKSPACE/linux/README.md
             fi
             cd $GITHUB_WORKSPACE # we need to be in the root project directory for adding licenses
-            zip -r $ZIPFILE LICENSE.md LICENSES
+            if [[ "${{ runner.os }}" == "Windows" ]]; then
+              7z a $ZIPFILE -tzip LICENSE.md LICENSES
+            else
+              zip -r $ZIPFILE LICENSE.md LICENSES
+            fi
           fi
       - name: upload jacktrip binary
         uses: actions/upload-artifact@v4
