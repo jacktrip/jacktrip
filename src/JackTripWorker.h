@@ -136,6 +136,11 @@ class JackTripWorker : public QObject
     uint16_t getClientPort() { return mClientPort; }
     QString getClientAddress() { return mClientAddress; }
 
+    double getLatency() {
+        QMutexLocker lock(&mMutex);
+        return mJackTrip.isNull() ? -1 : mJackTrip->getLatency();
+    }
+
    private slots:
     void slotTest() { std::cout << "--- JackTripWorker TEST SLOT ---" << std::endl; }
     void receivedDataUDP();
