@@ -93,7 +93,8 @@ void OscServer::readPendingDatagrams()
         // qDebug() << "Received datagram from" << sender << ":" << senderPort;
         // qDebug() << "  - Data:" << datagram;
 #ifndef NO_OSCPP
-        handlePacket(OSCPP::Server::Packet(datagram.data(), datagram.size()), sender, senderPort);
+        handlePacket(OSCPP::Server::Packet(datagram.data(), datagram.size()), sender,
+                     senderPort);
 #endif  // NO_OSCPP
         // Send a reply back to the client
         // QByteArray replyData("Reply from server");
@@ -103,7 +104,8 @@ void OscServer::readPendingDatagrams()
 
 //*******************************************************************************
 #ifndef NO_OSCPP
-void OscServer::handlePacket(const OSCPP::Server::Packet& packet, const QHostAddress& sender, quint16 senderPort)
+void OscServer::handlePacket(const OSCPP::Server::Packet& packet,
+                             const QHostAddress& sender, quint16 senderPort)
 {
     try {
         if (packet.isBundle()) {
@@ -125,15 +127,14 @@ void OscServer::handlePacket(const OSCPP::Server::Packet& packet, const QHostAdd
             if (msg == "/config") {
                 const char* key   = args.string();
                 const float value = args.float32();
-                cout << "OSC: Config received - key (" << key << ") value (" << value << ")"
-                     << endl;
+                cout << "OSC: Config received - key (" << key << ") value (" << value
+                     << ")" << endl;
                 if (strcmp("queueBuffer", key) == 0) {
                     emit signalQueueBufferChanged(static_cast<int>(value));
                 }
             } else if (msg == "/get") {
-                const char* key   = args.string();
-                cout << "OSC: Get request received - key (" << key << ")"
-                     << endl;
+                const char* key = args.string();
+                cout << "OSC: Get request received - key (" << key << ")" << endl;
                 if (strcmp("latency", key) == 0) {
                     emit signalLatencyRequested(sender, senderPort);
                 }
@@ -148,7 +149,10 @@ void OscServer::handlePacket(const OSCPP::Server::Packet& packet, const QHostAdd
 }
 #endif  // NO_OSCPP
 
-void OscServer::sendLatencyResponse(const QHostAddress& sender, quint16 senderPort, QVector<QString>& clientNames, QVector<double>& latencies) {
+void OscServer::sendLatencyResponse(const QHostAddress& sender, quint16 senderPort,
+                                    QVector<QString>& clientNames,
+                                    QVector<double>& latencies)
+{
 #ifndef NO_OSCPP
     QByteArray datagram;
     datagram.resize(64 * 1024);

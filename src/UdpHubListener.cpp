@@ -379,7 +379,8 @@ void UdpHubListener::queueBufferChanged(int queueBufferSize)
     }
 }
 
-void UdpHubListener::handleLatencyRequest(const QHostAddress& sender, quint16 senderPort) {
+void UdpHubListener::handleLatencyRequest(const QHostAddress& sender, quint16 senderPort)
+{
     QVector<QString> clientNames;
     QVector<double> latencies;
     getClientLatencies(clientNames, latencies);
@@ -388,7 +389,9 @@ void UdpHubListener::handleLatencyRequest(const QHostAddress& sender, quint16 se
     }
 }
 
-void UdpHubListener::getClientLatencies(QVector<QString>& clientNames, QVector<double>& latencies) {
+void UdpHubListener::getClientLatencies(QVector<QString>& clientNames,
+                                        QVector<double>& latencies)
+{
     QMutexLocker lock(&mMutex);
     for (int i = 0; i < gMaxThreads; i++) {
         if (mJTWorkers->at(i) != nullptr) {

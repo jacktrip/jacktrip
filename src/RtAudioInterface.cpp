@@ -493,10 +493,10 @@ void RtAudioInterface::setup(bool verbose)
 
     if (mDuplexMode) {
         // duplex mode returns sum of input and output latencies
-        mAudioInputLatency = static_cast<double>(mRtAudioInput->getStreamLatency()) / 2;
+        mAudioInputLatency  = static_cast<double>(mRtAudioInput->getStreamLatency()) / 2;
         mAudioOutputLatency = mAudioInputLatency;
     } else {
-        mAudioInputLatency = mRtAudioInput->getStreamLatency();
+        mAudioInputLatency  = mRtAudioInput->getStreamLatency();
         mAudioOutputLatency = mRtAudioOutput->getStreamLatency();
     }
 

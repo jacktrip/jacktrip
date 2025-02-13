@@ -41,8 +41,8 @@
 #include <QObject>
 #include <QString>
 #include <QUdpSocket>
-#include <QtCore>
 #include <QVector>
+#include <QtCore>
 
 #ifndef NO_OSCPP
 #include "oscpp/client.hpp"
@@ -60,7 +60,8 @@ class OscServer : public QObject
     virtual ~OscServer();
     void start();
     void stop();
-    void sendLatencyResponse(const QHostAddress& sender, quint16 senderPort, QVector<QString>& clientNames, QVector<double>& latencies);
+    void sendLatencyResponse(const QHostAddress& sender, quint16 senderPort,
+                             QVector<QString>& clientNames, QVector<double>& latencies);
 
     static size_t makeConfigPacket(void* buffer, size_t size, const char* key,
                                    float value)
@@ -95,7 +96,8 @@ class OscServer : public QObject
    private:
     void closeSocket();
 #ifndef NO_OSCPP
-    void handlePacket(const OSCPP::Server::Packet& packet, const QHostAddress& sender, quint16 senderPort);
+    void handlePacket(const OSCPP::Server::Packet& packet, const QHostAddress& sender,
+                      quint16 senderPort);
 #endif  // NO_OSCPP
 
     QSharedPointer<QUdpSocket> mOscServerSocket;

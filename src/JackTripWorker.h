@@ -136,7 +136,8 @@ class JackTripWorker : public QObject
     uint16_t getClientPort() { return mClientPort; }
     QString getClientAddress() { return mClientAddress; }
 
-    double getLatency() {
+    double getLatency()
+    {
         QMutexLocker lock(&mMutex);
         return mJackTrip.isNull() ? -1 : mJackTrip->getLatency();
     }
