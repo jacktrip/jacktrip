@@ -315,6 +315,8 @@ class AudioInterface
     const std::string& getDevicesErrorMsg() const { return mErrorMsg; }
     const std::string& getDevicesWarningHelpUrl() const { return mWarningHelpUrl; }
     const std::string& getDevicesErrorHelpUrl() const { return mErrorHelpUrl; }
+    double getAudioInputLatency() const { return mAudioInputLatency; }
+    double getAudioOutputLatency() const { return mAudioOutputLatency; }
     bool highLatencyBufferSize() const { return getBufferSizeInSamples() > 256; }
     bool getHighLatencyFlag() const { return mHighLatencyFlag; }
     //------------------------------------------------------------------
@@ -370,6 +372,8 @@ class AudioInterface
    protected:
     JackTrip* mJackTrip;          ///< JackTrip Mediator Class pointer
     inputMixModeT mInputMixMode;  ///< Input mixing mode
+    double mAudioInputLatency;    ///< Latency of the audio input
+    double mAudioOutputLatency;   ///< Latency of the audio output
 
     void setDevicesWarningMsg(warningMessageT msg);
     void setDevicesErrorMsg(errorMessageT msg);

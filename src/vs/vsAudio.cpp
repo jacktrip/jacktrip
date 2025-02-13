@@ -863,6 +863,11 @@ AudioInterface* VsAudio::newAudioInterface(JackTrip* jackTripPtr)
     std::cout << "                      or: " << AudioBufferSizeInBytes << " bytes"
               << std::endl;
     std::cout << gPrintSeparator << std::endl;
+    std::cout << "The Audio Input Latency is : " << ifPtr->getAudioInputLatency()
+              << std::endl;
+    std::cout << "The Audio Output Latency is: " << ifPtr->getAudioOutputLatency()
+              << std::endl;
+    std::cout << gPrintSeparator << std::endl;
     std::cout << "The Number of Channels is: " << ifPtr->getNumInputChannels()
               << std::endl;
     std::cout << gPrintSeparator << std::endl;
