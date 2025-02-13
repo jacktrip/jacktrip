@@ -77,13 +77,13 @@ AudioInterface::AudioInterface(QVarLengthArray<int> InputChans,
     , mMonitorQueuePtr(NULL)
     , mAudioInputPacket(NULL)
     , mAudioOutputPacket(NULL)
-    , mAudioInputLatency(0)
-    , mAudioOutputLatency(0)
     , mLoopBack(false)
     , mProcessWithNetwork(processWithNetwork)
     , mMonitorStarted(false)
     , mJackTrip(jacktrip)
     , mInputMixMode(InputMixMode)
+    , mAudioInputLatency(0)
+    , mAudioOutputLatency(0)
     , mProcessingAudio(false)
 {
 }

@@ -38,8 +38,7 @@
 
 #include <iostream>
 
-using std::cout;
-using std::endl;
+using namespace std;
 
 //*******************************************************************************
 OscServer::OscServer(quint16 port, QObject* parent) : QObject(parent), mPort(port) {}
@@ -91,8 +90,8 @@ void OscServer::readPendingDatagrams()
 
         mOscServerSocket->readDatagram(datagram.data(), datagram.size(), &sender,
                                        &senderPort);
-        qDebug() << "Received datagram from" << sender << ":" << senderPort;
-        qDebug() << "  - Data:" << datagram;
+        // qDebug() << "Received datagram from" << sender << ":" << senderPort;
+        // qDebug() << "  - Data:" << datagram;
 #ifndef NO_OSCPP
         handlePacket(OSCPP::Server::Packet(datagram.data(), datagram.size()), sender, senderPort);
 #endif  // NO_OSCPP
@@ -126,29 +125,31 @@ void OscServer::handlePacket(const OSCPP::Server::Packet& packet, const QHostAdd
             if (msg == "/config") {
                 const char* key   = args.string();
                 const float value = args.float32();
-                cout << "Config received - key (" << key << ") value (" << value << ")"
+                cout << "OSC: Config received - key (" << key << ") value (" << value << ")"
                      << endl;
                 if (strcmp("queueBuffer", key) == 0) {
                     emit signalQueueBufferChanged(static_cast<int>(value));
                 }
             } else if (msg == "/get") {
                 const char* key   = args.string();
-                cout << "Get request received - key (" << key << ")"
+                cout << "OSC: Get request received - key (" << key << ")"
                      << endl;
                 if (strcmp("latency", key) == 0) {
                     emit signalLatencyRequested(sender, senderPort);
                 }
             } else {
                 // Simply print unknown messages
-                cout << "Unknown message:" << msg.address() << endl;
+                cerr << "OSC: Unknown message:" << msg.address() << endl;
             }
         }
-    } catch (std::exception& e) {
-        cout << "Exception:" << e.what() << endl;
+    } catch (exception& e) {
+        cerr << "OSC: Exception:" << e.what() << endl;
     }
 }
+#endif  // NO_OSCPP
 
 void OscServer::sendLatencyResponse(const QHostAddress& sender, quint16 senderPort, QVector<QString>& clientNames, QVector<double>& latencies) {
+#ifndef NO_OSCPP
     QByteArray datagram;
     datagram.resize(64 * 1024);
 
@@ -166,5 +167,5 @@ void OscServer::sendLatencyResponse(const QHostAddress& sender, quint16 senderPo
 
     datagram.resize(packet.size());
     mOscServerSocket->writeDatagram(datagram, sender, senderPort);
-}
 #endif  // NO_OSCPP
+}
