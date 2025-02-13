@@ -110,7 +110,7 @@ jobs:
 
           - name: Linux-arm64-docker-shared
             release-name: Linux-arm64
-            runs-on: ubuntu-22.04
+            runs-on: ubuntu-22.04-arm
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
@@ -146,7 +146,7 @@ jobs:
 
           - name: Linux-arm64-docker-nogui
             release-name: Linux-arm64-nogui
-            runs-on: ubuntu-22.04
+            runs-on: ubuntu-22.04-arm
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: true
@@ -165,13 +165,13 @@ jobs:
 
           - name: Linux-arm32-docker-nogui
             release-name: Linux-arm32-nogui
-            runs-on: ubuntu-22.04
+            runs-on: ubuntu-22.04-arm
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: true
             novs: true
             weakjack: false
-            libsamplerate: false
+            libsamplerate: true
             jacktrip-path: jacktrip
             binary-path: binary
             build-system: docker
@@ -639,6 +639,7 @@ jobs:
             docker buildx build --target=artifact --progress=plain -f linux/Dockerfile.build --output type=local,dest=$BUILD_PATH \
               --platform "${{ matrix.docker-platform }}" --build-arg BUILD_CONTAINER="${{ matrix.docker-image }}" \
               --build-arg MESON_ARGS="$CONFIG_STRING" \
+              --build-arg USE_SYSTEM_LIBSAMPLERATE="1" \
               --build-arg VST3SDK_DOWNLOAD_URL="$VST3SDK_DOWNLOAD_URL" \
               --build-arg QT_DOWNLOAD_URL="$QT_DOWNLOAD_URL" .
           else

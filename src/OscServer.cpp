@@ -38,8 +38,7 @@
 
 #include <iostream>
 
-using std::cout;
-using std::endl;
+using namespace std;
 
 //*******************************************************************************
 OscServer::OscServer(quint16 port, QObject* parent) : QObject(parent), mPort(port) {}
@@ -91,10 +90,11 @@ void OscServer::readPendingDatagrams()
 
         mOscServerSocket->readDatagram(datagram.data(), datagram.size(), &sender,
                                        &senderPort);
-        qDebug() << "Received datagram from" << sender << ":" << senderPort;
-        qDebug() << "  - Data:" << datagram;
+        // qDebug() << "Received datagram from" << sender << ":" << senderPort;
+        // qDebug() << "  - Data:" << datagram;
 #ifndef NO_OSCPP
-        handlePacket(OSCPP::Server::Packet(datagram.data(), datagram.size()));
+        handlePacket(OSCPP::Server::Packet(datagram.data(), datagram.size()), sender,
+                     senderPort);
 #endif  // NO_OSCPP
         // Send a reply back to the client
         // QByteArray replyData("Reply from server");
@@ -104,7 +104,8 @@ void OscServer::readPendingDatagrams()
 
 //*******************************************************************************
 #ifndef NO_OSCPP
-void OscServer::handlePacket(const OSCPP::Server::Packet& packet)
+void OscServer::handlePacket(const OSCPP::Server::Packet& packet,
+                             const QHostAddress& sender, quint16 senderPort)
 {
     try {
         if (packet.isBundle()) {
@@ -115,7 +116,7 @@ void OscServer::handlePacket(const OSCPP::Server::Packet& packet)
 
             // Iterate over all the packets and call handlePacket recursively.
             while (!packets.atEnd()) {
-                handlePacket(packets.next());
+                handlePacket(packets.next(), sender, senderPort);
             }
         } else {
             // Convert to message
@@ -126,18 +127,49 @@ void OscServer::handlePacket(const OSCPP::Server::Packet& packet)
             if (msg == "/config") {
                 const char* key   = args.string();
                 const float value = args.float32();
-                cout << "Config received - key (" << key << ") value (" << value << ")"
-                     << endl;
+                cout << "OSC: Config received - key (" << key << ") value (" << value
+                     << ")" << endl;
                 if (strcmp("queueBuffer", key) == 0) {
                     emit signalQueueBufferChanged(static_cast<int>(value));
                 }
+            } else if (msg == "/get") {
+                const char* key = args.string();
+                cout << "OSC: Get request received - key (" << key << ")" << endl;
+                if (strcmp("latency", key) == 0) {
+                    emit signalLatencyRequested(sender, senderPort);
+                }
             } else {
                 // Simply print unknown messages
-                cout << "Unknown message:" << msg.address() << endl;
+                cerr << "OSC: Unknown message:" << msg.address() << endl;
             }
         }
-    } catch (std::exception& e) {
-        cout << "Exception:" << e.what() << endl;
+    } catch (exception& e) {
+        cerr << "OSC: Exception:" << e.what() << endl;
     }
 }
 #endif  // NO_OSCPP
+
+void OscServer::sendLatencyResponse(const QHostAddress& sender, quint16 senderPort,
+                                    QVector<QString>& clientNames,
+                                    QVector<double>& latencies)
+{
+#ifndef NO_OSCPP
+    QByteArray datagram;
+    datagram.resize(64 * 1024);
+
+    OSCPP::Client::Packet packet(datagram.data(), 64 * 1024);
+    packet.openBundle(QDateTime::currentSecsSinceEpoch());
+    packet.openMessage("/response/latency", OSCPP::Tags::array(clientNames.size() * 2));
+    packet.openArray();
+    for (int i = 0; i < clientNames.size(); i++) {
+        packet.string(clientNames[i].toStdString().c_str());
+        packet.float32(latencies[i]);
+    }
+    packet.closeArray();
+    packet.closeMessage();
+    packet.closeBundle();
+
+    datagram.resize(packet.size());
+    mOscServerSocket->writeDatagram(datagram, sender, senderPort);
+#endif  // NO_OSCPP
+}

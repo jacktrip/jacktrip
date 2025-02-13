@@ -491,6 +491,15 @@ void RtAudioInterface::setup(bool verbose)
         setDevicesWarningMsg(AudioInterface::DEVICE_WARN_BUFFER_LATENCY);
     }
 
+    if (mDuplexMode) {
+        // duplex mode returns sum of input and output latencies
+        mAudioInputLatency  = static_cast<double>(mRtAudioInput->getStreamLatency()) / 2;
+        mAudioOutputLatency = mAudioInputLatency;
+    } else {
+        mAudioInputLatency  = mRtAudioInput->getStreamLatency();
+        mAudioOutputLatency = mRtAudioOutput->getStreamLatency();
+    }
+
     // Setup parent class
     // This MUST be after buffer size is finalized, so that plugins
     // are initialized with the correct settings

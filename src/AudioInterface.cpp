@@ -82,6 +82,8 @@ AudioInterface::AudioInterface(QVarLengthArray<int> InputChans,
     , mMonitorStarted(false)
     , mJackTrip(jacktrip)
     , mInputMixMode(InputMixMode)
+    , mAudioInputLatency(0)
+    , mAudioOutputLatency(0)
     , mProcessingAudio(false)
 {
 }
