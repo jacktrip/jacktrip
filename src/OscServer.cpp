@@ -159,13 +159,11 @@ void OscServer::sendLatencyResponse(const QHostAddress& sender, quint16 senderPo
 
     OSCPP::Client::Packet packet(datagram.data(), 64 * 1024);
     packet.openBundle(QDateTime::currentSecsSinceEpoch());
-    packet.openMessage("/response/latency", OSCPP::Tags::array(clientNames.size() * 2));
-    packet.openArray();
+    packet.openMessage("/response/latency", clientNames.size() * 2);
     for (int i = 0; i < clientNames.size(); i++) {
         packet.string(clientNames[i].toStdString().c_str());
         packet.float32(latencies[i]);
     }
-    packet.closeArray();
     packet.closeMessage();
     packet.closeBundle();
 
