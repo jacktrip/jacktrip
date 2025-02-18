@@ -551,6 +551,15 @@ class JackTrip : public QObject
         return (mAudioInterface == nullptr) ? false
                                             : mAudioInterface->getHighLatencyFlag();
     }
+    double getAudioInputLatency() const
+    {
+        return (mAudioInterface == nullptr) ? 0 : mAudioInterface->getAudioInputLatency();
+    }
+    double getAudioOutputLatency() const
+    {
+        return (mAudioInterface == nullptr) ? 0
+                                            : mAudioInterface->getAudioOutputLatency();
+    }
     double getLatency() const
     {
         return mReceiveRingBuffer == nullptr ? -1 : mReceiveRingBuffer->getLatency();
