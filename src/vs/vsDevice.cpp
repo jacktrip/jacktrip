@@ -189,8 +189,17 @@ void VsDevice::sendHeartbeat()
         json.insert(QLatin1String("high_latency"),
                     m_audioConfigPtr->getHighLatencyFlag());
         json.insert(QLatin1String("network_outage"), m_networkOutage);
-        json.insert(QLatin1String("recv_latency"),
-                    m_jackTrip.isNull() ? -1 : m_jackTrip->getLatency());
+        json.insert(QLatin1String("audio_input_latency"),
+                    m_jackTrip.isNull()
+                        ? 0
+                        : (qint64)(m_jackTrip->getAudioInputLatency() * 10000));
+        json.insert(QLatin1String("audio_output_latency"),
+                    m_jackTrip.isNull()
+                        ? 0
+                        : (qint64)(m_jackTrip->getAudioOutputLatency() * 10000));
+        json.insert(
+            QLatin1String("client_buffer_latency"),
+            m_jackTrip.isNull() ? 0 : (qint64)(m_jackTrip->getLatency() * ns_per_ms));
 
         // For the internal application UI, ms will suffice. No conversion needed
         QJsonObject pingStats = {};
@@ -203,8 +212,12 @@ void VsDevice::sendHeartbeat()
                          ((int)(10 * stats.stdDevRtt)) / 10.0);
         pingStats.insert(QLatin1String("highLatency"),
                          m_audioConfigPtr->getHighLatencyFlag());
+        pingStats.insert(QLatin1String("audioInputLatency"),
+                         m_jackTrip.isNull() ? 0 : m_jackTrip->getAudioInputLatency());
+        pingStats.insert(QLatin1String("audioOutputLatency"),
+                         m_jackTrip.isNull() ? 0 : m_jackTrip->getAudioOutputLatency());
         pingStats.insert(QLatin1String("recvLatency"),
-                         m_jackTrip.isNull() ? -1 : m_jackTrip->getLatency());
+                         m_jackTrip.isNull() ? 0 : m_jackTrip->getLatency());
         emit updateNetworkStats(pingStats);
     }
 

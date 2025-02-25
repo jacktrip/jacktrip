@@ -20,8 +20,7 @@ Item {
         anchors.right: parent.right
         anchors.left: parent.left
         anchors.bottom: footer.top
-        property string accessToken: auth.isAuthenticated && Boolean(auth.accessToken) ? auth.accessToken : ""
-        sourceComponent: virtualstudio.windowState === "create_studio" && accessToken ? createStudioWeb : createStudioNull
+        sourceComponent: virtualstudio.windowState === "create_studio" && auth.isAuthenticated ? createStudioWeb : createStudioNull
     }
 
     Component {
@@ -41,7 +40,7 @@ Item {
             settings.javascriptCanPaste: true
             settings.screenCaptureEnabled: true
             profile.httpUserAgent: `JackTrip/${virtualstudio.versionString}`
-            url: `https://${virtualstudio.apiHost === "test.jacktrip.com" ? "next-test.jacktrip.com" : "www.jacktrip.com"}/app/studios/create?accessToken=${accessToken}&userId=${auth.userId}`
+            url: `https://${virtualstudio.apiHost === "test.jacktrip.com" ? "next-test.jacktrip.com" : "www.jacktrip.com"}/app/studios/create`
 
             onContextMenuRequested: function(request) {
                 // this disables the default context menu: https://doc.qt.io/qt-6.2/qml-qtwebengine-contextmenurequest.html#accepted-prop
