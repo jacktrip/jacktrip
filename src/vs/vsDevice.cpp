@@ -216,8 +216,9 @@ void VsDevice::sendHeartbeat()
                          m_jackTrip.isNull() ? 0 : m_jackTrip->getAudioInputLatency());
         pingStats.insert(QLatin1String("audioOutputLatency"),
                          m_jackTrip.isNull() ? 0 : m_jackTrip->getAudioOutputLatency());
-        pingStats.insert(QLatin1String("recvLatency"),
-                         m_jackTrip.isNull() ? 0 : m_jackTrip->getLatency());
+        pingStats.insert(
+            QLatin1String("clientBufferLatency"),
+            m_jackTrip.isNull() ? 0 : ((int)(10 * m_jackTrip->getLatency())) / 10.0);
         emit updateNetworkStats(pingStats);
     }
 
