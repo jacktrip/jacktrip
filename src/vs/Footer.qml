@@ -49,10 +49,10 @@ Rectangle {
         if (avgRtt < 10 && maxRtt < 15 && clientBufferLatency < 6) {
             quality = "Excellent";
             color = meterGreen;
-        } else if (avgRtt < 20 && maxRtt < 30 && clientBufferLatency < 8) {
+        } else if (avgRtt < 20 && maxRtt < 30 && clientBufferLatency < 9) {
             quality = "Good";
             color = meterYellow;
-        } else if (avgRtt < 30 && maxRtt < 40 && clientBufferLatency < 10) {
+        } else if (avgRtt < 30 && maxRtt < 40 && clientBufferLatency < 12) {
             quality = "Fair";
             color = statsOrange;
         }
