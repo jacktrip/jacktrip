@@ -172,7 +172,7 @@ Rectangle {
             anchors.topMargin: 16 * virtualstudio.uiScale
             anchors.right: parent.right
             anchors.rightMargin: 24 * virtualstudio.uiScale
-            text: "Buffer Latency: " + Math.round(virtualstudio.networkStats.recvLatency) + " ms"
+            text: "Ingress Jitter Latency: " + Math.round(virtualstudio.networkStats.clientBufferLatency) + " ms"
             font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
         }
