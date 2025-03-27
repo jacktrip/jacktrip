@@ -315,6 +315,16 @@ void VsAudio::setInputMixMode(const int mode)
     if (mode == m_inputMixMode)
         return;
     m_inputMixMode = mode;
+    if (m_inputMixMode == static_cast<int>(AudioInterface::MONO)) {
+        if (m_numInputChannels > 1) {
+            setNumInputChannels(1);
+        }
+    } else if (m_inputMixMode == static_cast<int>(AudioInterface::STEREO)
+               || m_inputMixMode == static_cast<int>(AudioInterface::MIXTOMONO)) {
+        if (m_numInputChannels == 1) {
+            setNumInputChannels(2);
+        }
+    }
     emit inputMixModeChanged(mode);
     return;
 }
@@ -1307,17 +1317,13 @@ void VsAudioWorker::validateInputDevicesState()
             inputChannelsComboModel.push_back(element);
         }
         for (int i = 0; i < numDevicesChannelsAvailable; i++) {
-            if (i % 2 == 0) {
-                QJsonObject element = QJsonObject();
-                element.insert(
-                    QString::fromStdString("label"),
-                    QVariant(i + 1).toString() + " & " + QVariant(i + 2).toString());
-                element.insert(QString::fromStdString("baseChannel"),
-                               QVariant(i).toInt());
-                element.insert(QString::fromStdString("numChannels"),
-                               QVariant(2).toInt());
-                inputChannelsComboModel.push_back(element);
-            }
+            QJsonObject element = QJsonObject();
+            element.insert(
+                QString::fromStdString("label"),
+                QVariant(i + 1).toString() + " & " + QVariant(i + 2).toString());
+            element.insert(QString::fromStdString("baseChannel"), QVariant(i).toInt());
+            element.insert(QString::fromStdString("numChannels"), QVariant(2).toInt());
+            inputChannelsComboModel.push_back(element);
         }
         m_parentPtr->setInputChannelsComboModel(inputChannelsComboModel);
 
@@ -1329,26 +1335,31 @@ void VsAudioWorker::validateInputDevicesState()
             m_parentPtr->setBaseInputChannel(0);
             m_parentPtr->setNumInputChannels(2);
         }
-        if (getNumInputChannels() != 1) {
-            // Set the input mix mode to have two options: "Stereo" and "Mix to Mono" if
-            // we're using 2 channels
-            QJsonObject inputMixModeComboElement1 = QJsonObject();
-            inputMixModeComboElement1.insert(QString::fromStdString("label"),
-                                             QString::fromStdString("Stereo"));
-            inputMixModeComboElement1.insert(QString::fromStdString("value"),
-                                             static_cast<int>(AudioInterface::STEREO));
-            QJsonObject inputMixModeComboElement2 = QJsonObject();
-            inputMixModeComboElement2.insert(QString::fromStdString("label"),
-                                             QString::fromStdString("Mix to Mono"));
-            inputMixModeComboElement2.insert(QString::fromStdString("value"),
-                                             static_cast<int>(AudioInterface::MIXTOMONO));
-            QJsonArray inputMixModeComboModel;
-            inputMixModeComboModel.push_back(inputMixModeComboElement1);
-            inputMixModeComboModel.push_back(inputMixModeComboElement2);
-            m_parentPtr->setInputMixModeComboModel(inputMixModeComboModel);
 
-            // if m_inputMixMode is an invalid value, set it to "stereo" by default
-            // given that we are using 2 channels
+        // include all options in the mix mode combo
+        QJsonObject inputMixModeComboElement0 = QJsonObject();
+        inputMixModeComboElement0.insert(QString::fromStdString("label"),
+                                         QString::fromStdString("Mono"));
+        inputMixModeComboElement0.insert(QString::fromStdString("value"),
+                                         static_cast<int>(AudioInterface::MONO));
+        QJsonObject inputMixModeComboElement1 = QJsonObject();
+        inputMixModeComboElement1.insert(QString::fromStdString("label"),
+                                         QString::fromStdString("Stereo"));
+        inputMixModeComboElement1.insert(QString::fromStdString("value"),
+                                         static_cast<int>(AudioInterface::STEREO));
+        QJsonObject inputMixModeComboElement2 = QJsonObject();
+        inputMixModeComboElement2.insert(QString::fromStdString("label"),
+                                         QString::fromStdString("Mix to Mono"));
+        inputMixModeComboElement2.insert(QString::fromStdString("value"),
+                                         static_cast<int>(AudioInterface::MIXTOMONO));
+        QJsonArray inputMixModeComboModel;
+        inputMixModeComboModel.push_back(inputMixModeComboElement0);
+        inputMixModeComboModel.push_back(inputMixModeComboElement1);
+        inputMixModeComboModel.push_back(inputMixModeComboElement2);
+        m_parentPtr->setInputMixModeComboModel(inputMixModeComboModel);
+
+        if (m_parentPtr->getNumInputChannels() == 2) {
+            // Set the input mix mode to "Stereo" if we're using 2 channels
             if (getInputMixMode() != static_cast<int>(AudioInterface::STEREO)
                 && getInputMixMode() != static_cast<int>(AudioInterface::MIXTOMONO)) {
                 m_parentPtr->setInputMixMode(static_cast<int>(AudioInterface::STEREO));
@@ -1356,16 +1367,6 @@ void VsAudioWorker::validateInputDevicesState()
         } else {
             // Set the input mix mode to just have "Mono" as the option if we're using 1
             // channel
-            QJsonObject inputMixModeComboElement = QJsonObject();
-            inputMixModeComboElement.insert(QString::fromStdString("label"),
-                                            QString::fromStdString("Mono"));
-            inputMixModeComboElement.insert(QString::fromStdString("value"),
-                                            static_cast<int>(AudioInterface::MONO));
-            QJsonArray inputMixModeComboModel;
-            inputMixModeComboModel.push_back(inputMixModeComboElement);
-            m_parentPtr->setInputMixModeComboModel(inputMixModeComboModel);
-
-            // if m_inputMixMode is an invalid value, set it to AudioInterface::MONO
             if (getInputMixMode() != static_cast<int>(AudioInterface::MONO)) {
                 m_parentPtr->setInputMixMode(static_cast<int>(AudioInterface::MONO));
             }
@@ -1423,17 +1424,13 @@ void VsAudioWorker::validateOutputDevicesState()
         // selected device
         QJsonArray outputChannelsComboModel;
         for (int i = 0; i < numDevicesChannelsAvailable; i++) {
-            if (i % 2 == 0) {
-                QJsonObject element = QJsonObject();
-                element.insert(
-                    QString::fromStdString("label"),
-                    QVariant(i + 1).toString() + " & " + QVariant(i + 2).toString());
-                element.insert(QString::fromStdString("baseChannel"),
-                               QVariant(i).toInt());
-                element.insert(QString::fromStdString("numChannels"),
-                               QVariant(2).toInt());
-                outputChannelsComboModel.push_back(element);
-            }
+            QJsonObject element = QJsonObject();
+            element.insert(
+                QString::fromStdString("label"),
+                QVariant(i + 1).toString() + " & " + QVariant(i + 2).toString());
+            element.insert(QString::fromStdString("baseChannel"), QVariant(i).toInt());
+            element.insert(QString::fromStdString("numChannels"), QVariant(2).toInt());
+            outputChannelsComboModel.push_back(element);
         }
         m_parentPtr->setOutputChannelsComboModel(outputChannelsComboModel);
 
