@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtWebEngine
 
 Item {
     width: parent.width; height: parent.height
@@ -14,8 +15,6 @@ Item {
     property int buttonWidth: 103
     property int extraSettingsButtonWidth: 16
     property int emptyListMessageWidth: 450
-    property int createMessageTopMargin: 16
-    property int createButtonTopMargin: 24
     property int fontBig: 28
     property int fontMedium: 11
 
@@ -29,131 +28,76 @@ Item {
     property string buttonStroke: virtualstudio.darkMode ? "#80827D7D" : "#40979797"
     property string buttonHoverStroke: virtualstudio.darkMode ? "#7B7777" : "#BABCBC"
     property string buttonPressedStroke: virtualstudio.darkMode ? "#827D7D" : "#BABCBC"
-    property string createButtonStroke: virtualstudio.darkMode ? "#AB0F0F" : "#0F0D0D"
 
     function refresh() {
-        scrollY = studioListView.contentY;
-        var currentIndex = studioListView.indexAt(16 * virtualstudio.uiScale, studioListView.contentY);
-        if (currentIndex == -1) {
-            currentIndex = studioListView.indexAt(16 * virtualstudio.uiScale, studioListView.contentY + (16 * virtualstudio.uiScale));
-        }
         virtualstudio.refreshStudios(currentIndex, true)
     }
 
+    Loader {
+        id: webLoader
+        anchors.top: parent.top
+        anchors.right: parent.right
+        anchors.left: parent.left
+        anchors.bottom: footer.top
+        sourceComponent: virtualstudio.windowState === "browse" && auth.isAuthenticated ? browseWeb : browseNull
+    }
+
     Component {
-        id: footer
+        id: browseNull
         Rectangle {
-            height: 16 * virtualstudio.uiScale
-            x: 16 * virtualstudio.uiScale
-            width: parent.width - (2 * x)
+            anchors.fill: parent
             color: backgroundColour
         }
     }
 
-    ListView {
-        id: studioListView
-        x:0;
-        y: 0;
-        width: parent.width
-        height: parent.height - (36 * virtualstudio.uiScale)
-        spacing: 16 * virtualstudio.uiScale
-        header: footer
-        footer: footer
-        model: virtualstudio.serverModel
-        clip: true
-        boundsBehavior: Flickable.StopAtBounds
-        delegate: Studio {
-            anchors.left: parent ? parent.left : undefined
-            anchors.leftMargin: 16 * virtualstudio.uiScale
-            width: studioListView.width - (32 * virtualstudio.uiScale)
-            serverLocation: virtualstudio.regions[modelData.location] ? "in " + virtualstudio.regions[modelData.location].label : ""
-            flagImage: modelData.bannerURL ? modelData.bannerURL : modelData.flag
-            studioName: modelData.name
-            publicStudio: modelData.isPublic
-            admin: modelData.isAdmin
-            available: modelData.canConnect
-            connected: false
-            studioId: modelData.id ? modelData.id : ""
-            streamId: modelData.streamId ? modelData.streamId : ""
-            inviteKeyString: modelData.inviteKey ? modelData.inviteKey : ""
-            sampleRate: modelData.sampleRate
-        }
-
-        section { property: "modelData.type"; criteria: ViewSection.FullString; delegate: SectionHeading {} }
-
-        // Show sectionHeading if there are no Studios in list
-        SectionHeading {
-            id: emptyListSectionHeading
-            listIsEmpty: true
-            visible: parent.count == 0
-        }
-
-        Text {
-            id: emptyListMessage
-            visible: parent.count == 0
-            text: virtualstudio.refreshInProgress ? "Loading Studios..." : "No studios found that match your filter criteria."
-            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-            color: textColour
-            width: emptyListMessageWidth
-            wrapMode: Text.Wrap
-            horizontalAlignment: Text.AlignHCenter
-            anchors.horizontalCenter: emptyListSectionHeading.horizontalCenter
-            anchors.verticalCenter: parent.verticalCenter
-        }
-
-        Button {
-            id: resetFiltersButton
-            background: Rectangle {
-                radius: 6 * virtualstudio.uiScale
-                color: resetFiltersButton.down ? buttonPressedColour : (resetFiltersButton.hovered ? buttonHoverColour : buttonColour)
-                border.width: 1
-                border.color: resetFiltersButton.down ? buttonPressedStroke : (resetFiltersButton.hovered ? buttonHoverStroke : buttonStroke)
-            }
-            visible: parent.count == 0
-            onClicked: {
-                virtualstudio.showSelfHosted = true;
-                virtualstudio.showInactive = true;
-                refresh();
-            }
-            anchors.top: emptyListMessage.bottom
-            anchors.topMargin: createButtonTopMargin
-            anchors.horizontalCenter: emptyListMessage.horizontalCenter
-            width: 120 * virtualstudio.uiScale; height: 32 * virtualstudio.uiScale
-            Text {
-                text: "Reset Filters"
-                font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
-                anchors {horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-                color: textColour
-            }
-        }
-
-        // Disable momentum scroll
-        MouseArea {
-            z: -1
+    Component {
+        id: browseWeb
+        WebEngineView {
+            id: webEngineView
             anchors.fill: parent
-            onWheel: function (wheel) {
-                // trackpad
-                studioListView.contentY -= wheel.pixelDelta.y;
-                // mouse wheel
-                studioListView.contentY -= wheel.angleDelta.y;
-                studioListView.returnToBounds();
-            }
-        }
+            settings.fullScreenSupportEnabled: true
+            settings.javascriptCanAccessClipboard: true
+            settings.javascriptCanPaste: true
+            settings.screenCaptureEnabled: true
+            settings.playbackRequiresUserGesture: false
+            url: `https://${virtualstudio.apiHost === "test.jacktrip.com" ? "next-test.jacktrip.com" : "www.jacktrip.com"}`
 
-        Component.onCompleted: {
-            // Customize scroll properties on different platforms
-            if (Qt.platform.os == "linux" || Qt.platform.os == "osx" ||
-                Qt.platform.os == "unix" || Qt.platform.os == "windows") {
-                var scrollBar = Qt.createQmlObject('import QtQuick.Controls; ScrollBar{}',
-                                                   studioListView,
-                                                   "dynamicSnippet1");
-                scrollBar.policy = ScrollBar.AlwaysOn;
-                ScrollBar.vertical = scrollBar;
+            onContextMenuRequested: function(request) {
+                // this disables the default context menu: https://doc.qt.io/qt-6.2/qml-qtwebengine-contextmenurequest.html#accepted-prop
+                request.accepted = true;
+            }
+
+            onNewWindowRequested: function(request) {
+                Qt.openUrlExternally(request.requestedUrl);
+            }
+
+            onFeaturePermissionRequested: function(securityOrigin, feature) {
+                webEngineView.grantFeaturePermission(securityOrigin, feature, true);
+            }
+
+            onRenderProcessTerminated: function(terminationStatus, exitCode) {
+                var status = "";
+                switch (terminationStatus) {
+                case WebEngineView.NormalTerminationStatus:
+                    status = "(normal exit)";
+                    break;
+                case WebEngineView.AbnormalTerminationStatus:
+                    status = "(abnormal exit)";
+                    break;
+                case WebEngineView.CrashedTerminationStatus:
+                    status = "(crashed)";
+                    break;
+                case WebEngineView.KilledTerminationStatus:
+                    status = "(killed)";
+                    break;
+                }
+                console.log("Render process exited with code " + exitCode + " " + status);
             }
         }
     }
 
     Rectangle {
+        id: footer
         x: 0; y: parent.height - 36 * virtualstudio.uiScale; width: parent.width; height: 36 * virtualstudio.uiScale
         border.color: "#33979797"
         color: backgroundColour
