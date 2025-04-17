@@ -546,7 +546,7 @@ if (host_machine.system() == 'linux')
 			custom_target('jacktrip.1.gz',
 				input: manfile,
 				output: 'jacktrip.1.gz',
-				command: [gzip, '-k', '-f', '@INPUT@'],
+				command: [gzip, '-k', '-f', '-n', '@INPUT@'],
 				install: true,
 				install_dir: get_option('mandir') / 'man1')
 		endif
