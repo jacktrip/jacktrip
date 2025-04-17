@@ -59,7 +59,7 @@ jobs:
       matrix:
         include:
           - name: Linux-x64-qmake-gcc-static
-            runs-on: ubuntu-20.04
+            runs-on: ubuntu-22.04
             system-rtaudio: false
             bundled-rtaudio: true # set either system-rtaudio or bundled-rtaudio as true, not both
             nogui: false
@@ -78,11 +78,12 @@ jobs:
             qt-type: 'static'
             qt-arch: 'amd64'
 
-          - name: Linux-x64-meson-gcc-shared-nortaudio # meson shared build without rtaudio
+          - name: Linux-x64-meson-gcc-shared-nortaudio # meson shared build without vs or rtaudio
             runs-on: ubuntu-22.04
             system-rtaudio: false
             bundled-rtaudio: false
             nogui: false
+            novs: true
             weakjack: false
             libsamplerate: true
             # jacktrip-path: jacktrip
