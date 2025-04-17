@@ -655,26 +655,22 @@ void VirtualStudio::collectFeedbackSurvey(QString serverId, int rating, QString 
 #endif
 
     feedback.insert(QStringLiteral("osVersion"), QSysInfo::prettyProductName());
-    QString sysInfo = QString("[platform=%1").arg(QSysInfo::prettyProductName());
 #ifdef RT_AUDIO
     QString inputDevice =
         QString::fromStdString(m_audioConfigPtr->getInputDevice().toStdString());
     if (!inputDevice.isEmpty()) {
-        sysInfo.append(QString(",input=%1").arg(inputDevice));
+        feedback.insert(QStringLiteral("inputDevice"), inputDevice);
     }
     QString outputDevice =
         QString::fromStdString(m_audioConfigPtr->getOutputDevice().toStdString());
     if (!outputDevice.isEmpty()) {
-        sysInfo.append(QString(",output=%1").arg(outputDevice));
+        feedback.insert(QStringLiteral("outputDevice"), outputDevice);
     }
 #endif
-    sysInfo.append("]");
 
     feedback.insert(QStringLiteral("rating"), rating);
-    if (message.isEmpty()) {
-        feedback.insert(QStringLiteral("message"), sysInfo);
-    } else {
-        feedback.insert(QStringLiteral("message"), message + " " + sysInfo);
+    if (!message.isEmpty()) {
+        feedback.insert(QStringLiteral("message"), message);
     }
 
     QString deviceIssues  = "";
@@ -687,11 +683,11 @@ void VirtualStudio::collectFeedbackSurvey(QString serverId, int rating, QString 
     }
     if (!deviceIssues.isEmpty()) {
         feedback.insert(QStringLiteral("deviceIssues"), deviceIssues);
-        message.append(" (deviceIssues=" + deviceIssues + ")");
     }
 
     QJsonDocument data = QJsonDocument(feedback);
     m_api->submitServerFeedback(serverId, data.toJson());
+    std::cout << "Sent feedback: " << data.toJson().toStdString() << std::endl;
     return;
 }
 
@@ -1564,7 +1560,7 @@ void VirtualStudio::handleWebsocketMessage(const QString& msg)
             if (serverEnabled && serverHostOrPortUpdated) {
                 std::cout << "Reconnecting audio to " << serverHost.toStdString() << ":"
                           << serverPort << std::endl;
-                triggerReconnect(true);
+                triggerReconnect(false);
             }
         } else {
             if (serverEnabled && serverStatus == QLatin1String("Ready")
