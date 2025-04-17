@@ -14,7 +14,7 @@
   - (fixed) Building using Qt 6.9 release candidates
   - (fixed) Ability to disable the use of libsamplerate
   - (fixed) Ignore timestamps when generating jacktrip.1.gz
-  Version: "2.5.1"
+- Version: "2.5.1"
   Date: 2025-01-30
   Description:
   - (fixed) Updating Qt in Mac builds from 6.2.6 to 6.2.11
