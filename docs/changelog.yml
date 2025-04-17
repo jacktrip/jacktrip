@@ -1,8 +1,20 @@
-- Version: "2.6.0-beta0"
-  Date: 2025-xx-xx
+- Version: "2.5.2"
+  Date: 2025-04-18
   Description:
-  - (updated) Updating to Qt 6.8.2 for most builds
-- Version: "2.5.1"
+  - (added) OSC endpoint to get latencies for connected clients
+  - (added) VS Mode reconnects to new server when session changes
+  - (updated) VS Mode allow any two consecutive channels for input
+  - (updated) VS Mode easier audio switching between stereo and mono
+  - (updated) VS Mode latency statistics now include jitter buffer
+  - (fixed) VS Mode - kicked out of sessions due to studio change
+  - (fixed) VS Mode - bugs with reconnecting due to audio changes
+  - (fixed) VS Mode - strange error message during startup on Linux
+  - (fixed) VS Mode - building with CMake
+  - (fixed) Building aarch64 or armv7 on Alpine Linux
+  - (fixed) Building using Qt 6.9 release candidates
+  - (fixed) Ability to disable the use of libsamplerate
+  - (fixed) Ignore timestamps when generating jacktrip.1.gz
+  Version: "2.5.1"
   Date: 2025-01-30
   Description:
   - (fixed) Updating Qt in Mac builds from 6.2.6 to 6.2.11
