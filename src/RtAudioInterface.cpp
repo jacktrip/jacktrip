@@ -804,9 +804,6 @@ int RtAudioInterface::stopProcess()
         return (-1);
     }
 
-    AudioInterface::setDevicesWarningMsg(AudioInterface::DEVICE_WARN_NONE);
-    AudioInterface::setDevicesErrorMsg(AudioInterface::DEVICE_ERR_NONE);
-
     return 0;
 }
 

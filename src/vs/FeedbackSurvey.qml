@@ -371,7 +371,7 @@ Item {
                     anchors.topMargin: 16 * virtualstudio.uiScale
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: parent.width
-                    text: "Your feedback has been recorded."
+                    text: "Your feedback has been sent."
                     font {family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
                     horizontalAlignment: Text.AlignHCenter
                     color: textColour
