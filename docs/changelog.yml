@@ -3,6 +3,7 @@
   Description:
   - (added) OSC endpoint to get latencies for connected clients
   - (added) VS Mode reconnects to new server when session changes
+  - (updated) PLC auto headroom allows higher latency when necessary
   - (updated) VS Mode allow any two consecutive channels for input
   - (updated) VS Mode easier audio switching between stereo and mono
   - (updated) VS Mode latency statistics now include jitter buffer
