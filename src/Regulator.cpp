@@ -104,7 +104,7 @@ constexpr double AutoInitValFactor =
 // tweak
 constexpr int WindowDivisor = 8;  // for faster auto tracking
 constexpr double AutoHeadroomGlitchTolerance =
-    0.01;  // Acceptable rate of glitches before auto headroom is increased (1.0%)
+    0.006;  // Acceptable rate of glitches before auto headroom is increased (0.6%)
 constexpr double AutoHistoryWindow =
     60;  // rolling window of time (in seconds) over which auto tolerance roughly adjusts
 constexpr double AutoSmoothingFactor =
@@ -479,22 +479,23 @@ void Regulator::updateTolerance(int glitches, int skipped)
     // update headroom
     if (mAutoHeadroom < 0) {
         // variable headroom: automatically increase to minimize glitch counts
-        // only increase headroom if doing so would have reduced the number of
-        // glitches that occured over the past second by 1% or more.
-        // prevent headroom from growing beyond rolling average of max.
-        const int maxHeadroom = pushStat->longTermMax + 1;
         int glitchesAllowed;
         if (mMsecTolerance >= (mPeerFPPdurMsec * 2)) {
-            // calculate glitches allowed if tolerance if above or equal to duration of
-            // two packets
-            glitchesAllowed =
-                static_cast<int>(AutoHeadroomGlitchTolerance * mSampleRate / mPeerFPP);
+            // calculate glitches allowed if tolerance is above or equal to
+            // the duration of two packets
+            glitchesAllowed = std::ceil(
+                static_cast<float>(AutoHeadroomGlitchTolerance * mSampleRate) / mPeerFPP);
         } else {
             // zero glitches allowed if tolerance is below duration of two packets
             glitchesAllowed = 0;
             // also don't require two intervals in a row (override)
             mSkipAutoHeadroom = false;
         }
+        // sanity check: prevent headroom from growing beyond the greater of
+        // 3x rolling average of max, or 100ms
+        const int maxHeadroom = std::max<double>(pushStat->longTermMax * 3, 100.0);
+        // only increase headroom if glitch tolerance was exceeded and doing so
+        // would have reduced the number of glitches that occured over the past second.
         if (skipped > 0 && glitches > glitchesAllowed
             && mCurrentHeadroom + 1 <= maxHeadroom) {
             if (mSkipAutoHeadroom) {

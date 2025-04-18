@@ -452,7 +452,6 @@ Rectangle {
                 delegate: ItemDelegate {
                     required property var modelData
                     required property int index
-                    width: parent.width
                     contentItem: Text {
                         text: modelData.label
                     }

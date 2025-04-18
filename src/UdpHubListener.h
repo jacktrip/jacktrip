@@ -40,9 +40,11 @@
 
 #include <QHostAddress>
 #include <QMutex>
+#include <QString>
 #include <QThread>
 #include <QThreadPool>
 #include <QUdpSocket>
+#include <QVector>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
@@ -86,6 +88,7 @@ class UdpHubListener : public QObject
 #endif
     int releaseThread(int id);
     void releaseDuplicateThreads(JackTripWorker* worker, uint16_t actual_peer_port);
+    void getClientLatencies(QVector<QString>& clientNames, QVector<double>& latencies);
 
     void setConnectDefaultAudioPorts(bool connectDefaultAudioPorts)
     {
@@ -111,6 +114,7 @@ class UdpHubListener : public QObject
     void receivedNewConnection();
     void stopCheck();
     void queueBufferChanged(int queueBufferSize);
+    void handleLatencyRequest(const QHostAddress& sender, quint16 senderPort);
 
    signals:
     void signalStarted();
@@ -139,6 +143,8 @@ class UdpHubListener : public QObject
 
         QObject::connect(mOscServer, &OscServer::signalQueueBufferChanged, this,
                          &UdpHubListener::queueBufferChanged, Qt::QueuedConnection);
+        QObject::connect(mOscServer, &OscServer::signalLatencyRequested, this,
+                         &UdpHubListener::handleLatencyRequest, Qt::QueuedConnection);
     };
 
     /**
