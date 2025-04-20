@@ -1,5 +1,5 @@
 - Version: "2.5.2"
-  Date: 2025-04-18
+  Date: 2025-04-22
   Description:
   - (added) OSC endpoint to get latencies for connected clients
   - (added) VS Mode reconnects to new server when session changes
@@ -10,6 +10,7 @@
   - (fixed) VS Mode - kicked out of sessions due to studio change
   - (fixed) VS Mode - bugs with reconnecting due to audio changes
   - (fixed) VS Mode - strange error message during startup on Linux
+  - (fixed) VS Mode - empty studio list when starting up
   - (fixed) VS Mode - building with CMake
   - (fixed) Building aarch64 or armv7 on Alpine Linux
   - (fixed) Building using Qt 6.9 release candidates
