@@ -592,7 +592,7 @@ void VirtualStudio::setWindowState(QString state)
     m_windowState = state;
     // refresh studio list if navigating to browse window
     // only if user id is empty (edge case for when logging in)
-    if (m_windowState == "browse" && !m_userId.isEmpty()) {
+    if (m_windowState == "browse" && m_auth->isAuthenticated()) {
         // schedule studio refresh instead of doing it now
         // just to reduce risk of running into a deadlock
         emit scheduleStudioRefresh(-1, false);
@@ -1624,7 +1624,7 @@ void VirtualStudio::resetState()
 void VirtualStudio::refreshStudios(int index, bool signalRefresh)
 {
     // user id is required for retrieval of subscriptions
-    if (m_userId.isEmpty()) {
+    if (!m_auth->isAuthenticated()) {
         std::cerr << "Studio refresh cancelled due to empty user id" << std::endl;
         return;
     }
