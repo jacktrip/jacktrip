@@ -559,6 +559,8 @@ jobs:
         if: matrix.build-system == 'meson' || matrix.build-system == 'docker'
         shell: bash
         run: |
+          # temporarily disable support for feedback detection
+          MESON_CONFIG="-Dnofeedback=true"
           if [[ "${{ matrix.system-rtaudio }}" == true ]] || [[ "${{ matrix.bundled-rtaudio }}" == true ]]; then 
             MESON_CONFIG="-Drtaudio=enabled $MESON_CONFIG"
           fi

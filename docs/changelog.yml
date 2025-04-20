@@ -7,6 +7,7 @@
   - (updated) VS Mode allow any two consecutive channels for input
   - (updated) VS Mode easier audio switching between stereo and mono
   - (updated) VS Mode latency statistics now include jitter buffer
+  - (updated) VS Mode temporarily disabling feedback detection
   - (fixed) VS Mode - kicked out of sessions due to studio change
   - (fixed) VS Mode - bugs with reconnecting due to audio changes
   - (fixed) VS Mode - strange error message during startup on Linux
