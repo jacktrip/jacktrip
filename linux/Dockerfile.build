@@ -3,9 +3,10 @@
 # this Dockerfile is used by GitHub CI to create linux builds
 # it requires these environment variables:
 #
-# BUILD_CONTAINER - Debian based container image to build with
-# MESON_ARGS      - arguments to build using meson
-# QT_DOWNLOAD_URL - path to qt download (optional)
+# BUILD_CONTAINER          - Debian based container image to build with
+# MESON_ARGS               - arguments to build using meson
+# QT_DOWNLOAD_URL          - path to qt download (optional)
+# USE_SYSTEM_LIBSAMPLERATE - dynamically link with libsamplerate
 
 # container image versions
 ARG BUILD_CONTAINER=ubuntu:20.04
@@ -24,6 +25,13 @@ RUN python3 -m pip install --upgrade pip \
   && python3 -m pip install meson pyyaml Jinja2
 
 WORKDIR /opt/jacktrip
+
+# install libsamplerate
+ARG USE_SYSTEM_LIBSAMPLERATE=""
+ENV USE_SYSTEM_LIBSAMPLERATE=$USE_SYSTEM_LIBSAMPLERATE
+RUN if [ -n "$USE_SYSTEM_LIBSAMPLERATE" ]; then \
+  apt-get install -yq --no-install-recommends libsamplerate-dev; \
+  fi
 
 # install qt
 ARG QT_DOWNLOAD_URL=""

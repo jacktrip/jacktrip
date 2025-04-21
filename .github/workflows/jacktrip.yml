@@ -59,12 +59,13 @@ jobs:
       matrix:
         include:
           - name: Linux-x64-qmake-gcc-static
-            runs-on: ubuntu-20.04
+            runs-on: ubuntu-22.04
             system-rtaudio: false
             bundled-rtaudio: true # set either system-rtaudio or bundled-rtaudio as true, not both
             nogui: false
             novs: true
             weakjack: false
+            libsamplerate: true
             # jacktrip-path: jacktrip # needed for binary upload
             # binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
             # bundle-path: bundle # directory relative to build path; triggers application bundle creation and upload (macOS)
@@ -76,12 +77,14 @@ jobs:
             qt-type: 'static'
             qt-arch: 'amd64'
 
-          - name: Linux-x64-meson-gcc-shared-nortaudio # meson shared build without rtaudio
+          - name: Linux-x64-meson-gcc-shared-nortaudio # meson shared build without vs or rtaudio
             runs-on: ubuntu-22.04
             system-rtaudio: false
             bundled-rtaudio: false
             nogui: false
+            novs: true
             weakjack: false
+            libsamplerate: true
             # jacktrip-path: jacktrip
             # binary-path: binary
             build-system: meson
@@ -107,7 +110,7 @@ jobs:
 
           - name: Linux-arm64-docker-shared
             release-name: Linux-arm64
-            runs-on: ubuntu-22.04
+            runs-on: ubuntu-22.04-arm
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
@@ -143,7 +146,7 @@ jobs:
 
           - name: Linux-arm64-docker-nogui
             release-name: Linux-arm64-nogui
-            runs-on: ubuntu-22.04
+            runs-on: ubuntu-22.04-arm
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: true
@@ -162,13 +165,13 @@ jobs:
 
           - name: Linux-arm32-docker-nogui
             release-name: Linux-arm32-nogui
-            runs-on: ubuntu-22.04
+            runs-on: ubuntu-22.04-arm
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: true
             novs: true
             weakjack: false
-            libsamplerate: false
+            libsamplerate: true
             jacktrip-path: jacktrip
             binary-path: binary
             build-system: docker
@@ -322,6 +325,9 @@ jobs:
             sudo apt-get install --yes help2man
             python -m pip install --upgrade pip
             pip install meson pyyaml Jinja2
+          fi
+          if [[ "${{ matrix.libsamplerate }}" == true ]]; then
+            sudo apt-get install --yes libsamplerate-dev
           fi
       - name: install dependencies for macOS
         if: runner.os == 'macOS'
@@ -553,6 +559,8 @@ jobs:
         if: matrix.build-system == 'meson' || matrix.build-system == 'docker'
         shell: bash
         run: |
+          # temporarily disable support for feedback detection
+          MESON_CONFIG="-Dnofeedback=true"
           if [[ "${{ matrix.system-rtaudio }}" == true ]] || [[ "${{ matrix.bundled-rtaudio }}" == true ]]; then 
             MESON_CONFIG="-Drtaudio=enabled $MESON_CONFIG"
           fi
@@ -628,7 +636,7 @@ jobs:
             if [[ "${{ matrix.docker-platform }}" == "linux/arm/v7" ]]; then
               # should be implied, but this is necessary for broken compiler on arm32
               CONFIG_STRING="-Dcpp_link_args='-no-pie' $CONFIG_STRING"
-            elif [[ -z "${{ matrix.vst3sdk-version }}" ]]; then
+            elif [[ -z "${{ matrix.vst3sdk-version }}" && "${{ matrix.qt-version}}" == "5.15.13" ]]; then
               # vst3 sdk has a lot of header warnings
               CONFIG_STRING="-Dwerror=true $CONFIG_STRING"
             fi
@@ -636,6 +644,7 @@ jobs:
             docker buildx build --target=artifact --progress=plain -f linux/Dockerfile.build --output type=local,dest=$BUILD_PATH \
               --platform "${{ matrix.docker-platform }}" --build-arg BUILD_CONTAINER="${{ matrix.docker-image }}" \
               --build-arg MESON_ARGS="$CONFIG_STRING" \
+              --build-arg USE_SYSTEM_LIBSAMPLERATE="1" \
               --build-arg VST3SDK_DOWNLOAD_URL="$VST3SDK_DOWNLOAD_URL" \
               --build-arg QT_DOWNLOAD_URL="$QT_DOWNLOAD_URL" .
           else
@@ -761,7 +770,11 @@ jobs:
             if [[ "${{ matrix.build-system }}" != "docker" ]]; then
               strip $BINFILE
             fi
-            zip -j $ZIPFILE $BINFILE
+            if [[ "${{ runner.os }}" == "Windows" ]]; then
+              7z a $ZIPFILE -tzip $BINFILE
+            else
+              zip -j $ZIPFILE $BINFILE
+            fi
             if [[ "${{ runner.os }}" == 'Linux' && -n "${{ matrix.vst3sdk-version }}" ]]; then
               mkdir -p JackTrip.vst3/Contents/Resources
               cp -f $GITHUB_WORKSPACE/LICENSE.md "JackTrip.vst3/Contents/Resources/"
@@ -787,7 +800,11 @@ jobs:
               zip -j $ZIPFILE $DESKTOP_FILE_PATH $BUILD_PATH/jacktrip.1.gz $BUILD_PATH/org.jacktrip.JackTrip.svg $BUILD_PATH/org.jacktrip.JackTrip.png $GITHUB_WORKSPACE/linux/README.md
             fi
             cd $GITHUB_WORKSPACE # we need to be in the root project directory for adding licenses
-            zip -r $ZIPFILE LICENSE.md LICENSES
+            if [[ "${{ runner.os }}" == "Windows" ]]; then
+              7z a $ZIPFILE -tzip LICENSE.md LICENSES
+            else
+              zip -r $ZIPFILE LICENSE.md LICENSES
+            fi
           fi
       - name: upload jacktrip binary
         uses: actions/upload-artifact@v4

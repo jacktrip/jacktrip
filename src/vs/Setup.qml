@@ -140,7 +140,6 @@ Item {
                         deviceWarningModal.open();
                     } else {
                         audio.stopAudio(true);
-                        virtualstudio.studioToJoin = virtualstudio.currentStudio.id;
                         virtualstudio.windowState = "connected";
                         virtualstudio.saveSettings();
                         virtualstudio.joinStudio();

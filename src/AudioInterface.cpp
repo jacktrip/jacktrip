@@ -45,6 +45,12 @@
 #include "JackTrip.h"
 #include "ProcessPlugin.h"
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 8, 0)
+#define STD_AS_CONST qAsConst
+#else
+#define STD_AS_CONST std::as_const
+#endif
+
 using std::cout;
 using std::endl;
 
@@ -76,6 +82,8 @@ AudioInterface::AudioInterface(QVarLengthArray<int> InputChans,
     , mMonitorStarted(false)
     , mJackTrip(jacktrip)
     , mInputMixMode(InputMixMode)
+    , mAudioInputLatency(0)
+    , mAudioOutputLatency(0)
     , mProcessingAudio(false)
 {
 }
@@ -189,7 +197,7 @@ void AudioInterface::audioInputCallback(QVarLengthArray<sample_t*>& in_buffer,
     }
 
 #ifndef WAIR
-    for (auto& s : qAsConst(mAudioSockets)) {
+    for (auto& s : STD_AS_CONST(mAudioSockets)) {
         s->getFromAudioSocketPlugin()->compute(n_frames, in_buffer.data(),
                                                in_buffer.data());
     }
@@ -204,7 +212,7 @@ void AudioInterface::audioInputCallback(QVarLengthArray<sample_t*>& in_buffer,
 #endif  // not WAIR
 
     // process incoming signal from audio interface using process plugins
-    for (auto& p : qAsConst(mProcessPluginsToNetwork)) {
+    for (auto& p : STD_AS_CONST(mProcessPluginsToNetwork)) {
         if (p->getInited()) {
             p->compute(n_frames, in_buffer.data(), in_buffer.data());
         }
@@ -266,7 +274,7 @@ void AudioInterface::audioOutputCallback(QVarLengthArray<sample_t*>& out_buffer,
     /// with one. do it chaining outputs to inputs in the buffers. May need a tempo buffer
 
 #ifndef WAIR  // NOT WAIR:
-    for (auto& p : qAsConst(mProcessPluginsFromNetwork)) {
+    for (auto& p : STD_AS_CONST(mProcessPluginsFromNetwork)) {
         if (p->getInited()) {
             p->compute(n_frames, out_buffer.data(), out_buffer.data());
         }
@@ -308,7 +316,7 @@ void AudioInterface::audioOutputCallback(QVarLengthArray<sample_t*>& out_buffer,
         }
     }
 
-    for (auto& s : qAsConst(mAudioSockets)) {
+    for (auto& s : STD_AS_CONST(mAudioSockets)) {
         s->getToAudioSocketPlugin()->compute(n_frames, out_buffer.data(),
                                              out_buffer.data());
     }
@@ -740,22 +748,22 @@ void AudioInterface::initPlugins(bool verbose)
                       << ") at sampling rate " << mSampleRate << "\n";
         }
 
-        for (auto& plugin : qAsConst(mProcessPluginsFromNetwork)) {
+        for (auto& plugin : STD_AS_CONST(mProcessPluginsFromNetwork)) {
             plugin->setOutgoingToNetwork(false);
             plugin->updateNumChannels(nChansIn, nChansOut);
             plugin->init(mSampleRate, mBufferSizeInSamples);
         }
-        for (auto& plugin : qAsConst(mProcessPluginsToNetwork)) {
+        for (auto& plugin : STD_AS_CONST(mProcessPluginsToNetwork)) {
             plugin->setOutgoingToNetwork(true);
             plugin->updateNumChannels(nChansIn, nChansOut);
             plugin->init(mSampleRate, mBufferSizeInSamples);
         }
-        for (auto& plugin : qAsConst(mProcessPluginsToMonitor)) {
+        for (auto& plugin : STD_AS_CONST(mProcessPluginsToMonitor)) {
             plugin->setOutgoingToNetwork(false);
             plugin->updateNumChannels(nChansMon, nChansMon);
             plugin->init(mSampleRate, mBufferSizeInSamples);
         }
-        for (auto& s : qAsConst(mAudioSockets)) {
+        for (auto& s : STD_AS_CONST(mAudioSockets)) {
             auto* plugin = s->getFromAudioSocketPlugin().get();
             plugin->setOutgoingToNetwork(true);
             plugin->updateNumChannels(nChansIn, nChansOut);

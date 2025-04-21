@@ -281,7 +281,17 @@ if get_option('default_library') == 'static'
 	qt_plugindir = run_command(qmake, '-query', 'QT_INSTALL_PLUGINS', check : true).stdout().strip()
 	if qt_version == '6'
 		# qt6 requires "Bundled*" modules for linking
-		static_deps += dependency('qt6', modules: ['DBus', 'BundledLibpng', 'BundledPcre2', 'BundledHarfbuzz', 'BundledZLIB'], include_type: 'system')
+		static_deps += compiler.find_library('Qt6BundledLibpng', required : true, dirs : [qt_libdir])
+		static_deps += compiler.find_library('Qt6BundledPcre2', required : true, dirs : [qt_libdir])
+		static_deps += compiler.find_library('Qt6BundledHarfbuzz', required : true, dirs : [qt_libdir])
+		zlib_dep = compiler.find_library('Qt6BundledZLIB', required : false, dirs : [qt_libdir])
+		if zlib_dep.found()
+			static_deps += zlib_dep
+		endif
+		dbus_dep = compiler.find_library('Qt6DBus', required : false, dirs : [qt_libdir])
+		if dbus_dep.found()
+			static_deps += dbus_dep
+		endif
 	else
 		static_deps += compiler.find_library('qtpcre2', required : true, dirs : [qt_libdir])
 	endif
@@ -317,6 +327,8 @@ if get_option('default_library') == 'static'
 			static_link_args += ['-framework', 'Security']
 			static_link_args += ['-framework', 'GSS']
 			static_link_args += ['-framework', 'SystemConfiguration']
+			static_link_args += ['-framework', 'UniformTypeIdentifiers']
+			static_link_args += '-lresolv'
 			static_deps += dependency('zlib', required : true)
 		endif
 	endif
@@ -344,26 +356,30 @@ if rtaudio_dep.found() == false and jack_dep.found() == false
 	configure.''')
 endif
 
-libsamplerate_dep = []
 found_libsamplerate = false
 if get_option('libsamplerate').allowed()
-	opt_var = cmake.subproject_options()
-	if get_option('buildtype') == 'release'
-		opt_var.add_cmake_defines({'CMAKE_BUILD_TYPE': 'Release'})
+	libsamplerate_dep = dependency('samplerate', required: false)
+	if libsamplerate_dep.found()
+		found_libsamplerate = true
 	else
-		opt_var.add_cmake_defines({'CMAKE_BUILD_TYPE': 'Debug'})
+		opt_var = cmake.subproject_options()
+		if get_option('buildtype') == 'release'
+			opt_var.add_cmake_defines({'CMAKE_BUILD_TYPE': 'Release'})
+		else
+			opt_var.add_cmake_defines({'CMAKE_BUILD_TYPE': 'Debug'})
+		endif
+		opt_var.add_cmake_defines({'CMAKE_POSITION_INDEPENDENT_CODE': 'ON'})
+		libsamplerate_subproject = cmake.subproject('libsamplerate', options: opt_var)
+		libsamplerate_dep = libsamplerate_subproject.dependency('samplerate')
+		found_libsamplerate = libsamplerate_dep.found()
+		if not found_libsamplerate and not get_option('libsamplerate').auto()
+			error('failed to configure libsamplerate')
+		endif
 	endif
-	opt_var.add_cmake_defines({'CMAKE_POSITION_INDEPENDENT_CODE': 'ON'})
-	libsamplerate_subproject = cmake.subproject('libsamplerate', options: opt_var)
-	libsamplerate_dep = libsamplerate_subproject.dependency('samplerate')
-	found_libsamplerate = libsamplerate_dep.found()
-	if not found_libsamplerate and not get_option('libsamplerate').auto()
-		error('failed to configure libsamplerate')
-	endif
-	if found_libsamplerate
-		defines += '-DHAVE_LIBSAMPLERATE'
-		deps += libsamplerate_dep
-	endif
+endif
+if found_libsamplerate
+	defines += '-DHAVE_LIBSAMPLERATE'
+	deps += libsamplerate_dep
 endif
 
 if host_machine.system() == 'darwin'

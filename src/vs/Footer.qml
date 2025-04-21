@@ -31,6 +31,7 @@ Rectangle {
         let minRtt = virtualstudio.networkStats.minRtt;
         let maxRtt = virtualstudio.networkStats.maxRtt;
         let avgRtt = virtualstudio.networkStats.avgRtt;
+        let clientBufferLatency = virtualstudio.networkStats.clientBufferLatency;
 
         let texts = ["Unstable", "Please plug into Ethernet & turn off WIFI.", meterRed];
         if (virtualstudio.networkOutage) {
@@ -42,16 +43,16 @@ Rectangle {
             return texts;
         }
 
-        texts[1] = "<b>" + minRtt + " ms - " + maxRtt + " ms</b>, avg " + avgRtt + " ms";
+        texts[1] = "<b>" + minRtt + " - " + maxRtt + " ms ping</b>, " + clientBufferLatency + " ms jitter";
         let quality = "Poor";
         let color = meterRed;
-        if (avgRtt < 10 && maxRtt < 15) {
+        if (avgRtt < 10 && maxRtt < 15 && clientBufferLatency < 6) {
             quality = "Excellent";
             color = meterGreen;
-        } else if (avgRtt < 20 && maxRtt < 30) {
+        } else if (avgRtt < 20 && maxRtt < 30 && clientBufferLatency < 9) {
             quality = "Good";
             color = meterYellow;
-        } else if (avgRtt < 30 && maxRtt < 40) {
+        } else if (avgRtt < 30 && maxRtt < 40 && clientBufferLatency < 12) {
             quality = "Fair";
             color = statsOrange;
         }

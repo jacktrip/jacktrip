@@ -1,3 +1,23 @@
+- Version: "2.6.0"
+  Date: 2025-04-22
+  Description:
+  - (added) OSC endpoint to get latencies for connected clients
+  - (updated) PLC auto headroom allows higher latency when necessary
+  - (updated) VS Mode allow any two consecutive channels for input
+  - (updated) VS Mode easier audio switching between stereo and mono
+  - (updated) VS Mode latency statistics now include jitter buffer
+  - (updated) VS Mode improvements to audio quality override settings
+  - (updated) VS Mode temporarily disabling feedback detection
+  - (fixed) VS Mode kicked out of sessions due to studio change
+  - (fixed) VS Mode recognizes changes to server host and port
+  - (fixed) VS Mode bugs with reconnecting due to audio changes
+  - (fixed) VS Mode strange error message during startup on Linux
+  - (fixed) VS Mode empty studio list when starting up
+  - (fixed) Ability to build VS Mode using CMake
+  - (fixed) Ability to build aarch64 or armv7 on Alpine Linux
+  - (fixed) Ability to build using Qt 6.9 release candidates
+  - (fixed) Ability to disable the use of libsamplerate
+  - (fixed) Ignore timestamps when generating jacktrip.1.gz
 - Version: "2.5.1"
   Date: 2025-01-30
   Description:

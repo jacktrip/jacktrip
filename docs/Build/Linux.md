@@ -134,6 +134,7 @@ available:
 * MESON_ARGS - arguments to build using meson
 * QT_DOWNLOAD_URL - path to qt6 download (optional)
 * VST3SDK_DOWNLOAD_URL - path to the VST3 SDK (optional)
+* USE_SYSTEM_LIBSAMPLERATE - dynamically link with libsamplerate
 
 For example:
 
@@ -171,6 +172,7 @@ arm32 static
 ```
 docker buildx build --target=artifact -f linux/Dockerfile.build --output type=local,dest=./ \
   --platform linux/arm/v7 --build-arg BUILD_CONTAINER=debian:buster \
+  --build-arg USE_SYSTEM_LIBSAMPLERATE=1 \
   --build-arg MESON_ARGS="-Ddefault_library=static -Drtaudio=enabled -Drtaudio:jack=disabled -Drtaudio:default_library=static -Drtaudio:alsa=enabled -Drtaudio:pulse=disabled -Drtaudio:werror=false -Dnogui=true -Dcpp_link_args='-no-pie'" \
   --build-arg QT_DOWNLOAD_URL=https://files.jacktrip.org/contrib/qt/qt-5.15.13-static-linux-arm32.tar.gz .
 ```

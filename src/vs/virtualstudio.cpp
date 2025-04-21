@@ -592,7 +592,7 @@ void VirtualStudio::setWindowState(QString state)
     m_windowState = state;
     // refresh studio list if navigating to browse window
     // only if user id is empty (edge case for when logging in)
-    if (m_windowState == "browse" && !m_userId.isEmpty()) {
+    if (m_windowState == "browse" && m_auth->isAuthenticated()) {
         // schedule studio refresh instead of doing it now
         // just to reduce risk of running into a deadlock
         emit scheduleStudioRefresh(-1, false);
@@ -655,26 +655,22 @@ void VirtualStudio::collectFeedbackSurvey(QString serverId, int rating, QString 
 #endif
 
     feedback.insert(QStringLiteral("osVersion"), QSysInfo::prettyProductName());
-    QString sysInfo = QString("[platform=%1").arg(QSysInfo::prettyProductName());
 #ifdef RT_AUDIO
     QString inputDevice =
         QString::fromStdString(m_audioConfigPtr->getInputDevice().toStdString());
     if (!inputDevice.isEmpty()) {
-        sysInfo.append(QString(",input=%1").arg(inputDevice));
+        feedback.insert(QStringLiteral("inputDevice"), inputDevice);
     }
     QString outputDevice =
         QString::fromStdString(m_audioConfigPtr->getOutputDevice().toStdString());
     if (!outputDevice.isEmpty()) {
-        sysInfo.append(QString(",output=%1").arg(outputDevice));
+        feedback.insert(QStringLiteral("outputDevice"), outputDevice);
     }
 #endif
-    sysInfo.append("]");
 
     feedback.insert(QStringLiteral("rating"), rating);
-    if (message.isEmpty()) {
-        feedback.insert(QStringLiteral("message"), sysInfo);
-    } else {
-        feedback.insert(QStringLiteral("message"), message + " " + sysInfo);
+    if (!message.isEmpty()) {
+        feedback.insert(QStringLiteral("message"), message);
     }
 
     QString deviceIssues  = "";
@@ -687,11 +683,11 @@ void VirtualStudio::collectFeedbackSurvey(QString serverId, int rating, QString 
     }
     if (!deviceIssues.isEmpty()) {
         feedback.insert(QStringLiteral("deviceIssues"), deviceIssues);
-        message.append(" (deviceIssues=" + deviceIssues + ")");
     }
 
     QJsonDocument data = QJsonDocument(feedback);
     m_api->submitServerFeedback(serverId, data.toJson());
+    std::cout << "Sent feedback: " << data.toJson().toStdString() << std::endl;
     return;
 }
 
@@ -857,17 +853,13 @@ void VirtualStudio::joinStudio()
         return;
     }
 
-    // pop studioToJoin
-    const QString targetId = m_studioToJoin;
-    setStudioToJoin("");
-
     // stop audio if already running (settings or setup windows)
     m_audioConfigPtr->stopAudio(true);
 
     // find and populate data for current studio
     VsServerInfoPointer sPtr;
     for (const VsServerInfoPointer& s : m_servers) {
-        if (s->id() == targetId) {
+        if (s->id() == m_studioToJoin) {
             sPtr = s;
             break;
         }
@@ -875,20 +867,22 @@ void VirtualStudio::joinStudio()
     locker.unlock();
 
     if (sPtr.isNull()) {
-        m_failedMessage = "Unable to find studio " + targetId;
+        m_failedMessage = "Unable to find studio " + m_studioToJoin;
+        setStudioToJoin("");
         emit failedMessageChanged();
         emit failed();
         return;
     }
 
-    m_currentStudio = *sPtr;
-    emit currentStudioChanged();
-
     if (m_windowState == "setup") {
-        m_audioConfigPtr->setSampleRate(m_currentStudio.sampleRate());
+        m_audioConfigPtr->setSampleRate(sPtr->sampleRate());
         m_audioConfigPtr->startAudio();
         return;
     }
+
+    setStudioToJoin("");
+    m_currentStudio = *sPtr;
+    emit currentStudioChanged();
 
     // m_windowState == "connected"
     connectToStudio();
@@ -1167,6 +1161,9 @@ void VirtualStudio::triggerReconnect(bool refresh)
             m_audioConfigPtr->validateDevices();
         return;
     }
+
+    std::cout << "Reconnecting audio to " << m_currentStudio.host().toStdString() << ":"
+              << m_currentStudio.port() << std::endl;
 
     // this needs to be synchronous to avoid both trying
     // to use the audio interfaces at the same time
@@ -1501,11 +1498,18 @@ void VirtualStudio::receivedConnectionFromPeer()
 
 void VirtualStudio::handleWebsocketMessage(const QString& msg)
 {
-    QJsonObject serverState = QJsonDocument::fromJson(msg.toUtf8()).object();
-    QString serverStatus    = serverState[QStringLiteral("status")].toString();
-    bool serverEnabled      = serverState[QStringLiteral("enabled")].toBool();
-    QString serverCloudId   = serverState[QStringLiteral("cloudId")].toString();
-    int queueBuffer         = serverState[QStringLiteral("queueBuffer")].toInt();
+    if (m_currentStudio.id() == "") {
+        return;
+    }
+
+    QJsonObject serverState      = QJsonDocument::fromJson(msg.toUtf8()).object();
+    const QString& serverHost    = serverState[QStringLiteral("serverHost")].toString();
+    const QString& serverStatus  = serverState[QStringLiteral("status")].toString();
+    const QString& serverCloudId = serverState[QStringLiteral("cloudId")].toString();
+    const QString& sessionId     = serverState[QStringLiteral("sessionId")].toString();
+    const bool serverEnabled     = serverState[QStringLiteral("enabled")].toBool();
+    const int serverPort         = serverState[QStringLiteral("serverPort")].toInt();
+    const int queueBuffer        = serverState[QStringLiteral("queueBuffer")].toInt();
 
     // server notifications are also transmitted along this websocket, so ignore data if
     // it contains "message"
@@ -1513,26 +1517,55 @@ void VirtualStudio::handleWebsocketMessage(const QString& msg)
     if (!message.isEmpty()) {
         return;
     }
-    if (m_currentStudio.id() == "") {
-        return;
+
+    bool currentStudioUpdated    = false;
+    bool serverHostOrPortUpdated = false;
+    if (serverHost != m_currentStudio.host()) {
+        m_currentStudio.setHost(serverHost);
+        currentStudioUpdated    = true;
+        serverHostOrPortUpdated = true;
     }
-    m_currentStudio.setStatus(serverStatus);
-    m_currentStudio.setEnabled(serverEnabled);
-    m_currentStudio.setCloudId(serverCloudId);
-    m_currentStudio.setQueueBuffer(queueBuffer);
-    if (!m_jackTripRunning) {
-        if (serverStatus == QLatin1String("Ready") && m_onConnectedScreen) {
-            m_currentStudio.setHost(serverState[QStringLiteral("serverHost")].toString());
-            m_currentStudio.setPort(serverState[QStringLiteral("serverPort")].toInt());
-            m_currentStudio.setSessionId(
-                serverState[QStringLiteral("sessionId")].toString());
-            completeConnection();
+    if (serverStatus != m_currentStudio.status()) {
+        m_currentStudio.setStatus(serverStatus);
+        currentStudioUpdated = true;
+    }
+    if (serverCloudId != m_currentStudio.cloudId()) {
+        m_currentStudio.setCloudId(serverCloudId);
+        currentStudioUpdated = true;
+    }
+    if (sessionId != m_currentStudio.sessionId()) {
+        m_currentStudio.setSessionId(sessionId);
+        currentStudioUpdated = true;
+    }
+    if (serverEnabled != m_currentStudio.enabled()) {
+        m_currentStudio.setEnabled(serverEnabled);
+        currentStudioUpdated = true;
+    }
+    if (serverPort != m_currentStudio.port()) {
+        m_currentStudio.setPort(serverPort);
+        currentStudioUpdated    = true;
+        serverHostOrPortUpdated = true;
+    }
+    if (queueBuffer != m_currentStudio.queueBuffer()) {
+        m_currentStudio.setQueueBuffer(queueBuffer);
+        currentStudioUpdated = true;
+        if (m_useStudioQueueBuffer && !m_devicePtr.isNull()) {
+            m_devicePtr->setQueueBuffer(m_currentStudio.queueBuffer());
         }
-    } else if (m_useStudioQueueBuffer && !m_devicePtr.isNull()) {
-        m_devicePtr->setQueueBuffer(m_currentStudio.queueBuffer());
     }
 
-    emit currentStudioChanged();
+    if (currentStudioUpdated) {
+        emit currentStudioChanged();
+    }
+
+    if (m_onConnectedScreen) {
+        if (!m_jackTripRunning && serverEnabled && serverStatus == QLatin1String("Ready")
+            && serverHost != "" && serverPort != 0) {
+            std::cout << "Connecting audio to " << serverHost.toStdString() << ":"
+                      << serverPort << std::endl;
+            completeConnection();
+        }
+    }
 }
 
 void VirtualStudio::restartStudioSocket()
@@ -1586,7 +1619,7 @@ void VirtualStudio::resetState()
 void VirtualStudio::refreshStudios(int index, bool signalRefresh)
 {
     // user id is required for retrieval of subscriptions
-    if (m_userId.isEmpty()) {
+    if (!m_auth->isAuthenticated()) {
         std::cerr << "Studio refresh cancelled due to empty user id" << std::endl;
         return;
     }
@@ -1873,6 +1906,7 @@ VirtualStudio::~VirtualStudio()
 QApplication* VirtualStudio::createApplication(int& argc, char* argv[])
 {
 #if defined(Q_OS_WIN)
+#if QT_VERSION < QT_VERSION_CHECK(6, 6, 0)
     // Fix for display scaling like 125% or 150% on Windows
     QGuiApplication::setHighDpiScaleFactorRoundingPolicy(
         Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
@@ -1882,8 +1916,12 @@ QApplication* VirtualStudio::createApplication(int& argc, char* argv[])
     // QCoreApplication::setAttribute(Qt::AA_UseDesktopOpenGL);
     // QCoreApplication::setAttribute(Qt::AA_UseOpenGLES);
 
+    // Direct3D11 is still broken as of Qt 6.8.1
     // QQuickWindow::setGraphicsApi(QSGRendererInterface::Direct3D11);
     QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
+#else  // Qt 6.6.0 or later supports Direct3D 12, which works well
+    QQuickWindow::setGraphicsApi(QSGRendererInterface::Direct3D12);
+#endif
 #endif
 
     QQuickStyle::setStyle("Basic");
@@ -1891,7 +1929,13 @@ QApplication* VirtualStudio::createApplication(int& argc, char* argv[])
 #if defined(Q_OS_MACOS) && (QT_VERSION > QT_VERSION_CHECK(6, 2, 6)) \
     && (QT_VERSION < QT_VERSION_CHECK(6, 8, 0))
     // work-around for screen sharing bugs in qtwebengine 6.2.7-6.7.x
-    qputenv("QTWEBENGINE_CHROMIUM_FLAGS", "--disable-features=DesktopCaptureMacV2");
+    QString chromiumFlags("--disable-features=DesktopCaptureMacV2");
+    char* existingFlags = getenv("QTWEBENGINE_CHROMIUM_FLAGS");
+    if (existingFlags != nullptr) {
+        chromiumFlags.append(" ");
+        chromiumFlags.append(existingFlags);
+    }
+    qputenv("QTWEBENGINE_CHROMIUM_FLAGS", chromiumFlags.toUtf8());
 #endif
 
     // Initialize webengine

@@ -585,7 +585,7 @@ void AudioSocketWorker::receiveAudio()
 void AudioSocketWorker::scheduleReconnect()
 {
     if (mRetryConnection) {
-        qDebug() << "Attempting to reconnect audio socket";
+        cout << "Attempting to reconnect audio socket" << endl;
         if (mTimerPtr.isNull()) {
             mTimerPtr.reset(new QTimer);
             QObject::connect(mTimerPtr.data(), &QTimer::timeout, this,
