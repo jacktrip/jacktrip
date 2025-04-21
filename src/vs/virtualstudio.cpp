@@ -1162,6 +1162,9 @@ void VirtualStudio::triggerReconnect(bool refresh)
         return;
     }
 
+    std::cout << "Reconnecting audio to " << m_currentStudio.host().toStdString() << ":"
+              << m_currentStudio.port() << std::endl;
+
     // this needs to be synchronous to avoid both trying
     // to use the audio interfaces at the same time
     // note that connectionFinished() checks m_reconnectState
@@ -1556,19 +1559,11 @@ void VirtualStudio::handleWebsocketMessage(const QString& msg)
     }
 
     if (m_onConnectedScreen) {
-        if (m_jackTripRunning) {
-            if (serverEnabled && serverHostOrPortUpdated) {
-                std::cout << "Reconnecting audio to " << serverHost.toStdString() << ":"
-                          << serverPort << std::endl;
-                triggerReconnect(false);
-            }
-        } else {
-            if (serverEnabled && serverStatus == QLatin1String("Ready")
-                && serverHost != "" && serverPort != 0) {
-                std::cout << "Connecting audio to " << serverHost.toStdString() << ":"
-                          << serverPort << std::endl;
-                completeConnection();
-            }
+        if (!m_jackTripRunning && serverEnabled && serverStatus == QLatin1String("Ready")
+            && serverHost != "" && serverPort != 0) {
+            std::cout << "Connecting audio to " << serverHost.toStdString() << ":"
+                      << serverPort << std::endl;
+            completeConnection();
         }
     }
 }

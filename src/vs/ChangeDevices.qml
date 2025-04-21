@@ -41,11 +41,17 @@ Rectangle {
 
     property string linkText: virtualstudio.darkMode ? "#8B8D8D" : "#272525"
 
+    property bool autoQueueBuffer: virtualstudio.queueBuffer == 0
+
     function getQueueBufferString () {
-        if (virtualstudio.queueBuffer == 0) {
+        let queueBuffer = virtualstudio.queueBuffer;
+        if (useStudioQueueBuffer.checkState == Qt.Checked) {
+            queueBuffer = virtualstudio.currentStudio.queueBuffer;
+        }
+        if (queueBuffer == 0) {
             return "auto";
         }
-        return virtualstudio.queueBuffer + " ms";
+        return queueBuffer + " ms";
     }
 
     MouseArea {
@@ -132,7 +138,7 @@ Rectangle {
         CheckBox {
             id: useStudioQueueBuffer
             checked: virtualstudio.useStudioQueueBuffer
-            text: qsTr("Use Studio settings")
+            text: qsTr("Use Studio settings (recommended)")
             anchors.top: latencyDivider.bottom
             anchors.topMargin: 16 * virtualstudio.uiScale
             x: 168 * virtualstudio.uiScale;
@@ -167,14 +173,54 @@ Rectangle {
         }
 
         Text {
-            id: currentLatency
+            id: queueBufferText
             anchors.top: latencyDivider.bottom
             anchors.topMargin: 16 * virtualstudio.uiScale
+            anchors.right: parent.right
+            anchors.rightMargin: 24 * virtualstudio.uiScale
+            text: "Audio Quality: " + getQueueBufferString()
+            font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+        }
+
+        Text {
+            id: currentLatency
+            anchors.top: queueBufferText.bottom
+            anchors.topMargin: 6 * virtualstudio.uiScale
             anchors.right: parent.right
             anchors.rightMargin: 24 * virtualstudio.uiScale
             text: "Ingress Jitter Latency: " + Math.round(virtualstudio.networkStats.clientBufferLatency) + " ms"
             font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
+        }
+
+        Button {
+            id: queueBufferAutoButton
+            width: 60 * virtualstudio.uiScale
+            height: 30 * virtualstudio.uiScale
+            anchors.top: useStudioQueueBuffer.bottom
+            anchors.topMargin: 16 * virtualstudio.uiScale
+            anchors.left: useStudioQueueBuffer.left
+            background: Rectangle {
+                radius: 6 * virtualstudio.uiScale
+                color: queueBufferAutoButton.down ? browserButtonPressedColour : (queueBufferAutoButton.hovered ? browserButtonHoverColour : (autoQueueBuffer ? "#FF0000" : browserButtonColour))
+            }
+            onClicked: {
+                if (autoQueueBuffer) {
+                    virtualstudio.queueBuffer = 5;
+                } else {
+                    virtualstudio.queueBuffer = 0;
+                }
+                autoQueueBuffer = !autoQueueBuffer;
+            }
+            Text {
+                text: "Auto"
+                font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale}
+                anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
+                color: textColour
+            }
+
+            visible: useStudioQueueBuffer.checkState != Qt.Checked
         }
 
         Slider {
@@ -183,16 +229,17 @@ Rectangle {
             onMoved: {
                 virtualstudio.queueBuffer = value;
             }
-            from: 0
+            from: 1
             to: 250
             stepSize: 1
             padding: 0
-            visible: useStudioQueueBuffer.checkState != Qt.Checked
+            visible: !autoQueueBuffer && useStudioQueueBuffer.checkState != Qt.Checked
 
             anchors.top: useStudioQueueBuffer.bottom
             anchors.topMargin: 16 * virtualstudio.uiScale
-            x: queueBufferText.x + queueBufferText.width
-            width: parent.width - x - (16 * virtualstudio.uiScale) - queueBufferText.width;
+            anchors.left: queueBufferAutoButton.right
+            anchors.leftMargin: 8 * virtualstudio.uiScale
+            width: parent.width - x - (16 * virtualstudio.uiScale);
 
             background: Rectangle {
                 x: queueBufferSlider.leftPadding
@@ -224,14 +271,27 @@ Rectangle {
         }
 
         Text {
-            id: queueBufferText
-            width: (64 * virtualstudio.uiScale)
-            anchors.left: useStudioQueueBuffer.left
-            anchors.verticalCenter: queueBufferSlider.verticalCenter
-            text: getQueueBufferString()
-            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale }
+            id: lowerLatencyText
+            anchors.top: queueBufferSlider.bottom
+            anchors.topMargin: 8 * virtualstudio.uiScale
+            anchors.left: queueBufferSlider.left
+            anchors.leftMargin: 8 * virtualstudio.uiScale
+            text: "Lower Latency"
+            font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
-            visible: useStudioQueueBuffer.checkState != Qt.Checked
+            visible: !autoQueueBuffer && useStudioQueueBuffer.checkState != Qt.Checked
+        }
+
+        Text {
+            id: higherQualityText
+            anchors.top: queueBufferSlider.bottom
+            anchors.topMargin: 8 * virtualstudio.uiScale
+            anchors.right: queueBufferSlider.right
+            anchors.rightMargin: 8 * virtualstudio.uiScale
+            text: "Higher Quality"
+            font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
+            color: textColour
+            visible: !autoQueueBuffer && useStudioQueueBuffer.checkState != Qt.Checked
         }
     }
 
