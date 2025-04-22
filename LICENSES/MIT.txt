@@ -2,7 +2,7 @@
   SoundWIRE group at CCRMA, Stanford University.
 
   Virtual Studio interface and integration
-  Copyright (c) 2022-2024 JackTrip Labs, Inc.
+  Copyright (c) 2022-2025 JackTrip Labs, Inc.
 
   Permission is hereby granted, free of charge, to any person
   obtaining a copy of this software and associated documentation
