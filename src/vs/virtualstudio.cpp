@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2022-2024 JackTrip Labs, Inc.
+  Copyright (c) 2022-2025 JackTrip Labs, Inc.
 
   Permission is hereby granted, free of charge, to any person
   obtaining a copy of this software and associated documentation
@@ -400,10 +400,10 @@ QString VirtualStudio::copyrightString()
 #endif
 
     result +=
-        "Copyright &copy; 2008-2024 Juan-Pablo Caceres, Chris Chafe, et al. SoundWIRE "
+        "Copyright &copy; 2008-2025 Juan-Pablo Caceres, Chris Chafe, et al. SoundWIRE "
         "group at CCRMA, Stanford University.<br/><br/>\n";
     result +=
-        "Virtual Studio interface and integration Copyright &copy; 2022-2024 JackTrip "
+        "Virtual Studio interface and integration Copyright &copy; 2022-2025 JackTrip "
         "Labs, Inc.<br/><br/>\n";
 
     if (hasClassicMode()) {
@@ -1518,12 +1518,10 @@ void VirtualStudio::handleWebsocketMessage(const QString& msg)
         return;
     }
 
-    bool currentStudioUpdated    = false;
-    bool serverHostOrPortUpdated = false;
+    bool currentStudioUpdated = false;
     if (serverHost != m_currentStudio.host()) {
         m_currentStudio.setHost(serverHost);
-        currentStudioUpdated    = true;
-        serverHostOrPortUpdated = true;
+        currentStudioUpdated = true;
     }
     if (serverStatus != m_currentStudio.status()) {
         m_currentStudio.setStatus(serverStatus);
@@ -1543,8 +1541,7 @@ void VirtualStudio::handleWebsocketMessage(const QString& msg)
     }
     if (serverPort != m_currentStudio.port()) {
         m_currentStudio.setPort(serverPort);
-        currentStudioUpdated    = true;
-        serverHostOrPortUpdated = true;
+        currentStudioUpdated = true;
     }
     if (queueBuffer != m_currentStudio.queueBuffer()) {
         m_currentStudio.setQueueBuffer(queueBuffer);

@@ -1,3 +1,8 @@
+- Version: "2.7.0-beta0"
+  Date: 2025-xx-xx
+  Description:
+  - (updated) Upgraded builds to use Qt 6.8.2
+  - (updated) VS Mode bandwidth optimizations for small video windows
 - Version: "2.6.0"
   Date: 2025-04-22
   Description:
