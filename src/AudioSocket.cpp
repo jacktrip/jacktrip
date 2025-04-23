@@ -37,6 +37,7 @@
 
 #include "AudioSocket.h"
 
+#include <QDebug>
 #include <QEventLoop>
 #include <iostream>
 
@@ -585,7 +586,7 @@ void AudioSocketWorker::receiveAudio()
 void AudioSocketWorker::scheduleReconnect()
 {
     if (mRetryConnection) {
-        cout << "Attempting to reconnect audio socket" << endl;
+        qDebug() << "Attempting to reconnect audio socket";
         if (mTimerPtr.isNull()) {
             mTimerPtr.reset(new QTimer);
             QObject::connect(mTimerPtr.data(), &QTimer::timeout, this,
