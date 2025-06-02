@@ -57,10 +57,6 @@ Item {
         WebEngineView {
             id: webEngineView
             anchors.fill: parent
-            settings.javascriptCanAccessClipboard: true
-            settings.javascriptCanPaste: true
-            settings.screenCaptureEnabled: true
-            profile.httpUserAgent: `JackTrip/${virtualstudio.versionString}`
             url: `https://${virtualstudio.apiHost}/studios/${web.studioId}/live`
 
             // useful for debugging

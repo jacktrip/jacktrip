@@ -141,7 +141,7 @@ jobs:
             docker-image: ubuntu:jammy-20240911.1
             docker-platform: linux/amd64
             meson-library-type: static
-            qt-version: '6.8.2'
+            qt-version: '6.8.3'
             qt-type: 'static'
             qt-arch: 'amd64'
 
@@ -160,7 +160,7 @@ jobs:
             docker-image: ubuntu:jammy-20240911.1
             docker-platform: linux/arm64
             meson-library-type: static
-            qt-version: '6.8.2'
+            qt-version: '6.8.3'
             qt-type: 'static'
             qt-arch: 'arm64'
 
@@ -197,7 +197,7 @@ jobs:
             binary-path: binary
             build-system: meson
             meson-library-type: static
-            qt-version: '6.8.2'
+            qt-version: '6.8.3'
             qt-type: 'static'
             macosx-architectures: 'x86_64;arm64'
             macosx-deployment-target: 12
@@ -218,7 +218,7 @@ jobs:
             installer-path: installer
             build-system: meson
             meson-library-type: both
-            qt-version: '6.8.2'
+            qt-version: '6.8.3'
             qt-type: 'dynamic'
             vst3sdk-version: '3.7.12'
             macosx-architectures: 'x86_64;arm64'
@@ -234,7 +234,7 @@ jobs:
             novs: true
             weakjack: true
             libsamplerate: true
-            qt-version: '6.8.2'
+            qt-version: '6.8.3'
             qt-type: 'static'
             jacktrip-path: jacktrip.exe
             binary-path: binary
@@ -250,7 +250,7 @@ jobs:
             novs: false
             weakjack: true
             libsamplerate: true
-            qt-version: '6.8.2'
+            qt-version: '6.8.3'
             qt-type: 'dynamic'
             jacktrip-path: jacktrip.exe
             installer-path: installer
@@ -265,7 +265,7 @@ jobs:
       CLANG_TIDY_PATH: ${{ github.workspace }}/clang-tidy-result
       VST3SDK_DOWNLOAD_BASE_URL: 'https://files.jacktrip.org/contrib/vst3sdk'
       QT_DOWNLOAD_BASE_URL: 'https://files.jacktrip.org/contrib/qt'
-      QT_DOWNLOAD_COMMIT: '7934713'
+      QT_DOWNLOAD_COMMIT: '0f71697'
 
     steps:
       - uses: actions/checkout@v3
@@ -421,42 +421,48 @@ jobs:
             curl -L $QT_DOWNLOAD_URL -o qt.$QT_DOWNLOAD_EXT
             if [[ "${{ runner.os }}" == 'Windows' ]]; then
               unzip qt.$QT_DOWNLOAD_EXT
+              rm qt.$QT_DOWNLOAD_EXT
+              QT_PATH="c:\qt\qt-${{ matrix.qt-version }}-${{ matrix.qt-type }}"
+              echo "$QT_PATH\bin" >> $GITHUB_PATH
+              echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH;$QT_PATH/lib/pkgconfig;$GITHUB_WORKSPACE/win" >> $GITHUB_ENV
+              echo "CMAKE_PREFIX_PATH=$QT_PATH" >> $GITHUB_ENV
+              if [[ -n "${{ matrix.vst3sdk-version}}" && "${{ matrix.qt-type }}" != "static" ]]; then
+                # also download static version of qt to use when building the VST3 plugin
+                QT_DOWNLOAD_URL="$QT_DOWNLOAD_BASE_URL/qt-${{ matrix.qt-version }}-static-${QT_DOWNLOAD_OS}${QT_DOWNLOAD_ARCH}-$QT_DOWNLOAD_COMMIT.$QT_DOWNLOAD_EXT"
+                echo "Downloading $QT_DOWNLOAD_URL"
+                curl -L $QT_DOWNLOAD_URL -o qt.$QT_DOWNLOAD_EXT
+                unzip qt.$QT_DOWNLOAD_EXT
+                rm qt.$QT_DOWNLOAD_EXT
+                QT_STATIC_PATH="c:\qt\qt-${{ matrix.qt-version }}-static"
+                echo "QT_STATIC_PATH=$QT_STATIC_PATH" >> $GITHUB_ENV
+                echo "$QT_STATIC_PATH\bin" >> $GITHUB_PATH
+                # make it inactive until we need it
+                mv "$QT_STATIC_PATH" "$QT_STATIC_PATH.bak"
+              fi
             else
               tar -xzf qt.$QT_DOWNLOAD_EXT
-            fi
-            rm qt.$QT_DOWNLOAD_EXT
-            if [[ -n "${{ matrix.vst3sdk-version }}" && "${{ runner.os }}" == 'Windows' ]]; then
-              # also download static version of qt to use when building the VST3 plugin
-              QT_DOWNLOAD_URL="$QT_DOWNLOAD_BASE_URL/qt-${{ matrix.qt-version }}-static-${QT_DOWNLOAD_OS}${QT_DOWNLOAD_ARCH}-$QT_DOWNLOAD_COMMIT.$QT_DOWNLOAD_EXT"
-              echo "Downloading $QT_DOWNLOAD_URL"
-              curl -L $QT_DOWNLOAD_URL -o qt.$QT_DOWNLOAD_EXT
-              unzip qt.$QT_DOWNLOAD_EXT
-              # make it inactive until we need it
-              mv "c:\qt\qt-${{ matrix.qt-version }}-static" "c:\qt\qt-${{ matrix.qt-version }}-static.bak"
               rm qt.$QT_DOWNLOAD_EXT
-            fi
-          fi
-      - name: Set Qt environment variables # needed to find qmake depending on the way qt was installed
-        shell: bash
-        if: matrix.qt-version && matrix.qt-type && matrix.build-system != 'docker'
-        run: |
-          if [[ "${{ runner.os }}" == 'Windows' ]]; then
-            QT_PATH="c:\qt\qt-${{ matrix.qt-version }}-${{ matrix.qt-type }}"
-            echo "$QT_PATH\bin" >> $GITHUB_PATH
-            if [[ -n "${{ matrix.vst3sdk-version}}" && "${{ matrix.qt-type }}" != "static" ]]; then
-              echo "c:\qt\qt-${{ matrix.qt-version }}-static\bin" >> $GITHUB_PATH
-            fi
-            echo "QT_PATH=$QT_PATH" >> $GITHUB_ENV
-            echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH;$QT_PATH/lib/pkgconfig;$GITHUB_WORKSPACE/win" >> $GITHUB_ENV
-            echo "CMAKE_PREFIX_PATH=$QT_PATH" >> $GITHUB_ENV
-          else
-            QT_PATH="/opt/qt-${{ matrix.qt-version }}-${{ matrix.qt-type }}"
-            echo "$QT_PATH/bin" >> $GITHUB_PATH
-            echo "QT_PATH=$QT_PATH" >> $GITHUB_ENV
-            echo "PKG_CONFIG_PATH=$QT_PATH/lib/pkgconfig" >> $GITHUB_ENV
-            echo "CMAKE_PREFIX_PATH=$QT_PATH" >> $GITHUB_ENV
-            if [[ "${{ runner.os }}" == 'macOS' ]]; then
-              echo "DYLD_FRAMEWORK_PATH=$QT_PATH/lib" >> $GITHUB_ENV
+              QT_PATH="/opt/qt-${{ matrix.qt-version }}-${{ matrix.qt-type }}"
+              echo "$QT_PATH/bin" >> $GITHUB_PATH
+              echo "QT_PATH=$QT_PATH" >> $GITHUB_ENV
+              echo "PKG_CONFIG_PATH=$QT_PATH/lib/pkgconfig" >> $GITHUB_ENV
+              echo "CMAKE_PREFIX_PATH=$QT_PATH" >> $GITHUB_ENV
+              if [[ "${{ runner.os }}" == 'macOS' ]]; then
+                echo "DYLD_FRAMEWORK_PATH=$QT_PATH/lib" >> $GITHUB_ENV
+                if [[ -n "${{ matrix.vst3sdk-version}}" && "${{ matrix.qt-type }}" != "static" ]]; then
+                  # also download static version of qt to use when building the VST3 plugin
+                  QT_DOWNLOAD_URL="$QT_DOWNLOAD_BASE_URL/qt-${{ matrix.qt-version }}-static-${QT_DOWNLOAD_OS}${QT_DOWNLOAD_ARCH}-$QT_DOWNLOAD_COMMIT.$QT_DOWNLOAD_EXT"
+                  echo "Downloading $QT_DOWNLOAD_URL"
+                  curl -L $QT_DOWNLOAD_URL -o qt.$QT_DOWNLOAD_EXT
+                  tar -xzf qt.$QT_DOWNLOAD_EXT
+                  rm qt.$QT_DOWNLOAD_EXT
+                  QT_STATIC_PATH="/opt/qt-${{ matrix.qt-version }}-static"
+                  echo "QT_STATIC_PATH=$QT_STATIC_PATH" >> $GITHUB_ENV
+                  echo "$QT_STATIC_PATH\bin" >> $GITHUB_PATH
+                  # make it inactive until we need it
+                  mv "$QT_STATIC_PATH" "$QT_STATIC_PATH.bak"
+                fi
+              fi
             fi
           fi
       - name: Download VST3SDK build
@@ -626,7 +632,7 @@ jobs:
               CONFIG_STRING="-Dvsftux=true $CONFIG_STRING"
             fi
           fi
-          if [[ -n "${{ matrix.vst3sdk-version }}" && "${{ matrix.build-system }}" != "docker" && "${{ runner.os }}" != 'Windows' ]]; then
+          if [[ -n "${{ matrix.vst3sdk-version }}" && "${{ matrix.build-system }}" != "docker" && "${{ runner.os }}" == 'Linux' ]]; then
             CONFIG_STRING="-Dvst-sdkdir=$VST3SDK_INSTALL_PATH $CONFIG_STRING"
           fi
           if [[ "${{ matrix.build-system }}" == "docker" ]]; then
@@ -650,13 +656,13 @@ jobs:
             meson setup --buildtype release $CONFIG_STRING $BUILD_PATH
             meson compile -C $BUILD_PATH -v
           fi  
-      - name: build VST3 Plugin (Windows)
-        if: runner.os == 'Windows' && matrix.build-system == 'meson' && matrix.vst3sdk-version != ''
+      - name: build VST3 Plugin (Windows and OSX)
+        if: runner.os != 'Linux' && matrix.build-system == 'meson' && matrix.vst3sdk-version != ''
         shell: bash
         run: |
           # switch qt path to static
           mv $QT_PATH $QT_PATH.bak
-          mv "c:\qt\qt-${{ matrix.qt-version }}-static.bak" "c:\qt\qt-${{ matrix.qt-version }}-static"
+          mv "$QT_STATIC_PATH.bak" "$QT_STATIC_PATH"
           # reconfigure meson to build the VST plugin using static qt
           CONFIG_STRING="-Dnogui=true -Ddefault_library=static -Dvst-sdkdir=$VST3SDK_INSTALL_PATH $MESON_CONFIG"
           echo "Meson config: ${CONFIG_STRING}"
@@ -666,7 +672,7 @@ jobs:
           # move plugin to primary build path and restore qt path back to dynamic
           mv "$BUILD_STATIC/JackTrip.vst3" $BUILD_PATH
           mv $QT_PATH.bak $QT_PATH
-          mv "c:\qt\qt-${{ matrix.qt-version }}-static" "c:\qt\qt-${{ matrix.qt-version }}-static.bak"
+          mv "$QT_STATIC_PATH" "$QT_STATIC_PATH.bak"
       - name: validate desktop file
         if: runner.os == 'Linux' && !matrix.nogui
         shell: bash
