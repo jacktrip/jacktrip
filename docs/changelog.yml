@@ -1,7 +1,7 @@
 - Version: "2.7.0-beta1"
   Date: 2025-06-04
   Description:
-  - (updated) Upgraded builds to use Qt 6.8.3
+  - (updated) Upgraded builds to use Qt 6.8.2
   - (updated) Improved filters to blacklist iPhone microphones
   - (updated) Use static qt build when creating VST3 plugin on OSX
   - (updated) VS Mode bandwidth optimizations for small video windows
