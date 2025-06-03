@@ -424,6 +424,7 @@ jobs:
               rm qt.$QT_DOWNLOAD_EXT
               QT_PATH="c:\qt\qt-${{ matrix.qt-version }}-${{ matrix.qt-type }}"
               echo "$QT_PATH\bin" >> $GITHUB_PATH
+              echo "QT_PATH=$QT_PATH" >> $GITHUB_ENV
               echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH;$QT_PATH/lib/pkgconfig;$GITHUB_WORKSPACE/win" >> $GITHUB_ENV
               echo "CMAKE_PREFIX_PATH=$QT_PATH" >> $GITHUB_ENV
               if [[ -n "${{ matrix.vst3sdk-version}}" && "${{ matrix.qt-type }}" != "static" ]]; then
@@ -458,7 +459,7 @@ jobs:
                   rm qt.$QT_DOWNLOAD_EXT
                   QT_STATIC_PATH="/opt/qt-${{ matrix.qt-version }}-static"
                   echo "QT_STATIC_PATH=$QT_STATIC_PATH" >> $GITHUB_ENV
-                  echo "$QT_STATIC_PATH\bin" >> $GITHUB_PATH
+                  echo "$QT_STATIC_PATH/bin" >> $GITHUB_PATH
                   # make it inactive until we need it
                   mv "$QT_STATIC_PATH" "$QT_STATIC_PATH.bak"
                 fi
@@ -661,7 +662,7 @@ jobs:
         shell: bash
         run: |
           # switch qt path to static
-          mv $QT_PATH $QT_PATH.bak
+          mv "$QT_PATH" "$QT_PATH.bak"
           mv "$QT_STATIC_PATH.bak" "$QT_STATIC_PATH"
           # reconfigure meson to build the VST plugin using static qt
           CONFIG_STRING="-Dnogui=true -Ddefault_library=static -Dvst-sdkdir=$VST3SDK_INSTALL_PATH $MESON_CONFIG"
@@ -671,7 +672,7 @@ jobs:
           meson compile -C $BUILD_STATIC -v
           # move plugin to primary build path and restore qt path back to dynamic
           mv "$BUILD_STATIC/JackTrip.vst3" $BUILD_PATH
-          mv $QT_PATH.bak $QT_PATH
+          mv "$QT_PATH.bak" "$QT_PATH"
           mv "$QT_STATIC_PATH" "$QT_STATIC_PATH.bak"
       - name: validate desktop file
         if: runner.os == 'Linux' && !matrix.nogui
