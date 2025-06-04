@@ -89,8 +89,8 @@ If you see something like this, you have successfully installed Jacktrip:
 git clone --recursive https://github.com/steinbergmedia/vst3sdk
 mkdir vst3sdk/build
 cd vst3sdk/build
-cmake -G "Visual Studio 17 2022" -A x64 -DSMTG_CREATE_PLUGIN_LINK=0 ../
-cmake --build . -DCMAKE_CXX_FLAGS="/MD" --config Release
+cmake -G "Visual Studio 17 2022" -A x64 -DSMTG_CREATE_PLUGIN_LINK=0 -DCMAKE_CXX_FLAGS="/MD" ../
+cmake --build . --config Release
 mkdir c:\vst3sdk
 xcopy /E lib\Release c:\vst3sdk\lib\
 xcopy /E bin\Release c:\vst3sdk\bin\

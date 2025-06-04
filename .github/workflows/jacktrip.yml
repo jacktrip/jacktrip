@@ -106,7 +106,7 @@ jobs:
             docker-image: ubuntu:jammy-20240911.1
             docker-platform: linux/amd64
             meson-library-type: shared
-            vst3sdk-version: '3.7.12'
+            vst3sdk-version: '3.7.13'
             vst3sdk-arch: amd64
 
           - name: Linux-arm64-docker-shared
@@ -123,7 +123,7 @@ jobs:
             docker-image: ubuntu:jammy-20240911.1
             docker-platform: linux/arm64
             meson-library-type: shared
-            vst3sdk-version: '3.7.12'
+            vst3sdk-version: '3.7.13'
             vst3sdk-arch: arm64
 
           - name: Linux-x64-docker-nogui
@@ -220,7 +220,7 @@ jobs:
             meson-library-type: both
             qt-version: '6.8.2'
             qt-type: 'dynamic'
-            vst3sdk-version: '3.7.12'
+            vst3sdk-version: '3.7.13'
             macosx-architectures: 'x86_64;arm64'
             macosx-deployment-target: 12
             xcode-directory: /Applications/Xcode_16.2.app
@@ -257,7 +257,7 @@ jobs:
             binary-path: binary
             build-system: meson
             meson-library-type: shared
-            vst3sdk-version: '3.7.12'
+            vst3sdk-version: '3.7.13'
 
     env:
       BUILD_PATH: ${{ github.workspace }}/builddir
