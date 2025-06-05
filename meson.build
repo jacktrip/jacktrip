@@ -458,22 +458,9 @@ if vst_sdkdir != ''
 		vst_deps += compiler.find_library('fontconfig', required : true)
 	elif (host_machine.system() == 'darwin')
 		vst_sources += '@0@/main/macmain.cpp'.format(vst_includedir)
-		vst_link_args += ['-framework', 'CoreServices']
-		vst_link_args += ['-framework', 'CFNetwork']
-		vst_link_args += ['-framework', 'AppKit']
-		vst_link_args += ['-framework', 'IOKit']
-		vst_link_args += ['-framework', 'Security']
-		vst_link_args += ['-framework', 'GSS']
-		vst_link_args += ['-framework', 'SystemConfiguration']
-		vst_deps += dependency('zlib', required : true)
-		if (qt_version == '5')
-			vst_link_args += '@0@/libQt5Core.a'.format(vst_libdir)
-			vst_link_args += '@0@/libQt5Network.a'.format(vst_libdir)
-		else
-			vst_link_args += '@0@/libQt6Core.a'.format(vst_libdir)
-			vst_link_args += '@0@/libQt6Network.a'.format(vst_libdir)
-			vst_link_args += '@0@/libQt6BundledPcre2.a'.format(vst_libdir)
-		endif
+		vst_deps += static_deps
+		vst_sources += static_src
+		vst_link_args += static_link_args
 	elif (host_machine.system() == 'windows')
 		vst_sources += '@0@/main/dllmain.cpp'.format(vst_includedir)
 		vst_deps += static_deps

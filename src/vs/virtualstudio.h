@@ -41,7 +41,6 @@
 #include <QMap>
 #include <QMutex>
 #include <QNetworkAccessManager>
-#include <QNetworkCookie>
 #include <QObject>
 #include <QScopedPointer>
 #include <QSharedPointer>
@@ -51,8 +50,6 @@
 #include <QUrl>
 #include <QVector>
 #include <QWebChannel>
-#include <QWebEngineCookieStore>
-#include <QWebEngineProfile>
 #include <QWebSocketServer>
 
 #include "../Settings.h"
@@ -259,6 +256,7 @@ class VirtualStudio : public QObject
    private slots:
     void slotAuthSucceeded();
     void slotAccessTokenUpdated(QString accessToken);
+    void setCookie(const QString& name, const QString& value, const QString& origin);
     void receivedConnectionFromPeer();
     void handleWebsocketMessage(const QString& msg);
     void restartStudioSocket();
@@ -289,7 +287,6 @@ class VirtualStudio : public QObject
     UserInterface& m_interface;
     VsServerInfo m_currentStudio;
     QNetworkAccessManager* m_networkAccessManagerPtr;
-    QWebEngineProfile* m_qwebEngineProfile;
     QSharedPointer<SocketServer> m_socketServerPtr;
     QScopedPointer<VsQuickView> m_view;
     QSharedPointer<VsDeeplink> m_deepLinkPtr;

@@ -36,10 +36,6 @@ Item {
         WebEngineView {
             id: webEngineView
             anchors.fill: parent
-            settings.javascriptCanAccessClipboard: true
-            settings.javascriptCanPaste: true
-            settings.screenCaptureEnabled: true
-            profile.httpUserAgent: `JackTrip/${virtualstudio.versionString}`
             url: `https://${virtualstudio.apiHost === "test.jacktrip.com" ? "next-test.jacktrip.com" : "www.jacktrip.com"}/app/studios/create`
 
             onContextMenuRequested: function(request) {

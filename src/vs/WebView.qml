@@ -15,7 +15,6 @@ Item {
         WebView {
             id: webEngineView
             anchors.fill: parent
-            httpUserAgent: `JackTrip/${virtualstudio.versionString}`
             url: `https://${virtualstudio.apiHost}/studios/${web.studioId}/live`
         }
     }

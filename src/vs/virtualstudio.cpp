@@ -44,6 +44,7 @@
 #include <QFile>
 #include <QFontDatabase>
 #include <QMessageBox>
+#include <QNetworkCookie>
 #include <QQmlContext>
 #include <QQmlEngine>
 #include <QQuickStyle>
@@ -54,7 +55,11 @@
 #include <QStandardPaths>
 #include <QSysInfo>
 #include <QTextStream>
+#include <QWebEngineCookieStore>
+#include <QWebEngineProfile>
+#include <QWebEngineSettings>
 #include <QtGlobal>
+#include <QtWebEngineQuick/QQuickWebEngineProfile>
 #include <algorithm>
 #include <iostream>
 
@@ -298,8 +303,37 @@ VirtualStudio::VirtualStudio(UserInterface& parent)
     });
     m_socketServerPtr->start();
 
-    // initialize default QtWebEngineProfile
-    m_qwebEngineProfile = QWebEngineProfile::defaultProfile();
+    // initialize default settings and profile for WebEngine
+    QWebEngineSettings* defaultWebEngineSettings =
+        QWebEngineProfile::defaultProfile()->settings();
+    defaultWebEngineSettings->setAttribute(QWebEngineSettings::LocalStorageEnabled, true);
+    defaultWebEngineSettings->setAttribute(QWebEngineSettings::JavascriptEnabled, true);
+    defaultWebEngineSettings->setAttribute(QWebEngineSettings::FullScreenSupportEnabled,
+                                           true);
+    defaultWebEngineSettings->setAttribute(QWebEngineSettings::ScreenCaptureEnabled,
+                                           true);
+    defaultWebEngineSettings->setAttribute(
+        QWebEngineSettings::JavascriptCanAccessClipboard, true);
+    defaultWebEngineSettings->setAttribute(QWebEngineSettings::JavascriptCanPaste, true);
+    defaultWebEngineSettings->setAttribute(QWebEngineSettings::DnsPrefetchEnabled, true);
+    defaultWebEngineSettings->setAttribute(QWebEngineSettings::WebGLEnabled, true);
+    defaultWebEngineSettings->setAttribute(
+        QWebEngineSettings::PlaybackRequiresUserGesture, false);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)
+    defaultWebEngineSettings->setAttribute(QWebEngineSettings::NavigateOnDropEnabled,
+                                           false);
+#endif
+    QQuickWebEngineProfile* defaultWebEngineProfile =
+        QQuickWebEngineProfile::defaultProfile();
+    defaultWebEngineProfile->setStorageName(QStringLiteral("Default"));
+    defaultWebEngineProfile->setHttpUserAgent(
+        QStringLiteral("JackTrip/%1").arg(versionString()));
+    defaultWebEngineProfile->setCachePath(defaultWebEngineProfile->persistentStoragePath()
+                                          + QStringLiteral("/Cache"));
+    defaultWebEngineProfile->setPersistentCookiesPolicy(
+        QQuickWebEngineProfile::ForcePersistentCookies);
+    defaultWebEngineProfile->setHttpCacheType(QQuickWebEngineProfile::DiskHttpCache);
+    defaultWebEngineProfile->setOffTheRecord(false);
 }
 
 void VirtualStudio::show()
@@ -1387,24 +1421,14 @@ void VirtualStudio::slotAuthSucceeded()
 
 void VirtualStudio::slotAccessTokenUpdated(QString accessToken)
 {
-    // set cookie
-    QWebEngineCookieStore* cookieStore = m_qwebEngineProfile->cookieStore();
-    QNetworkCookie authCookie =
-        QNetworkCookie(QByteArray("auth_code"), accessToken.toUtf8());
+    // set auth cookies for prod mode
+    setCookie("auth_code", accessToken, "https://www.jacktrip.com");
+    setCookie("auth_code", accessToken, "https://app.jacktrip.com");
 
-    QUrl url1 = QUrl(QStringLiteral("https://www.jacktrip.com"));
-    QUrl url2 = QUrl(QStringLiteral("https://app.jacktrip.com"));
-    QUrl url3 = QUrl(QStringLiteral("http://localhost:3000"));
-    if (testMode()) {
-        url1 = QUrl(QStringLiteral("https://next-test.jacktrip.com"));
-        url2 = QUrl(QStringLiteral("https://test.jacktrip.com"));
-    }
-
-    cookieStore->setCookie(authCookie, url1);
-    cookieStore->setCookie(authCookie, url2);
-    if (testMode()) {
-        cookieStore->setCookie(authCookie, url3);
-    }
+    // set auth cookies for test mode
+    setCookie("auth_code", accessToken, "https://next-test.jacktrip.com");
+    setCookie("auth_code", accessToken, "https://test.jacktrip.com");
+    setCookie("auth_code", accessToken, "http://localhost:3000");
 
     // Get refresh token and userId
     m_refreshToken = m_auth->refreshToken();
@@ -1415,6 +1439,16 @@ void VirtualStudio::slotAccessTokenUpdated(QString accessToken)
     settings.setValue(QStringLiteral("RefreshToken"), m_refreshToken);
     settings.setValue(QStringLiteral("UserId"), m_userId);
     settings.endGroup();
+}
+
+void VirtualStudio::setCookie(const QString& name, const QString& value,
+                              const QString& origin)
+{
+    // set webengine cookie
+    QNetworkCookie cookie = QNetworkCookie(name.toUtf8(), value.toUtf8());
+    QWebEngineCookieStore* cookieStore =
+        QWebEngineProfile::defaultProfile()->cookieStore();
+    cookieStore->setCookie(cookie, origin);
 }
 
 void VirtualStudio::connectionFinished()
