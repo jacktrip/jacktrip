@@ -118,7 +118,7 @@ If you see something like this, you have successfully installed Jacktrip:
 git clone --recursive https://github.com/steinbergmedia/vst3sdk
 mkdir vst3sdk/build
 cd vst3sdk/build
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET=12 ../
+cmake -DCMAKE_BUILD_TYPE=Release -DSMTG_CREATE_PLUGIN_LINK=0 -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET=12 ../
 cmake --build . --config Release
 sudo mkdir -p /opt/vst3sdk
 sudo cp -r lib/Release /opt/vst3sdk/lib
