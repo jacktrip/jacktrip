@@ -47,6 +47,9 @@
             <Component Id="cmpD22BE3A3E3A804D9EC17161FD6ED218F" Directory="INSTALLDIR" Guid="{4119B512-1A33-4A9B-B0AA-69D22F8C9658}">
                 <File Id="fil0427F270C0F2EA2C38D6BB72F32BC982" KeyPath="yes" Source="SourceDir\Qt6Gui.dll" />
             </Component>
+            <Component Id="cmpE3CB2E5BFCB33A1628E47CF6105AB92E" Directory="INSTALLDIR" Guid="{CD7FFA23-CEBE-42BB-A87D-E323305727D2}">
+                <File Id="fil1E49634DC4DAF6156FE0D7C48DF195C2" KeyPath="yes" Source="SourceDir\Qt6LabsFolderListModel.dll" />
+            </Component>
             <Component Id="cmp9FB603605D751CA9FE101013C48671B7" Directory="INSTALLDIR" Guid="{D15528CB-9F26-434A-AFBC-55A1BDD4372A}">
                 <File Id="filFE4FFAF140893FFCBD7F595F88958077" KeyPath="yes" Source="SourceDir\Qt6Network.dll" />
             </Component>
@@ -112,6 +115,15 @@
             </Component>
             <Component Id="cmp54DF42DCE2675E57F9EAAD85CC8641F2" Directory="INSTALLDIR" Guid="{724780B1-73A4-411E-99C0-D44B4BC44C23}">
                 <File Id="fil6CB329504ED279D670301CD15966AA7B" KeyPath="yes" Source="SourceDir\Qt6QuickControls2WindowsStyleImpl.dll" />
+            </Component>
+            <Component Id="cmp2BB41ECBA565E0A0B4EDF020A49025F9" Directory="INSTALLDIR" Guid="{ACE7982D-0232-406F-AE89-C36BCE3AD1E0}">
+                <File Id="fil57860EF8422A74A3CE88A88BAD0CABB7" KeyPath="yes" Source="SourceDir\Qt6QuickDialogs2.dll" />
+            </Component>
+            <Component Id="cmp73D256572698B6DB61D05CCD551BEF9A" Directory="INSTALLDIR" Guid="{BBD3F273-BFDC-4707-BBAC-100950E0FD99}">
+                <File Id="filC9FA5D0D485CF88CB948BE06870C3B8A" KeyPath="yes" Source="SourceDir\Qt6QuickDialogs2QuickImpl.dll" />
+            </Component>
+            <Component Id="cmpC26015BC765576311A63C5B026DB71FF" Directory="INSTALLDIR" Guid="{B06AB42E-00D6-41F2-9709-B7ABC2CC6953}">
+                <File Id="fil2911EE010D604A656A176E72D572CCAC" KeyPath="yes" Source="SourceDir\Qt6QuickDialogs2Utils.dll" />
             </Component>
             <Component Id="cmp2ABC8A6031A24B9F3C70C18AE40B4CC3" Directory="INSTALLDIR" Guid="{07D87922-39D7-4F44-9E7B-F8ECBB11D86B}">
                 <File Id="fil0C6C0D67878BFB0A4BD30E472A40969B" KeyPath="yes" Source="SourceDir\Qt6QuickEffects.dll" />
@@ -208,6 +220,15 @@
             </Component>
             <Component Id="cmp780E68E2C2E0DEE8BA15C9717A6569FC" Directory="dir831F2329F0F3ACEA4CAA1C1913D06297" Guid="{7CF88103-B879-40DB-A122-F8AC72D315CB}">
                 <File Id="fil2E6126A89886BE286E566A28753D81F4" KeyPath="yes" Source="SourceDir\qml\QML\qmldir" />
+            </Component>
+            <Component Id="cmpC9732A4B81A68DCA773BF80FD19A97AA" Directory="dirACD5C95F3AF8CEADB9FF2132B2112134" Guid="{745D810A-EFC2-4DBA-A778-6C2EDECB4AC6}">
+                <File Id="fil165DBADFD6C70A5B8B78DBA61F2D6B27" KeyPath="yes" Source="SourceDir\qml\Qt\labs\folderlistmodel\plugins.qmltypes" />
+            </Component>
+            <Component Id="cmp87C8F54EE69B62A84CC5BF42BE38C859" Directory="dirACD5C95F3AF8CEADB9FF2132B2112134" Guid="{CE0997DF-883B-4923-AD2A-854090DB0C0A}">
+                <File Id="filE36AB6C458DB88103CC5D0D4A5D6439E" KeyPath="yes" Source="SourceDir\qml\Qt\labs\folderlistmodel\qmldir" />
+            </Component>
+            <Component Id="cmp6237ADD6BA74874606D71C11F3DA2CA7" Directory="dirACD5C95F3AF8CEADB9FF2132B2112134" Guid="{9C76D580-7E35-4596-B0C1-384068DC5979}">
+                <File Id="filF4B2B7F45EBB1D7529D74A3CD5DBCC31" KeyPath="yes" Source="SourceDir\qml\Qt\labs\folderlistmodel\qmlfolderlistmodelplugin.dll" />
             </Component>
             <Component Id="cmp0BF1B39B0DF9604C417C59F0C26849DB" Directory="dir2FA83874D84EB850CB9EC2829B8A3243" Guid="{81CFDDE4-236D-4CD7-B112-3FBD76350D12}">
                 <File Id="fil886A06C8346FCEDB309427F45C47C7A2" KeyPath="yes" Source="SourceDir\qml\Qt5Compat\GraphicalEffects\Blend.qml" />
@@ -3965,6 +3986,165 @@
             <Component Id="cmp8DD0CF3FAD30D8F599E7381E8F9E9A95" Directory="dir2682D39E9C78E1415E0A57E589F0A404" Guid="{BD317A96-8A94-49AF-AF6E-D6BB9D2112F7}">
                 <File Id="fil07B9AECD3C0996F5081301CB41F1BF49" KeyPath="yes" Source="SourceDir\qml\QtQuick\Controls\Windows\impl\SwitchIndicator.qml" />
             </Component>
+            <Component Id="cmpC437AB325C956B39F47527216D28546B" Directory="dir3390D3B4341886F0DA85EE3BA92439FF" Guid="{6B7E629C-995F-4092-BE80-EC560C9C5CAD}">
+                <File Id="filFC0B5707CF45175E2548BA04998F9D14" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\plugins.qmltypes" />
+            </Component>
+            <Component Id="cmpFD0F8FF1618CF94939B70BB1D4874BD5" Directory="dir3390D3B4341886F0DA85EE3BA92439FF" Guid="{10AC1C8B-977F-4DEE-B3D8-03054FEA1CAF}">
+                <File Id="fil326E1B5A831353646A2BA9A334652C8E" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\qmldir" />
+            </Component>
+            <Component Id="cmp19505C3234633AD6D7F2A9FF634021A4" Directory="dir3390D3B4341886F0DA85EE3BA92439FF" Guid="{A66664B3-A324-4E2D-9012-93E64ACEB1BA}">
+                <File Id="fil6CA3AB34BE81C0480807D319DA4D1B52" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\qtquickdialogsplugin.dll" />
+            </Component>
+            <Component Id="cmp26A12B2050D05AC837B4FE95D70CF62A" Directory="dir34D1D6742B95CCA4110D8968A4544048" Guid="{BE886E4B-F56D-4DF9-88ED-FC5572659B93}">
+                <File Id="fil2EF39784619037E8CC60A1D82B089DB1" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\plugins.qmltypes" />
+            </Component>
+            <Component Id="cmp247A562FE0339C0E33051AE46663C848" Directory="dir34D1D6742B95CCA4110D8968A4544048" Guid="{C84599DA-B688-45D1-B10C-17650B1BB90A}">
+                <File Id="fil73A709C03D74D3472D379DD8D232B321" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qmldir" />
+            </Component>
+            <Component Id="cmpD771E4FD8559DD19611671F07F50AE86" Directory="dir34D1D6742B95CCA4110D8968A4544048" Guid="{ED0D2792-66EA-468E-BA30-FC016176337E}">
+                <File Id="filF7DDABE25D647E77D24BC54ABB437481" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qtquickdialogs2quickimplplugin.dll" />
+            </Component>
+            <Component Id="cmp1F9B87E10A30CED8E63B585060A1FF8B" Directory="dir755D907146AC4C2DC7E3BE88C0F1A70F" Guid="{999CEBB1-0746-4519-A6FC-B49DF8C6EB14}">
+                <File Id="filA0DF6F7D59B18B7A0A1AF7DA6AF2FF68" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\ColorDialog.qml" />
+            </Component>
+            <Component Id="cmp5CC1A9822278627BA1C6F6C0810F05AF" Directory="dir755D907146AC4C2DC7E3BE88C0F1A70F" Guid="{DCDEA986-188F-4ED4-96AD-50A92698DC21}">
+                <File Id="fil9352455FFAFA7537481F68705CDAB62A" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\ColorInputs.qml" />
+            </Component>
+            <Component Id="cmpCD8E153BC6DC54FB225F0335FD2F1022" Directory="dir755D907146AC4C2DC7E3BE88C0F1A70F" Guid="{84CB36C7-1C3D-44D4-B445-248D9AC6AB96}">
+                <File Id="fil93D2D8A8DBA12B61620EBAF03A9BE6D6" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\FileDialog.qml" />
+            </Component>
+            <Component Id="cmpA43D16647F1AFE697DD7E77561269215" Directory="dir755D907146AC4C2DC7E3BE88C0F1A70F" Guid="{2F194837-B44E-423E-B68F-C4871BD33B76}">
+                <File Id="fil209068D9C33B43DA14DC86382904CBEE" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\FileDialogDelegate.qml" />
+            </Component>
+            <Component Id="cmpA5CBE15352FE008097BC876C40461A13" Directory="dir755D907146AC4C2DC7E3BE88C0F1A70F" Guid="{EB3E3981-C8D9-41FA-BCB7-3893CC340984}">
+                <File Id="fil4540A3A2DE480ED8F7FC352CFA54A0A3" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\FileDialogDelegateLabel.qml" />
+            </Component>
+            <Component Id="cmpBA80190D493F665368F7F2D88009CA35" Directory="dir755D907146AC4C2DC7E3BE88C0F1A70F" Guid="{74C8D6A4-2CEA-45A1-8126-2BC6332B4BED}">
+                <File Id="filD4C93FE2E3ECA41F2B088C15EE8E7B44" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\FolderBreadcrumbBar.qml" />
+            </Component>
+            <Component Id="cmp2B690A76E357815CD2278DADED472DCD" Directory="dir755D907146AC4C2DC7E3BE88C0F1A70F" Guid="{FBCC11E3-0C1F-4E68-A3C8-E910EFE46BC9}">
+                <File Id="fil0A290A43252CCACCDD06DC74AD3F0150" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\FolderDialog.qml" />
+            </Component>
+            <Component Id="cmpD2D023E7908B3EF1FBC9EE76B53FF954" Directory="dir755D907146AC4C2DC7E3BE88C0F1A70F" Guid="{BD3722E9-CEC4-4C11-802B-ECA8F24F5C8B}">
+                <File Id="fil9048C8B68F95216847AB9C2BB586267B" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\FolderDialogDelegate.qml" />
+            </Component>
+            <Component Id="cmp3FD2DFA51DAE6BF8C71900CA48779DC8" Directory="dir755D907146AC4C2DC7E3BE88C0F1A70F" Guid="{2738263F-E338-4229-8CCD-88AADE28E126}">
+                <File Id="fil090B870ACCCB3E9AC35C9BE4A09AC383" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\FolderDialogDelegateLabel.qml" />
+            </Component>
+            <Component Id="cmp89D2DEE36502469CA5E9442966437A3E" Directory="dir755D907146AC4C2DC7E3BE88C0F1A70F" Guid="{14F6B045-299B-4A8F-B32A-AF40A3C3DB05}">
+                <File Id="filB7007AC91E08C3AF1B5D1FB0BF4E0D70" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\FontDialog.qml" />
+            </Component>
+            <Component Id="cmp23ABBE7C0C0AFCF242C44EDCA1D7A2B5" Directory="dir755D907146AC4C2DC7E3BE88C0F1A70F" Guid="{D61BFECD-7966-4880-9796-A5258F705E9F}">
+                <File Id="filBA3B6DBDD6BF053B67B4C49EEC242FCA" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\FontDialogContent.qml" />
+            </Component>
+            <Component Id="cmp0B0F513E9ED50F545C66F3A24CC92F08" Directory="dir755D907146AC4C2DC7E3BE88C0F1A70F" Guid="{A1613660-247F-44C4-A018-2211C0D0E0C3}">
+                <File Id="fil65FEDAF25F1E1AC39DC10AD70C88DAB8" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\HueGradient.qml" />
+            </Component>
+            <Component Id="cmp41298595F02EF32949F1566F589B454C" Directory="dir755D907146AC4C2DC7E3BE88C0F1A70F" Guid="{EE2DA737-3521-43B2-84C9-A8843EBFEEE0}">
+                <File Id="fil767F03E07565A9F69AF8C06A5EBADD4E" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\MessageDialog.qml" />
+            </Component>
+            <Component Id="cmpF435AE4D59420FEEB320C8B81458D76C" Directory="dir755D907146AC4C2DC7E3BE88C0F1A70F" Guid="{5A4436A6-BE24-41FE-B734-C9211760D952}">
+                <File Id="fil85F4300A5F660E5B427FFD02F328EAF5" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\PickerHandle.qml" />
+            </Component>
+            <Component Id="cmpC4C42A5D0D070431E5C9FEED80365921" Directory="dir755D907146AC4C2DC7E3BE88C0F1A70F" Guid="{6F3FDF76-44B5-4603-BCEB-E892FF18FFBD}">
+                <File Id="fil67AAEC8993AE5CDEFC014103CC45F500" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\SaturationLightnessPicker.qml" />
+            </Component>
+            <Component Id="cmp69A36B9C73762AA365C1BC5F970FC8E5" Directory="dir929495D16D3C46BFD28C6AD595BCD701" Guid="{80F74243-40BA-4A4F-9852-946AD118FAA9}">
+                <File Id="fil45A808D742A78F7A926AD621F7283728" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\+Fusion\ColorDialog.qml" />
+            </Component>
+            <Component Id="cmp7BBF58B50638FEB770B04C7F73171AC6" Directory="dir929495D16D3C46BFD28C6AD595BCD701" Guid="{729B016D-86DE-4743-8669-CB7FEBEA088F}">
+                <File Id="fil7153DDC4143EAC85FD70680E09CE21A0" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\+Fusion\FileDialog.qml" />
+            </Component>
+            <Component Id="cmp773DC90FC00B0677B841101198BF6921" Directory="dir929495D16D3C46BFD28C6AD595BCD701" Guid="{F3652B91-275D-42BC-BFDE-70F749CB0EDE}">
+                <File Id="fil87F4823E5A4E9CAD89C9F18EB7D940C2" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\+Fusion\FileDialogDelegate.qml" />
+            </Component>
+            <Component Id="cmp93F9CB69ACD380F7D59D08819255322B" Directory="dir929495D16D3C46BFD28C6AD595BCD701" Guid="{91BCFFE3-69D1-4761-B32B-CD6301FF4741}">
+                <File Id="filA3DF900A1D2C6A4D414885D446B5C70C" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\+Fusion\FolderBreadcrumbBar.qml" />
+            </Component>
+            <Component Id="cmp29403D08CB444131141FF50C5977F801" Directory="dir929495D16D3C46BFD28C6AD595BCD701" Guid="{87B63070-DCE5-4039-B87E-A3838814E55B}">
+                <File Id="filEA8B9CAEBE85B9B32212D7D7AC61E3C8" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\+Fusion\FolderDialog.qml" />
+            </Component>
+            <Component Id="cmp0F3406384273F4D43A9ECCF138617EFD" Directory="dir929495D16D3C46BFD28C6AD595BCD701" Guid="{1624E1C3-4BA4-4DE9-9A59-ACBDFE251CAD}">
+                <File Id="filE73DB30D303712F991084FF0EEB941F5" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\+Fusion\FolderDialogDelegate.qml" />
+            </Component>
+            <Component Id="cmp1AD58D86AC860A01A93BF5C9248B5E0B" Directory="dir929495D16D3C46BFD28C6AD595BCD701" Guid="{D33B88EB-55EF-4E2F-B56B-368D43722367}">
+                <File Id="fil36CA66A25F1D4A60DCA8851C04360F5A" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\+Fusion\FontDialog.qml" />
+            </Component>
+            <Component Id="cmp2E10228540CA4421B670586FA6F602D4" Directory="dir929495D16D3C46BFD28C6AD595BCD701" Guid="{EC424824-BCDA-47FA-841A-29F78DDB513A}">
+                <File Id="fil103C6B50716464DFCFF67BCDF19D268F" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\+Fusion\MessageDialog.qml" />
+            </Component>
+            <Component Id="cmpB06D35D731CDFFF625B04E79D8E88BB4" Directory="dir8C28C0A2CF1DDABB1BF2872E8E6AE192" Guid="{84AE0173-4C7D-4367-A7D3-10FEFFE28B60}">
+                <File Id="fil75D5FBD826D73921FABD447701DE184A" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\+Imagine\ColorDialog.qml" />
+            </Component>
+            <Component Id="cmp53496C379F6D669E9DC8EE0F3AD3E17E" Directory="dir8C28C0A2CF1DDABB1BF2872E8E6AE192" Guid="{AA4728B8-D94E-416A-B77B-4D0336ED5B6D}">
+                <File Id="filD95B88F29ACA98EBCB5B86D8F5FA2505" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\+Imagine\FileDialog.qml" />
+            </Component>
+            <Component Id="cmp94CCFDA09967CE02B01DF2FD85424408" Directory="dir8C28C0A2CF1DDABB1BF2872E8E6AE192" Guid="{F34116AE-FFA6-4104-9FDB-084BF6CE97B0}">
+                <File Id="fil1939DC9854DE81CAD586E8EA8C9F11A5" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\+Imagine\FileDialogDelegate.qml" />
+            </Component>
+            <Component Id="cmp28FD3CFF63249E9A333566E0D4403C06" Directory="dir8C28C0A2CF1DDABB1BF2872E8E6AE192" Guid="{6D473B66-D5E9-4BD4-A501-CDD9E70ECDC5}">
+                <File Id="fil540156639772798B8D6CF3832BA6CEFF" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\+Imagine\FolderBreadcrumbBar.qml" />
+            </Component>
+            <Component Id="cmp8FB0248D377F04FE065ED8D3F0956920" Directory="dir8C28C0A2CF1DDABB1BF2872E8E6AE192" Guid="{C6AB7B19-BEC2-4427-8AFE-359F7E28D520}">
+                <File Id="fil1B2FC023BAB032527FD158332D7A31A1" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\+Imagine\FolderDialog.qml" />
+            </Component>
+            <Component Id="cmpEB30E27FA4A0E15D8110F522E6E24AB9" Directory="dir8C28C0A2CF1DDABB1BF2872E8E6AE192" Guid="{37D57930-212C-4C29-8509-D5F9F4F14610}">
+                <File Id="fil4C6AFCFFF15FA8BF18BBF16D8D04263A" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\+Imagine\FolderDialogDelegate.qml" />
+            </Component>
+            <Component Id="cmpE831C08038ED1CE79CB86EA78782321B" Directory="dir8C28C0A2CF1DDABB1BF2872E8E6AE192" Guid="{831418E3-B195-4573-99ED-EC25FF98D222}">
+                <File Id="fil49DC57941DAE9D048E67CC9D4037E20F" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\+Imagine\FontDialog.qml" />
+            </Component>
+            <Component Id="cmpC9A55BF0CB886578DBBE11A05E82098E" Directory="dir8C28C0A2CF1DDABB1BF2872E8E6AE192" Guid="{D16B577B-E871-4F53-8B30-279DD177234D}">
+                <File Id="fil4366D0DAFCA17243777D0FC31A6D7CCF" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\+Imagine\MessageDialog.qml" />
+            </Component>
+            <Component Id="cmp0ABC2788AE2935B5CB49F7CFC3447AE7" Directory="dirC980C9942B69E6635E4CF7C57652D12B" Guid="{451CF467-9CC9-43F4-BCA6-67C323733C33}">
+                <File Id="filB61687597342BBBABAE1E94101F3EC6E" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\+Material\ColorDialog.qml" />
+            </Component>
+            <Component Id="cmp1B66918327259E9332768B2CEDF63F3F" Directory="dirC980C9942B69E6635E4CF7C57652D12B" Guid="{7CA4BD59-6C32-44A7-B368-B37C5DB98E38}">
+                <File Id="fil62168DF788419AC877C9C1D54BABA7E2" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\+Material\FileDialog.qml" />
+            </Component>
+            <Component Id="cmp7D2F50F1ECA2513B10F2D9E268603803" Directory="dirC980C9942B69E6635E4CF7C57652D12B" Guid="{0CC63360-2FC0-451F-9F2C-70CBD241CC94}">
+                <File Id="fil5909CA77FA8E0522A5ABE19D201D339E" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\+Material\FileDialogDelegate.qml" />
+            </Component>
+            <Component Id="cmp54231F7DE8257F6F679C508C4A324029" Directory="dirC980C9942B69E6635E4CF7C57652D12B" Guid="{E7870955-0AB3-41CF-AD6D-66948633DAB8}">
+                <File Id="fil066B22B57C4829B076EF2637C8369609" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\+Material\FolderBreadcrumbBar.qml" />
+            </Component>
+            <Component Id="cmpEBBD3D3A57C898928DA40D237B8191AE" Directory="dirC980C9942B69E6635E4CF7C57652D12B" Guid="{8689D4A6-5B85-489B-A144-096268F12514}">
+                <File Id="fil9364C24A62A278E0DF4A32219457A0E7" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\+Material\FolderDialog.qml" />
+            </Component>
+            <Component Id="cmp4CFF955FC6C7A59A9C3686F6EA07DEB2" Directory="dirC980C9942B69E6635E4CF7C57652D12B" Guid="{A29469CF-B848-4880-BD83-71B8F727B8C8}">
+                <File Id="filFAB35638D14AAE200469B556D0704257" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\+Material\FolderDialogDelegate.qml" />
+            </Component>
+            <Component Id="cmpE18DF027A0BDBB96DACB63898F697766" Directory="dirC980C9942B69E6635E4CF7C57652D12B" Guid="{6FF9CC65-F415-4AF1-9584-23AAA4D4F8F5}">
+                <File Id="filDA5275126CA3326219C5633BBAF43DA5" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\+Material\FontDialog.qml" />
+            </Component>
+            <Component Id="cmpFE745526AAA642BA836DA29C9F77ED9B" Directory="dirC980C9942B69E6635E4CF7C57652D12B" Guid="{2ABDFB08-5963-4493-BCCE-327077AC1650}">
+                <File Id="fil54D49371701AEB3AD847CDD309D9B185" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\+Material\MessageDialog.qml" />
+            </Component>
+            <Component Id="cmpD4B5BFCAFB6DC32B78A6C9AC75762ACC" Directory="dir8C55A2520B05F605E480B8F2F2039F1C" Guid="{75EFEC57-8956-4AD3-BABF-0DB5A38143A7}">
+                <File Id="fil4D10401F2E4EA015EF5CE8BEA0AE7121" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\+Universal\ColorDialog.qml" />
+            </Component>
+            <Component Id="cmpC67BC79E14952488E29CF9E27BD202FB" Directory="dir8C55A2520B05F605E480B8F2F2039F1C" Guid="{80CE9DA5-AD8C-432E-B16F-52A03AAAAF85}">
+                <File Id="fil35DAD56258028832AFB445B0E0263B84" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\+Universal\FileDialog.qml" />
+            </Component>
+            <Component Id="cmp9F8F91188C1B368A7FE7E51517C5ACC0" Directory="dir8C55A2520B05F605E480B8F2F2039F1C" Guid="{66253D20-D091-493E-8BE1-8CCF409A5678}">
+                <File Id="filCCF6364980A7F563A9642915E70CB32B" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\+Universal\FileDialogDelegate.qml" />
+            </Component>
+            <Component Id="cmp24B89BE2A868B73CC480D3F15E9AA30B" Directory="dir8C55A2520B05F605E480B8F2F2039F1C" Guid="{DCB47C32-C642-47AD-AF36-77B037328DE0}">
+                <File Id="fil39DD65F761C1D67E92728B9250518B4D" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\+Universal\FolderBreadcrumbBar.qml" />
+            </Component>
+            <Component Id="cmp48D9FBFB9413B749E8E5568D27D9E7BA" Directory="dir8C55A2520B05F605E480B8F2F2039F1C" Guid="{5877448D-9E92-4AD3-A282-91A9C7B97C2A}">
+                <File Id="fil620700542B96A19799BA7151FA3C37CF" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\+Universal\FolderDialog.qml" />
+            </Component>
+            <Component Id="cmpC5B074A0F5386F436C0457318AEBEAC8" Directory="dir8C55A2520B05F605E480B8F2F2039F1C" Guid="{CA13A18E-FD7F-49D2-A0AC-0C4734ACF3AA}">
+                <File Id="fil26FDE36A980B8A98EB003E08B71AAAFD" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\+Universal\FolderDialogDelegate.qml" />
+            </Component>
+            <Component Id="cmpA671B669F6A248C1F3648B5295D227F2" Directory="dir8C55A2520B05F605E480B8F2F2039F1C" Guid="{E91EE707-82D3-46D1-8940-BEC746E4A7BB}">
+                <File Id="fil158685A04206B07FCFB74FDBDD3C4579" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\+Universal\FontDialog.qml" />
+            </Component>
+            <Component Id="cmp388F3D53B11EE0449503AEBC67192D85" Directory="dir8C55A2520B05F605E480B8F2F2039F1C" Guid="{F9655ED4-72E1-4E7E-9179-6B93DA9A2DBA}">
+                <File Id="filF4BAFBB95A2A38BD425F65092CB041B8" KeyPath="yes" Source="SourceDir\qml\QtQuick\Dialogs\quickimpl\qml\+Universal\MessageDialog.qml" />
+            </Component>
             <Component Id="cmpED7844544FD113D2024E6D3A0A781CAE" Directory="dir7397A50E4D7D313615C4CF7C94C61160" Guid="{3999B85C-6807-4735-92CF-D5976160ED5C}">
                 <File Id="filDB53B5FD7BD0B0F1464E81D6A058D610" KeyPath="yes" Source="SourceDir\qml\QtQuick\Effects\effectsplugin.dll" />
             </Component>
@@ -4326,6 +4506,21 @@
         </DirectoryRef>
     </Fragment>
     <Fragment>
+        <DirectoryRef Id="dir4B7D2A19DD0D33E235AA7BD43615A87E">
+            <Directory Id="dir3390D3B4341886F0DA85EE3BA92439FF" Name="Dialogs" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dir3390D3B4341886F0DA85EE3BA92439FF">
+            <Directory Id="dir34D1D6742B95CCA4110D8968A4544048" Name="quickimpl" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dir6BE3568D8A8E45507FFFCE91FE88D18D">
+            <Directory Id="dir372D72A64987F17AE5E094D18923983D" Name="labs" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
         <DirectoryRef Id="dir4C0AEAB06A20DFD201A07716B06C1B01">
             <Directory Id="dir3C4F465FBDDD5BDFD3E942262340FFCC" Name="images" />
         </DirectoryRef>
@@ -4376,6 +4571,11 @@
         </DirectoryRef>
     </Fragment>
     <Fragment>
+        <DirectoryRef Id="dirC5F8EA44B55B774D108D66814D18D4D1">
+            <Directory Id="dir6BE3568D8A8E45507FFFCE91FE88D18D" Name="Qt" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
         <DirectoryRef Id="dir4B7D2A19DD0D33E235AA7BD43615A87E">
             <Directory Id="dir7397A50E4D7D313615C4CF7C94C61160" Name="Effects" />
         </DirectoryRef>
@@ -4383,6 +4583,11 @@
     <Fragment>
         <DirectoryRef Id="dir175FB1A22F883092D2FC39E138CDC5FC">
             <Directory Id="dir74C12D674F4D48CC8662780E32EF06CE" Name="FluentWinUI3" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dir34D1D6742B95CCA4110D8968A4544048">
+            <Directory Id="dir755D907146AC4C2DC7E3BE88C0F1A70F" Name="qml" />
         </DirectoryRef>
     </Fragment>
     <Fragment>
@@ -4403,6 +4608,21 @@
     <Fragment>
         <DirectoryRef Id="dirC5F8EA44B55B774D108D66814D18D4D1">
             <Directory Id="dir831F2329F0F3ACEA4CAA1C1913D06297" Name="QML" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dir755D907146AC4C2DC7E3BE88C0F1A70F">
+            <Directory Id="dir8C28C0A2CF1DDABB1BF2872E8E6AE192" Name="+Imagine" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dir755D907146AC4C2DC7E3BE88C0F1A70F">
+            <Directory Id="dir8C55A2520B05F605E480B8F2F2039F1C" Name="+Universal" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dir755D907146AC4C2DC7E3BE88C0F1A70F">
+            <Directory Id="dir929495D16D3C46BFD28C6AD595BCD701" Name="+Fusion" />
         </DirectoryRef>
     </Fragment>
     <Fragment>
@@ -4451,6 +4671,11 @@
         </DirectoryRef>
     </Fragment>
     <Fragment>
+        <DirectoryRef Id="dir372D72A64987F17AE5E094D18923983D">
+            <Directory Id="dirACD5C95F3AF8CEADB9FF2132B2112134" Name="folderlistmodel" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
         <DirectoryRef Id="dir175FB1A22F883092D2FC39E138CDC5FC">
             <Directory Id="dirB030248D75EA99E75698A1E011FE9CC0" Name="Windows" />
         </DirectoryRef>
@@ -4458,6 +4683,11 @@
     <Fragment>
         <DirectoryRef Id="dir2B55988B75845F194F607E4ED40BB41B">
             <Directory Id="dirBF720220167083D5C665DD0D131194BE" Name="impl" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="dir755D907146AC4C2DC7E3BE88C0F1A70F">
+            <Directory Id="dirC980C9942B69E6635E4CF7C57652D12B" Name="+Material" />
         </DirectoryRef>
     </Fragment>
     <Fragment>
