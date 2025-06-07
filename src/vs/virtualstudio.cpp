@@ -57,7 +57,6 @@
 #include <QTextStream>
 #include <QWebEngineCookieStore>
 #include <QWebEngineProfile>
-#include <QWebEngineSettings>
 #include <QtGlobal>
 #include <QtWebEngineQuick/QQuickWebEngineProfile>
 #include <algorithm>
@@ -303,26 +302,7 @@ VirtualStudio::VirtualStudio(UserInterface& parent)
     });
     m_socketServerPtr->start();
 
-    // initialize default settings and profile for WebEngine
-    QWebEngineSettings* defaultWebEngineSettings =
-        QWebEngineProfile::defaultProfile()->settings();
-    defaultWebEngineSettings->setAttribute(QWebEngineSettings::LocalStorageEnabled, true);
-    defaultWebEngineSettings->setAttribute(QWebEngineSettings::JavascriptEnabled, true);
-    defaultWebEngineSettings->setAttribute(QWebEngineSettings::FullScreenSupportEnabled,
-                                           true);
-    defaultWebEngineSettings->setAttribute(QWebEngineSettings::ScreenCaptureEnabled,
-                                           true);
-    defaultWebEngineSettings->setAttribute(
-        QWebEngineSettings::JavascriptCanAccessClipboard, true);
-    defaultWebEngineSettings->setAttribute(QWebEngineSettings::JavascriptCanPaste, true);
-    defaultWebEngineSettings->setAttribute(QWebEngineSettings::DnsPrefetchEnabled, true);
-    defaultWebEngineSettings->setAttribute(QWebEngineSettings::WebGLEnabled, true);
-    defaultWebEngineSettings->setAttribute(
-        QWebEngineSettings::PlaybackRequiresUserGesture, false);
-#if QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)
-    defaultWebEngineSettings->setAttribute(QWebEngineSettings::NavigateOnDropEnabled,
-                                           false);
-#endif
+    // initialize default profile for WebEngine
     QQuickWebEngineProfile* defaultWebEngineProfile =
         QQuickWebEngineProfile::defaultProfile();
     defaultWebEngineProfile->setStorageName(QStringLiteral("Default"));

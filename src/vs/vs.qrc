@@ -26,6 +26,7 @@
     <file>DeviceRefreshButton.qml</file>
     <file>DeviceWarning.qml</file>
     <file>DeviceWarningModal.qml</file>
+    <file>ScreenShareModal.qml</file>
     <file>InfoTooltip.qml</file>
     <file>Web.qml</file>
     <file>WebView.qml</file>
