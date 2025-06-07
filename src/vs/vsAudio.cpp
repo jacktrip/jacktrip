@@ -1319,7 +1319,7 @@ void VsAudioWorker::validateInputDevicesState()
             element.insert(QString::fromStdString("numChannels"), QVariant(1).toInt());
             inputChannelsComboModel.push_back(element);
         }
-        for (int i = 0; i < numDevicesChannelsAvailable; i++) {
+        for (int i = 0; i < numDevicesChannelsAvailable - 1; i++) {
             QJsonObject element = QJsonObject();
             element.insert(
                 QString::fromStdString("label"),
@@ -1426,7 +1426,7 @@ void VsAudioWorker::validateOutputDevicesState()
         // set the output channels selector to have the options based on the currently
         // selected device
         QJsonArray outputChannelsComboModel;
-        for (int i = 0; i < numDevicesChannelsAvailable; i++) {
+        for (int i = 0; i < numDevicesChannelsAvailable - 1; i++) {
             QJsonObject element = QJsonObject();
             element.insert(
                 QString::fromStdString("label"),
