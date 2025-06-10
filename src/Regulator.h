@@ -290,6 +290,7 @@ class Regulator : public RingBuffer
     double mMsecTolerance     = 64;
     int mLastSeqNumOut        = -1;
     std::atomic<int> mLastSeqNumIn;
+    std::atomic<int> mLastGlitches;
     QElapsedTimer mIncomingTimer;
     std::vector<double> mIncomingTiming;
     int mFPPratioNumerator;
@@ -298,7 +299,6 @@ class Regulator : public RingBuffer
     bool mSkipAutoHeadroom        = true;
     int mSkipped                  = 0;
     int mLastSkipped              = 0;
-    int mLastGlitches             = 0;
     int mStatsGlitches            = 0;
     double mLastMaxLatency        = 0;
     double mStatsMaxLatency       = 0;

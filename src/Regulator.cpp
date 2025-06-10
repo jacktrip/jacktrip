@@ -434,6 +434,7 @@ void Regulator::setFPPratio(int len)
 
     mIncomingTimer.start();
     mLastSeqNumIn.store(-1, std::memory_order_relaxed);
+    mLastGlitches.store(0, std::memory_order_relaxed);
     if (m_b_BroadcastQueueLength) {
         m_b_BroadcastRingBuffer =
             new JitterBuffer(mPeerFPP, 10, mSampleRate, 1, m_b_BroadcastQueueLength,
@@ -552,10 +553,10 @@ void Regulator::updatePushStats(int seq_num)
         const int totalSkipped  = mSkipped;
         const int newGlitches   = totalGlitches - mLastGlitches;
         const int newSkipped    = totalSkipped - mLastSkipped;
-        mLastGlitches           = totalGlitches;
-        mLastSkipped            = totalSkipped;
-        mLastMaxLatency         = mStatsMaxLatency;
-        mStatsMaxLatency        = 0;
+        mLastGlitches.store(totalGlitches, std::memory_order_relaxed);
+        mLastSkipped     = totalSkipped;
+        mLastMaxLatency  = mStatsMaxLatency;
+        mStatsMaxLatency = 0;
         if (mAuto && pushStat->lastTime > AutoInitDur) {
             // after AutoInitDur: update auto tolerance once per second
             if (pushStat->lastTime <= mAutoHeadroomStartTime) {
@@ -1137,7 +1138,7 @@ bool Regulator::getStats(RingBuffer::IOStat* stat, bool reset)
     }
 
     // hijack  of  struct IOStat {
-    const int lastGlitches = mLastGlitches;
+    const int lastGlitches = mLastGlitches.load(std::memory_order_relaxed);
     stat->underruns        = lastGlitches - mStatsGlitches;
 #define FLOATFACTOR 1000.0
     stat->overflows = FLOATFACTOR * pushStat->longTermStdDev;
