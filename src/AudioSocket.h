@@ -64,6 +64,12 @@ constexpr int AudioSocketMaxQueueSize = 1024;
 // audio header is 4 bytes for the number of samples + 2 bytes for the buffer size
 constexpr int AudioSocketHeaderSize = 4 + 2;
 
+// number of bytes per audio sample
+constexpr int BytesPerSample = sizeof(float);
+
+// number of bytes per audio sample across all channels
+constexpr int BytesForFullSample = BytesPerSample * AudioSocketNumChannels;
+
 // data type for audio socket circular buffer
 typedef WaitFreeFrameBuffer<AudioSocketMaxQueueSize> AudioSocketQueueT;
 

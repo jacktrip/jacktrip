@@ -49,8 +49,7 @@ using namespace Steinberg;
 // GetPluginFactory function!
 //------------------------------------------------------------------------
 
-BEGIN_FACTORY_DEF("JackTrip Labs", "https://www.jacktrip.com",
-                  "mailto:support@jacktrip.com")
+BEGIN_FACTORY_DEF("JackTrip", "https://www.jacktrip.com", "mailto:support@jacktrip.com")
 
 //---First Plug-in included in this factory-------
 // its kVstAudioEffectClass component

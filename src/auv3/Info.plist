@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>LSMinimumSystemVersion</key>
+	<string>12.0</string>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleExecutable</key>
+	<string>JackTrip</string>
+	<key>CFBundleDisplayName</key>
+	<string>JackTrip Audio Bridge</string>
+	<key>CFBundleGetInfoString</key>
+	<string>JackTrip Audio Bridge</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundlePackageType</key>
+	<string>XPC!</string>
+	<key>NSExtensionPointVersion</key>
+	<string>1.0</string>
+	<key>CFBundleIdentifier</key>
+	<string>%BUNDLEID%</string>
+	<key>CFBundleName</key>
+	<string>%BUNDLENAME%</string>
+	<key>CFBundleVersion</key>
+	<string>%VERSION%</string>
+	<key>CFBundleShortVersionString</key>
+	<string>%VERSION%</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>Copyright © 2024-2025 JackTrip Labs, Inc.</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+	<key>NSExtension</key>
+	<dict>
+		<key>NSExtensionAttributes</key>
+		<dict>
+			<key>AudioComponents</key>
+			<array>
+				<dict>
+					<key>name</key>
+					<string>JackTrip: JackTrip Audio Bridge</string>
+					<key>description</key>
+					<string>Connects audio with the JackTrip App</string>
+					<key>factoryFunction</key>
+					<string>JackTripAUEntry</string>
+					<key>manufacturer</key>
+					<string>JKTP</string>
+					<key>type</key>
+					<string>aufx</string>
+					<key>subtype</key>
+					<string>ABv3</string>
+					<key>version</key>
+					<integer>%AUVERSION%</integer>
+					<key>resourceUsage</key>
+					<dict>
+						<key>network.client</key>
+						<true/>
+					</dict>
+					<key>tags</key>
+					<array>
+						<string>Effect</string>
+					</array>
+					<key>sandboxSafe</key>
+					<true/>
+				</dict>
+			</array>
+		</dict>
+		<key>NSExtensionPointIdentifier</key>
+		<string>com.apple.AudioUnit-UI</string>
+		<key>NSExtensionPrincipalClass</key>
+		<string>JackTripAU</string>
+	</dict>
+</dict>
+</plist>

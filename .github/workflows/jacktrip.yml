@@ -670,8 +670,7 @@ jobs:
           BUILD_STATIC="${{ github.workspace }}/buildstatic"
           meson setup --buildtype release $CONFIG_STRING $BUILD_STATIC
           meson compile -C $BUILD_STATIC -v
-          # move plugin to primary build path and restore qt path back to dynamic
-          mv "$BUILD_STATIC/JackTrip.vst3" $BUILD_PATH
+          # restore qt path back to dynamic
           mv "$QT_PATH.bak" "$QT_PATH"
           mv "$QT_STATIC_PATH" "$QT_STATIC_PATH.bak"
       - name: validate desktop file
@@ -785,6 +784,8 @@ jobs:
               cp -f $GITHUB_WORKSPACE/LICENSE.md "JackTrip.vst3/Contents/Resources/"
               cp -Rf $GITHUB_WORKSPACE/LICENSES "JackTrip.vst3/Contents/Resources/"
               cp $GITHUB_WORKSPACE/src/vst3/resources/* "JackTrip.vst3/Contents/Resources/"
+              AUDIO_BRIDGE_IMAGES="$GITHUB_WORKSPACE/src/images/background.png $GITHUB_WORKSPACE/src/images/background_2x.png $GITHUB_WORKSPACE/src/images/Sercan_Moog_Knob.png $GITHUB_WORKSPACE/src/images/Dual_LED.png"
+              cp $AUDIO_BRIDGE_IMAGES "JackTrip.vst3/Contents/Resources/"
               VERSION=$(cat $GITHUB_WORKSPACE/src/jacktrip_globals.h |grep gVersion |sed 's,.*"\(.*\)".*,\1,')
               sed -i "s/%VERSION%/$VERSION/" "JackTrip.vst3/Contents/Resources/moduleinfo.json"
               if [[ "${{ matrix.vst3sdk-arch }}" == "amd64" ]]; then
@@ -793,8 +794,10 @@ jobs:
                 VST3BINPATH="JackTrip.vst3/Contents/aarch64-linux"
               fi
               mkdir -p $VST3BINPATH
-              cp $BUILD_PATH/JackTrip.vst3 $VST3BINPATH/JackTrip.so
-              if [[ "${{ matrix.build-system }}" != "docker" ]]; then
+              if [[ "${{ matrix.build-system }}" == "docker" ]]; then
+                cp $BUILD_PATH/JackTrip.vst3 $VST3BINPATH/JackTrip.so
+              else
+                cp $BUILD_PATH/src/vst3/JackTrip.vst3 $VST3BINPATH/JackTrip.so
                 strip $VST3BINPATH/JackTrip.so
               fi
               zip -r $ZIPFILE JackTrip.vst3

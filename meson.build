@@ -1,5 +1,5 @@
 project('jacktrip', ['cpp','c'],
-		default_options: ['cpp_std=c++17','warning_level=2','optimization=2'])
+		default_options: ['cpp_std=c++20','warning_level=2','optimization=2'])
 
 if get_option('profile') == 'development'
 	application_id = 'org.jacktrip.JackTrip.Devel'
@@ -302,8 +302,9 @@ if get_option('default_library') == 'static'
 		static_deps += compiler.find_library('dl', required : true)
 		static_deps += compiler.find_library('glib-2.0', required : true)
 		if qt_version == '6'
-			# we need a Q_IMPORT_LIBRARY for the openssl backend on linux
+			static_deps += compiler.find_library('rt', required : true)
 			static_deps += compiler.find_library('dbus-1', required : true)
+			# we need a Q_IMPORT_LIBRARY for the openssl backend on linux
 			static_deps += compiler.find_library('qopensslbackend', required : true, dirs : [qt_plugindir+'/tls'])
 			static_src += ['src/QtStaticPlugins.cpp']
 		endif
@@ -391,6 +392,24 @@ if host_machine.system() == 'darwin'
 	apple_dep = dependency('appleframeworks', modules : ['foundation','coreaudio'])
 	deps += apple_dep
 	add_languages('objcpp')
+
+	if get_option('default_library') == 'static'
+		# Audio Unit v2 Plugin (requires static linking and AudioUnitSDK)
+		# The AudioUnitSDK is automatically added and built as a subproject
+		audiounitsdk_dep = dependency('AudioUnitSDK')
+		if audiounitsdk_dep.found() == true
+			subdir('src/auv2')
+		endif
+		# Audio Unit v3 Plugin (supports both, but only build if static linking)
+		# Not currently working
+		# subdir('src/auv3')
+	endif
+endif
+
+# VST3 Plugin
+vst_sdkdir = get_option('vst-sdkdir')
+if vst_sdkdir != ''
+	subdir('src/vst3')
 endif
 
 if host_machine.system() == 'darwin' and get_option('novs') == false and get_option('nogui') == false
@@ -410,111 +429,6 @@ if ui_h.length() > 0
 endif
 
 jacktrip = executable('jacktrip', src, qres_files, ui_files, moc_files, include_directories: incdirs, dependencies: deps, link_args: link_args, c_args: c_defines, cpp_args: defines, install: true )
-
-vst_sdkdir = get_option('vst-sdkdir')
-if vst_sdkdir != ''
-	# adapted from https://github.com/centricular/gstreamer-vst3
-	vst_includedir = '@0@/public.sdk/source'.format(vst_sdkdir)
-	vst_pluginterfaces_includedir = '@0@'.format(vst_sdkdir)
-	vst_incdirs = []
-	vst_incdirs += include_directories('@0@'.format(vst_includedir), is_system: true)
-	vst_incdirs += include_directories('@0@'.format(vst_pluginterfaces_includedir), is_system: true)
-	vst_incdirs += include_directories('@0@/vstgui4'.format(vst_pluginterfaces_includedir), is_system: true)
-
-	vst_libdir = get_option('vst-libdir')
-	if vst_libdir == ''
-		vst_libdir = vst_sdkdir + '/lib'
-	endif
-	libbase_dep = compiler.find_library('base', required : true, dirs : [vst_libdir])
-	libsdk_dep = compiler.find_library('sdk', required : true, dirs : [vst_libdir])
-	libsdk_common_dep = compiler.find_library('sdk_common', required : true, dirs : [vst_libdir])
-	libvstgui_dep = compiler.find_library('vstgui', required : true, dirs : [vst_libdir])
-	libvstgui_support_dep = compiler.find_library('vstgui_support', required : true, dirs : [vst_libdir])
-	libvstgui_uidescription_dep = compiler.find_library('vstgui_uidescription', required : true, dirs : [vst_libdir])
-	libpluginterfaces_dep = compiler.find_library('pluginterfaces', required : true, dirs : [vst_libdir])
-	vst_deps = [libbase_dep, libsdk_dep, libsdk_common_dep, libvstgui_dep, libvstgui_uidescription_dep, libvstgui_support_dep, libpluginterfaces_dep]
-	vst_deps += qt_core_deps
-
-	vst_sources = ['src/vst3/JackTripVSTController.cpp', 'src/vst3/JackTripVSTEntry.cpp', 'src/vst3/JackTripVSTProcessor.cpp']
-
-	# uncomment for live editor
-	# vst_sources += ['@0@/vstgui4/vstgui/vstgui_uidescription.cpp'.format(vst_sdkdir), '@0@/vstgui4/vstgui/plugin-bindings/vst3editor.cpp'.format(vst_sdkdir)]
-	# defines += ['-DVSTGUI_LIVE_EDITING=1']
-
-	vst_link_args = []
-	if (host_machine.system() == 'linux')
-		vst_sources += '@0@/main/linuxmain.cpp'.format(vst_includedir)
-		vst_deps += static_deps
-		vst_sources += static_src
-		vst_link_args += static_link_args
-		vst_deps += compiler.find_library('xcb-util', required : true)
-		vst_deps += compiler.find_library('xcb-cursor', required : true)
-		vst_deps += compiler.find_library('xkbcommon-x11', required : true)
-		vst_deps += compiler.find_library('xml2', required : true)
-		vst_deps += compiler.find_library('cairo', required : true)
-		vst_deps += compiler.find_library('pango-1.0', required : true)
-		vst_deps += compiler.find_library('pangocairo-1.0', required : true)
-		vst_deps += compiler.find_library('expat', required : true)
-		vst_deps += compiler.find_library('fontconfig', required : true)
-	elif (host_machine.system() == 'darwin')
-		vst_sources += '@0@/main/macmain.cpp'.format(vst_includedir)
-		vst_deps += static_deps
-		vst_sources += static_src
-		vst_link_args += static_link_args
-	elif (host_machine.system() == 'windows')
-		vst_sources += '@0@/main/dllmain.cpp'.format(vst_includedir)
-		vst_deps += static_deps
-		vst_sources += static_src
-		vst_link_args += static_link_args
-		vst_deps += compiler.find_library('bcrypt', required : true)
-		vst_deps += compiler.find_library('winmm', required : true)
-		vst_deps += compiler.find_library('Crypt32', required : true)
-		vst_deps += compiler.find_library('ws2_32', required: true)
-		vst_link_args += 'userenv.lib'
-		vst_link_args += 'Synchronization.lib'
-		vst_link_args += 'Netapi32.lib'
-		vst_link_args += 'Version.lib'
-		vst_link_args += 'Dwrite.lib'
-		vst_link_args += 'Iphlpapi.lib'
-		vst_link_args += 'Secur32.lib'
-		vst_link_args += 'Winhttp.lib'
-		vst_link_args += 'Dnsapi.lib'
-		vst_link_args += 'Iphlpapi.lib'
-	else
-		error('Unsupported platform: ' + host_machine.system())
-	endif
-
-	if found_libsamplerate
-		vst_deps += libsamplerate_dep
-	endif
-
-	audio_socket_moc_h = ['src/AudioSocket.h', 'src/SocketClient.h', 'src/ProcessPlugin.h']
-	audio_socket_sources = qt.compile_moc(headers: audio_socket_moc_h, extra_args: defines)
-	audio_socket_sources += [
-		'src/AudioSocket.cpp',
-		'src/SocketClient.cpp',
-		'src/ProcessPlugin.cpp',
-		'src/jacktrip_globals.cpp'
-	]
-	audio_socket_test = executable('audio_socket_tests',
-		['tests/audio_socket_test.cpp'] + audio_socket_sources,
-		cpp_args : defines,
-		dependencies : vst_deps,
-		include_directories: vst_incdirs + include_directories('src/'),
-		link_args: vst_link_args
-	)
-
-	vst3 = shared_module('JackTrip',
-		vst_sources, audio_socket_sources,
-		name_prefix: '',
-		name_suffix: 'vst3',
-		cpp_args : defines,
-		dependencies : vst_deps,
-		include_directories: vst_incdirs,
-		link_args: vst_link_args,
-		cpp_args: defines
-	)
-endif
 
 help2man = find_program('help2man', required: false)
 if (host_machine.system() == 'linux')

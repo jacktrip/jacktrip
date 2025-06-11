@@ -38,15 +38,16 @@ if "%~1"=="/q" (
 )
 if exist ..\builddir\release\jacktrip.exe (set JACKTRIP=..\builddir\release\jacktrip.exe) else (set JACKTRIP=..\builddir\jacktrip.exe)
 copy %JACKTRIP% deploy\
-if exist ..\builddir\JackTrip.vst3 (
+if exist ..\buildstatic\src\vst3\JackTrip.vst3 (
     echo Including JackTrip.vst3
 	mkdir deploy\JackTrip.vst3
 	mkdir deploy\JackTrip.vst3\Contents
 	xcopy /E ..\src\vst3\resources deploy\JackTrip.vst3\Contents\Resources\
+    copy ..\src\images\background.png ..\src\images\background_2x.png ..\src\images\Sercan_Moog_Knob.png ..\src\images\Dual_LED.png deploy\JackTrip.vst3\Contents\Resources\
 	copy ..\LICENSE.md deploy\JackTrip.vst3\Contents\Resources\LICENSE.md
 	xcopy /E ..\LICENSES deploy\JackTrip.vst3\Contents\Resources\LICENSES\
 	mkdir deploy\JackTrip.vst3\Contents\x86_64-win
-	copy ..\builddir\JackTrip.vst3 deploy\JackTrip.vst3\Contents\x86_64-win\JackTrip.vst3
+	copy ..\buildstatic\src\vst3\JackTrip.vst3 deploy\JackTrip.vst3\Contents\x86_64-win\JackTrip.vst3
 )
 cd deploy
 

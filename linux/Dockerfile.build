@@ -78,10 +78,11 @@ RUN if [ -n "$QT_DOWNLOAD_URL" ]; then \
   && export SSL_CERT_FILE=$(python3 -m certifi) \
   && meson setup --buildtype release $MESON_ARGS $BUILD_PATH \
   && meson compile -C $BUILD_PATH -v \
+  && mkdir -p $BUILD_PATH/src/vst3 \
   && strip $BUILD_PATH/jacktrip \
   && if [ -n "$VST3SDK_DOWNLOAD_URL" ]; then \
-  strip $BUILD_PATH/JackTrip.vst3; fi
+  strip $BUILD_PATH/src/vst3/JackTrip.vst3; fi
 
 FROM scratch AS artifact
 
-COPY --from=builder /opt/jacktrip/builddir/jacktrip /opt/jacktrip/builddir/JackTrip.vs[t]3 /opt/jacktrip/builddir/linux/org.jacktrip.JackTrip.desktop /
+COPY --from=builder /opt/jacktrip/builddir/jacktrip /opt/jacktrip/builddir/jacktrip.1.g[z] /opt/jacktrip/builddir/src/vst3/JackTrip.vs[t]3 /opt/jacktrip/builddir/linux/org.jacktrip.JackTrip.desktop /

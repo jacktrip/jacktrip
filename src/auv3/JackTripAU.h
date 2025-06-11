@@ -28,32 +28,28 @@
 */
 //*****************************************************************
 
-// Based on the Hello World VST 3 example from Steinberg
-// https://github.com/steinbergmedia/vst3_example_plugin_hello_world
-
 #pragma once
 
-#include "pluginterfaces/base/funknown.h"
-#include "pluginterfaces/vst/vsttypes.h"
+#import <AudioToolbox/AudioToolbox.h>
+#import <AudioUnit/AudioUnit.h>
+#import <Foundation/Foundation.h>
 
-#define JackTripVSTVST3Category "Fx"
-#define stringOriginalFilename  "JackTrip.vst3"
-#define stringFileDescription   "JackTrip VST3"
-#define stringCompanyName       "JackTrip\0"
-#define stringLegalCopyright    "Copyright (c) 2024-2025 JackTrip Labs, Inc."
-#define stringLegalTrademarks   "VST is a trademark of Steinberg Media Technologies GmbH"
-
-//------------------------------------------------------------------------
-enum JackTripVSTParams : Steinberg::Vst::ParamID {
-    kParamGainSendId   = 100,
-    kParamMixOutputId  = 101,
-    kParamGainOutputId = 102,
-    kParamConnectedId  = 200,
-    kBypassId          = 1000
+// Parameter addresses - matching AUv2 parameter structure
+typedef NS_ENUM(AUParameterAddress, JackTripAUParameterAddress) {
+    kJackTripAUParam_SendGain = 0,
+    kJackTripAUParam_OutputMix = 1,
+    kJackTripAUParam_OutputGain = 2,
+    kJackTripAUParam_Connected = 3,
 };
 
-//------------------------------------------------------------------------
-static const Steinberg::FUID kJackTripVSTProcessorUID(0x176F9AF4, 0xA56041A1, 0x890DD021,
-                                                      0x765ABCF0);
-static const Steinberg::FUID kJackTripVSTControllerUID(0x075C3106, 0xBC524686, 0xB63544CC,
-                                                       0xF88423FF);
+@interface JackTripAU : AUAudioUnit
+
+@property (nonatomic, readonly) AUAudioUnitBus *inputBus;
+@property (nonatomic, readonly) AUAudioUnitBus *outputBus;
+@property (nonatomic, readonly) AUAudioUnitBusArray *inputBusArray;
+@property (nonatomic, readonly) AUAudioUnitBusArray *outputBusArray;
+
+// Internal render block
+@property (nonatomic, copy) AUInternalRenderBlock internalRenderBlock;
+
+@end 
