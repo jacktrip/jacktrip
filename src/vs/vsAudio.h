@@ -145,6 +145,7 @@ class VsAudio : public QObject
     // allow VirtualStudio to get Permissions to bind to QML view
     VsPermissions& getPermissions() { return *m_permissionsPtr; }
     VsAudioWorker& getWorker() { return *m_audioWorkerPtr; }
+    void stopWorker();
 
     //  allow VirtualStudio to create new audio interfaces
     AudioInterface* newAudioInterface(JackTrip* jackTripPtr = nullptr);
