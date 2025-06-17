@@ -177,11 +177,17 @@ VsAudio::VsAudio(QObject* parent)
 
 VsAudio::~VsAudio()
 {
+    stopWorker();
+}
+
+void VsAudio::stopWorker()
+{
     if (m_workerThreadPtr == nullptr)
         return;
     m_workerThreadPtr->quit();
     WaitForSignal(m_workerThreadPtr, &QThread::finished);
     m_workerThreadPtr->deleteLater();
+    m_workerThreadPtr = nullptr;
 }
 
 bool VsAudio::backendAvailable() const

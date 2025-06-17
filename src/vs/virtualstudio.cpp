@@ -1900,17 +1900,23 @@ void VirtualStudio::detectedFeedbackLoop()
 VirtualStudio::~VirtualStudio()
 {
     QDesktopServices::unsetUrlHandler("jacktrip");
+
     // close the window
     m_view.reset();
+
     // stop the audio worker thread before destructing other things
-    if (!m_audioConfigPtr.isNull()) {
-        m_audioConfigPtr->disconnect();
-        m_audioConfigPtr.reset();
-    }
+    m_audioConfigPtr->stopWorker();
+
     // stop device and corresponding threads
     if (!m_devicePtr.isNull()) {
         m_devicePtr->disconnect();
         m_devicePtr.reset();
+    }
+
+    // reset VsAudio after VsDevice since it holds a smart pointer
+    if (!m_audioConfigPtr.isNull()) {
+        m_audioConfigPtr->disconnect();
+        m_audioConfigPtr.reset();
     }
 }
 
