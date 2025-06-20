@@ -45,9 +45,6 @@
 
 using namespace std;
 
-constexpr int BytesPerSample     = sizeof(float);
-constexpr int BytesForFullSample = BytesPerSample * AudioSocketNumChannels;
-
 //*******************************************************************************
 ToAudioSocketPlugin::ToAudioSocketPlugin(AudioSocketQueueT& sendQueue,
                                          AudioSocketQueueT& receiveQueue)

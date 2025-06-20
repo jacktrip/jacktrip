@@ -1,0 +1,7 @@
+[wrap-git]
+url=https://github.com/jacktriplabs/AudioUnitSDK.git
+revision=feature/meson-build-file
+directory=AudioUnitSDK-1.3.0
+
+[provide]
+dependency_names = AudioUnitSDK

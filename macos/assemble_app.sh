@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e
 
@@ -17,10 +17,33 @@ KEY_STORE="AC_PASSWORD"
 TEMP_KEYCHAIN=""
 USE_DEFAULT_KEYCHAIN=false
 BINARY="../builddir/jacktrip"
-VST_BINARY="../builddir/$APPNAME.vst3"
+VST3_BINARY="../buildstatic/src/vst3/$APPNAME.vst3"
+AUv2_BINARY="../buildstatic/src/auv2/JackTrip.auv2"
+AUv3_BINARY="../buildstatic/src/auv3/JackTrip.auv3"
+AUDIO_BRIDGE_IMAGES="../src/images/background.png ../src/images/background_2x.png ../src/images/Sercan_Moog_Knob.png ../src/images/Dual_LED.png"
 PSI=false
 
 OPTIND=1
+
+function version_string_to_int() {
+  local version="$1"
+  local old_ifs="$IFS"
+
+  # Remove anything after a dash
+  version="${version%%-*}"
+
+  # Split version into major, minor, patch
+  IFS='.' read -r major minor patch <<< "$version"
+  IFS="$old_ifs"
+
+  # Default to 0 if any part is missing
+  major=${major:-0}
+  minor=${minor:-0}
+  patch=${patch:-0}
+
+  # Calculate version integer
+  echo $(( ( major << 16 ) | ( minor << 8 ) | patch ))
+}
 
 while getopts ":inhqklc:d:u:p:t:b:" opt; do
     case $opt in
@@ -105,11 +128,12 @@ shift $((OPTIND - 1))
 [ "$#" -gt 0 ] && APPNAME="$1"
 [ "$#" -gt 1 ] && BUNDLE_ID="$2"
 
-DYNAMIC_QT=$(otool -L $BINARY | grep QtCore)
-DYNAMIC_VS=$(otool -L $BINARY | grep QtQml)
+DYNAMIC_QT=$(otool -L $BINARY | grep QtCore || true)
+DYNAMIC_VS=$(otool -L $BINARY | grep QtQml || true)
+DYNAMIC_AUv3=$(otool -L $AUv3_BINARY | grep QtCore || true)
 
 if [[ -n "$DYNAMIC_QT" && -n "$QT_PATH" ]]; then
-  export DYLD_FRAMEWORK_PATH=$QT_PATH/lib
+    export DYLD_FRAMEWORK_PATH=$QT_PATH/lib
 fi
 
 VERSION="$($BINARY -v | awk '/VERSION/{print $NF}')"
@@ -122,22 +146,29 @@ echo "Building bundle $APPNAME (id: $BUNDLE_ID)"
 echo "for binary version $VERSION"
 
 rm -rf "$APPNAME.app"
-[ ! -d "JackTrip.app_template/Contents/MacOS" ] && mkdir JackTrip.app_template/Contents/MacOS
-cp -a JackTrip.app_template "$APPNAME.app"
-cp -f $BINARY "$APPNAME.app/Contents/MacOS/"
-# copy licenses
-cp -f ../LICENSE.md "$APPNAME.app/Contents/Resources/"
-cp -Rf ../LICENSES "$APPNAME.app/Contents/Resources/"
+APP_CONTENTS="$APPNAME.app/Contents"
+mkdir -p "$APP_CONTENTS/MacOS"
+mkdir -p "$APP_CONTENTS/Resources"
+cp PkgInfo "$APP_CONTENTS/"
+cp ../LICENSE.md "$APP_CONTENTS/Resources/"
+cp -R ../LICENSES "$APP_CONTENTS/Resources/"
+cp $BINARY "$APP_CONTENTS/MacOS/"
 
-[ $PSI = true ] && cp jacktrip_alt.icns "$APPNAME.app/Contents/Resources/jacktrip.icns"
-
-if [ -n "$DYNAMIC_QT" ] && [ -z "$DYNAMIC_VS" ]; then
-    cp "Info_novs.plist" "$APPNAME.app/Contents/Info.plist" 
+if [ $PSI = true ]; then
+    cp ../src/images/jacktrip_alt.icns "$APP_CONTENTS/Resources/jacktrip.icns"
+else
+    cp ../src/images/jacktrip.icns "$APP_CONTENTS/Resources/jacktrip.icns"
 fi
 
-sed -i '' "s/%VERSION%/$VERSION/" "$APPNAME.app/Contents/Info.plist"
-sed -i '' "s/%BUNDLENAME%/$APPNAME/" "$APPNAME.app/Contents/Info.plist"
-sed -i '' "s/%BUNDLEID%/$BUNDLE_ID/" "$APPNAME.app/Contents/Info.plist"
+if [ -n "$DYNAMIC_QT" ] && [ -z "$DYNAMIC_VS" ]; then
+    cp "Info_novs.plist" "$APP_CONTENTS/Info.plist"
+else
+    cp "Info.plist" "$APP_CONTENTS/Info.plist"
+fi
+
+sed -i '' "s/%VERSION%/$VERSION/" "$APP_CONTENTS/Info.plist"
+sed -i '' "s/%BUNDLENAME%/$APPNAME/" "$APP_CONTENTS/Info.plist"
+sed -i '' "s/%BUNDLEID%/$BUNDLE_ID/" "$APP_CONTENTS/Info.plist"
 
 if [ -n "$DYNAMIC_QT" ]; then
     QT_VERSION="qt$(echo "$DYNAMIC_QT" | sed -E '1!d;s/.*compatibility version ([0-9]+)\.[0-9]+\.[0-9]+.*/\1/g')"
@@ -154,7 +185,7 @@ if [ -n "$DYNAMIC_QT" ]; then
             exit 1
         fi
     fi
-    DEPLOY_OPTS="-executable=$APPNAME.app/Contents/MacOS/jacktrip -libpath=$QT_PATH/lib"
+    DEPLOY_OPTS="-executable=$APP_CONTENTS/MacOS/jacktrip -libpath=$QT_PATH/lib"
     if [ -n "$DYNAMIC_VS" ]; then
         DEPLOY_OPTS="$DEPLOY_OPTS -qmldir=../src/vs"
     fi
@@ -163,7 +194,7 @@ if [ -n "$DYNAMIC_QT" ]; then
     if [ -n "$CERTIFICATE" ]; then
         # manually sign contents since the macdeployqt built-ins do not work (rpath errors)
         echo "Signing app contents"
-        PATHS="$APPNAME.app/Contents/Frameworks $APPNAME.app/Contents/PlugIns $APPNAME.app/Contents/Resources"
+        PATHS="$APP_CONTENTS/Frameworks $APP_CONTENTS/PlugIns $APP_CONTENTS/Resources"
         find $PATHS -type f | while read fname; do
             if [[ -f $fname ]]; then
                 codesign -f -s "$CERTIFICATE" --timestamp --entitlements entitlements.plist --options "runtime" "$fname"
@@ -172,28 +203,78 @@ if [ -n "$DYNAMIC_QT" ]; then
     fi
 fi
 
-if [ -f "$VST_BINARY" ]; then
-    echo "Building bundle $APPNAME.vst3 (id: $BUNDLE_ID.vst3)"
+if [ -f "$VST3_BINARY" ]; then
+    echo "Building VST3 plugin"
     rm -rf "$APPNAME.vst3"
-    [ ! -d "JackTrip.vst3_template/Contents/MacOS" ] && mkdir JackTrip.vst3_template/Contents/MacOS
-    [ ! -d "JackTrip.vst3_template/Contents/Resources" ] && mkdir JackTrip.vst3_template/Contents/Resources
-    [ ! -d "JackTrip.app_template/Contents/Resources" ] && mkdir JackTrip.vst3_template/Contents/Resources
-    cp -a JackTrip.vst3_template "$APPNAME.vst3"
-    cp -f $VST_BINARY "$APPNAME.vst3/Contents/MacOS/"
-    # copy licenses
-    cp -f ../LICENSE.md "$APPNAME.vst3/Contents/Resources/"
-    cp -Rf ../LICENSES "$APPNAME.vst3/Contents/Resources/"
-    cp ../src/vst3/resources/* "$APPNAME.vst3/Contents/Resources/"
-    sed -i '' "s/%VERSION%/$VERSION/" "$APPNAME.vst3/Contents/Resources/moduleinfo.json"
-    sed -i '' "s/%VERSION%/$VERSION/" "$APPNAME.vst3/Contents/Info.plist"
-    sed -i '' "s/%BUNDLENAME%/$APPNAME.vst3/" "$APPNAME.vst3/Contents/Info.plist"
-    sed -i '' "s/%BUNDLEID%/$BUNDLE_ID.vst3/" "$APPNAME.vst3/Contents/Info.plist"
+    VST3_CONTENTS="$APPNAME.vst3/Contents"
+    mkdir -p "$VST3_CONTENTS/MacOS"
+    mkdir -p "$VST3_CONTENTS/Resources"
+    cp -f ../src/vst3/Info.plist "$VST3_CONTENTS/"
+    cp -f ../src/vst3/PkgInfo "$VST3_CONTENTS/"
+    cp -f ../LICENSE.md "$VST3_CONTENTS/Resources/"
+    cp -Rf ../LICENSES "$VST3_CONTENTS/Resources/"
+    cp ../src/vst3/resources/* "$VST3_CONTENTS/Resources/"
+    cp $AUDIO_BRIDGE_IMAGES "$VST3_CONTENTS/Resources/"
+    cp -f $VST3_BINARY "$VST3_CONTENTS/MacOS/"
+    sed -i '' "s/%VERSION%/$VERSION/" "$VST3_CONTENTS/Resources/moduleinfo.json"
+    sed -i '' "s/%VERSION%/$VERSION/" "$VST3_CONTENTS/Info.plist"
+    sed -i '' "s/%BUNDLENAME%/$APPNAME.vst3/" "$VST3_CONTENTS/Info.plist"
+    sed -i '' "s/%BUNDLEID%/$BUNDLE_ID.vst3/" "$VST3_CONTENTS/Info.plist"
 fi
 
-[ $BUILD_INSTALLER = true ] || exit 0
+AUVERSION="$(version_string_to_int $VERSION)"
 
-# If you have Packages installed, you can build an installer for the newly created app bundle.
-[ -z $(which packagesbuild) ] && { echo "Error: You need to have Packages installed to build a package."; exit 1; }
+if [ -f "$AUv2_BINARY" ]; then
+    echo "Building AUv2 plugin"
+    rm -rf "$APPNAME.component"
+    AUv2_CONTENTS="$APPNAME.component/Contents"
+    mkdir -p "$AUv2_CONTENTS/MacOS"
+    mkdir -p "$AUv2_CONTENTS/Resources"
+    cp -f ../src/auv2/Info.plist "$AUv2_CONTENTS/"
+    cp -f ../src/auv2/PkgInfo "$AUv2_CONTENTS/"
+    cp -f ../LICENSE.md "$AUv2_CONTENTS/Resources/"
+    cp -Rf ../LICENSES "$AUv2_CONTENTS/Resources/"
+    cp $AUDIO_BRIDGE_IMAGES "$AUv2_CONTENTS/Resources/"
+    cp -f $AUv2_BINARY "$AUv2_CONTENTS/MacOS/JackTrip"
+    sed -i '' "s/%VERSION%/$VERSION/" "$AUv2_CONTENTS/Info.plist"
+    sed -i '' "s/%AUVERSION%/$AUVERSION/" "$AUv2_CONTENTS/Info.plist"
+    sed -i '' "s/%BUNDLENAME%/$APPNAME.auv2/" "$AUv2_CONTENTS/Info.plist"
+    sed -i '' "s/%BUNDLEID%/$BUNDLE_ID.auv2/" "$AUv2_CONTENTS/Info.plist"
+fi
+
+if [ -f "$AUv3_BINARY" ]; then
+    echo "Building AUv3 plugin"
+    AUv3_CONTENTS="$APP_CONTENTS/PlugIns/JackTrip.appex/Contents"
+    mkdir -p "$AUv3_CONTENTS/MacOS"
+    mkdir -p "$AUv3_CONTENTS/Resources"
+    cp -f ../src/auv3/Info.plist "$AUv3_CONTENTS/"
+    cp $AUDIO_BRIDGE_IMAGES "$AUv3_CONTENTS/Resources/"
+    sed -i '' "s/%VERSION%/$VERSION/" "$AUv3_CONTENTS/Info.plist"
+    sed -i '' "s/%AUVERSION%/$AUVERSION/" "$AUv3_CONTENTS/Info.plist"
+    sed -i '' "s/%BUNDLENAME%/$APPNAME.auv3/" "$AUv3_CONTENTS/Info.plist"
+    sed -i '' "s/%BUNDLEID%/$BUNDLE_ID.auv3/" "$AUv3_CONTENTS/Info.plist"
+    cp -f $AUv3_BINARY "$AUv3_CONTENTS/MacOS/JackTrip"
+    if [ -n "$DYNAMIC_AUv3" ]; then
+        echo "Detected a dynamic AUv3 binary"
+        $DEPLOY_CMD "$APP_CONTENTS/PlugIns/JackTrip.appex" -executable=$AUv3_CONTENTS/MacOS/JackTrip -libpath=$QT_PATH/lib
+        if [ -n "$CERTIFICATE" ]; then
+            echo "Signing dynamic AUv3 plugin"
+            PATHS="$AUv3_CONTENTS/Frameworks $AUv3_CONTENTS/PlugIns $AUv3_CONTENTS/Resources"
+            find $PATHS -type f | while read fname; do
+                if [[ -f $fname ]]; then
+                    codesign -f -s "$CERTIFICATE" --timestamp --entitlements entitlements_appex.plist --options "runtime" "$fname"
+                fi
+            done
+            codesign -f -s "$CERTIFICATE" --timestamp --entitlements entitlements_appex.plist --options "runtime" "$APP_CONTENTS/PlugIns/JackTrip.appex"
+        fi
+    else
+        echo "Detected a static AUv3 binary"
+        if [ -n "$CERTIFICATE" ]; then
+            echo "Signing static AUv3 plugin"
+            codesign -f -s "$CERTIFICATE" --timestamp --entitlements entitlements_appex.plist --options "runtime" "$APP_CONTENTS/PlugIns/JackTrip.appex"
+        fi
+    fi
+fi
 
 if [ $PSI = true ]; then
     cp "package/postinstall.sh" "package/postinstall.sh.bak"
@@ -204,11 +285,20 @@ fi
 if [ -n "$CERTIFICATE" ]; then
     echo "Signing $APPNAME.app"
     codesign -f -s "$CERTIFICATE" --timestamp --entitlements entitlements.plist --options "runtime" "$APPNAME.app"
-    if [ -f "$VST_BINARY" ]; then
+    if [ -f "$VST3_BINARY" ]; then
       echo "Signing $APPNAME.vst3"
-      codesign -f -s "$CERTIFICATE" --timestamp --entitlements entitlements.plist --options "runtime" "$APPNAME.vst3"
+      codesign -f -s "$CERTIFICATE" --timestamp --options "runtime" "$APPNAME.vst3"
+    fi
+    if [ -f "$AUv2_BINARY" ]; then
+      echo "Signing $APPNAME.component"
+      codesign -f -s "$CERTIFICATE" --timestamp --options "runtime" "$APPNAME.component"
     fi
 fi
+
+[ $BUILD_INSTALLER = true ] || exit 0
+
+# If you have Packages installed, you can build an installer for the newly created app bundle.
+[ -z $(which packagesbuild) ] && { echo "Error: You need to have Packages installed to build a package."; exit 1; }
 
 # prepare license
 LICENSE_PATH="package/license.txt"
@@ -229,8 +319,8 @@ cp ../README.md "$README_PATH"
 sed -i '' "s/# //" "$README_PATH" # remove markdown header
 perl -ane 'chop;print "\n\n" if(/^\s*$/); map{print "$_ ";}@F;' "$README_PATH" > tmp && mv tmp "$README_PATH" # unwrap lines
 
-if [ -f "$VST_BINARY" ]; then
-  cp package/JackTrip.pkgproj_template_with_vst3 package/JackTrip.pkgproj
+if [[ -f "$VST3_BINARY" && -f "$AUv2_BINARY" ]]; then
+  cp package/JackTrip.pkgproj_template_with_plugins package/JackTrip.pkgproj
 else
   cp package/JackTrip.pkgproj_template package/JackTrip.pkgproj
 fi

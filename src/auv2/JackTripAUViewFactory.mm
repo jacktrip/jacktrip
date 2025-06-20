@@ -28,32 +28,47 @@
 */
 //*****************************************************************
 
-// Based on the Hello World VST 3 example from Steinberg
-// https://github.com/steinbergmedia/vst3_example_plugin_hello_world
+#import <AudioUnit/AudioUnit.h>
+#import <AudioUnit/AUCocoaUIView.h>
+#import "JackTripAUView.h"
 
-#pragma once
+@interface JackTripAUViewFactory : NSObject <AUCocoaUIBase>
+{
+}
 
-#include "pluginterfaces/base/funknown.h"
-#include "pluginterfaces/vst/vsttypes.h"
+@end
 
-#define JackTripVSTVST3Category "Fx"
-#define stringOriginalFilename  "JackTrip.vst3"
-#define stringFileDescription   "JackTrip VST3"
-#define stringCompanyName       "JackTrip\0"
-#define stringLegalCopyright    "Copyright (c) 2024-2025 JackTrip Labs, Inc."
-#define stringLegalTrademarks   "VST is a trademark of Steinberg Media Technologies GmbH"
+// Export the class for external access
+extern "C" {
+    void* JackTripAUViewFactoryClass() {
+        return [JackTripAUViewFactory class];
+    }
+}
 
-//------------------------------------------------------------------------
-enum JackTripVSTParams : Steinberg::Vst::ParamID {
-    kParamGainSendId   = 100,
-    kParamMixOutputId  = 101,
-    kParamGainOutputId = 102,
-    kParamConnectedId  = 200,
-    kBypassId          = 1000
-};
+// Make sure the class is available at runtime
+__attribute__((constructor))
+static void registerViewFactory() {
+    // This ensures the class is loaded and available
+    [JackTripAUViewFactory class];
+}
 
-//------------------------------------------------------------------------
-static const Steinberg::FUID kJackTripVSTProcessorUID(0x176F9AF4, 0xA56041A1, 0x890DD021,
-                                                      0x765ABCF0);
-static const Steinberg::FUID kJackTripVSTControllerUID(0x075C3106, 0xBC524686, 0xB63544CC,
-                                                       0xF88423FF);
+@implementation JackTripAUViewFactory
+
+- (unsigned)interfaceVersion {
+    return 0;
+}
+
+- (NSString *)description {
+    return @"JackTrip Audio Unit Custom View";
+}
+
+- (NSView *)uiViewForAudioUnit:(AudioUnit)inAudioUnit withSize:(NSSize)inPreferredSize {
+    // Create our custom view with the preferred size
+    NSRect frame = NSMakeRect(0, 0, 400, 200); // Fixed size matching VST3 UI
+    
+    JackTripAUView* view = [[JackTripAUView alloc] initWithFrame:frame audioUnit:inAudioUnit];
+    
+    return [view autorelease];
+}
+
+@end 
