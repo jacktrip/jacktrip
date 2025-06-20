@@ -43,7 +43,10 @@ if exist ..\buildstatic\src\vst3\JackTrip.vst3 (
 	mkdir deploy\JackTrip.vst3
 	mkdir deploy\JackTrip.vst3\Contents
 	xcopy /E ..\src\vst3\resources deploy\JackTrip.vst3\Contents\Resources\
-    copy ..\src\images\background.png ..\src\images\background_2x.png ..\src\images\Sercan_Moog_Knob.png ..\src\images\Dual_LED.png deploy\JackTrip.vst3\Contents\Resources\
+    copy ..\src\images\background.png deploy\JackTrip.vst3\Contents\Resources\
+    copy ..\src\images\background_2x.png deploy\JackTrip.vst3\Contents\Resources\
+    copy ..\src\images\Sercan_Moog_Knob.png deploy\JackTrip.vst3\Contents\Resources\
+    copy ..\src\images\Dual_LED.png deploy\JackTrip.vst3\Contents\Resources\
 	copy ..\LICENSE.md deploy\JackTrip.vst3\Contents\Resources\LICENSE.md
 	xcopy /E ..\LICENSES deploy\JackTrip.vst3\Contents\Resources\LICENSES\
 	mkdir deploy\JackTrip.vst3\Contents\x86_64-win

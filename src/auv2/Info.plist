@@ -43,11 +43,6 @@
 			<string>ABv2</string>
 			<key>version</key>
 			<integer>%AUVERSION%</integer>
-			<key>resourceUsage</key>
-			<dict>
-				<key>network.client</key>
-				<true/>
-			</dict>
 			<key>tags</key>
 			<array>
 				<string>Effect</string>

@@ -41,7 +41,12 @@
 #include <QSharedPointer>
 
 // name of the local socket used by JackTrip
+// use /tmp/jacktrip.socket on macOS to work around sandboxing
+#ifdef Q_OS_MACOS
+constexpr const char* JACKTRIP_SOCKET_NAME = "/tmp/jacktrip.socket";
+#else
 constexpr const char* JACKTRIP_SOCKET_NAME = "JackTrip";
+#endif
 
 // SocketClient lists for local socket connections from remote JackTrip processes
 class SocketClient : public QObject
