@@ -46,7 +46,8 @@ jacktrip_auv2 = shared_module('JackTrip',
     name_suffix: 'auv2',
     dependencies: auv2_deps,
     include_directories: auv2_incdirs,
-    link_args: static_link_args
+    link_args: static_link_args,
+    cpp_args: defines    
 )
 
 message('JackTrip Audio Unit v2 will be built')
