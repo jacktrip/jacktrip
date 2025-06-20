@@ -52,7 +52,8 @@ jacktrip_auv3 = shared_module('JackTrip',
     objcpp_args: defines + ['-fobjc-arc', '-std=c++17'],
     dependencies: auv3_deps,
     include_directories: auv3_incdirs,
-    link_args: static_link_args
+    link_args: static_link_args,
+    cpp_args: defines
 )
 
 message('JackTrip Audio Unit v3 will be built')
