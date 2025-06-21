@@ -604,7 +604,13 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
     // if (seq_num==0) return;   // impose regular loss
     mIncomingTiming[seq_num] = (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
     memcpy(mSlots[seq_num], buf, mPeerBytes);
-    mLastSeqNumIn.store(seq_num, std::memory_order_release);
+    // ensure that last sequnce number is "greater than" the current one
+    // otherwise, we can create a condition where last out gets ahead of last in
+    const int lastSeqNumIn = mLastSeqNumIn.load(std::memory_order_relaxed);
+    if (lastSeqNumIn == -1 || seq_num > lastSeqNumIn
+        || (seq_num < lastSeqNumIn && (lastSeqNumIn - seq_num) > (NumSlots / 2))) {
+        mLastSeqNumIn.store(seq_num, std::memory_order_release);
+    }
 };
 
 //*******************************************************************************
