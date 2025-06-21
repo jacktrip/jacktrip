@@ -612,6 +612,7 @@ bool Regulator::pullPacket()
 {
     const double now       = (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
     const int lastSeqNumIn = mLastSeqNumIn.load(std::memory_order_acquire);
+    int skipped            = 0;
 
     if ((lastSeqNumIn == -1) || (!mInitialized) || (now < mMsecTolerance)) {
         // return silence during startup:
@@ -640,6 +641,10 @@ bool Regulator::pullPacket()
                            > mMsecTolerance)
                     continue;
                 updatePushStats(next);
+                // count how many we have skipped
+                skipped = next - mLastSeqNumOut - 1;
+                if (skipped < 0)
+                    skipped += NumSlots;
             }
             // check if packet's age matches tolerance, or is the best candidate we have
             const bool meetsTolerance = mIncomingTiming[next] + mMsecTolerance >= now;
@@ -647,10 +652,6 @@ bool Regulator::pullPacket()
                 // next is the best candidate
                 // we will use it for output, or training if skipped
                 memcpy(mXfrBuffer, mSlots[next], mPeerBytes);
-                // count how many we have skipped
-                int skipped = next - mLastSeqNumOut - 1;
-                if (skipped < 0)
-                    skipped += NumSlots;
                 if (skipped) {
                     // if we skipped any packets, process it as a glitch
                     if (meetsTolerance) {
