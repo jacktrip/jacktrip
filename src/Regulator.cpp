@@ -612,7 +612,6 @@ bool Regulator::pullPacket()
 {
     const double now       = (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
     const int lastSeqNumIn = mLastSeqNumIn.load(std::memory_order_acquire);
-    int skipped            = 0;
 
     if ((lastSeqNumIn == -1) || (!mInitialized) || (now < mMsecTolerance)) {
         // return silence during startup:
@@ -641,21 +640,44 @@ bool Regulator::pullPacket()
                            > mMsecTolerance)
                     continue;
                 updatePushStats(next);
-                // count how many we have skipped
-                skipped = next - mLastSeqNumOut - 1;
-                if (skipped < 0)
-                    skipped += NumSlots;
             }
             // check if packet's age matches tolerance, or is the best candidate we have
-            if (mIncomingTiming[next] + mMsecTolerance >= now || i == 0) {
+            const bool meetsTolerance = mIncomingTiming[next] + mMsecTolerance >= now;
+            if (meetsTolerance || i == 0) {
                 // next is the best candidate
+                // we will use it for output, or training if skipped
                 memcpy(mXfrBuffer, mSlots[next], mPeerBytes);
-                mLastSeqNumOut = next;
-                double latency = (now - mIncomingTiming[mLastSeqNumOut]);
-                if (latency > mStatsMaxLatency) {
-                    mStatsMaxLatency = latency;
+                // count how many we have skipped
+                int skipped = next - mLastSeqNumOut - 1;
+                if (skipped < 0)
+                    skipped += NumSlots;
+                if (skipped) {
+                    // if we skipped any packets, process it as a glitch
+                    if (meetsTolerance) {
+                        // increment last out to the previous skipped packet
+                        mLastSeqNumOut = next - 1;
+                        if (mLastSeqNumOut < 0)
+                            mLastSeqNumOut = NumSlots;
+                    } else {
+                        // increment last out to the next valid one
+                        // so that it only gets used for training
+                        mLastSeqNumOut = next;
+                    }
+                    pullStat->plcOverruns += skipped;
+                    processPacket(true);
+                    return true;
+                } else {
+                    // none skipped: next is a "real" packet (not a glitch)
+                    // update max latency
+                    double latency = (now - mIncomingTiming[next]);
+                    if (latency > mStatsMaxLatency) {
+                        mStatsMaxLatency = latency;
+                    }
+                    // advance last out and process OK packet
+                    mLastSeqNumOut = next;
+                    processPacket(false);
+                    return false;
                 }
-                goto PACKETOK;
             }
             // track how many good packets we skipped due to tolerance < 1ms
             if (mIncomingTiming[next] + mMsecTolerance + 1 >= now) {
@@ -666,16 +688,6 @@ bool Regulator::pullPacket()
         // no viable candidate
         goto UNDERRUN;
     }
-
-PACKETOK : {
-    if (skipped) {
-        processPacket(true);
-        pullStat->plcOverruns += skipped;
-        return true;
-    } else
-        processPacket(false);
-    goto OUTPUT;
-}
 
 UNDERRUN : {
     pullStat->plcUnderruns++;  // count late
@@ -690,8 +702,6 @@ UNDERRUN : {
 
 ZERO_OUTPUT:
     memset(mXfrBuffer, 0, mPeerBytes);
-
-OUTPUT:
     return false;
 };
 
