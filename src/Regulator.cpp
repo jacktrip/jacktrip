@@ -618,7 +618,8 @@ bool Regulator::pullPacket()
 {
     const double now       = (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
     const int lastSeqNumIn = mLastSeqNumIn.load(std::memory_order_acquire);
-    int skipped            = 0;
+    int prevSkipped        = -1;
+    int numSkipped         = 0;
 
     if ((lastSeqNumIn == -1) || (!mInitialized) || (now < mMsecTolerance)) {
         // return silence during startup:
@@ -648,29 +649,43 @@ bool Regulator::pullPacket()
                     continue;
                 updatePushStats(next);
                 // count how many we have skipped
-                skipped = next - mLastSeqNumOut - 1;
-                if (skipped < 0)
-                    skipped += NumSlots;
+                numSkipped = next - mLastSeqNumOut - 1;
+                if (numSkipped < 0)
+                    numSkipped += NumSlots;
             }
             // check if packet's age matches tolerance, or is the best candidate we have
             const bool meetsTolerance = mIncomingTiming[next] + mMsecTolerance >= now;
             if (meetsTolerance || i == 0) {
                 // next is the best candidate
-                // we will use it for output, or training if skipped
-                memcpy(mXfrBuffer, mSlots[next], mPeerBytes);
-                if (skipped) {
+                if (numSkipped > 0) {
                     // if we skipped any packets, process it as a glitch
                     if (meetsTolerance) {
-                        // increment last out to the previous skipped packet
-                        mLastSeqNumOut = next - 1;
-                        if (mLastSeqNumOut < 0)
-                            mLastSeqNumOut = NumSlots;
+                        // potentially, we can use next on the next pass
+                        if (prevSkipped != -1) {
+                            // increment last out to the previous valid skipped packet
+                            // which would have been used if it met tolerance
+                            numSkipped = prevSkipped - mLastSeqNumOut - 1;
+                            if (numSkipped < 0)
+                                numSkipped += NumSlots;
+                            mLastSeqNumOut = prevSkipped;
+                            // use the previous valid skipped packet for training
+                            memcpy(mXfrBuffer, mSlots[mLastSeqNumOut], mPeerBytes);
+                        } else {
+                            // increment last out to the previous packet
+                            numSkipped--;
+                            mLastSeqNumOut = next - 1;
+                            if (mLastSeqNumOut < 0)
+                                mLastSeqNumOut = NumSlots;
+                            // use the next "real" packet for training
+                            memcpy(mXfrBuffer, mSlots[next], mPeerBytes);
+                        }
                     } else {
-                        // increment last out to the next valid one
-                        // so that it only gets used for training
+                        // next packet doesn't meet tolerance
                         mLastSeqNumOut = next;
+                        memcpy(mXfrBuffer, mSlots[mLastSeqNumOut], mPeerBytes);
                     }
-                    pullStat->plcOverruns += skipped;
+                    pullStat->plcOverruns += numSkipped;
+                    pullStat->plcUnderruns++;
                     processPacket(true);
                     return true;
                 } else {
@@ -682,6 +697,7 @@ bool Regulator::pullPacket()
                     }
                     // advance last out and process OK packet
                     mLastSeqNumOut = next;
+                    memcpy(mXfrBuffer, mSlots[mLastSeqNumOut], mPeerBytes);
                     processPacket(false);
                     return false;
                 }
@@ -690,6 +706,8 @@ bool Regulator::pullPacket()
             if (mIncomingTiming[next] + mMsecTolerance + 1 >= now) {
                 ++mSkipped;
             }
+            // remember the last valid packet skipped for tolerance
+            prevSkipped = next;
         }
 
         // no viable candidate
