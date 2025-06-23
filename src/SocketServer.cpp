@@ -82,23 +82,30 @@ bool SocketServer::start()
 
 void SocketServer::handlePendingConnections()
 {
+    const int timeout = 1000;
     while (m_instanceServer->hasPendingConnections()) {
         QLocalSocket* connectedSocket = m_instanceServer->nextPendingConnection();
+        if (connectedSocket == nullptr) {
+            continue;
+        }
+        connectedSocket->setParent(nullptr);
+        QSharedPointer<QLocalSocket> sharedSocket(connectedSocket);
 
-        if (connectedSocket == nullptr || !connectedSocket->waitForConnected()) {
-            qDebug() << "Socket server: never received connection";
+        if (!connectedSocket->waitForConnected(timeout)) {
+            qDebug() << "Socket server: timed out waiting for connection";
             continue;
         }
 
-        if (!connectedSocket->waitForReadyRead()
-            && connectedSocket->bytesAvailable() <= 0) {
-            qDebug() << "Socket server: not ready and no bytes available: "
-                     << connectedSocket->errorString();
+        // wait for 1 second for ready read, or else give up
+        bool readyToRead = connectedSocket->waitForReadyRead(timeout);
+        if (!readyToRead) {
+            qDebug() << "Socket server: timed out waiting for bytes available";
             continue;
         }
 
         if (connectedSocket->bytesAvailable() < (int)sizeof(quint16)) {
-            qDebug() << "Socket server: ready but no bytes available";
+            qDebug() << "Socket server: ready but not enough bytes available ("
+                     << connectedSocket->bytesAvailable() << ")";
             continue;
         }
 
@@ -121,8 +128,6 @@ void SocketServer::handlePendingConnections()
 
         cout << "Socket server: received connection for " << handlerName.toStdString()
              << endl;
-        connectedSocket->setParent(nullptr);
-        QSharedPointer<QLocalSocket> sharedSocket(connectedSocket);
         handleConnection(handlerName, sharedSocket);
     }
 }

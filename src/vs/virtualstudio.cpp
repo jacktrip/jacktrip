@@ -1330,6 +1330,11 @@ void VirtualStudio::handleAudioSocketRequest(QSharedPointer<QLocalSocket>& socke
 {
     QSharedPointer<AudioSocket> audioSocketPtr(new AudioSocket(socket));
     m_audioConfigPtr->registerAudioSocket(audioSocketPtr);
+    if (!m_jackTripRunning || m_devicePtr.isNull()) {
+        // no need to refresh or validate devices, just restart audio
+        m_audioConfigPtr->restartAudio();
+        return;
+    }
     triggerReconnect(true);
 }
 
