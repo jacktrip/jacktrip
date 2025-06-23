@@ -1460,8 +1460,10 @@ void VirtualStudio::connectionFinished()
 void VirtualStudio::processError(const QString& errorMessage)
 {
     static const QString RtAudioErrorMsg = QStringLiteral("RtAudio Error");
+    static const QString RtApiErrorMsg   = QStringLiteral("RtApiCore: ");
     static const QString JackAudioErrorMsg =
         QStringLiteral("The Jack server was shut down");
+    static const QString DisconnectedErrorMsg = QStringLiteral("device was disconnected");
 
     const bool shouldSwitchToRtAudio =
         (errorMessage == QLatin1String("Maybe the JACK server is not running?"));
@@ -1478,7 +1480,7 @@ void VirtualStudio::processError(const QString& errorMessage)
     } else if (errorMessage.startsWith(RtAudioErrorMsg)) {
         if (errorMessage.length() > RtAudioErrorMsg.length() + 2) {
             const QString details(errorMessage.sliced(RtAudioErrorMsg.length() + 2));
-            if (details.contains(QStringLiteral("device was disconnected"))
+            if (details.contains(DisconnectedErrorMsg)
                 || details.contains(
                     QStringLiteral("Unable to retrieve capture buffer"))) {
                 msgBox.setText(QStringLiteral("Your audio interface was disconnected."));
@@ -1496,6 +1498,13 @@ void VirtualStudio::processError(const QString& errorMessage)
             msgBox.setText(QStringLiteral("The JACK Audio Server was stopped."));
         }
         msgBox.setWindowTitle(QStringLiteral("Jack Audio Error"));
+    } else if (errorMessage.startsWith(RtApiErrorMsg)) {
+        if (errorMessage.contains(DisconnectedErrorMsg)) {
+            msgBox.setText(QStringLiteral("Your audio interface was disconnected."));
+        } else {
+            msgBox.setText(errorMessage.sliced(RtApiErrorMsg.length()));
+        }
+        msgBox.setWindowTitle(QStringLiteral("Audio Interface Error"));
     } else {
         msgBox.setText(QStringLiteral("Error: ").append(errorMessage));
         msgBox.setWindowTitle(QStringLiteral("Doh!"));
