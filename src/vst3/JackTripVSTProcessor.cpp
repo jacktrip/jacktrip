@@ -250,7 +250,7 @@ tresult PLUGIN_API JackTripVSTProcessor::process(Vst::ProcessData& data)
     }
 
     // handle connection state change
-    if (mConnected != mProcessor.isConnected()) {
+    if (mConnected != mProcessor.isEstablished()) {
         // try both methods because some hosts only support one or the other.
         // first try to use data output parameters, if available.
         bool updatedConnectedState = false;
@@ -259,7 +259,7 @@ tresult PLUGIN_API JackTripVSTProcessor::process(Vst::ProcessData& data)
             Steinberg::Vst::IParamValueQueue* paramQueue =
                 data.outputParameterChanges->addParameterData(kParamConnectedId, index);
             if (paramQueue) {
-                int8 connectedState = mProcessor.isConnected() ? 1 : 0;
+                int8 connectedState = mProcessor.isEstablished() ? 1 : 0;
                 int32 index2        = 0;
                 if (paramQueue->addPoint(0, connectedState, index2) == kResultOk) {
                     updatedConnectedState = true;
@@ -272,7 +272,7 @@ tresult PLUGIN_API JackTripVSTProcessor::process(Vst::ProcessData& data)
                 acquireNewExchangeBlock();
             }
             if (auto block = toDataBlock(mCurrentExchangeBlock)) {
-                block->connectedState = mProcessor.isConnected();
+                block->connectedState = mProcessor.isEstablished();
                 if (mDataExchangePtr->sendCurrentBlock()) {
                     updatedConnectedState = true;
                 }
@@ -282,7 +282,7 @@ tresult PLUGIN_API JackTripVSTProcessor::process(Vst::ProcessData& data)
         }
         if (updatedConnectedState) {
             // we can update our state after successfully deliver the change
-            mConnected = mProcessor.isConnected();
+            mConnected = mProcessor.isEstablished();
         }
     }
 
@@ -461,7 +461,7 @@ tresult PLUGIN_API JackTripVSTProcessor::getState(IBStream* state)
     float sendGain      = mSendGain;
     float outputMix     = mOutputMix;
     float outputGain    = mOutputGain;
-    int8 connectedState = mProcessor.isConnected() ? 1 : 0;
+    int8 connectedState = mProcessor.isEstablished() ? 1 : 0;
     int32 bypassState   = mBypass ? 1 : 0;
 
     IBStreamer streamer(state, kLittleEndian);

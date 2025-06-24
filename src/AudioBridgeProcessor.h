@@ -70,6 +70,7 @@ class AudioBridgeProcessor
     inline float getRecvMul(void) { return mRecvMul; }
     inline float getPassMul(void) { return mPassMul; }
     inline bool isConnected(void) { return mSocketPtr && mSocketPtr->isConnected(); }
+    inline bool isEstablished(void) { return mSocketPtr && mSocketPtr->isEstablished(); }
 
    private:
     // Configurable parameters

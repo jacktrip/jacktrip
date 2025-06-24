@@ -111,14 +111,14 @@ OSStatus JackTripAU::ProcessBufferLists(
 {
     // Update connection state from processor
     bool connected = GetParameter(kJackTripAUParam_Connected) > 0.5;
-    if (connected != mProcessor.isConnected()) {
-        SetParameter(kJackTripAUParam_Connected, mProcessor.isConnected() ? 1.0 : 0.0);
+    if (connected != mProcessor.isEstablished()) {
+        SetParameter(kJackTripAUParam_Connected, mProcessor.isEstablished() ? 1.0 : 0.0);
         // Notify parameter listeners of the change
         AudioUnitParameter changedParam = {GetComponentInstance(),
                                            kJackTripAUParam_Connected,
                                            kAudioUnitScope_Global, 0};
         AUParameterSet(nullptr, nullptr, &changedParam,
-                       mProcessor.isConnected() ? 1.0f : 0.0f, 0);
+                       mProcessor.isEstablished() ? 1.0f : 0.0f, 0);
     }
 
     // Check if bypass is enabled
