@@ -655,16 +655,22 @@ bool Regulator::pullPacket()
             }
             // check if packet's age matches tolerance, or is the best candidate we have
             const bool meetsTolerance = mIncomingTiming[next] + mMsecTolerance >= now;
-            if (meetsTolerance || i == 0) {
+            // if we have to skip one or more packets, prefer fresher packets that give us
+            // some headroom
+            const bool meetsTolerancePlus =
+                mIncomingTiming[next] + mMsecTolerance >= now + (mLocalFPPdurMsec * 2);
+            if (i == 0 || meetsTolerancePlus || (numSkipped == 0 && meetsTolerance)) {
                 // next is the best candidate
                 if (numSkipped > 0) {
                     // if we skipped any packets, process it as a glitch
-                    if (meetsTolerance) {
-                        // potentially, we can use next on the next pass
+                    if (meetsTolerancePlus) {
+                        // the packet is potentially fresh enough to use next time
                         if (prevSkipped != -1) {
                             // increment last out to the previous valid skipped packet
                             // which would have been used if it met tolerance
-                            numSkipped = prevSkipped - mLastSeqNumOut - 1;
+                            numSkipped = mLastSeqNumOut == -1
+                                             ? 0
+                                             : (prevSkipped - mLastSeqNumOut - 1);
                             if (numSkipped < 0)
                                 numSkipped += NumSlots;
                             mLastSeqNumOut = prevSkipped;
@@ -675,12 +681,14 @@ bool Regulator::pullPacket()
                             numSkipped--;
                             mLastSeqNumOut = next - 1;
                             if (mLastSeqNumOut < 0)
-                                mLastSeqNumOut = NumSlots;
+                                mLastSeqNumOut += NumSlots;
+                            // ensure timing is sane; don't miscalculate missing packets
+                            mIncomingTiming[mLastSeqNumOut] = mIncomingTiming[next];
                             // use the next "real" packet for training
                             memcpy(mXfrBuffer, mSlots[next], mPeerBytes);
                         }
                     } else {
-                        // next packet doesn't meet tolerance
+                        // it's unlikely we'll be able the use to use it next time
                         mLastSeqNumOut = next;
                         memcpy(mXfrBuffer, mSlots[mLastSeqNumOut], mPeerBytes);
                     }
