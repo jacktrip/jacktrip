@@ -630,6 +630,13 @@ bool Regulator::pullPacket()
     } else if (lastSeqNumIn == mLastSeqNumOut) {
         goto UNDERRUN;
     } else {
+        // freshEnough is the oldest time to avoid glitching
+        const double freshEnough = now - mMsecTolerance;
+
+        // extraFresh is the oldest time preferred when skipping packets
+        const double extraFresh =
+            freshEnough + (pullStat->longTermMax + pullStat->longTermStdDev);
+
         // calculate how many new packets we want to look at to
         // find the next packet to pull
         int new_pkts = lastSeqNumIn - mLastSeqNumOut;
@@ -654,16 +661,15 @@ bool Regulator::pullPacket()
                     numSkipped += NumSlots;
             }
             // check if packet's age matches tolerance, or is the best candidate we have
-            const bool meetsTolerance = mIncomingTiming[next] + mMsecTolerance >= now;
+            const bool isFreshEnough = mIncomingTiming[next] >= freshEnough;
+            const bool isExtraFresh  = mIncomingTiming[next] >= extraFresh;
             // if we have to skip one or more packets, prefer fresher packets that give us
             // some headroom
-            const bool meetsTolerancePlus =
-                mIncomingTiming[next] + mMsecTolerance >= now + (mLocalFPPdurMsec * 2);
-            if (i == 0 || meetsTolerancePlus || (numSkipped == 0 && meetsTolerance)) {
+            if (i == 0 || isExtraFresh || (numSkipped == 0 && isFreshEnough)) {
                 // next is the best candidate
                 if (numSkipped > 0) {
                     // if we skipped any packets, process it as a glitch
-                    if (meetsTolerancePlus) {
+                    if (isExtraFresh) {
                         // the packet is potentially fresh enough to use next time
                         if (prevSkipped != -1) {
                             // increment last out to the previous valid skipped packet
