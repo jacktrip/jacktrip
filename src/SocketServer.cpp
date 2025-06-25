@@ -82,7 +82,7 @@ bool SocketServer::start()
 
 void SocketServer::handlePendingConnections()
 {
-    const int timeout = 1000;
+    const int timeout = 250;
     while (m_instanceServer->hasPendingConnections()) {
         QLocalSocket* connectedSocket = m_instanceServer->nextPendingConnection();
         if (connectedSocket == nullptr) {

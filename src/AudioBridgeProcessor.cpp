@@ -30,7 +30,6 @@
 
 #include "AudioBridgeProcessor.h"
 
-#include <QCoreApplication>
 #include <QDebug>
 #include <algorithm>
 #include <cmath>
@@ -65,23 +64,6 @@ void qtMessageHandler([[maybe_unused]] QtMsgType type,
 // any multiplier less than this is considered to be silent
 constexpr double kSilentMul = 0.0000001;
 
-// a Qt application instance must be created for threading to work
-static QCoreApplication* sQtAppPtr = nullptr;
-
-// make sure a Qt application instance is created for threading to work
-static QCoreApplication* getQtAppPtr()
-{
-    if (sQtAppPtr == nullptr) {
-        sQtAppPtr = QCoreApplication::instance();
-        if (sQtAppPtr == nullptr) {
-            int argc  = 0;
-            sQtAppPtr = new QCoreApplication(argc, nullptr);
-            sQtAppPtr->setAttribute(Qt::AA_NativeWindows);
-        }
-    }
-    return sQtAppPtr;
-}
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // AudioBridgeProcessor
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -95,9 +77,6 @@ AudioBridgeProcessor::~AudioBridgeProcessor()
 
 void AudioBridgeProcessor::initialize(unsigned int sampleRate, unsigned int bufferSize)
 {
-    // Initialize Qt application
-    getQtAppPtr();
-
     // Allocate audio buffers
     if (!mBuffersInitialized) {
         mInputBuffer  = new float*[AudioSocketNumChannels];
@@ -132,20 +111,13 @@ void AudioBridgeProcessor::initialize(unsigned int sampleRate, unsigned int buff
     // Initialize AudioSocket
     mSocketPtr = make_unique<AudioSocket>();
     mSocketPtr->setRetryConnection(true);
-    if (mSocketPtr && !mSocketPtr->connect(sampleRate, bufferSize)) {
-        // Connection failed, but we can still function without it
-        qDebug() << "Failed to establish connection (sample rate:" << sampleRate
-                 << " buffer size:" << bufferSize << ")";
-    }
+    mSocketPtr->connect(sampleRate, bufferSize);
 }
 
 void AudioBridgeProcessor::uninitialize(void)
 {
     // Clean up AudioSocket
-    if (mSocketPtr) {
-        mSocketPtr->close();
-        mSocketPtr.reset();
-    }
+    mSocketPtr.reset();
 
     // Clean up audio buffers
     if (mInputBuffer) {

@@ -139,19 +139,19 @@ VirtualStudio::VirtualStudio(UserInterface& parent)
             &VirtualStudio::slotAuthSucceeded);
     connect(m_auth.data(), &VsAuth::updatedAccessToken, this,
             &VirtualStudio::slotAccessTokenUpdated);
-    connect(m_auth.data(), &VsAuth::refreshTokenFailed, this, [=]() {
+    connect(m_auth.data(), &VsAuth::refreshTokenFailed, this, [this]() {
         m_auth->authenticate(QStringLiteral(""));  // retry without using refresh token
     });
-    connect(m_auth.data(), &VsAuth::fetchUserInfoFailed, this, [=]() {
+    connect(m_auth.data(), &VsAuth::fetchUserInfoFailed, this, [this]() {
         m_auth->authenticate(QStringLiteral(""));  // retry without using refresh token
     });
-    connect(m_auth.data(), &VsAuth::deviceCodeExpired, this, [=]() {
+    connect(m_auth.data(), &VsAuth::deviceCodeExpired, this, [this]() {
         m_auth->authenticate(QStringLiteral(""));  // retry without using refresh token
     });
 
     m_webChannelServer.reset(new QWebSocketServer(
         QStringLiteral("Qt6 Virtual Studio Server"), QWebSocketServer::NonSecureMode));
-    connect(m_webChannelServer.data(), &QWebSocketServer::newConnection, this, [=]() {
+    connect(m_webChannelServer.data(), &QWebSocketServer::newConnection, this, [this]() {
         m_webChannel->connectTo(
             new WebSocketTransport(m_webChannelServer->nextPendingConnection()));
     });
@@ -185,7 +185,7 @@ VirtualStudio::VirtualStudio(UserInterface& parent)
 
     // on window focus, attempt to refresh the access token if the token is more than 1
     // hour old
-    connect(m_view.data(), &VsQuickView::focusGained, this, [=]() {
+    connect(m_view.data(), &VsQuickView::focusGained, this, [this]() {
         QString refreshToken = m_auth->refreshToken();
         if (refreshToken.isEmpty()) {
             return;
@@ -294,10 +294,11 @@ VirtualStudio::VirtualStudio(UserInterface& parent)
 
     // prepare handler for local socket connections
     m_socketServerPtr.reset(new SocketServer());
-    m_socketServerPtr->addHandler("deeplink", [=](QSharedPointer<QLocalSocket>& socket) {
-        m_deepLinkPtr->handleVsDeeplinkRequest(socket);
-    });
-    m_socketServerPtr->addHandler("audio", [=](QSharedPointer<QLocalSocket>& socket) {
+    m_socketServerPtr->addHandler("deeplink",
+                                  [this](QSharedPointer<QLocalSocket>& socket) {
+                                      m_deepLinkPtr->handleVsDeeplinkRequest(socket);
+                                  });
+    m_socketServerPtr->addHandler("audio", [this](QSharedPointer<QLocalSocket>& socket) {
         this->handleAudioSocketRequest(socket);
     });
     m_socketServerPtr->start();
@@ -1331,8 +1332,10 @@ void VirtualStudio::handleAudioSocketRequest(QSharedPointer<QLocalSocket>& socke
     QSharedPointer<AudioSocket> audioSocketPtr(new AudioSocket(socket));
     m_audioConfigPtr->registerAudioSocket(audioSocketPtr);
     if (!m_jackTripRunning || m_devicePtr.isNull()) {
-        // no need to refresh or validate devices, just restart audio
-        m_audioConfigPtr->restartAudio();
+        if (m_audioConfigPtr->getAudioReady()) {
+            // no need to refresh or validate devices, just restart audio
+            m_audioConfigPtr->restartAudio();
+        }
         return;
     }
     triggerReconnect(true);
