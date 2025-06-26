@@ -681,7 +681,7 @@ bool Regulator::pullPacket()
                                 numSkipped += NumSlots;
                             mLastSeqNumOut = prevSkipped;
                             // use the previous valid skipped packet for training
-                            memcpy(mXfrBuffer, mSlots[mLastSeqNumOut], mPeerBytes);
+                            // memcpy(mXfrBuffer, mSlots[mLastSeqNumOut], mPeerBytes);
                         } else {
                             // increment last out to the previous packet
                             numSkipped--;
@@ -691,12 +691,12 @@ bool Regulator::pullPacket()
                             // ensure timing is sane; don't miscalculate missing packets
                             mIncomingTiming[mLastSeqNumOut] = mIncomingTiming[next];
                             // use the next "real" packet for training
-                            memcpy(mXfrBuffer, mSlots[next], mPeerBytes);
+                            // memcpy(mXfrBuffer, mSlots[next], mPeerBytes);
                         }
                     } else {
                         // it's unlikely we'll be able the use to use it next time
                         mLastSeqNumOut = next;
-                        memcpy(mXfrBuffer, mSlots[mLastSeqNumOut], mPeerBytes);
+                        // memcpy(mXfrBuffer, mSlots[mLastSeqNumOut], mPeerBytes);
                     }
                     pullStat->plcOverruns += numSkipped;
                     pullStat->plcUnderruns++;
