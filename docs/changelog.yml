@@ -1,7 +1,9 @@
 - Version: "2.7.0-beta2"
-  Date: 2025-06-20
+  Date: 2025-06-26
   Description:
   - (added) Audio Bridge Audio Unit for macOS
+  - (update) PLC auto headroom adjustments and bug fixes
+  - (fixed) Potential Audio Bridge deadlocks on Windows
   - (fixed) VS Mode potential crash when shutting down
   - (fixed) Include man page in Linux binary zip file
 - Version: "2.7.0-beta1"

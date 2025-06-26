@@ -241,7 +241,6 @@ Channel::Channel(int fpp, int upToNow, int packetsInThePast)  // operates at pee
             tmp[j] = 0.0;
         mPacketRing.push_back(tmp);
     }
-    lastWasGlitch = false;
 }
 
 // push received packet to ring
@@ -675,9 +674,9 @@ bool Regulator::pullPacket()
     }
 
 PACKETOK : {
-    if (skipped) {
+    pullStat->plcOverruns += skipped;
+    if (skipped && !mLastWasGlitch) {
         processPacket(true);
-        pullStat->plcOverruns += skipped;
         return true;
     } else
         processPacket(false);
@@ -1088,14 +1087,12 @@ void Regulator::burg(bool glitch)
             c->mTmpFloatBuf[s] = c->outputNowPacket[s] =
                 ((glitch)
                      ? ((primed) ? c->predictedNowPacket[s] : 0.0)
-                     : ((c->lastWasGlitch) ? (mFadeDown[s] * c->futurePredictedPacket[s]
-                                              + mFadeUp[s] * c->realNowPacket[s])
-                                           : c->realNowPacket[s]));
+                     : ((mLastWasGlitch) ? (mFadeDown[s] * c->futurePredictedPacket[s]
+                                            + mFadeUp[s] * c->realNowPacket[s])
+                                         : c->realNowPacket[s]));
 
         for (int s = 0; s < mPeerFPP; s++)
             c->mTmpFloatBuf[s] = c->outputNowPacket[s];
-
-        c->lastWasGlitch = glitch;
 
         for (int i = 0; i < mPacketsInThePast - 1; i++) {
             for (int s = 0; s < mPeerFPP; s++)
@@ -1111,6 +1108,8 @@ void Regulator::burg(bool glitch)
             mTime->collect();
         //////////////////////////////////////
     }
+
+    mLastWasGlitch = glitch;
 
     if ((!(mPcnt % 300)) && (gVerboseFlag))
         cout << "PLC avg " << mTime->avg() << " glitches " << mTime->glitches()
