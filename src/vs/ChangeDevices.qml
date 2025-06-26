@@ -203,7 +203,7 @@ Rectangle {
             anchors.left: useStudioQueueBuffer.left
             background: Rectangle {
                 radius: 6 * virtualstudio.uiScale
-                color: queueBufferAutoButton.down ? browserButtonPressedColour : (queueBufferAutoButton.hovered ? browserButtonHoverColour : (autoQueueBuffer ? "#FF0000" : browserButtonColour))
+                color: autoQueueBuffer ? "#FFFFFF" : browserButtonColour
             }
             onClicked: {
                 if (autoQueueBuffer) {
@@ -217,7 +217,7 @@ Rectangle {
                 text: "Auto"
                 font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale}
                 anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-                color: textColour
+                color: "#000000"
             }
 
             visible: useStudioQueueBuffer.checkState != Qt.Checked
@@ -233,7 +233,7 @@ Rectangle {
             to: 250
             stepSize: 1
             padding: 0
-            visible: !autoQueueBuffer && useStudioQueueBuffer.checkState != Qt.Checked
+            visible: useStudioQueueBuffer.checkState != Qt.Checked
 
             anchors.top: useStudioQueueBuffer.bottom
             anchors.topMargin: 16 * virtualstudio.uiScale
@@ -267,6 +267,7 @@ Rectangle {
                 radius: 13 * virtualstudio.uiScale
                 color: queueBufferSlider.pressed ? sliderPressedColour : sliderColour
                 border.color: buttonStroke
+                visible: !autoQueueBuffer
             }
         }
 
@@ -279,7 +280,7 @@ Rectangle {
             text: "Lower Latency"
             font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
-            visible: !autoQueueBuffer && useStudioQueueBuffer.checkState != Qt.Checked
+            visible: useStudioQueueBuffer.checkState != Qt.Checked
         }
 
         Text {
@@ -291,7 +292,7 @@ Rectangle {
             text: "Higher Quality"
             font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
             color: textColour
-            visible: !autoQueueBuffer && useStudioQueueBuffer.checkState != Qt.Checked
+            visible: useStudioQueueBuffer.checkState != Qt.Checked
         }
     }
 

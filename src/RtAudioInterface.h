@@ -99,6 +99,9 @@ class RtAudioInterface : public AudioInterface
     /// \brief This has no effect in RtAudio
     virtual void connectDefaultPorts() {}
 
+    /// returns true if the current device sample rates do not match what is expected
+    bool sampleRateChanged() const;
+
     // returns number of available input audio devices
     unsigned int getNumInputDevices() const;
 

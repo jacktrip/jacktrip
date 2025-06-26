@@ -459,8 +459,11 @@ bool Regulator::enableWorker()
     // our local audio callback interval (too slow to keep up)
     const double maxPLCdspAllowed = mLocalFPPdurMsec * 0.7;  // 70%
     if (mStatsMaxPLCdspElapsed >= maxPLCdspAllowed && !isWorkerEnabled()) {
-        cout << "PLC dsp " << mStatsMaxPLCdspElapsed
-             << " is too slow (max=" << maxPLCdspAllowed << "), enabling worker" << endl;
+        if (gVerboseFlag) {
+            cout << "PLC dsp " << mStatsMaxPLCdspElapsed
+                 << " is too slow (max=" << maxPLCdspAllowed << "), enabling worker"
+                 << endl;
+        }
         mWorkerBuffer = new int8_t[mPeerBytes];
         memset(mWorkerBuffer, 0, mPeerBytes);
         mWorkerThreadPtr = new QThread();
@@ -492,21 +495,22 @@ void Regulator::updateTolerance(int glitches, int skipped)
             mSkipAutoHeadroom = false;
         }
         // sanity check: prevent headroom from growing beyond the greater of
-        // 3x rolling average of max, or 100ms
-        const int maxHeadroom = std::max<double>(pushStat->longTermMax * 3, 100.0);
-        // only increase headroom if glitch tolerance was exceeded and doing so
-        // would have reduced the number of glitches that occured over the past second.
-        if (skipped > 0 && glitches > glitchesAllowed
-            && mCurrentHeadroom + 1 <= maxHeadroom) {
+        // 3x rolling average of max, or 10ms higher than the max latency observed
+        const int maxHeadroom =
+            std::max<double>(pushStat->longTermMax * 3, mLastMaxLatency + 10);
+        // only increase headroom if glitch tolerance was exceeded
+        if (glitches > glitchesAllowed && mCurrentHeadroom < maxHeadroom) {
             if (mSkipAutoHeadroom) {
                 mSkipAutoHeadroom = false;
             } else {
                 // don't increase headroom two intervals in a row
                 mSkipAutoHeadroom = true;
                 ++mCurrentHeadroom;
-                cout << "PLC skipped=" << skipped << " glitches=" << glitches << ">"
-                     << glitchesAllowed << ", increasing headroom to " << mCurrentHeadroom
-                     << " (max=" << maxHeadroom << ")" << endl;
+                if (gVerboseFlag) {
+                    cout << "PLC skipped=" << skipped << " glitches=" << glitches << ">"
+                         << glitchesAllowed << ", increasing headroom to "
+                         << mCurrentHeadroom << " (max=" << maxHeadroom << ")" << endl;
+                }
             }
         } else {
             // thresholds not met: require 2 intervals in a row
@@ -663,10 +667,7 @@ bool Regulator::pullPacket()
                 }
                 goto PACKETOK;
             }
-            // track how many good packets we skipped due to tolerance < 1ms
-            if (mIncomingTiming[next] + mMsecTolerance + 1 >= now) {
-                ++mSkipped;
-            }
+            ++mSkipped;
         }
 
         // no viable candidate
