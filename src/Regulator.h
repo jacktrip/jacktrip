@@ -304,7 +304,7 @@ class Regulator : public RingBuffer
     double mStatsMaxLatency       = 0;
     double mStatsMaxPLCdspElapsed = 0;
     double mCurrentHeadroom       = 0;
-    double mAutoHeadroomStartTime = 6000.0;
+    double mAutoHeadroomStartTime = 4000.0;
     double mAutoHeadroom          = -1;
     Time* mTime                   = nullptr;
 
