@@ -41,8 +41,6 @@ Rectangle {
 
     property string linkText: virtualstudio.darkMode ? "#8B8D8D" : "#272525"
 
-    property bool autoQueueBuffer: virtualstudio.queueBuffer == 0
-
     function getQueueBufferString () {
         let queueBuffer = virtualstudio.queueBuffer;
         if (useStudioQueueBuffer.checkState == Qt.Checked) {
@@ -203,21 +201,16 @@ Rectangle {
             anchors.left: useStudioQueueBuffer.left
             background: Rectangle {
                 radius: 6 * virtualstudio.uiScale
-                color: autoQueueBuffer ? "#FFFFFF" : browserButtonColour
+                color: virtualstudio.queueBuffer == 0 ? (virtualstudio.darkMode ? "#FFFFFF" : "#000000") : browserButtonColour
             }
             onClicked: {
-                if (autoQueueBuffer) {
-                    virtualstudio.queueBuffer = 5;
-                } else {
-                    virtualstudio.queueBuffer = 0;
-                }
-                autoQueueBuffer = !autoQueueBuffer;
+                virtualstudio.queueBuffer = virtualstudio.queueBuffer == 0 ? 5 : 0;
             }
             Text {
                 text: "Auto"
                 font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale}
                 anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-                color: "#000000"
+                color: virtualstudio.queueBuffer == 0 ? (virtualstudio.darkMode ? "#000000" : "#FFFFFF") : textColour
             }
 
             visible: useStudioQueueBuffer.checkState != Qt.Checked
@@ -234,6 +227,7 @@ Rectangle {
             stepSize: 1
             padding: 0
             visible: useStudioQueueBuffer.checkState != Qt.Checked
+            enabled: virtualstudio.queueBuffer != 0
 
             anchors.top: useStudioQueueBuffer.bottom
             anchors.topMargin: 16 * virtualstudio.uiScale
@@ -267,7 +261,7 @@ Rectangle {
                 radius: 13 * virtualstudio.uiScale
                 color: queueBufferSlider.pressed ? sliderPressedColour : sliderColour
                 border.color: buttonStroke
-                visible: !autoQueueBuffer
+                visible: virtualstudio.queueBuffer != 0
             }
         }
 

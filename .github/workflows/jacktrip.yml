@@ -737,7 +737,7 @@ jobs:
           echo "Assemble complete"
           if [[ -n ${{ matrix.bundle-path }} ]]; then
             mkdir -p $BUILD_PATH/${{ matrix.bundle-path }}
-            zip --symlinks -r $BUILD_PATH/${{ matrix.bundle-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}$SIGNED-application.zip *.app
+            zip --symlinks -r $BUILD_PATH/${{ matrix.bundle-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}$SIGNED-application.zip *.app *.component
             if [[ -n "${{ matrix.vst3sdk-version }}" ]]; then
               zip -r $BUILD_PATH/${{ matrix.bundle-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}$SIGNED-application.zip *.vst3
             fi
