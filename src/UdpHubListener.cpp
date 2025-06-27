@@ -238,7 +238,7 @@ void UdpHubListener::receivedNewConnection()
 {
     QSslSocket* clientSocket =
         static_cast<QSslSocket*>(mTcpServer.nextPendingConnection());
-    connect(clientSocket, &QAbstractSocket::readyRead, this, [=] {
+    connect(clientSocket, &QAbstractSocket::readyRead, this, [this, clientSocket] {
         receivedClientInfo(clientSocket);
     });
     cout << "JackTrip HUB SERVER: Client Connection Received!" << endl;

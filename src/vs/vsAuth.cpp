@@ -93,7 +93,7 @@ void VsAuth::initializedCodeFlow(QString code, QString verificationUrl)
 void VsAuth::fetchUserInfo(QString accessToken)
 {
     QNetworkReply* reply = m_api->getAuth0UserInfo();
-    connect(reply, &QNetworkReply::finished, this, [=]() {
+    connect(reply, &QNetworkReply::finished, this, [this, reply, accessToken]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "VsAuth::fetchUserInfo Error: "
                       << reply->errorString().toStdString() << std::endl;
@@ -138,7 +138,7 @@ void VsAuth::refreshAccessToken(QString refreshToken)
     // send request
     QNetworkReply* reply = m_networkAccessManager->post(request, data.toUtf8());
 
-    connect(reply, &QNetworkReply::finished, this, [=]() {
+    connect(reply, &QNetworkReply::finished, this, [this, reply]() {
         QByteArray buffer = reply->readAll();
 
         // Error: failed to get device code

@@ -46,7 +46,7 @@ const QString About::s_buildID = QLatin1String("");
 About::About(QWidget* parent) : QDialog(parent), m_ui(new Ui::About)
 {
     m_ui->setupUi(this);
-    connect(m_ui->closeButton, &QPushButton::clicked, this, [=]() {
+    connect(m_ui->closeButton, &QPushButton::clicked, this, [this]() {
         this->done(0);
     });
 
