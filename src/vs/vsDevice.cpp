@@ -81,7 +81,7 @@ void VsDevice::registerApp()
 
     // check if device exists
     QNetworkReply* reply = m_api->getDevice(m_appID);
-    connect(reply, &QNetworkReply::finished, this, [=]() {
+    connect(reply, &QNetworkReply::finished, this, [this, reply]() {
         // Got error
         if (reply->error() != QNetworkReply::NoError) {
             QVariant statusCode =
@@ -255,7 +255,7 @@ void VsDevice::updateState(const QString& serverId)
     };
     QJsonDocument request = QJsonDocument(json);
     QNetworkReply* reply  = m_api->updateDevice(m_appID, request.toJson());
-    connect(reply, &QNetworkReply::finished, this, [=]() {
+    connect(reply, &QNetworkReply::finished, this, [reply]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
         }
@@ -281,7 +281,7 @@ void VsDevice::sendLevels()
 
     QJsonDocument request = QJsonDocument(json);
     QNetworkReply* reply  = m_api->updateDevice(m_appID, request.toJson());
-    connect(reply, &QNetworkReply::finished, this, [=]() {
+    connect(reply, &QNetworkReply::finished, this, [reply]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
         }
@@ -563,7 +563,7 @@ void VsDevice::registerJTAsDevice()
     QJsonDocument request = QJsonDocument(json);
 
     QNetworkReply* reply = m_api->postDevice(request.toJson());
-    connect(reply, &QNetworkReply::finished, this, [=]() {
+    connect(reply, &QNetworkReply::finished, this, [this, reply]() {
         if (reply->error() != QNetworkReply::NoError) {
             std::cout << "Error: " << reply->errorString().toStdString() << std::endl;
             reply->deleteLater();

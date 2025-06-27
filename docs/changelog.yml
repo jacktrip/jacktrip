@@ -1,22 +1,20 @@
-- Version: "2.7.0-beta2"
-  Date: 2025-06-26
+- Version: "2.7.0"
+  Date: 2025-06-29
   Description:
   - (added) Audio Bridge Audio Unit for macOS
-  - (update) PLC auto headroom adjustments and bug fixes
-  - (fixed) Potential Audio Bridge deadlocks on Windows
-  - (fixed) VS Mode potential crash when shutting down
-  - (fixed) Include man page in Linux binary zip file
-- Version: "2.7.0-beta1"
-  Date: 2025-06-07
-  Description:
   - (added) VS Mode ability to share specific screens or windows
-  - (updated) Upgraded all builds to use Qt 6.8.3
-  - (updated) Improved filters to blacklist iPhone microphones
-  - (updated) Use static Qt build when creating VST3 plugin on OSX
-  - (updated) Audio Bridge VST3 SDK updated to 3.7.13
   - (updated) VS Mode reduced bandwidth for small video windows
   - (updated) VS Mode enabled disk storage for WebEngine
+  - (updated) PLC auto headroom adjustments and bug fixes
+  - (updated) Upgraded all builds to use Qt 6.8.3
+  - (updated) Audio Bridge VST3 SDK updated to 3.7.13
+  - (updated) Use static Qt build when creating VST3 plugin on OSX
+  - (updated) Improved filters to blacklist iPhone microphones
+  - (fixed) VS Mode potential crash when shutting down
   - (fixed) VS Mode shows too many options for stereo devices
+  - (fixed) Potential Audio Bridge deadlocks on Windows
+  - (fixed) Potential double delete in volume meters
+  - (fixed) Include man page in Linux shared binary zip file
 - Version: "2.6.0"
   Date: 2025-04-22
   Description:

@@ -101,7 +101,7 @@ QJackTrip::QJackTrip(UserInterface& interface, QWidget* parent)
     connect(m_ui->certEdit, &QLineEdit::textChanged, this, &QJackTrip::authFilesChanged);
     connect(m_ui->keyEdit, &QLineEdit::textChanged, this, &QJackTrip::authFilesChanged);
     connect(m_ui->credsEdit, &QLineEdit::textChanged, this, &QJackTrip::authFilesChanged);
-    connect(m_ui->aboutButton, &QPushButton::clicked, this, [=]() {
+    connect(m_ui->aboutButton, &QPushButton::clicked, this, [this]() {
         About about(this);
         about.exec();
     });
@@ -117,7 +117,7 @@ QJackTrip::QJackTrip(UserInterface& interface, QWidget* parent)
     m_ui->vsModeButton->setVisible(true);
 #endif
     connect(m_ui->autoPatchComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this, [=]() {
+            this, [this]() {
                 if (m_ui->autoPatchComboBox->currentIndex() == CLIENTFOFI
                     || m_ui->autoPatchComboBox->currentIndex() == FULLMIX) {
                     m_ui->patchServerCheckBox->setEnabled(true);
@@ -125,14 +125,14 @@ QJackTrip::QJackTrip(UserInterface& interface, QWidget* parent)
                     m_ui->patchServerCheckBox->setEnabled(false);
                 }
             });
-    connect(m_ui->authCheckBox, &QCHECKBOX_STATE_CHANGED, this, [=]() {
+    connect(m_ui->authCheckBox, &QCHECKBOX_STATE_CHANGED, this, [this]() {
         m_ui->usernameLabel->setEnabled(m_ui->authCheckBox->isChecked());
         m_ui->usernameEdit->setEnabled(m_ui->authCheckBox->isChecked());
         m_ui->passwordLabel->setEnabled(m_ui->authCheckBox->isChecked());
         m_ui->passwordEdit->setEnabled(m_ui->authCheckBox->isChecked());
         credentialsChanged();
     });
-    connect(m_ui->requireAuthCheckBox, &QCHECKBOX_STATE_CHANGED, this, [=]() {
+    connect(m_ui->requireAuthCheckBox, &QCHECKBOX_STATE_CHANGED, this, [this]() {
         m_ui->certLabel->setEnabled(m_ui->requireAuthCheckBox->isChecked());
         m_ui->certEdit->setEnabled(m_ui->requireAuthCheckBox->isChecked());
         m_ui->certBrowse->setEnabled(m_ui->requireAuthCheckBox->isChecked());
@@ -144,21 +144,21 @@ QJackTrip::QJackTrip(UserInterface& interface, QWidget* parent)
         m_ui->credsBrowse->setEnabled(m_ui->requireAuthCheckBox->isChecked());
         authFilesChanged();
     });
-    connect(m_ui->ioStatsCheckBox, &QCHECKBOX_STATE_CHANGED, this, [=]() {
+    connect(m_ui->ioStatsCheckBox, &QCHECKBOX_STATE_CHANGED, this, [this]() {
         m_ui->ioStatsLabel->setEnabled(m_ui->ioStatsCheckBox->isChecked());
         m_ui->ioStatsSpinBox->setEnabled(m_ui->ioStatsCheckBox->isChecked());
         if (!m_ui->ioStatsCheckBox->isChecked()) {
             m_statsDialog->hide();
         }
     });
-    connect(m_ui->verboseCheckBox, &QCHECKBOX_STATE_CHANGED, this, [=]() {
+    connect(m_ui->verboseCheckBox, &QCHECKBOX_STATE_CHANGED, this, [this]() {
         gVerboseFlag = m_ui->verboseCheckBox->isChecked();
         if (!gVerboseFlag) {
             m_debugDialog->hide();
             m_debugDialog->clearOutput();
         }
     });
-    connect(m_ui->jitterCheckBox, &QCHECKBOX_STATE_CHANGED, this, [=]() {
+    connect(m_ui->jitterCheckBox, &QCHECKBOX_STATE_CHANGED, this, [this]() {
         m_ui->broadcastCheckBox->setEnabled(m_ui->jitterCheckBox->isChecked());
         m_ui->broadcastQueueLabel->setEnabled(m_ui->jitterCheckBox->isChecked()
                                               && m_ui->broadcastCheckBox->isChecked());
@@ -183,13 +183,13 @@ QJackTrip::QJackTrip(UserInterface& interface, QWidget* parent)
             m_autoQueueIndicator.setText(QStringLiteral("Auto queue: disabled"));
         }
     });
-    connect(m_ui->broadcastCheckBox, &QCHECKBOX_STATE_CHANGED, this, [=]() {
+    connect(m_ui->broadcastCheckBox, &QCHECKBOX_STATE_CHANGED, this, [this]() {
         m_ui->broadcastQueueLabel->setEnabled(m_ui->jitterCheckBox->isChecked()
                                               && m_ui->broadcastCheckBox->isChecked());
         m_ui->broadcastQueueSpinBox->setEnabled(m_ui->jitterCheckBox->isChecked()
                                                 && m_ui->broadcastCheckBox->isChecked());
     });
-    connect(m_ui->autoQueueCheckBox, &QCHECKBOX_STATE_CHANGED, this, [=]() {
+    connect(m_ui->autoQueueCheckBox, &QCHECKBOX_STATE_CHANGED, this, [this]() {
         m_ui->autoQueueLabel->setEnabled(m_ui->jitterCheckBox->isChecked()
                                          && m_ui->autoQueueCheckBox->isChecked());
         m_ui->autoQueueSpinBox->setEnabled(m_ui->jitterCheckBox->isChecked()
@@ -205,34 +205,34 @@ QJackTrip::QJackTrip(UserInterface& interface, QWidget* parent)
         }
     });
 
-    connect(m_ui->inFreeverbCheckBox, &QCHECKBOX_STATE_CHANGED, this, [=]() {
+    connect(m_ui->inFreeverbCheckBox, &QCHECKBOX_STATE_CHANGED, this, [this]() {
         m_ui->inFreeverbLabel->setEnabled(m_ui->inFreeverbCheckBox->isChecked());
         m_ui->inFreeverbWetnessSlider->setEnabled(m_ui->inFreeverbCheckBox->isChecked());
     });
-    connect(m_ui->inZitarevCheckBox, &QCHECKBOX_STATE_CHANGED, this, [=]() {
+    connect(m_ui->inZitarevCheckBox, &QCHECKBOX_STATE_CHANGED, this, [this]() {
         m_ui->inZitarevLabel->setEnabled(m_ui->inZitarevCheckBox->isChecked());
         m_ui->inZitarevWetnessSlider->setEnabled(m_ui->inZitarevCheckBox->isChecked());
     });
 
-    connect(m_ui->outFreeverbCheckBox, &QCHECKBOX_STATE_CHANGED, this, [=]() {
+    connect(m_ui->outFreeverbCheckBox, &QCHECKBOX_STATE_CHANGED, this, [this]() {
         m_ui->outFreeverbLabel->setEnabled(m_ui->outFreeverbCheckBox->isChecked());
         m_ui->outFreeverbWetnessSlider->setEnabled(
             m_ui->outFreeverbCheckBox->isChecked());
     });
-    connect(m_ui->outZitarevCheckBox, &QCHECKBOX_STATE_CHANGED, this, [=]() {
+    connect(m_ui->outZitarevCheckBox, &QCHECKBOX_STATE_CHANGED, this, [this]() {
         m_ui->outZitarevLabel->setEnabled(m_ui->outZitarevCheckBox->isChecked());
         m_ui->outZitarevWetnessSlider->setEnabled(m_ui->outZitarevCheckBox->isChecked());
     });
-    connect(m_ui->outLimiterCheckBox, &QCHECKBOX_STATE_CHANGED, this, [=]() {
+    connect(m_ui->outLimiterCheckBox, &QCHECKBOX_STATE_CHANGED, this, [this]() {
         m_ui->outLimiterLabel->setEnabled(m_ui->outLimiterCheckBox->isChecked());
         m_ui->outClientsSpinBox->setEnabled(m_ui->outLimiterCheckBox->isChecked());
     });
 
-    connect(m_ui->connectScriptCheckBox, &QCHECKBOX_STATE_CHANGED, this, [=]() {
+    connect(m_ui->connectScriptCheckBox, &QCHECKBOX_STATE_CHANGED, this, [this]() {
         m_ui->connectScriptEdit->setEnabled(m_ui->connectScriptCheckBox->isChecked());
         m_ui->connectScriptBrowse->setEnabled(m_ui->connectScriptCheckBox->isChecked());
     });
-    connect(m_ui->disconnectScriptCheckBox, &QCHECKBOX_STATE_CHANGED, this, [=]() {
+    connect(m_ui->disconnectScriptCheckBox, &QCHECKBOX_STATE_CHANGED, this, [this]() {
         m_ui->disconnectScriptEdit->setEnabled(
             m_ui->disconnectScriptCheckBox->isChecked());
         m_ui->disconnectScriptBrowse->setEnabled(
@@ -260,7 +260,7 @@ QJackTrip::QJackTrip(UserInterface& interface, QWidget* parent)
 
 #ifdef RT_AUDIO
     connect(m_ui->backendComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this, [=](int index) {
+            this, [this](int index) {
                 if (index == 1) {
                     m_ui->sampleRateComboBox->setEnabled(true);
                     m_ui->sampleRateLabel->setEnabled(true);
@@ -287,7 +287,7 @@ QJackTrip::QJackTrip(UserInterface& interface, QWidget* parent)
                     m_ui->backendWarningLabel->setVisible(false);
                 }
             });
-    connect(m_ui->refreshDevicesButton, &QPushButton::clicked, this, [=]() {
+    connect(m_ui->refreshDevicesButton, &QPushButton::clicked, this, [this]() {
         populateDeviceMenu(m_ui->inputDeviceComboBox, true);
         populateDeviceMenu(m_ui->outputDeviceComboBox, false);
     });
@@ -432,9 +432,10 @@ void QJackTrip::showEvent(QShowEvent* event)
                     "will automatically be re-enabled.)");
                 msgBox.setWindowTitle(QStringLiteral("JACK Not Available"));
                 msgBox.setCheckBox(dontBugMe);
-                QObject::connect(dontBugMe, &QCHECKBOX_STATE_CHANGED, this, [=]() {
-                    m_hideWarning = dontBugMe->isChecked();
-                });
+                QObject::connect(dontBugMe, &QCHECKBOX_STATE_CHANGED, this,
+                                 [this, dontBugMe]() {
+                                     m_hideWarning = dontBugMe->isChecked();
+                                 });
                 msgBox.exec();
                 if (m_hideWarning) {
                     settings.setValue(QStringLiteral("HideJackWarning"), true);

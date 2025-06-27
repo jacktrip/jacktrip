@@ -81,7 +81,7 @@ void VsDeviceCodeFlow::initDeviceAuthorizationCodeFlow()
 
     // send request
     QNetworkReply* reply = m_netManager->post(request, data.toUtf8());
-    connect(reply, &QNetworkReply::finished, this, [=]() {
+    connect(reply, &QNetworkReply::finished, this, [this, reply]() {
         bool success = processDeviceCodeNetworkReply(reply);
         if (success) {
             // notify success along with user code and verification URL
@@ -136,7 +136,7 @@ void VsDeviceCodeFlow::onPollingTimerTick()
 
     // send send request for token
     QNetworkReply* reply = m_netManager->post(request, data.toUtf8());
-    connect(reply, &QNetworkReply::finished, this, [=]() {
+    connect(reply, &QNetworkReply::finished, this, [this, reply]() {
         bool success = processPollingOAuthTokenNetworkReply(reply);
         if (m_authenticationError) {
             // shouldn't happen
