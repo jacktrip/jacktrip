@@ -141,7 +141,6 @@ class Channel
     int mWptr;
     int mRing;
     std::vector<float> mZeros;
-    bool lastWasGlitch;
     int mCoeffsSize;
     int mTailSize;
 };
@@ -296,6 +295,7 @@ class Regulator : public RingBuffer
     int mFPPratioDenominator;
     bool mAuto                    = false;
     bool mSkipAutoHeadroom        = true;
+    bool mLastWasGlitch           = false;
     int mSkipped                  = 0;
     int mLastSkipped              = 0;
     int mLastGlitches             = 0;
@@ -304,7 +304,7 @@ class Regulator : public RingBuffer
     double mStatsMaxLatency       = 0;
     double mStatsMaxPLCdspElapsed = 0;
     double mCurrentHeadroom       = 0;
-    double mAutoHeadroomStartTime = 6000.0;
+    double mAutoHeadroomStartTime = 4000.0;
     double mAutoHeadroom          = -1;
     Time* mTime                   = nullptr;
 

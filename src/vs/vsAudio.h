@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2022-2024 JackTrip Labs, Inc.
+  Copyright (c) 2022-2025 JackTrip Labs, Inc.
 
   Permission is hereby granted, free of charge, to any person
   obtaining a copy of this software and associated documentation
@@ -145,6 +145,7 @@ class VsAudio : public QObject
     // allow VirtualStudio to get Permissions to bind to QML view
     VsPermissions& getPermissions() { return *m_permissionsPtr; }
     VsAudioWorker& getWorker() { return *m_audioWorkerPtr; }
+    void stopWorker();
 
     //  allow VirtualStudio to create new audio interfaces
     AudioInterface* newAudioInterface(JackTrip* jackTripPtr = nullptr);

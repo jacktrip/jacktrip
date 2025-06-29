@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2022-2024 JackTrip Labs, Inc.
+  Copyright (c) 2022-2025 JackTrip Labs, Inc.
 
   Permission is hereby granted, free of charge, to any person
   obtaining a copy of this software and associated documentation
@@ -44,6 +44,7 @@
 #include <QFile>
 #include <QFontDatabase>
 #include <QMessageBox>
+#include <QNetworkCookie>
 #include <QQmlContext>
 #include <QQmlEngine>
 #include <QQuickStyle>
@@ -54,7 +55,10 @@
 #include <QStandardPaths>
 #include <QSysInfo>
 #include <QTextStream>
+#include <QWebEngineCookieStore>
+#include <QWebEngineProfile>
 #include <QtGlobal>
+#include <QtWebEngineQuick/QQuickWebEngineProfile>
 #include <algorithm>
 #include <iostream>
 
@@ -135,19 +139,19 @@ VirtualStudio::VirtualStudio(UserInterface& parent)
             &VirtualStudio::slotAuthSucceeded);
     connect(m_auth.data(), &VsAuth::updatedAccessToken, this,
             &VirtualStudio::slotAccessTokenUpdated);
-    connect(m_auth.data(), &VsAuth::refreshTokenFailed, this, [=]() {
+    connect(m_auth.data(), &VsAuth::refreshTokenFailed, this, [this]() {
         m_auth->authenticate(QStringLiteral(""));  // retry without using refresh token
     });
-    connect(m_auth.data(), &VsAuth::fetchUserInfoFailed, this, [=]() {
+    connect(m_auth.data(), &VsAuth::fetchUserInfoFailed, this, [this]() {
         m_auth->authenticate(QStringLiteral(""));  // retry without using refresh token
     });
-    connect(m_auth.data(), &VsAuth::deviceCodeExpired, this, [=]() {
+    connect(m_auth.data(), &VsAuth::deviceCodeExpired, this, [this]() {
         m_auth->authenticate(QStringLiteral(""));  // retry without using refresh token
     });
 
     m_webChannelServer.reset(new QWebSocketServer(
         QStringLiteral("Qt6 Virtual Studio Server"), QWebSocketServer::NonSecureMode));
-    connect(m_webChannelServer.data(), &QWebSocketServer::newConnection, this, [=]() {
+    connect(m_webChannelServer.data(), &QWebSocketServer::newConnection, this, [this]() {
         m_webChannel->connectTo(
             new WebSocketTransport(m_webChannelServer->nextPendingConnection()));
     });
@@ -181,7 +185,7 @@ VirtualStudio::VirtualStudio(UserInterface& parent)
 
     // on window focus, attempt to refresh the access token if the token is more than 1
     // hour old
-    connect(m_view.data(), &VsQuickView::focusGained, this, [=]() {
+    connect(m_view.data(), &VsQuickView::focusGained, this, [this]() {
         QString refreshToken = m_auth->refreshToken();
         if (refreshToken.isEmpty()) {
             return;
@@ -290,16 +294,27 @@ VirtualStudio::VirtualStudio(UserInterface& parent)
 
     // prepare handler for local socket connections
     m_socketServerPtr.reset(new SocketServer());
-    m_socketServerPtr->addHandler("deeplink", [=](QSharedPointer<QLocalSocket>& socket) {
-        m_deepLinkPtr->handleVsDeeplinkRequest(socket);
-    });
-    m_socketServerPtr->addHandler("audio", [=](QSharedPointer<QLocalSocket>& socket) {
+    m_socketServerPtr->addHandler("deeplink",
+                                  [this](QSharedPointer<QLocalSocket>& socket) {
+                                      m_deepLinkPtr->handleVsDeeplinkRequest(socket);
+                                  });
+    m_socketServerPtr->addHandler("audio", [this](QSharedPointer<QLocalSocket>& socket) {
         this->handleAudioSocketRequest(socket);
     });
     m_socketServerPtr->start();
 
-    // initialize default QtWebEngineProfile
-    m_qwebEngineProfile = QWebEngineProfile::defaultProfile();
+    // initialize default profile for WebEngine
+    QQuickWebEngineProfile* defaultWebEngineProfile =
+        QQuickWebEngineProfile::defaultProfile();
+    defaultWebEngineProfile->setStorageName(QStringLiteral("Default"));
+    defaultWebEngineProfile->setHttpUserAgent(
+        QStringLiteral("JackTrip/%1").arg(versionString()));
+    defaultWebEngineProfile->setCachePath(defaultWebEngineProfile->persistentStoragePath()
+                                          + QStringLiteral("/Cache"));
+    defaultWebEngineProfile->setPersistentCookiesPolicy(
+        QQuickWebEngineProfile::ForcePersistentCookies);
+    defaultWebEngineProfile->setHttpCacheType(QQuickWebEngineProfile::DiskHttpCache);
+    defaultWebEngineProfile->setOffTheRecord(false);
 }
 
 void VirtualStudio::show()
@@ -400,10 +415,10 @@ QString VirtualStudio::copyrightString()
 #endif
 
     result +=
-        "Copyright &copy; 2008-2024 Juan-Pablo Caceres, Chris Chafe, et al. SoundWIRE "
+        "Copyright &copy; 2008-2025 Juan-Pablo Caceres, Chris Chafe, et al. SoundWIRE "
         "group at CCRMA, Stanford University.<br/><br/>\n";
     result +=
-        "Virtual Studio interface and integration Copyright &copy; 2022-2024 JackTrip "
+        "Virtual Studio interface and integration Copyright &copy; 2022-2025 JackTrip "
         "Labs, Inc.<br/><br/>\n";
 
     if (hasClassicMode()) {
@@ -1316,6 +1331,13 @@ void VirtualStudio::handleAudioSocketRequest(QSharedPointer<QLocalSocket>& socke
 {
     QSharedPointer<AudioSocket> audioSocketPtr(new AudioSocket(socket));
     m_audioConfigPtr->registerAudioSocket(audioSocketPtr);
+    if (!m_jackTripRunning || m_devicePtr.isNull()) {
+        if (m_audioConfigPtr->getAudioReady()) {
+            // no need to refresh or validate devices, just restart audio
+            m_audioConfigPtr->restartAudio();
+        }
+        return;
+    }
     triggerReconnect(true);
 }
 
@@ -1387,24 +1409,14 @@ void VirtualStudio::slotAuthSucceeded()
 
 void VirtualStudio::slotAccessTokenUpdated(QString accessToken)
 {
-    // set cookie
-    QWebEngineCookieStore* cookieStore = m_qwebEngineProfile->cookieStore();
-    QNetworkCookie authCookie =
-        QNetworkCookie(QByteArray("auth_code"), accessToken.toUtf8());
+    // set auth cookies for prod mode
+    setCookie("auth_code", accessToken, "https://www.jacktrip.com");
+    setCookie("auth_code", accessToken, "https://app.jacktrip.com");
 
-    QUrl url1 = QUrl(QStringLiteral("https://www.jacktrip.com"));
-    QUrl url2 = QUrl(QStringLiteral("https://app.jacktrip.com"));
-    QUrl url3 = QUrl(QStringLiteral("http://localhost:3000"));
-    if (testMode()) {
-        url1 = QUrl(QStringLiteral("https://next-test.jacktrip.com"));
-        url2 = QUrl(QStringLiteral("https://test.jacktrip.com"));
-    }
-
-    cookieStore->setCookie(authCookie, url1);
-    cookieStore->setCookie(authCookie, url2);
-    if (testMode()) {
-        cookieStore->setCookie(authCookie, url3);
-    }
+    // set auth cookies for test mode
+    setCookie("auth_code", accessToken, "https://next-test.jacktrip.com");
+    setCookie("auth_code", accessToken, "https://test.jacktrip.com");
+    setCookie("auth_code", accessToken, "http://localhost:3000");
 
     // Get refresh token and userId
     m_refreshToken = m_auth->refreshToken();
@@ -1415,6 +1427,16 @@ void VirtualStudio::slotAccessTokenUpdated(QString accessToken)
     settings.setValue(QStringLiteral("RefreshToken"), m_refreshToken);
     settings.setValue(QStringLiteral("UserId"), m_userId);
     settings.endGroup();
+}
+
+void VirtualStudio::setCookie(const QString& name, const QString& value,
+                              const QString& origin)
+{
+    // set webengine cookie
+    QNetworkCookie cookie = QNetworkCookie(name.toUtf8(), value.toUtf8());
+    QWebEngineCookieStore* cookieStore =
+        QWebEngineProfile::defaultProfile()->cookieStore();
+    cookieStore->setCookie(cookie, origin);
 }
 
 void VirtualStudio::connectionFinished()
@@ -1441,8 +1463,10 @@ void VirtualStudio::connectionFinished()
 void VirtualStudio::processError(const QString& errorMessage)
 {
     static const QString RtAudioErrorMsg = QStringLiteral("RtAudio Error");
+    static const QString RtApiErrorMsg   = QStringLiteral("RtApiCore: ");
     static const QString JackAudioErrorMsg =
         QStringLiteral("The Jack server was shut down");
+    static const QString DisconnectedErrorMsg = QStringLiteral("device was disconnected");
 
     const bool shouldSwitchToRtAudio =
         (errorMessage == QLatin1String("Maybe the JACK server is not running?"));
@@ -1459,7 +1483,7 @@ void VirtualStudio::processError(const QString& errorMessage)
     } else if (errorMessage.startsWith(RtAudioErrorMsg)) {
         if (errorMessage.length() > RtAudioErrorMsg.length() + 2) {
             const QString details(errorMessage.sliced(RtAudioErrorMsg.length() + 2));
-            if (details.contains(QStringLiteral("device was disconnected"))
+            if (details.contains(DisconnectedErrorMsg)
                 || details.contains(
                     QStringLiteral("Unable to retrieve capture buffer"))) {
                 msgBox.setText(QStringLiteral("Your audio interface was disconnected."));
@@ -1477,6 +1501,13 @@ void VirtualStudio::processError(const QString& errorMessage)
             msgBox.setText(QStringLiteral("The JACK Audio Server was stopped."));
         }
         msgBox.setWindowTitle(QStringLiteral("Jack Audio Error"));
+    } else if (errorMessage.startsWith(RtApiErrorMsg)) {
+        if (errorMessage.contains(DisconnectedErrorMsg)) {
+            msgBox.setText(QStringLiteral("Your audio interface was disconnected."));
+        } else {
+            msgBox.setText(errorMessage.sliced(RtApiErrorMsg.length()));
+        }
+        msgBox.setWindowTitle(QStringLiteral("Audio Interface Error"));
     } else {
         msgBox.setText(QStringLiteral("Error: ").append(errorMessage));
         msgBox.setWindowTitle(QStringLiteral("Doh!"));
@@ -1518,12 +1549,10 @@ void VirtualStudio::handleWebsocketMessage(const QString& msg)
         return;
     }
 
-    bool currentStudioUpdated    = false;
-    bool serverHostOrPortUpdated = false;
+    bool currentStudioUpdated = false;
     if (serverHost != m_currentStudio.host()) {
         m_currentStudio.setHost(serverHost);
-        currentStudioUpdated    = true;
-        serverHostOrPortUpdated = true;
+        currentStudioUpdated = true;
     }
     if (serverStatus != m_currentStudio.status()) {
         m_currentStudio.setStatus(serverStatus);
@@ -1543,8 +1572,7 @@ void VirtualStudio::handleWebsocketMessage(const QString& msg)
     }
     if (serverPort != m_currentStudio.port()) {
         m_currentStudio.setPort(serverPort);
-        currentStudioUpdated    = true;
-        serverHostOrPortUpdated = true;
+        currentStudioUpdated = true;
     }
     if (queueBuffer != m_currentStudio.queueBuffer()) {
         m_currentStudio.setQueueBuffer(queueBuffer);
@@ -1889,17 +1917,23 @@ void VirtualStudio::detectedFeedbackLoop()
 VirtualStudio::~VirtualStudio()
 {
     QDesktopServices::unsetUrlHandler("jacktrip");
+
     // close the window
     m_view.reset();
+
     // stop the audio worker thread before destructing other things
-    if (!m_audioConfigPtr.isNull()) {
-        m_audioConfigPtr->disconnect();
-        m_audioConfigPtr.reset();
-    }
+    m_audioConfigPtr->stopWorker();
+
     // stop device and corresponding threads
     if (!m_devicePtr.isNull()) {
         m_devicePtr->disconnect();
         m_devicePtr.reset();
+    }
+
+    // reset VsAudio after VsDevice since it holds a smart pointer
+    if (!m_audioConfigPtr.isNull()) {
+        m_audioConfigPtr->disconnect();
+        m_audioConfigPtr.reset();
     }
 }
 

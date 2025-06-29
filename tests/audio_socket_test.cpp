@@ -84,10 +84,7 @@ int main(int argc, char** argv)
     QCoreApplication app(argc, argv);
 
     AudioSocket s;
-    if (!s.connect(SAMPLE_RATE, BUFFER_SIZE)) {
-        cerr << "Failed to connect: " << s.getSocket().errorString().toStdString() << endl;
-        return -1;
-    }
+    s.connect(SAMPLE_RATE, BUFFER_SIZE);
     s.setRetryConnection(true);
 
     MyThread thread(s);

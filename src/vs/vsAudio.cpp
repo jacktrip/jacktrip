@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2022-2024 JackTrip Labs, Inc.
+  Copyright (c) 2022-2025 JackTrip Labs, Inc.
 
   Permission is hereby granted, free of charge, to any person
   obtaining a copy of this software and associated documentation
@@ -177,11 +177,17 @@ VsAudio::VsAudio(QObject* parent)
 
 VsAudio::~VsAudio()
 {
+    stopWorker();
+}
+
+void VsAudio::stopWorker()
+{
     if (m_workerThreadPtr == nullptr)
         return;
     m_workerThreadPtr->quit();
     WaitForSignal(m_workerThreadPtr, &QThread::finished);
     m_workerThreadPtr->deleteLater();
+    m_workerThreadPtr = nullptr;
 }
 
 bool VsAudio::backendAvailable() const
@@ -1154,8 +1160,11 @@ void VsAudioWorker::getDeviceList(const QVector<RtAudioDevice>& devices,
         }
 
         // Skip blacklisted devices
+        // Apple Inc.: iPhone (10) Microphone
+        // Apple Inc.: Mike's iPhone Microphone
         const bool iPhoneMic = deviceName.startsWith("Apple Inc.:")
-                               && deviceName.endsWith("Phone Microphone");
+                               && deviceName.contains("iPhone")
+                               && deviceName.endsWith("Microphone");
         if (blacklisted_devices.contains(deviceName) || iPhoneMic) {
             std::cout << "RTAudio: blacklisted " << (isInput ? "input" : "output")
                       << " device: " << devices[n].name << std::endl;
@@ -1316,7 +1325,7 @@ void VsAudioWorker::validateInputDevicesState()
             element.insert(QString::fromStdString("numChannels"), QVariant(1).toInt());
             inputChannelsComboModel.push_back(element);
         }
-        for (int i = 0; i < numDevicesChannelsAvailable; i++) {
+        for (int i = 0; i < numDevicesChannelsAvailable - 1; i++) {
             QJsonObject element = QJsonObject();
             element.insert(
                 QString::fromStdString("label"),
@@ -1423,7 +1432,7 @@ void VsAudioWorker::validateOutputDevicesState()
         // set the output channels selector to have the options based on the currently
         // selected device
         QJsonArray outputChannelsComboModel;
-        for (int i = 0; i < numDevicesChannelsAvailable; i++) {
+        for (int i = 0; i < numDevicesChannelsAvailable - 1; i++) {
             QJsonObject element = QJsonObject();
             element.insert(
                 QString::fromStdString("label"),

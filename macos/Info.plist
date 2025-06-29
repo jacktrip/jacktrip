@@ -2,14 +2,14 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>BuildMachineOSBuild</key>
-	<string>19E287</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleExecutable</key>
 	<string>jacktrip</string>
 	<key>CFBundleIconFile</key>
 	<string>jacktrip</string>
+	<key>CFBundleGetInfoString</key>
+	<string>JackTrip Desktop App</string>
 	<key>CFBundleIdentifier</key>
 	<string>%BUNDLEID%</string>
 	<key>CFBundleInfoDictionaryVersion</key>
@@ -29,32 +29,16 @@
 		</array>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
+	<key>CFBundleVersion</key>
+	<string>%VERSION%</string>
 	<key>CFBundleShortVersionString</key>
 	<string>%VERSION%</string>
-	<key>CFBundleSignature</key>
-	<string>????</string>
 	<key>CFBundleSupportedPlatforms</key>
 	<array>
 		<string>MacOSX</string>
 	</array>
-	<key>CFBundleVersion</key>
-	<string>%VERSION%</string>
-	<key>DTCompiler</key>
-	<string>com.apple.compilers.llvm.clang.1_0</string>
-	<key>DTPlatformBuild</key>
-	<string>11E503a</string>
-	<key>DTPlatformVersion</key>
-	<string>GM</string>
-	<key>DTSDKBuild</key>
-	<string>19E258</string>
-	<key>DTSDKName</key>
-	<string>macosx10.15</string>
-	<key>DTXcode</key>
-	<string>1141</string>
-	<key>DTXcodeBuild</key>
-	<string>11E503a</string>
 	<key>LSMinimumSystemVersion</key>
-	<string>10.13</string>
+	<string>12.0</string>
 	<key>NSHighResolutionCapable</key>
 	<true/>
 	<key>NSHumanReadableCopyright</key>

@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2022-2024 JackTrip Labs, Inc.
+  Copyright (c) 2022-2025 JackTrip Labs, Inc.
 
   Permission is hereby granted, free of charge, to any person
   obtaining a copy of this software and associated documentation
@@ -81,7 +81,7 @@ void VsDeviceCodeFlow::initDeviceAuthorizationCodeFlow()
 
     // send request
     QNetworkReply* reply = m_netManager->post(request, data.toUtf8());
-    connect(reply, &QNetworkReply::finished, this, [=]() {
+    connect(reply, &QNetworkReply::finished, this, [this, reply]() {
         bool success = processDeviceCodeNetworkReply(reply);
         if (success) {
             // notify success along with user code and verification URL
@@ -136,7 +136,7 @@ void VsDeviceCodeFlow::onPollingTimerTick()
 
     // send send request for token
     QNetworkReply* reply = m_netManager->post(request, data.toUtf8());
-    connect(reply, &QNetworkReply::finished, this, [=]() {
+    connect(reply, &QNetworkReply::finished, this, [this, reply]() {
         bool success = processPollingOAuthTokenNetworkReply(reply);
         if (m_authenticationError) {
             // shouldn't happen

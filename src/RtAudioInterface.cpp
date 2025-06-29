@@ -512,6 +512,23 @@ void RtAudioInterface::setup(bool verbose)
 }
 
 //*******************************************************************************
+bool RtAudioInterface::sampleRateChanged() const
+{
+    // TODO: this doesn't seem to work, at least on macos
+    // sanity check
+    if (mRtAudioInput.isNull() || mRtAudioInput->getStreamSampleRate() != mInSampleRate) {
+        return true;
+    }
+    if (!mDuplexMode) {
+        if (mRtAudioOutput.isNull()
+            || mRtAudioOutput->getStreamSampleRate() != mOutSampleRate) {
+            return true;
+        }
+    }
+    return false;
+}
+
+//*******************************************************************************
 void RtAudioInterface::printDevices()
 {
     QVector<RtAudioDevice> devices;

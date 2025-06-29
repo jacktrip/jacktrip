@@ -97,7 +97,7 @@ constexpr int HISTFPP      = 128;    // default FPP when calibrating burg window
 
 constexpr int NumSlots   = 4096;   // NumSlots looped for recent arrivals
 constexpr double AutoMax = 250.0;  // msec bounds on insane IPI, like ethernet unplugged
-constexpr double AutoInitDur = 3000.0;  // kick in auto after this many msec
+constexpr double AutoInitDur = 2000.0;  // kick in auto after this many msec
 constexpr double AutoInitValFactor =
     0.5;  // scale for initial mMsecTolerance during init phase if unspecified
 
@@ -241,7 +241,6 @@ Channel::Channel(int fpp, int upToNow, int packetsInThePast)  // operates at pee
             tmp[j] = 0.0;
         mPacketRing.push_back(tmp);
     }
-    lastWasGlitch = false;
 }
 
 // push received packet to ring
@@ -459,8 +458,11 @@ bool Regulator::enableWorker()
     // our local audio callback interval (too slow to keep up)
     const double maxPLCdspAllowed = mLocalFPPdurMsec * 0.7;  // 70%
     if (mStatsMaxPLCdspElapsed >= maxPLCdspAllowed && !isWorkerEnabled()) {
-        cout << "PLC dsp " << mStatsMaxPLCdspElapsed
-             << " is too slow (max=" << maxPLCdspAllowed << "), enabling worker" << endl;
+        if (gVerboseFlag) {
+            cout << "PLC dsp " << mStatsMaxPLCdspElapsed
+                 << " is too slow (max=" << maxPLCdspAllowed << "), enabling worker"
+                 << endl;
+        }
         mWorkerBuffer = new int8_t[mPeerBytes];
         memset(mWorkerBuffer, 0, mPeerBytes);
         mWorkerThreadPtr = new QThread();
@@ -492,21 +494,29 @@ void Regulator::updateTolerance(int glitches, int skipped)
             mSkipAutoHeadroom = false;
         }
         // sanity check: prevent headroom from growing beyond the greater of
-        // 3x rolling average of max, or 100ms
-        const int maxHeadroom = std::max<double>(pushStat->longTermMax * 3, 100.0);
-        // only increase headroom if glitch tolerance was exceeded and doing so
-        // would have reduced the number of glitches that occured over the past second.
-        if (skipped > 0 && glitches > glitchesAllowed
-            && mCurrentHeadroom + 1 <= maxHeadroom) {
+        // 3x rolling average of max, or 10ms higher than the max latency observed
+        const int maxHeadroom =
+            std::max<double>(pushStat->longTermMax * 3, mLastMaxLatency + 10);
+        // only increase headroom if glitch tolerance was exceeded
+        if (glitches > glitchesAllowed && mCurrentHeadroom < maxHeadroom) {
             if (mSkipAutoHeadroom) {
                 mSkipAutoHeadroom = false;
             } else {
                 // don't increase headroom two intervals in a row
                 mSkipAutoHeadroom = true;
-                ++mCurrentHeadroom;
-                cout << "PLC skipped=" << skipped << " glitches=" << glitches << ">"
-                     << glitchesAllowed << ", increasing headroom to " << mCurrentHeadroom
-                     << " (max=" << maxHeadroom << ")" << endl;
+                if (mLastMaxLatency > mMsecTolerance + 1) {
+                    // increase headroom enough to cover any skipped packets
+                    mCurrentHeadroom = std::min<double>(
+                        maxHeadroom, std::ceil(mLastMaxLatency - mMsecTolerance));
+                } else {
+                    ++mCurrentHeadroom;
+                }
+                if (gVerboseFlag) {
+                    cout << "PLC skipped=" << skipped << " glitches=" << glitches << ">"
+                         << glitchesAllowed << ", lastmax=" << mLastMaxLatency
+                         << ", increasing headroom to " << mCurrentHeadroom
+                         << " (max=" << maxHeadroom << ")" << endl;
+                }
             }
         } else {
             // thresholds not met: require 2 intervals in a row
@@ -554,8 +564,6 @@ void Regulator::updatePushStats(int seq_num)
         const int newSkipped    = totalSkipped - mLastSkipped;
         mLastGlitches           = totalGlitches;
         mLastSkipped            = totalSkipped;
-        mLastMaxLatency         = mStatsMaxLatency;
-        mStatsMaxLatency        = 0;
         if (mAuto && pushStat->lastTime > AutoInitDur) {
             // after AutoInitDur: update auto tolerance once per second
             if (pushStat->lastTime <= mAutoHeadroomStartTime) {
@@ -564,8 +572,11 @@ void Regulator::updatePushStats(int seq_num)
                 // a calculated tolerance. Otherwise, the switch can
                 // sometimes cause it to bump headroom prematurely even
                 // though there are no real audio glitches.
+                mStatsMaxLatency = 0;  // ignore during warmup
                 updateTolerance(0, 0);
             } else {
+                mLastMaxLatency  = mStatsMaxLatency;  // only set after warmup
+                mStatsMaxLatency = 0;
                 updateTolerance(newGlitches, newSkipped);
             }
         }
@@ -588,7 +599,7 @@ void Regulator::setQueueBufferLength(int queueBuffer)
         mAutoHeadroom          = -1;
         mCurrentHeadroom       = 0;
         mSkipAutoHeadroom      = true;
-        mAutoHeadroomStartTime = pushStat ? (pushStat->lastTime + 3000.0) : 3000.0;
+        mAutoHeadroomStartTime = pushStat ? (pushStat->lastTime + AutoInitDur) : 4000.0;
     } else {
         mAutoHeadroom    = std::abs(queueBuffer);
         mCurrentHeadroom = mAutoHeadroom;
@@ -604,7 +615,13 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
     // if (seq_num==0) return;   // impose regular loss
     mIncomingTiming[seq_num] = (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
     memcpy(mSlots[seq_num], buf, mPeerBytes);
-    mLastSeqNumIn.store(seq_num, std::memory_order_release);
+    // ensure that last sequnce number is "greater than" the current one
+    // otherwise, we can create a condition where last out gets ahead of last in
+    const int lastSeqNumIn = mLastSeqNumIn.load(std::memory_order_relaxed);
+    if (lastSeqNumIn == -1 || seq_num > lastSeqNumIn
+        || (seq_num < lastSeqNumIn && (lastSeqNumIn - seq_num) > (NumSlots / 2))) {
+        mLastSeqNumIn.store(seq_num, std::memory_order_release);
+    }
 };
 
 //*******************************************************************************
@@ -646,21 +663,19 @@ bool Regulator::pullPacket()
                 if (skipped < 0)
                     skipped += NumSlots;
             }
+            // update max latency for every valid packet, including any skipped ones
+            double latency = (now - mIncomingTiming[next]);
+            if (latency > mStatsMaxLatency) {
+                mStatsMaxLatency = latency;
+            }
             // check if packet's age matches tolerance, or is the best candidate we have
             if (mIncomingTiming[next] + mMsecTolerance >= now || i == 0) {
                 // next is the best candidate
                 memcpy(mXfrBuffer, mSlots[next], mPeerBytes);
                 mLastSeqNumOut = next;
-                double latency = (now - mIncomingTiming[mLastSeqNumOut]);
-                if (latency > mStatsMaxLatency) {
-                    mStatsMaxLatency = latency;
-                }
                 goto PACKETOK;
             }
-            // track how many good packets we skipped due to tolerance < 1ms
-            if (mIncomingTiming[next] + mMsecTolerance + 1 >= now) {
-                ++mSkipped;
-            }
+            ++mSkipped;
         }
 
         // no viable candidate
@@ -668,9 +683,9 @@ bool Regulator::pullPacket()
     }
 
 PACKETOK : {
-    if (skipped) {
+    pullStat->plcOverruns += skipped;
+    if (skipped && !mLastWasGlitch) {
         processPacket(true);
-        pullStat->plcOverruns += skipped;
         return true;
     } else
         processPacket(false);
@@ -1081,14 +1096,12 @@ void Regulator::burg(bool glitch)
             c->mTmpFloatBuf[s] = c->outputNowPacket[s] =
                 ((glitch)
                      ? ((primed) ? c->predictedNowPacket[s] : 0.0)
-                     : ((c->lastWasGlitch) ? (mFadeDown[s] * c->futurePredictedPacket[s]
-                                              + mFadeUp[s] * c->realNowPacket[s])
-                                           : c->realNowPacket[s]));
+                     : ((mLastWasGlitch) ? (mFadeDown[s] * c->futurePredictedPacket[s]
+                                            + mFadeUp[s] * c->realNowPacket[s])
+                                         : c->realNowPacket[s]));
 
         for (int s = 0; s < mPeerFPP; s++)
             c->mTmpFloatBuf[s] = c->outputNowPacket[s];
-
-        c->lastWasGlitch = glitch;
 
         for (int i = 0; i < mPacketsInThePast - 1; i++) {
             for (int s = 0; s < mPeerFPP; s++)
@@ -1105,10 +1118,13 @@ void Regulator::burg(bool glitch)
         //////////////////////////////////////
     }
 
+    mLastWasGlitch = glitch;
+
     if ((!(mPcnt % 300)) && (gVerboseFlag))
         cout << "PLC avg " << mTime->avg() << " glitches " << mTime->glitches()
              << " skipped " << (mSkipped - mLastSkipped) << " tolerance "
-             << (mMsecTolerance - mCurrentHeadroom) << " +" << mCurrentHeadroom << endl;
+             << (mMsecTolerance - mCurrentHeadroom) << " +" << mCurrentHeadroom
+             << " latency " << mLastMaxLatency << endl;
     mPcnt++;
     // 32 bit is good for days:  (/ (* (- (expt 2 32) 1) (/ 32 48000.0)) (* 60 60 24))
 }

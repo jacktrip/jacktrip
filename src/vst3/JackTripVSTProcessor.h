@@ -37,10 +37,9 @@
 #include <QScopedPointer>
 #include <QThread>
 
+#include "../AudioBridgeProcessor.h"
 #include "public.sdk/source/vst/utility/dataexchange.h"
 #include "public.sdk/source/vst/vstaudioeffect.h"
-
-class AudioSocket;
 
 //------------------------------------------------------------------------
 //  JackTripVSTProcessor
@@ -104,25 +103,19 @@ class JackTripVSTProcessor : public Steinberg::Vst::AudioEffect
 
     //------------------------------------------------------------------------
    protected:
-    static float gainToVol(double gain);
     void updateVolumeMultipliers();
     void acquireNewExchangeBlock();
 
     Steinberg::Vst::ParamValue mSendGain   = 1.f;
     Steinberg::Vst::ParamValue mOutputMix  = 0;
     Steinberg::Vst::ParamValue mOutputGain = 1.f;
-    float mSendMul                         = 1.f;
-    float mRecvMul                         = 0;
-    float mPassMul                         = 1.f;
     bool mConnected                        = false;
     bool mBypass                           = false;
 
    private:
-    QScopedPointer<AudioSocket> mSocketPtr;
+    AudioBridgeProcessor mProcessor;
     QScopedPointer<Steinberg::Vst::DataExchangeHandler> mDataExchangePtr;
     Steinberg::Vst::DataExchangeBlock mCurrentExchangeBlock;
-    float** mInputBuffer;
-    float** mOutputBuffer;
     Steinberg::Vst::SampleRate mSampleRate = 0;
     int mBufferSize                        = 0;
 };

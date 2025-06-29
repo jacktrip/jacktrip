@@ -33,7 +33,6 @@
 
 #include "JackTripVSTProcessor.h"
 
-#include "../AudioSocket.h"
 #include "JackTripVST.h"
 #include "JackTripVSTDataBlock.h"
 #include "base/source/fstreamer.h"
@@ -41,49 +40,6 @@
 
 using namespace std;
 using namespace Steinberg;
-
-// uncomment to generate log file, for debugging purposes
-// #define JACKTRIP_VST_LOG
-
-#ifdef JACKTRIP_VST_LOG
-#if defined(_WIN32)
-#define JACKTRIP_VST_LOG_PATH "c:/JackTripTemp"
-#define JACKTRIP_VST_LOG_FILE "c:/JackTripTemp/vst.log"
-#else
-#define JACKTRIP_VST_LOG_PATH "/tmp/jacktrip"
-#define JACKTRIP_VST_LOG_FILE "/tmp/jacktrip/vst.log"
-#endif
-#include <filesystem>
-#include <fstream>
-#include <iostream>
-
-static ofstream kLogFile;
-
-void qtMessageHandler([[maybe_unused]] QtMsgType type,
-                      [[maybe_unused]] const QMessageLogContext& context,
-                      const QString& msg)
-{
-    kLogFile << msg.toStdString() << endl;
-}
-#endif
-
-// any multiplier less than this is considered to be silent
-constexpr double kSilentMul = 0.0000001;
-
-static QCoreApplication* sQtAppPtr = nullptr;
-
-static QCoreApplication* getQtAppPtr()
-{
-    if (sQtAppPtr == nullptr) {
-        sQtAppPtr = QCoreApplication::instance();
-        if (sQtAppPtr == nullptr) {
-            int argc  = 0;
-            sQtAppPtr = new QCoreApplication(argc, nullptr);
-            sQtAppPtr->setAttribute(Qt::AA_NativeWindows);
-        }
-    }
-    return sQtAppPtr;
-}
 
 //------------------------------------------------------------------------
 // JackTripVSTProcessor
@@ -115,34 +71,7 @@ tresult PLUGIN_API JackTripVSTProcessor::initialize(FUnknown* context)
     addAudioInput(STR16("Stereo In"), Vst::SpeakerArr::kStereo);
     addAudioOutput(STR16("Stereo Out"), Vst::SpeakerArr::kStereo);
 
-    getQtAppPtr();
-
-    mInputBuffer  = new float*[AudioSocketNumChannels];
-    mOutputBuffer = new float*[AudioSocketNumChannels];
-    for (int i = 0; i < AudioSocketNumChannels; i++) {
-        mInputBuffer[i]  = new float[AudioSocketMaxSamplesPerBlock];
-        mOutputBuffer[i] = new float[AudioSocketMaxSamplesPerBlock];
-    }
-
-#ifdef JACKTRIP_VST_LOG
-    if (!filesystem::is_directory(JACKTRIP_VST_LOG_PATH)) {
-        if (!filesystem::create_directory(JACKTRIP_VST_LOG_PATH)) {
-            qDebug() << "Failed to create VST log directory: " << JACKTRIP_VST_LOG_PATH;
-        }
-    }
-    kLogFile.open(JACKTRIP_VST_LOG_FILE, ios::app);
-    if (kLogFile.is_open()) {
-        kLogFile << "JackTrip VST initialized" << endl;
-        kLogFile.flush();
-        cout.rdbuf(kLogFile.rdbuf());
-        cerr.rdbuf(kLogFile.rdbuf());
-    } else {
-        qDebug() << "Failed to open VST log file: " << JACKTRIP_VST_LOG_FILE;
-    }
-    qInstallMessageHandler(qtMessageHandler);
-#endif
-
-    qDebug() << "JackTrip VST initialized";
+    // qDebug() << "JackTrip VST initialized";
 
     return kResultOk;
 }
@@ -150,20 +79,9 @@ tresult PLUGIN_API JackTripVSTProcessor::initialize(FUnknown* context)
 //------------------------------------------------------------------------
 tresult PLUGIN_API JackTripVSTProcessor::terminate()
 {
-    mSocketPtr.reset();
+    mProcessor.uninitialize();
 
-    for (int i = 0; i < AudioSocketNumChannels; i++) {
-        delete[] mInputBuffer[i];
-        delete[] mOutputBuffer[i];
-    }
-    delete[] mInputBuffer;
-    delete[] mOutputBuffer;
-
-    qDebug() << "JackTrip VST terminated";
-
-#ifdef JACKTRIP_VST_LOG
-    kLogFile.close();
-#endif
+    // qDebug() << "JackTrip VST terminated";
 
     //---do not forget to call parent ------
     return AudioEffect::terminate();
@@ -257,28 +175,22 @@ tresult PLUGIN_API JackTripVSTProcessor::setActive(TBool state)
         if (mSampleRate == 0 || mBufferSize == 0) {
             return kResultFalse;
         }
-        // create a audio new socket
-        if (mSocketPtr.isNull()) {
-            // not yet initialized
-            mSocketPtr.reset(new AudioSocket(true));
-            // automatically retry to establish connection
-            mSocketPtr->setRetryConnection(true);
-            mSocketPtr->connect(mSampleRate, mBufferSize);
-        }
+        // initialize the audio bridge processor
+        mProcessor.initialize(mSampleRate, mBufferSize);
         // activate data exchange API
         if (!mDataExchangePtr.isNull()) {
             mDataExchangePtr->onActivate(processSetup);
         }
     } else {
-        // disconnect from remote when inactive
-        mSocketPtr.reset();
+        // uninitialize the audio bridge processor
+        mProcessor.uninitialize();
         // deactivate data exchange API
         if (!mDataExchangePtr.isNull()) {
             mDataExchangePtr->onDeactivate();
         }
     }
 
-    qDebug() << "JackTrip VST setActive(" << int(state) << ")";
+    // qDebug() << "JackTrip VST setActive(" << int(state) << ")";
 
     //--- called when the Plug-in is enable/disable (On/Off) -----
     return AudioEffect::setActive(state);
@@ -287,17 +199,13 @@ tresult PLUGIN_API JackTripVSTProcessor::setActive(TBool state)
 //------------------------------------------------------------------------
 tresult PLUGIN_API JackTripVSTProcessor::setProcessing(TBool state)
 {
-    qDebug() << "JackTrip VST setProcessing(" << int(state) << ")";
+    // qDebug() << "JackTrip VST setProcessing(" << int(state) << ")";
     return AudioEffect::setProcessing(state);
 }
 
 //------------------------------------------------------------------------
 tresult PLUGIN_API JackTripVSTProcessor::process(Vst::ProcessData& data)
 {
-    // sanity check; should never happen
-    if (mSocketPtr.isNull())
-        return kResultFalse;
-
     //--- Read inputs parameter changes-----------
     if (data.inputParameterChanges) {
         int32 numParamsChanged = data.inputParameterChanges->getParameterCount();
@@ -341,17 +249,8 @@ tresult PLUGIN_API JackTripVSTProcessor::process(Vst::ProcessData& data)
             updateVolumeMultipliers();
     }
 
-#if 0
-    if (mLogFile.is_open()) {
-        mLogFile << "JackTrip VST process: inputs=" << data.numInputs
-                 << ", outputs=" << data.numOutputs
-                 << ", samples=" << data.numSamples
-                 << endl;
-    }
-#endif
-
     // handle connection state change
-    if (mConnected != mSocketPtr->isConnected()) {
+    if (mConnected != mProcessor.isEstablished()) {
         // try both methods because some hosts only support one or the other.
         // first try to use data output parameters, if available.
         bool updatedConnectedState = false;
@@ -360,7 +259,7 @@ tresult PLUGIN_API JackTripVSTProcessor::process(Vst::ProcessData& data)
             Steinberg::Vst::IParamValueQueue* paramQueue =
                 data.outputParameterChanges->addParameterData(kParamConnectedId, index);
             if (paramQueue) {
-                int8 connectedState = mSocketPtr->isConnected() ? 1 : 0;
+                int8 connectedState = mProcessor.isEstablished() ? 1 : 0;
                 int32 index2        = 0;
                 if (paramQueue->addPoint(0, connectedState, index2) == kResultOk) {
                     updatedConnectedState = true;
@@ -373,7 +272,7 @@ tresult PLUGIN_API JackTripVSTProcessor::process(Vst::ProcessData& data)
                 acquireNewExchangeBlock();
             }
             if (auto block = toDataBlock(mCurrentExchangeBlock)) {
-                block->connectedState = mSocketPtr->isConnected();
+                block->connectedState = mProcessor.isEstablished();
                 if (mDataExchangePtr->sendCurrentBlock()) {
                     updatedConnectedState = true;
                 }
@@ -383,18 +282,13 @@ tresult PLUGIN_API JackTripVSTProcessor::process(Vst::ProcessData& data)
         }
         if (updatedConnectedState) {
             // we can update our state after successfully deliver the change
-            mConnected = mSocketPtr->isConnected();
+            mConnected = mProcessor.isEstablished();
         }
     }
 
     //--- Process Audio---------------------
     //--- ----------------------------------
-    if (data.numInputs == 0 || data.numOutputs == 0) {
-        // nothing to do
-        return kResultOk;
-    }
-
-    if (data.numSamples <= 0) {
+    if (data.numSamples <= 0 || data.numInputs == 0 || data.numOutputs == 0) {
         // nothing to do
         return kResultOk;
     }
@@ -416,52 +310,48 @@ tresult PLUGIN_API JackTripVSTProcessor::process(Vst::ProcessData& data)
         return kResultOk;
     }
 
-    // clear buffers
-    for (int i = 0; i < AudioSocketNumChannels; i++) {
-        memset(mInputBuffer[i], 0, data.numSamples * sizeof(float));
-        memset(mOutputBuffer[i], 0, data.numSamples * sizeof(float));
-    }
-
-    // copy input to buffer
-    if (mSendMul >= kSilentMul) {
-        uint64 isSilentFlag = 1;
-        int channelsIn      = min(data.inputs[0].numChannels, AudioSocketNumChannels);
-        for (int i = 0; i < channelsIn; i++) {
-            bool isSilent = isSilentFlag & data.inputs[0].silenceFlags;
-            isSilentFlag <<= 1;
-            if (isSilent)
-                continue;
-            Vst::Sample32* inBuffer = data.inputs[0].channelBuffers32[i];
-            for (int j = 0; j < data.numSamples; j++) {
-                mInputBuffer[i][j] = inBuffer[j] * mSendMul;
-            }
+    // Set up input buffers
+    bool inputSilenceFlags[AudioSocketNumChannels];
+    float* inputBuffers[AudioSocketNumChannels];
+    for (int ch = 0; ch < AudioSocketNumChannels; ch++) {
+        if (ch < data.inputs[0].numChannels) {
+            inputBuffers[ch] = static_cast<float*>(data.inputs[0].channelBuffers32[ch]);
+            uint64 isSilentFlag   = static_cast<uint64>(1) << ch;
+            inputSilenceFlags[ch] = (isSilentFlag & data.inputs[0].silenceFlags) != 0;
+        } else {
+            inputBuffers[ch]      = nullptr;
+            inputSilenceFlags[ch] = true;
         }
     }
 
-    // send to audio socket
-    mSocketPtr->compute(data.numSamples, mInputBuffer, mOutputBuffer);
+    // Set up output buffers
+    bool outputSilenceFlags[AudioSocketNumChannels];
+    float* outputBuffers[AudioSocketNumChannels];
+    for (int ch = 0; ch < AudioSocketNumChannels; ch++) {
+        if (ch < data.outputs[0].numChannels) {
+            outputBuffers[ch] = static_cast<float*>(data.outputs[0].channelBuffers32[ch]);
+        } else {
+            outputBuffers[ch] = nullptr;
+        }
+    }
 
-    // copy buffer to output
-    for (int i = 0; i < data.outputs[0].numChannels; i++) {
+    // Process through the audio bridge processor
+    mProcessor.process(inputBuffers, outputBuffers, inputSilenceFlags, outputSilenceFlags,
+                       data.numSamples);
+
+    // Update silence flags
+    // Handle any remaining output channels by zeroing them
+    for (int ch = 0; ch < data.outputs[0].numChannels; ch++) {
         bool silent = true;
-        memset(data.outputs[0].channelBuffers32[i], 0,
-               data.numSamples * sizeof(Vst::Sample32));
-        if (mPassMul >= kSilentMul || mRecvMul >= kSilentMul) {
-            Vst::Sample32* outBuffer = data.outputs[0].channelBuffers32[i];
-            for (int j = 0; j < data.numSamples; j++) {
-                if (i < AudioSocketNumChannels && mRecvMul >= kSilentMul) {
-                    outBuffer[j] = mOutputBuffer[i][j] * mRecvMul;
-                }
-                if (i < data.inputs[0].numChannels && mPassMul >= kSilentMul) {
-                    outBuffer[j] += data.inputs[0].channelBuffers32[i][j] * mPassMul;
-                }
-                if (silent && outBuffer[j] != 0) {
-                    silent = false;
-                }
-            }
+        if (ch < AudioSocketNumChannels) {
+            silent = outputSilenceFlags[ch];
+        } else {
+            memset(data.outputs[0].channelBuffers32[ch], 0,
+                   data.numSamples * sizeof(Vst::Sample32));
+            silent = true;
         }
         if (silent) {
-            data.outputs[0].silenceFlags |= static_cast<Steinberg::uint64>(1) << i;
+            data.outputs[0].silenceFlags |= static_cast<Steinberg::uint64>(1) << ch;
         }
     }
 
@@ -469,29 +359,21 @@ tresult PLUGIN_API JackTripVSTProcessor::process(Vst::ProcessData& data)
 }
 
 //------------------------------------------------------------------------
-float JackTripVSTProcessor::gainToVol(double gain)
-{
-    // handle min and max
-    if (gain < kSilentMul)
-        return 0;
-    if (gain > 0.9999999)
-        return 1.0;
-    // simple logarithmic conversion
-    return exp(log(1000) * gain) / 1000.0;
-}
-
-//------------------------------------------------------------------------
 void JackTripVSTProcessor::updateVolumeMultipliers()
 {
     // convert [0-1.0] gain (dB) values into [0-1.0] volume multiplers
-    float outMul = gainToVol(mOutputGain);
-    mSendMul     = gainToVol(mSendGain);
-    mRecvMul     = mOutputMix * outMul;
-    mPassMul     = (1.0f - mOutputMix) * outMul;
+    float outMul  = AudioBridgeProcessor::gainToVol(mOutputGain);
+    float sendMul = AudioBridgeProcessor::gainToVol(mSendGain);
+    float recvMul = mOutputMix * outMul;
+    float passMul = (1.0f - mOutputMix) * outMul;
 
-    qDebug() << "JackTrip VST send =" << mSendMul << "(" << mSendGain
-             << "), out =" << outMul << "(" << mOutputGain << "), mix =" << mOutputMix
-             << ", recv =" << mRecvMul << ", pass =" << mPassMul;
+    mProcessor.setSendMul(sendMul);
+    mProcessor.setRecvMul(recvMul);
+    mProcessor.setPassMul(passMul);
+
+    // qDebug() << "JackTrip VST send =" << sendMul << "(" << mSendGain
+    //          << "), out =" << outMul << "(" << mOutputGain << "), mix =" << mOutputMix
+    //          << ", recv =" << recvMul << ", pass =" << passMul;
 }
 
 //------------------------------------------------------------------------
@@ -509,8 +391,8 @@ tresult PLUGIN_API JackTripVSTProcessor::setupProcessing(Vst::ProcessSetup& newS
     mSampleRate = newSetup.sampleRate;
     mBufferSize = static_cast<int>(newSetup.maxSamplesPerBlock);
 
-    qDebug() << "JackTrip VST setupProcessing: mSampleRate=" << mSampleRate
-             << ", mbufferSize=" << mBufferSize;
+    // qDebug() << "JackTrip VST setupProcessing: mSampleRate=" << mSampleRate
+    //          << ", mbufferSize=" << mBufferSize;
 
     //--- called before any processing ----
     return AudioEffect::setupProcessing(newSetup);
@@ -579,7 +461,7 @@ tresult PLUGIN_API JackTripVSTProcessor::getState(IBStream* state)
     float sendGain      = mSendGain;
     float outputMix     = mOutputMix;
     float outputGain    = mOutputGain;
-    int8 connectedState = mConnected ? 1 : 0;
+    int8 connectedState = mProcessor.isEstablished() ? 1 : 0;
     int32 bypassState   = mBypass ? 1 : 0;
 
     IBStreamer streamer(state, kLittleEndian);

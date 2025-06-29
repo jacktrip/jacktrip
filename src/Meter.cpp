@@ -43,10 +43,15 @@
 #include "jacktrip_types.h"
 #include "meterdsp.h"
 
+constexpr int kMaxNumChannels = 256;
+
 //*******************************************************************************
-Meter::Meter(int numchans, bool verboseFlag) : mNumChannels(numchans)
+Meter::Meter(int numchans, bool verboseFlag)
+    : mNumChannels(std::min(numchans, kMaxNumChannels))
 {
     setVerbose(verboseFlag);
+    mValues    = new float[kMaxNumChannels];
+    mOutValues = new float[kMaxNumChannels];
     for (int i = 0; i < mNumChannels; i++) {
         meterP.push_back(new meterdsp);
     }
@@ -60,12 +65,8 @@ Meter::~Meter()
         delete static_cast<meterdsp*>(meterP[i]);
     }
     meterP.clear();
-    if (mValues) {
-        delete mValues;
-    }
-    if (mOutValues) {
-        delete mOutValues;
-    }
+    delete[] mValues;
+    delete[] mOutValues;
     if (mBuffer) {
         delete mBuffer;
     }
@@ -147,9 +148,9 @@ void Meter::updateNumChannels(int nChansIn, int nChansOut)
     }
 
     if (outgoingPluginToNetwork) {
-        mNumChannels = nChansIn;
+        mNumChannels = std::min(nChansIn, kMaxNumChannels);
     } else {
-        mNumChannels = nChansOut;
+        mNumChannels = std::min(nChansOut, kMaxNumChannels);
     }
 
     setupValues();
@@ -157,21 +158,6 @@ void Meter::updateNumChannels(int nChansIn, int nChansOut)
 
 void Meter::setupValues()
 {
-    if (mValues) {
-        float* oldValues = mValues;
-        // Delete our old array after 5 seconds.
-        QTimer::singleShot(5000, this, [=]() {
-            delete oldValues;
-        });
-    }
-    if (mOutValues) {
-        float* oldOut = mOutValues;
-        QTimer::singleShot(5000, this, [=]() {
-            delete oldOut;
-        });
-    }
-    mValues    = new float[mNumChannels];
-    mOutValues = new float[mNumChannels];
     for (int i = 0; i < mNumChannels; i++) {
         mValues[i]    = threshold;
         mOutValues[i] = threshold;

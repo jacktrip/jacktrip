@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtWebEngine
+import QtQuick.Dialogs
 
 Item {
     width: parent.width; height: parent.height
@@ -57,10 +58,11 @@ Item {
         WebEngineView {
             id: webEngineView
             anchors.fill: parent
+            settings.fullScreenSupportEnabled: true
             settings.javascriptCanAccessClipboard: true
             settings.javascriptCanPaste: true
             settings.screenCaptureEnabled: true
-            profile.httpUserAgent: `JackTrip/${virtualstudio.versionString}`
+            settings.playbackRequiresUserGesture: false
             url: `https://${virtualstudio.apiHost}/studios/${web.studioId}/live`
 
             // useful for debugging
@@ -84,6 +86,14 @@ Item {
 
             onFeaturePermissionRequested: function(securityOrigin, feature) {
                 webEngineView.grantFeaturePermission(securityOrigin, feature, true);
+            }
+
+            onDesktopMediaRequested: function(request) {
+                // Store the request for later use
+                screenShareModal.mediaRequest = request;
+
+                // Show the modal
+                screenShareModal.open();
             }
 
             onRenderProcessTerminated: function(terminationStatus, exitCode) {
@@ -116,5 +126,9 @@ Item {
                 ]
             }
         }
+    }
+
+    ScreenShareModal {
+        id: screenShareModal
     }
 }

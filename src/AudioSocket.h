@@ -43,7 +43,7 @@
 #include <QScopedPointer>
 #include <QSharedPointer>
 #include <QThread>
-#include <QTimer>
+#include <functional>
 
 #include "ProcessPlugin.h"
 #include "WaitFreeFrameBuffer.h"
@@ -64,8 +64,17 @@ constexpr int AudioSocketMaxQueueSize = 1024;
 // audio header is 4 bytes for the number of samples + 2 bytes for the buffer size
 constexpr int AudioSocketHeaderSize = 4 + 2;
 
+// number of bytes per audio sample
+constexpr int BytesPerSample = sizeof(float);
+
+// number of bytes per audio sample across all channels
+constexpr int BytesForFullSample = BytesPerSample * AudioSocketNumChannels;
+
 // data type for audio socket circular buffer
 typedef WaitFreeFrameBuffer<AudioSocketMaxQueueSize> AudioSocketQueueT;
+
+// forward declations
+class AudioSocketWorker;
 
 /** \brief ToAudioSocketPlugin is used to send audio from a signal chain to an audio
  * socket
@@ -75,7 +84,8 @@ class ToAudioSocketPlugin : public ProcessPlugin
     Q_OBJECT;
 
    public:
-    ToAudioSocketPlugin(AudioSocketQueueT& sendQueue, AudioSocketQueueT& receiveQueue);
+    ToAudioSocketPlugin(AudioSocketQueueT& sendQueue, AudioSocketQueueT& receiveQueue,
+                        AudioSocketWorker& worker);
     virtual ~ToAudioSocketPlugin();
 
     void init(int samplingRate, int bufferSize) override;
@@ -84,24 +94,14 @@ class ToAudioSocketPlugin : public ProcessPlugin
     void compute(int nframes, float** inputs, float** outputs) override;
     const char* getName() const override { return "ToAudioSocket"; };
     void updateNumChannels(int nChansIn, int nChansOut) override;
-
-   signals:
-    void signalSendAudioHeader(uint32_t sampleRate, uint16_t bufferSize);
-    void signalSendAudio();
-
-   public slots:
-    void remoteIsReady();
-    void gotConnection();
-    void lostConnection();
+    void handleConnectionEstablished();
 
    private:
     AudioSocketQueueT& mSendQueue;
     AudioSocketQueueT& mReceiveQueue;
+    AudioSocketWorker& mWorker;
     QByteArray mSendBuffer;
-    int mNumChannels      = AudioSocketNumChannels;
-    bool mSentAudioHeader = false;
-    bool mRemoteIsReady   = false;
-    bool mIsConnected     = false;
+    int mNumChannels = AudioSocketNumChannels;
 };
 
 /** \brief FromAudioSocketPlugin is used mix audio from an audio socket into a signal
@@ -113,7 +113,7 @@ class FromAudioSocketPlugin : public ProcessPlugin
 
    public:
     FromAudioSocketPlugin(AudioSocketQueueT& sendQueue, AudioSocketQueueT& receiveQueue,
-                          bool passthrough = false);
+                          AudioSocketWorker& worker, bool passthrough = false);
     virtual ~FromAudioSocketPlugin();
 
     void init(int samplingRate, int bufferSize) override;
@@ -122,12 +122,8 @@ class FromAudioSocketPlugin : public ProcessPlugin
     void compute(int nframes, float** inputs, float** outputs) override;
     const char* getName() const override { return "FromAudioSocket"; };
     void updateNumChannels(int nChansIn, int nChansOut) override;
+    void handleConnectionEstablished();
     void setPassthrough(bool b) { mPassthrough = b; }
-
-   public slots:
-    void remoteIsReady();
-    void gotConnection();
-    void lostConnection();
 
    protected:
     void updateQueueStats(int nframes);
@@ -136,6 +132,7 @@ class FromAudioSocketPlugin : public ProcessPlugin
    private:
     AudioSocketQueueT& mSendQueue;
     AudioSocketQueueT& mReceiveQueue;
+    AudioSocketWorker& mWorker;
     QByteArray mRecvBuffer;
     float** mExtraSamples    = nullptr;
     int mNumChannels         = AudioSocketNumChannels;
@@ -145,74 +142,89 @@ class FromAudioSocketPlugin : public ProcessPlugin
     int mMaxQueuePackets     = 0;
     int mQueueCheckSec       = 0;
     uint32_t mNextQueueCheck = 0;
-    bool mRemoteIsReady      = false;
-    bool mIsConnected        = false;
     bool mPassthrough        = false;
 };
 
 /** \brief AudioSocketWorker is used to perform socket operations in a separate thread
  */
-class AudioSocketWorker : public QObject
+class AudioSocketWorker : public QThread
 {
     Q_OBJECT;
 
    public:
+    AudioSocketWorker(AudioSocketQueueT& sendQueue, AudioSocketQueueT& receiveQueue);
     AudioSocketWorker(AudioSocketQueueT& sendQueue, AudioSocketQueueT& receiveQueue,
                       QSharedPointer<QLocalSocket>& s);
     virtual ~AudioSocketWorker();
 
+    /// \brief initializes the local sample rate and buffer size
+    inline void init(int samplingRate, int bufferSize)
+    {
+        mLocalSampleRate = samplingRate;
+        mLocalBufferSize = bufferSize;
+    }
+
+    /// \brief sets the retry connection flag
     inline void setRetryConnection(bool retry) { mRetryConnection = retry; }
+
+    /// \brief sets the connection established callback
+    inline void setConnectionEstablishedCallback(std::function<void(void)> callback)
+    {
+        mConnectionEstablishedCallback = callback;
+    }
+
+    /// \brief returns true if the worker is established
+    inline bool isEstablished() { return mIsEstablished; }
+
+    /// \brief returns true if the worker is initialized
+    inline bool isInitialized() { return mLocalSampleRate != 0 && mLocalBufferSize != 0; }
+
+    /// \brief returns true if the socket is connected
     inline bool isConnected()
     {
-        return mSocketPtr->state() == QLocalSocket::ConnectedState;
+        return !mSocketPtr.isNull() && mSocketPtr->isValid()
+               && mSocketPtr->state() == QLocalSocket::ConnectedState;
     }
-    inline QLocalSocket& getSocket() { return *mSocketPtr; }
 
-   signals:
-    void signalReadAudioHeader();
-    void signalConnectionEstablished();
-    void signalConnectionFailed();
-    void signalLostConnection();
-    void signalRemoteIsReady();
+   protected:
+    /// \brief override the run method to perform socket operations in a separate thread
+    virtual void run() override;
 
-   public slots:
-    // sets a few things up at startup
-    void start();
-
-    // attempts to connect to remote instance's socket server
-    // returns true if connection was successfully established
-    // returns false and schedules retry if connection failed
-    void connect();
+    /// \brief connects to the remote instance's socket server
+    bool connect();
 
     /// \brief closes the connection to remote instance's socket server
     void close();
 
     /// \brief send audio header to remote instance
-    void sendAudioHeader(uint32_t sampleRate, uint16_t bufferSize);
+    bool sendAudioHeader();
 
     /// \brief read audio header from remote instance
-    void readAudioHeader();
+    bool readAudioHeader();
 
     /// \brief sends audio packets to remote instance
-    void sendAudio();
+    bool sendAudio();
 
     /// \brief receives audio bytes from remote instance
-    void receiveAudio();
+    bool receiveAudio();
 
-    /// \brief schedules a reconnect attempt
-    void scheduleReconnect();
+    /// \brief returns the raw local socket
+    inline QLocalSocket& getSocket() { return *mSocketPtr; }
 
    private:
     AudioSocketQueueT& mSendQueue;
     AudioSocketQueueT& mReceiveQueue;
-    QScopedPointer<QTimer> mTimerPtr;
     QSharedPointer<QLocalSocket> mSocketPtr;
+    std::function<void(void)> mConnectionEstablishedCallback;
     QByteArray mSendBuffer;
     QByteArray mRecvBuffer;
     QByteArray mPopBuffer;
     bool mRetryConnection = false;
+    bool mStopRequested   = false;
+    bool mIsEstablished   = false;
     int mLocalSampleRate  = 0;
     int mRemoteSampleRate = 0;
+    int mLocalBufferSize  = 0;
 #ifdef HAVE_LIBSAMPLERATE
     SRC_DATA mSrcData;
     SRC_STATE* mSrcStatePtr = nullptr;
@@ -224,57 +236,61 @@ class AudioSocketWorker : public QObject
 /** \brief An AudioSocket is used to exchange audio with another processes via a local
  * socket
  */
-class AudioSocket : public QObject
+class AudioSocket
 {
-    Q_OBJECT;
-
    public:
+    // constructs a disconnected audio socket
     AudioSocket(bool retryConnection = false);
+
+    // constructs an audio socket with established connection
     AudioSocket(QSharedPointer<QLocalSocket>& s);
+
+    // destructor
     virtual ~AudioSocket();
 
+    /// returns true if the socket is established
+    inline bool isEstablished() { return mWorkerPtr->isEstablished(); }
+
+    /// returns true if the socket is connected
     inline bool isConnected() { return mWorkerPtr->isConnected(); }
-    inline QLocalSocket& getSocket() { return mWorkerPtr->getSocket(); }
+
+    /// returns the sample rate
     inline int getSampleRate() const { return mToAudioSocketPluginPtr->getSampleRate(); }
+
+    /// returns the buffer size
     inline int getBufferSize() const { return mToAudioSocketPluginPtr->getBufferSize(); }
+
+    /// returns the plugin used for sending audio
     inline QSharedPointer<ProcessPlugin>& getToAudioSocketPlugin()
     {
         return mToAudioSocketPluginPtr;
     }
+
+    /// returns the plugin used for receiving audio
     inline QSharedPointer<ProcessPlugin>& getFromAudioSocketPlugin()
     {
         return mFromAudioSocketPluginPtr;
     }
+
+    /// sets the retry connection flag
     inline void setRetryConnection(bool retry) { mWorkerPtr->setRetryConnection(retry); }
 
     // attempts to connect to remote instance's socket server
-    // returns true if connection was successfully established
-    // returns false and schedules retry if connection failed
-    bool connect(int samplingRate, int bufferSize);
+    void connect(int samplingRate, int bufferSize);
 
     /// \brief audio callback for duplex processing
     void compute(int nframes, float** inputs, float** outputs);
 
-    /// \brief closes the connection to remote instance's socket server
-    void close();
-
-   signals:
-    void signalStartWorker();
-    void signalConnect();
-    void signalClose();
+   protected:
+    /// \brief handles the connection established callback
+    void handleConnectionEstablished();
 
    private:
-    /// \brief initializes worker and worker thread
-    void initWorker();
-
-    QThread mThread;
     AudioSocketQueueT mSendQueue;
     AudioSocketQueueT mReceiveQueue;
     QSharedPointer<ProcessPlugin> mToAudioSocketPluginPtr;
     QSharedPointer<ProcessPlugin> mFromAudioSocketPluginPtr;
     QScopedPointer<AudioSocketWorker> mWorkerPtr;
-
-    friend class AudioSocketWorker;
 };
 
 #endif
