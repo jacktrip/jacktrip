@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
+    
+    <Bundle Name="JackTrip" 
+            Version="$(var.Version)" 
+            Manufacturer="JackTrip"
+            UpgradeCode="a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+            IconSourceFile="jacktrip.ico"
+            DisableModify="yes"
+            DisableRemove="no">
+        
+        <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.HyperlinkSidebarLicense">
+            <bal:WixStandardBootstrapperApplication
+                LicenseUrl="https://github.com/jacktrip/jacktrip/blob/main/LICENSE.md"
+                LogoSideFile="icon_128.png"
+                ShowVersion="yes"
+                SuppressOptionsUI="yes" />
+        </BootstrapperApplicationRef>
+
+        <Chain>
+            <!-- Visual C++ 2015-2022 Redistributable (x64) -->
+            <ExePackage Id="VCRedist2015Plus_x64"
+                        Name="vc_redist.x64.exe"
+                        SourceFile="vc_redist.x64.exe"
+                        InstallCommand="/install /quiet /norestart"
+                        RepairCommand="/repair /quiet /norestart"
+                        UninstallCommand="/uninstall /quiet /norestart"
+                        PerMachine="yes"
+                        DetectCondition="WixBundleInstalled OR (VCREDIST2015PLUS_X64_INSTALLED)"
+                        InstallCondition="NOT VCREDIST2015PLUS_X64_INSTALLED"
+                        Vital="yes"
+                        Compressed="yes">
+                <ExitCode Value="0" Behavior="success"/>
+                <ExitCode Value="1638" Behavior="success"/>
+                <ExitCode Value="3010" Behavior="success"/>
+                <ExitCode Value="1641" Behavior="forceReboot"/>
+            </ExePackage>
+            
+            <!-- Main JackTrip MSI -->
+            <MsiPackage SourceFile="JackTrip.msi"
+                        DisplayInternalUI="no"
+                        Compressed="yes"
+                        Vital="yes">
+                <MsiProperty Name="INSTALLDIR" Value="[ProgramFiles64Folder]JackTrip"/>
+            </MsiPackage>
+        </Chain>
+        
+    </Bundle>
+    
+    <!-- Properties for detecting existing Visual C++ Redistributables -->
+    <Fragment>
+        <!-- Visual C++ 2015-2022 x64 -->
+        <Property Id="VCREDIST2015PLUS_X64_INSTALLED" Value="0">
+            <RegistrySearch Id="VCRedist2015Plus_x64_Installed" 
+                           Root="HKLM" 
+                           Key="SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64" 
+                           Name="Installed" 
+                           Type="raw" />
+        </Property>
+        
+        <!-- Visual C++ 2015-2019 x64 (alternative detection) -->
+        <Property Id="VCREDIST2015_2019_X64_INSTALLED" Value="0">
+            <RegistrySearch Id="VCRedist2015_2019_x64_Installed" 
+                           Root="HKLM" 
+                           Key="SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64" 
+                           Name="Installed" 
+                           Type="raw" />
+        </Property>
+        
+        <!-- Visual C++ 2017 x64 (alternative detection) -->
+        <Property Id="VCREDIST2017_X64_INSTALLED" Value="0">
+            <RegistrySearch Id="VCRedist2017_x64_Installed" 
+                           Root="HKLM" 
+                           Key="SOFTWARE\Classes\Installer\Dependencies\VC,redist.x64,amd64,14.16,bundle" 
+                           Type="raw" />
+        </Property>
+    </Fragment>
+    
+</Wix> 

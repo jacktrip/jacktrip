@@ -10,6 +10,7 @@
             InstallerVersion='200' Languages='1033' Compressed='yes' SummaryCodepage='1252' />
         <Media Id='1' Cabinet='JackTrip.cab' EmbedCab='yes' DiskPrompt='Disk 1' />
         <Property Id='DiskPrompt' Value='JackTrip Installer File' />
+        <Property Id='ALLUSERS' Value='1' />
         <MajorUpgrade AllowDowngrades="no" DowngradeErrorMessage="A newer version is already installed."
             AllowSameVersionUpgrades="no" />
 
@@ -46,21 +47,20 @@
         </Feature>
         <?endif?>
 
-        <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch JackTrip" />
         <Property Id="WixShellExecTarget" Value="[INSTALLDIR]\jacktrip.exe" />
-        <CustomAction Id="LaunchApplication" BinaryKey="WixCA" DllEntry="WixShellExec" Impersonate="yes" />
+        <CustomAction Id="LaunchApplicationImmediate" BinaryKey="WixCA" DllEntry="WixShellExec" Impersonate="yes" Execute="immediate" />
 
         <WixVariable Id='WixUIDialogBmp' Value='dialog.bmp' />
         <WixVariable Id='WixUILicenseRtf' Value='license.rtf' />
         <Property Id='WIXUI_INSTALLDIR' Value='INSTALLDIR' />
         <UI>
             <UIRef Id='WixUI_InstallDir' />
-            <Publish Dialog="ExitDialog"
-                Control="Finish" 
-                Event="DoAction" 
-                Value="LaunchApplication">WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 and NOT Installed</Publish>
         </UI>
-        <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOX" Value="1"/>
+
+        <!-- Launch immediately after installation -->
+        <InstallExecuteSequence>
+            <Custom Action="LaunchApplicationImmediate" After="InstallFinalize" />
+        </InstallExecuteSequence>
         <Icon Id='jacktrip.exe' SourceFile='jacktrip.exe' />
     </Product>
 </Wix>

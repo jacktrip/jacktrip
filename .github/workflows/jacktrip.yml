@@ -386,6 +386,7 @@ jobs:
           fi
           choco install jack --version=1.9.17 --no-progress
           choco install pkgconfiglite --no-progress
+          choco install pandoc --no-progress
       - name: setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
         if: runner.os == 'Windows'
@@ -756,8 +757,8 @@ jobs:
           cd win
           call "build_installer.bat"
           bash -c "mkdir -p $BUILD_PATH/${{ matrix.installer-path }}"
-          bash -c "cp deploy/*.msi $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi"
-          rm -f deploy/*.msi deploy/*.wxs deploy/*.wixobj deploy/*.wixpdb deploy/vc_redist.x64.exe
+          bash -c "cp deploy/JackTrip-Setup.exe $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.exe"
+          rm -f deploy/*.msi deploy/*.wxs deploy/*.wixobj deploy/*.wixpdb deploy/vc_redist.x64.exe deploy/JackTrip-Setup.exe 
       - name: compress the binary
         shell: bash
         if: matrix.binary-path
@@ -929,9 +930,9 @@ jobs:
           curl -L -O -J https://storage.googleapis.com/files.jacktrip.org/binaries/CodeSignTool/CodeSignTool-jars.zip
           unzip CodeSignTool-jars.zip
           mkdir signed
-          ./CodeSignTool.sh sign -credential_id=$CRED_ID -username=$USERNAME -password=$PASSWORD -totp_secret=$TOTP -output_dir_path=signed -input_file_path=$BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi
-          cp signed/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer.msi
-          rm $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi
+          ./CodeSignTool.sh sign -credential_id=$CRED_ID -username=$USERNAME -password=$PASSWORD -totp_secret=$TOTP -output_dir_path=signed -input_file_path=$BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.exe
+          cp signed/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.exe $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer.exe
+          rm $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.exe
       - name: upload installer
         uses: actions/upload-artifact@v4
         if: (matrix.installer-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name))) && needs.check-secrets.outputs.should_run == 'true'
@@ -1011,7 +1012,7 @@ jobs:
             EXTENSION=".pkg"
             TYPE="signed-installer"
           elif [[ "${{ matrix.platform-name }}" == "win" ]]; then
-            EXTENSION=".msi"
+            EXTENSION=".exe"
             TYPE="signed-installer"
           else
             EXTENSION=".zip"
