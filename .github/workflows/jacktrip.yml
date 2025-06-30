@@ -764,31 +764,36 @@ jobs:
         env:
           TOTP: ${{ secrets.TOTP_SECRET }}
           CRED_ID: ${{ secrets.ESIGNER_CREDENTIAL_ID }}
+          SHA1: ${{ secrets.SSL_COM_SHA1 }}
           PASSWORD: ${{ secrets.SSL_COM_PWD }}
+          MASTER_KEY_FILE: ${{ github.workspace }}\CKA\master.key
+          INSTALL_DIR: ${{ github.workspace }}\CKA
         run: |
-          echo Downloading CodeSignTool...
-          mkdir win\CodeSignTool
-          cd win\CodeSignTool
-          curl -L -s -o CodeSignTool.zip https://files.jacktrip.org/binaries/CodeSignTool/CodeSignTool-v1.3.2-windows.zip
-          unzip CodeSignTool.zip
+          cd win
+          echo Downloading Cloud Key Adapter...
+          curl -L -s -o eSigner_CKA_Installer.exe https://files.jacktrip.org/binaries/CKA/CKA_1.0.7_build_20240717.exe
+          eSigner_CKA_Installer.exe /CURRENTUSER /VERYSILENT /SUPPRESSMSGBOXES /DIR="%INSTALL_DIR%"
+          del eSigner_CKA_Installer.exe
+          %INSTALL_DIR%/eSignerCKATool.exe config -mode product -user jacktrip -pass "%PASSWORD%" -totp "%TOTP%" -key "%MASTER_KEY_FILE%" -r
+          %INSTALL_DIR%/eSignerCKATool.exe unload
+          %INSTALL_DIR%/eSignerCKATool.exe load
           echo Downloading Visual C++ Redistributable...
+          mkdir signed
           curl -L -s -o signed\vc_redist.x64.exe https://aka.ms/vs/17/release/vc_redist.x64.exe
           echo Building signed JackTrip Bundle...
-          mkdir signed
-          # CodeSignTool.bat sign -credential_id=%CRED_ID% -username=jacktrip -password="%PASSWORD%" -totp_secret=%TOTP% -output_dir_path=signed -input_file_path=.\vc_redist.x64.exe
-          call CodeSignTool.bat sign -credential_id=%CRED_ID% -username=jacktrip -password="%PASSWORD%" -totp_secret=%TOTP% -output_dir_path=signed -input_file_path=..\deploy\JackTrip.msi
-          copy ..\jacktrip.ico signed\jacktrip.ico
-          copy ..\..\src\images\icon_128.png signed\icon_128.png
+          copy deploy\JackTrip.msi signed\JackTrip.msi
+          signtool sign /debug /fd sha256 /sha1 %SHA1% /tr http://ts.ssl.com /td sha256 signed\JackTrip.msi
+          copy jacktrip.ico signed\jacktrip.ico
+          copy ..\src\images\icon_128.png signed\icon_128.png
           cd signed
-          light.exe -ext WixBalExtension -o ..\JackTrip-Setup.exe ..\..\deploy\jacktrip-bundle.wixobj
+          light.exe -ext WixBalExtension -o ..\deploy\JackTrip-Setup.exe ..\deploy\jacktrip-bundle.wixobj
           cd ..
-          call CodeSignTool.bat sign -credential_id=%CRED_ID% -username=jacktrip -password="%PASSWORD%" -totp_secret=%TOTP% -output_dir_path=signed -input_file_path=JackTrip-Setup.exe
-          insignia -ib signed\JackTrip-Setup.exe -o engine.exe
-          call CodeSignTool.bat sign -credential_id=%CRED_ID% -username=jacktrip -password="%PASSWORD%" -totp_secret=%TOTP% -output_dir_path=signed -input_file_path=engine.exe
-          insignia -ab signed\engine.exe signed\JackTrip-Setup.exe -o signed\JackTrip-Setup.exe
-          dir signed
-          copy signed\JackTrip.msi $BUILD_PATH\${{ matrix.installer-path }}\JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer.msi"
-          copy signed\JackTrip-Setup.exe $BUILD_PATH\${{ matrix.installer-path }}\JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer.exe"
+          insignia -ib deploy\JackTrip-Setup.exe -o signed\BurnStub.exe
+          signtool sign /debug /fd sha256 /sha1 %SHA1% /tr http://ts.ssl.com /td sha256 signed\BurnStub.exe
+          insignia -ab signed\BurnStub.exe deploy\JackTrip-Setup.exe -o signed\JackTrip-Setup.exe
+          signtool sign /debug /fd sha256 /sha1 %SHA1% /tr http://ts.ssl.com /td sha256 signed\JackTrip-Setup.exe
+          bash -c "rm $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi"
+          bash -c "cp signed/JackTrip-Setup.exe $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer.exe"
       - name: compress the binary
         shell: bash
         if: matrix.binary-path
