@@ -750,15 +750,45 @@ jobs:
             mkdir -p $BUILD_PATH/${{ matrix.installer-path }}
             cp -R package/build/*.pkg $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}$SIGNED-installer.pkg
           fi
-      - name: create installer on Windows
+      - name: create MSI installer on Windows
         if: runner.os == 'Windows' && matrix.installer-path
         shell: cmd
         run: |
           cd win
           call "build_installer.bat"
           bash -c "mkdir -p $BUILD_PATH/${{ matrix.installer-path }}"
-          bash -c "cp deploy/JackTrip-Setup.exe $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.exe"
-          rm -f deploy/*.msi deploy/*.wxs deploy/*.wixobj deploy/*.wixpdb deploy/vc_redist.x64.exe deploy/JackTrip-Setup.exe 
+          bash -c "cp deploy/*.msi $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.msi"
+      - name: create signed installer on Windows
+        if: runner.os == 'Windows' && matrix.installer-path && needs.check-secrets.outputs.should_run == 'true'
+        shell: cmd
+        env:
+          TOTP: ${{ secrets.TOTP_SECRET }}
+          CRED_ID: ${{ secrets.ESIGNER_CREDENTIAL_ID }}
+          PASSWORD: ${{ secrets.SSL_COM_PWD }}
+        run: |
+          echo Downloading CodeSignTool...
+          mkdir win\CodeSignTool
+          cd win\CodeSignTool
+          curl -L -s -o CodeSignTool.zip https://files.jacktrip.org/binaries/CodeSignTool/CodeSignTool-v1.3.2-windows.zip
+          unzip CodeSignTool.zip
+          echo Downloading Visual C++ Redistributable...
+          curl -L -s -o signed\vc_redist.x64.exe https://aka.ms/vs/17/release/vc_redist.x64.exe
+          echo Building signed JackTrip Bundle...
+          mkdir signed
+          # CodeSignTool.bat sign -credential_id=%CRED_ID% -username=jacktrip -password="%PASSWORD%" -totp_secret=%TOTP% -output_dir_path=signed -input_file_path=.\vc_redist.x64.exe
+          call CodeSignTool.bat sign -credential_id=%CRED_ID% -username=jacktrip -password="%PASSWORD%" -totp_secret=%TOTP% -output_dir_path=signed -input_file_path=..\deploy\JackTrip.msi
+          copy ..\jacktrip.ico signed\jacktrip.ico
+          copy ..\..\src\images\icon_128.png signed\icon_128.png
+          cd signed
+          light.exe -ext WixBalExtension -o ..\JackTrip-Setup.exe ..\..\deploy\jacktrip-bundle.wixobj
+          cd ..
+          call CodeSignTool.bat sign -credential_id=%CRED_ID% -username=jacktrip -password="%PASSWORD%" -totp_secret=%TOTP% -output_dir_path=signed -input_file_path=JackTrip-Setup.exe
+          insignia -ib signed\JackTrip-Setup.exe -o engine.exe
+          call CodeSignTool.bat sign -credential_id=%CRED_ID% -username=jacktrip -password="%PASSWORD%" -totp_secret=%TOTP% -output_dir_path=signed -input_file_path=engine.exe
+          insignia -ab signed\engine.exe signed\JackTrip-Setup.exe -o signed\JackTrip-Setup.exe
+          dir signed
+          copy signed\JackTrip.msi $BUILD_PATH\${{ matrix.installer-path }}\JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer.msi"
+          copy signed\JackTrip-Setup.exe $BUILD_PATH\${{ matrix.installer-path }}\JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer.exe"
       - name: compress the binary
         shell: bash
         if: matrix.binary-path
@@ -769,6 +799,7 @@ jobs:
           mkdir -p $BUILD_PATH/${{ matrix.binary-path }}
           if [[ "${{ runner.os }}" == "Windows" && -n "${{ matrix.installer-path }}" ]]; then
             cd win
+            rm -f deploy/*.msi deploy/*.wxs deploy/*.wixobj deploy/*.wixpdb deploy/vc_redist.x64.exe deploy/JackTrip-Setup.exe
             mv deploy $NAME
             7z a $ZIPFILE -tzip $NAME
           else
@@ -835,13 +866,13 @@ jobs:
           path: ${{ env.BUILD_PATH }}/${{ matrix.bundle-path }}
       - name: upload installer
         uses: actions/upload-artifact@v4
-        if: matrix.installer-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name)) && ( needs.check-secrets.outputs.should_run != 'true' || runner.os == 'Windows')
+        if: matrix.installer-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name)) && needs.check-secrets.outputs.should_run != 'true'
         with:
           name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer
           path: ${{ env.BUILD_PATH }}/${{ matrix.installer-path }}
       - name: upload signed installer
         uses: actions/upload-artifact@v4
-        if: matrix.installer-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name)) && needs.check-secrets.outputs.should_run == 'true' && runner.os != 'Windows'
+        if: matrix.installer-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name)) && needs.check-secrets.outputs.should_run == 'true'
         with:
           name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer
           path: ${{ env.BUILD_PATH }}/${{ matrix.installer-path }}
@@ -865,84 +896,10 @@ jobs:
         with:
           name: ${{ env.CLANG_TIDY_NAME }}
           path: ${{ env.CLANG_TIDY_PATH }}/
-  sign:
-    needs: [build, check-secrets]
-    runs-on: ${{ matrix.runs-on }}
-    name: ${{ matrix.name }}
-    strategy:
-      fail-fast: false # don't abort if one of the build false
-      matrix:
-        include:
-          - name: Sign Windows artifacts
-            release-name: Windows-x64
-            build-job-name: Windows-x64-meson-msvc-shared
-            runs-on: ubuntu-latest
-            binary-path: binary
-            installer-path: installer
-
-    env:
-      BUILD_PATH: ${{ github.workspace }}/builddir
-
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          submodules: true
-        if: needs.check-secrets.outputs.should_run == 'true'
-      - name: set version string for artifacts
-        if: needs.check-secrets.outputs.should_run == 'true'
-        shell: bash
-        id: set-version
-        run: |
-          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
-            VERSION=${GITHUB_REF#refs/tags/}
-          else
-            VERSION=${GITHUB_SHA::7}
-          fi
-          if [[ -n "${{ matrix.release-name }}" && "$GITHUB_REF" == refs/tags/* ]]; then
-            NAME="${{ matrix.release-name }}"
-          else
-            NAME="${{ matrix.build-job-name }}"
-          fi
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "name=$NAME" >> $GITHUB_OUTPUT
-      - name: Retrieve binary artifact
-        uses: actions/download-artifact@v4
-        if: (matrix.binary-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name))) && needs.check-secrets.outputs.should_run == 'true'
-        with:
-          name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-binary
-          path: ${{ env.BUILD_PATH }}/${{ matrix.binary-path }}
-      - name: Retrieve Windows installer artifact
-        uses: actions/download-artifact@v4
-        if: (runner.os == 'Linux' && matrix.installer-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name))) && needs.check-secrets.outputs.should_run == 'true'
-        with:
-          name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer
-          path: ${{ env.BUILD_PATH }}/${{ matrix.installer-path }}
-      - name: sign artifacts for Windows
-        if: runner.os == 'Linux' && matrix.installer-path && needs.check-secrets.outputs.should_run == 'true'
-        env:
-          TOTP: ${{ secrets.TOTP_SECRET }}
-          CRED_ID: ${{ secrets.ESIGNER_CREDENTIAL_ID }}
-          USERNAME: jacktrip
-          PASSWORD: ${{ secrets.SSL_COM_PWD}}
-        run: |
-          cd win/CodeSignTool
-          curl -L -O -J https://storage.googleapis.com/files.jacktrip.org/binaries/CodeSignTool/CodeSignTool-jars.zip
-          unzip CodeSignTool-jars.zip
-          mkdir signed
-          ./CodeSignTool.sh sign -credential_id=$CRED_ID -username=$USERNAME -password=$PASSWORD -totp_secret=$TOTP -output_dir_path=signed -input_file_path=$BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.exe
-          cp signed/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.exe $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer.exe
-          rm $BUILD_PATH/${{ matrix.installer-path }}/JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-installer.exe
-      - name: upload installer
-        uses: actions/upload-artifact@v4
-        if: (matrix.installer-path && (!startsWith(github.ref, 'refs/tags/') || (startsWith(github.ref, 'refs/tags/') && matrix.release-name))) && needs.check-secrets.outputs.should_run == 'true'
-        with:
-          name: JackTrip-${{ steps.set-version.outputs.version }}-${{ steps.set-version.outputs.name }}-signed-installer
-          path: ${{ env.BUILD_PATH }}/${{ matrix.installer-path }}
   # release - list of files uploaded to GH release is specified in the *upload* step
   deploy_gh:
     if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'release' # run on releases only
-    needs: [build, sign]
+    needs: [build]
     runs-on: ubuntu-latest
     name: 'deploy release'
     env:
@@ -962,7 +919,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   deploy_jtl:
     if:  startsWith(github.ref, 'refs/tags/') && github.event_name == 'release' && needs.check-secrets.outputs.should_run == 'true'
-    needs: [build, sign]
+    needs: [build]
     runs-on: ${{ matrix.runs-on }}
     name: ${{ matrix.name }}
     strategy:
