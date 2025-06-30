@@ -25,16 +25,14 @@
                         SourceFile="vc_redist.x64.exe"
                         InstallCommand="/install /quiet /norestart"
                         RepairCommand="/repair /quiet /norestart"
-                        UninstallCommand="/uninstall /quiet /norestart"
                         PerMachine="yes"
-                        DetectCondition="WixBundleInstalled OR (VCREDIST2015PLUS_X64_INSTALLED)"
+                        DetectCondition="VCREDIST2015PLUS_X64_INSTALLED"
                         InstallCondition="NOT VCREDIST2015PLUS_X64_INSTALLED"
                         Vital="yes"
                         Compressed="yes">
                 <ExitCode Value="0" Behavior="success"/>
                 <ExitCode Value="1638" Behavior="success"/>
                 <ExitCode Value="3010" Behavior="success"/>
-                <ExitCode Value="1641" Behavior="forceReboot"/>
             </ExePackage>
             
             <!-- Main JackTrip MSI -->
