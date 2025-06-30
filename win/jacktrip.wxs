@@ -59,7 +59,7 @@
 
         <!-- Launch immediately after installation -->
         <InstallExecuteSequence>
-            <Custom Action="LaunchApplicationImmediate" After="InstallFinalize" />
+            <Custom Action="LaunchApplicationImmediate" After="InstallFinalize">NOT Installed</Custom>
         </InstallExecuteSequence>
         <Icon Id='jacktrip.exe' SourceFile='jacktrip.exe' />
     </Product>
