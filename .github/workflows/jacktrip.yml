@@ -781,12 +781,15 @@ jobs:
           mkdir signed
           curl -L -s -o signed\vc_redist.x64.exe https://aka.ms/vs/17/release/vc_redist.x64.exe
           echo Building signed JackTrip Bundle...
-          copy deploy\JackTrip.msi signed\JackTrip.msi
-          signtool sign /debug /fd sha256 /sha1 %SHA1% /tr http://ts.ssl.com /td sha256 signed\JackTrip.msi
           copy jacktrip.ico signed\jacktrip.ico
           copy ..\src\images\icon_128.png signed\icon_128.png
+          copy deploy\JackTrip.msi signed\JackTrip.msi
+          copy ..\builddir\win\uninstall_old_jacktrip.exe signed\uninstall_old_jacktrip.exe
+          signtool sign /debug /fd sha256 /sha1 %SHA1% /tr http://ts.ssl.com /td sha256 signed\JackTrip.msi
+          signtool sign /debug /fd sha256 /sha1 %SHA1% /tr http://ts.ssl.com /td sha256 signed\uninstall_old_jacktrip.exe
           cd signed
           light.exe -ext WixBalExtension -o ..\deploy\JackTrip-Setup.exe ..\deploy\jacktrip-bundle.wixobj
+          echo Extracting and signing burn engine...
           cd ..
           insignia -ib deploy\JackTrip-Setup.exe -o signed\BurnStub.exe
           signtool sign /debug /fd sha256 /sha1 %SHA1% /tr http://ts.ssl.com /td sha256 signed\BurnStub.exe

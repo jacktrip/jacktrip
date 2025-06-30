@@ -33,4 +33,6 @@ if host_machine.system() == 'windows'
 		link_args += 'Iphlpapi.lib'
 	endif
 
+	uninstall_old_jacktrip = executable('uninstall_old_jacktrip', 'uninstall_old_jacktrip.cpp', include_directories: incdirs, dependencies: deps, link_args: link_args, c_args: c_defines, cpp_args: defines, install: false )
+
 endif
