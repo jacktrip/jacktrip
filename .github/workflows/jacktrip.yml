@@ -766,8 +766,8 @@ jobs:
           CRED_ID: ${{ secrets.ESIGNER_CREDENTIAL_ID }}
           SHA1: ${{ secrets.SSL_COM_SHA1 }}
           PASSWORD: ${{ secrets.SSL_COM_PWD }}
-          MASTER_KEY_FILE: ${{ github.workspace }}\CKA\master.key
-          INSTALL_DIR: ${{ github.workspace }}\CKA
+          MASTER_KEY_FILE: C:\Users\runneradmin\eSignerCKA\master.key
+          INSTALL_DIR: C:\Users\runneradmin\eSignerCKA
         run: |
           cd win
           echo Downloading Cloud Key Adapter...
