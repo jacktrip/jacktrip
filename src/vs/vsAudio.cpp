@@ -1128,9 +1128,9 @@ void VsAudioWorker::getDeviceList(const QVector<RtAudioDevice>& devices,
     channels.clear();
     list.clear();
 
-    // do not include blacklisted audio interfaces
+    // do not include blocklisted audio interfaces
     // these are known to be unstable and cause JackTrip to crash
-    QVector<QString> blacklisted_devices = {
+    QVector<QString> blocklisted_devices = {
 #ifdef _WIN32
         // Realtek ASIO: seems to crash any computer that tries to use it
         QString::fromUtf8("Realtek ASIO"),
@@ -1159,14 +1159,14 @@ void VsAudioWorker::getDeviceList(const QVector<RtAudioDevice>& devices,
             continue;
         }
 
-        // Skip blacklisted devices
+        // Skip blocklisted devices
         // Apple Inc.: iPhone (10) Microphone
         // Apple Inc.: Mike's iPhone Microphone
         const bool iPhoneMic = deviceName.startsWith("Apple Inc.:")
                                && deviceName.contains("iPhone")
                                && deviceName.endsWith("Microphone");
-        if (blacklisted_devices.contains(deviceName) || iPhoneMic) {
-            std::cout << "RTAudio: blacklisted " << (isInput ? "input" : "output")
+        if (blocklisted_devices.contains(deviceName) || iPhoneMic) {
+            std::cout << "RTAudio: blocklisted " << (isInput ? "input" : "output")
                       << " device: " << devices[n].name << std::endl;
             continue;
         }

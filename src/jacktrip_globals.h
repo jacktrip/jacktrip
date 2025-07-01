@@ -40,7 +40,7 @@
 
 #include "jacktrip_types.h"
 
-constexpr const char* const gVersion = "2.7.1";  ///< JackTrip version
+constexpr const char* const gVersion = "2.7.1-beta3";  ///< JackTrip version
 
 //*******************************************************************************
 /// \name Default Values
