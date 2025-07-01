@@ -1,11 +1,7 @@
-- Version: "2.7.1-beta2"
+- Version: "2.7.1"
   Date: 2025-06-30
   Description:
-  - (updated) Updated version to test upgrade process
-- Version: "2.7.1-beta1"
-  Date: 2025-06-30
-  Description:
-  - (added) Including Visual C++ Redistributable for Windows builds
+  - (updated) Including Visual C++ Redistributable for Windows
 - Version: "2.7.0"
   Date: 2025-06-29
   Description:
