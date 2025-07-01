@@ -1,8 +1,8 @@
 - Version: "2.7.1"
   Date: 2025-06-30
   Description:
-  - (updated) Including Visual C++ Redistributable for Windows
-  - (fixed) Updater sometimes fails to open downloaded file
+  - (added) Including Visual C++ Redistributable for Windows
+  - (fixed) Windows updater sometimes fails to open the download
 - Version: "2.7.0"
   Date: 2025-06-29
   Description:
