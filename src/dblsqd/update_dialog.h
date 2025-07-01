@@ -6,6 +6,7 @@
 #include <QMessageBox>
 #include <QSettings>
 #include <QTemporaryFile>
+#include <QTimer>
 
 #include "feed.h"
 #include "ui_update_dialog.h"
@@ -69,7 +70,6 @@ class UpdateDialog : public QDialog
     void adjustDialogSize();
 
     void startDownload();
-    virtual void startUpdate();
 
     bool accepted;
     bool isDownloadFinished;
@@ -99,6 +99,7 @@ class UpdateDialog : public QDialog
     void updateProgressBar(qint64, qint64);
     void autoDownloadCheckboxToggled(bool enabled = true);
     void onLinkActivated(QString link);
+    virtual void startUpdate();
 };
 
 }  // namespace dblsqd
