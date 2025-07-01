@@ -81,20 +81,39 @@ if %ERRORLEVEL% NEQ 0 (
 
 rem Get our version number
 for /f "tokens=*" %%a in ('.\jacktrip -v ^| findstr VERSION') do for %%b in (%%~a) do set VERSION=%%b
-for /f "tokens=1 delims=-" %%a in ("%VERSION%") do set VERSION=%%a
-echo Version=%VERSION%
+
+rem Convert semantic version to numeric for Windows Installer
+for /f "tokens=1,2 delims=-" %%a in ("%VERSION%") do (
+    set VERSION_NUM=%%a
+    set VERSION_SUFFIX=%%b
+)
+if "%VERSION_SUFFIX%"=="" (
+    set VERSION_NUM=%VERSION_NUM%.100
+) else (
+    rem Extract beta number from betaN using string replacement
+    set BETA_NUM=%VERSION_SUFFIX%
+    set BETA_NUM=!BETA_NUM:beta=!
+    if not "!BETA_NUM!"=="%VERSION_SUFFIX%" (
+        set VERSION_NUM=%VERSION_NUM%.!BETA_NUM!
+    ) else (
+        rem Handle other suffixes like rc1, etc.
+        set VERSION_NUM=%VERSION_NUM%.50
+    )
+)
+
+echo Version=%VERSION% (Windows Installer: %VERSION_NUM%)
 
 rem Build the MSI installer
 if exist JackTrip.vst3 (
-	powershell -Command "(gc JackTrip.vst3\Contents\Resources\moduleinfo.json) -replace '%%VERSION%%', '%VERSION%' | Out-File -encoding ASCII JackTrip.vst3\Contents\Resources\moduleinfo.json"
-	candle.exe -arch x64 -ext WixUIExtension -ext WixUtilExtension -dvst=true -dVersion=%VERSION%%WIXDEFINES% ..\jacktrip.wxs ..\jacktrip-vst3.wxs ..\qt%QTVERSION%.wxs
+	powershell -Command "(gc JackTrip.vst3\Contents\Resources\moduleinfo.json) -replace '%%VERSION_NUM%%', '%VERSION_NUM%' | Out-File -encoding ASCII JackTrip.vst3\Contents\Resources\moduleinfo.json"
+	candle.exe -arch x64 -ext WixUIExtension -ext WixUtilExtension -dvst=true -dVersion=%VERSION_NUM%%WIXDEFINES% ..\jacktrip.wxs ..\jacktrip-vst3.wxs ..\qt%QTVERSION%.wxs
 	light.exe -ext WixUIExtension -ext WixUtilExtension -o JackTrip.msi jacktrip.wixobj jacktrip-vst3.wixobj qt%QTVERSION%.wixobj
 ) else (
-	candle.exe -arch x64 -ext WixUIExtension -ext WixUtilExtension -dVersion=%VERSION%%WIXDEFINES% ..\jacktrip.wxs ..\qt%QTVERSION%.wxs
+	candle.exe -arch x64 -ext WixUIExtension -ext WixUtilExtension -dVersion=%VERSION_NUM%%WIXDEFINES% ..\jacktrip.wxs ..\qt%QTVERSION%.wxs
 	light.exe -ext WixUIExtension -ext WixUtilExtension -o JackTrip.msi jacktrip.wixobj qt%QTVERSION%.wixobj
 )
 
 rem Compile the bundle but don't build it yet
-candle.exe -arch x64 -ext WixBalExtension -dVersion=%VERSION% ..\jacktrip-bundle.wxs
+candle.exe -arch x64 -ext WixBalExtension -dVersion=%VERSION_NUM% ..\jacktrip-bundle.wxs
 
 endlocal
