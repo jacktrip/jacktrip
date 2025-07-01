@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
+
+    <Bundle Name="JackTrip"
+            Version="$(var.Version)"
+            Manufacturer="JackTrip"
+            UpgradeCode="472479fe-7797-4047-b165-4d26859357a6"
+            IconSourceFile="jacktrip.ico"
+            DisableModify="yes"
+            DisableRemove="no">
+
+        <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.HyperlinkSidebarLicense">
+            <bal:WixStandardBootstrapperApplication
+                LicenseUrl="https://github.com/jacktrip/jacktrip/blob/main/LICENSE.md"
+                LogoSideFile="icon_128.png"
+                ShowVersion="yes"
+                SuppressOptionsUI="yes" />
+        </BootstrapperApplicationRef>
+
+        <Chain>
+            <!-- Visual C++ 2015-2022 Redistributable (x64) -->
+            <ExePackage Id="VCRedist2015Plus_x64"
+                        DisplayName="Installing Visual C++ Redistributable"
+                        Name="vc_redist.x64.exe"
+                        SourceFile="vc_redist.x64.exe"
+                        InstallCommand="/install /quiet /norestart"
+                        RepairCommand="/repair /quiet /norestart"
+                        PerMachine="yes"
+                        Vital="yes"
+                        Compressed="yes">
+                <ExitCode Value="0" Behavior="success"/>
+                <ExitCode Value="1638" Behavior="success"/>
+                <ExitCode Value="3010" Behavior="success"/>
+            </ExePackage>
+
+            <!-- Uninstall old JackTrip versions (v2.7.0 or earlier) -->
+            <ExePackage Id="UninstallOldJackTrip"
+                        DisplayName="Removing Old JackTrip Installation"
+                        Name="uninstall_old_jacktrip.exe"
+                        SourceFile="uninstall_old_jacktrip.exe"
+                        PerMachine="yes"
+                        Vital="no"
+                        Compressed="yes">
+                <ExitCode Value="0" Behavior="success"/>
+                <ExitCode Value="1" Behavior="success"/>
+            </ExePackage>
+
+            <!-- Main JackTrip MSI -->
+            <MsiPackage SourceFile="JackTrip.msi"
+                        DisplayName="Installing JackTrip"
+                        DisplayInternalUI="no"
+                        Compressed="yes"
+                        Vital="yes">
+                <MsiProperty Name="INSTALLDIR" Value="[ProgramFiles64Folder]JackTrip"/>
+            </MsiPackage>
+        </Chain>
+
+    </Bundle>
+</Wix>
