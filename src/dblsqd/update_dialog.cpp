@@ -637,13 +637,15 @@ void UpdateDialog::handleDownloadFinished()
     updateFilePath       = file->fileName();
     file->setAutoRemove(false);
     file->close();
+    file->flush();  // Ensure all data is written to disk
     file->deleteLater();
     setSettingsValue("updateFilePath", updateFilePath, settings);
     setSettingsValue("updateFileVersion", latestRelease.getVersion(), settings);
 
     if (accepted) {
         if (acceptedInstallButton == NULL) {
-            startUpdate();
+            // Use QTimer::singleShot to ensure file is fully closed before opening
+            QTimer::singleShot(100, this, SLOT(startUpdate()));
         } else {
             emit installButtonClicked(acceptedInstallButton, updateFilePath);
         }
