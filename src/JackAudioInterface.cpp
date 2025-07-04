@@ -185,6 +185,11 @@ void JackAudioInterface::createChannels()
         mInPorts[i] =
             jack_port_register(mClient, inName.toLatin1(), JACK_DEFAULT_AUDIO_TYPE,
                                JackPortIsInput | JackPortIsTerminal, 0);
+        if (mInPorts[i] == nullptr) {
+            std::cerr << "*** JackAudioInterface.cpp: failed to register input port "
+                      << inName.toStdString() << "\n";
+            return;
+        }
     }
 
     // Create Output Ports
@@ -195,6 +200,11 @@ void JackAudioInterface::createChannels()
         mOutPorts[i] =
             jack_port_register(mClient, outName.toLatin1(), JACK_DEFAULT_AUDIO_TYPE,
                                JackPortIsOutput | JackPortIsTerminal, 0);
+        if (mOutPorts[i] == nullptr) {
+            std::cerr << "*** JackAudioInterface.cpp: failed to register output port "
+                      << outName.toStdString() << "\n";
+            return;
+        }
     }
     // Create Broadcast Ports
     if (mBroadcast) {
@@ -205,6 +215,11 @@ void JackAudioInterface::createChannels()
             mBroadcastPorts[i] =
                 jack_port_register(mClient, outName.toLatin1(), JACK_DEFAULT_AUDIO_TYPE,
                                    JackPortIsOutput | JackPortIsTerminal, 0);
+            if (mBroadcastPorts[i] == nullptr) {
+                std::cerr << "*** JackAudioInterface.cpp: failed to register broadcast "
+                          << "port " << outName.toStdString() << "\n";
+                return;
+            }
         }
     }
 }
@@ -308,10 +323,24 @@ int JackAudioInterface::processCallback(jack_nframes_t nframes)
         // Input Ports are READ ONLY and change as needed (no locks) - make a copy for
         // debugging
         mInBuffer[i] = (sample_t*)jack_port_get_buffer(mInPorts[i], nframes);
+        if (mInBuffer[i] == nullptr) {
+            std::cerr
+                << "*** JackAudioInterface.cpp: failed to get buffer for input port "
+                << mInPorts[i] << " channel " << i << "/" << getNumInputChannels()
+                << "\n";
+            return -1;
+        }
     }
     for (int i = 0; i < getNumOutputChannels(); i++) {
         // Output Ports are WRITABLE
         mOutBuffer[i] = (sample_t*)jack_port_get_buffer(mOutPorts[i], nframes);
+        if (mOutBuffer[i] == nullptr) {
+            std::cerr
+                << "*** JackAudioInterface.cpp: failed to get buffer for output port "
+                << mOutPorts[i] << " channel " << i << "/" << getNumOutputChannels()
+                << "\n";
+            return -1;
+        }
     }
     //-------------------------------------------------------------------
     // TEST: Loopback
