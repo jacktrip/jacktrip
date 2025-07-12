@@ -325,7 +325,8 @@ void UdpHubListener::receivedClientInfo(QSslSocket* clientConnection)
     // Assign server port and send it to Client
     if (id != -1) {
         cout << "JackTrip HUB SERVER: Sending Final UDP Port to Client: "
-             << mJTWorkers->at(id)->getServerPort() << endl;
+             << clientName.toStdString() << " = " << mJTWorkers->at(id)->getServerPort()
+             << endl;
     }
 
     if (id == -1
