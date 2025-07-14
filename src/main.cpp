@@ -57,6 +57,20 @@
 
 QCoreApplication* createApplication(int& argc, char* argv[])
 {
+#ifdef __APPLE__
+    // Check for the DYLD_INSERT_LIBRARIES environment variable.
+    // Refuse to run if it is set, to avoid code injection attacks.
+    // Just an extra precaution since QtWebEngine requires the entitlement
+    // com.apple.security.cs.allow-dyld-environment-variable
+    // See https://doc.qt.io/qt-6/qtwebengine-deploying.html
+    if (getenv("DYLD_INSERT_LIBRARIES") != nullptr) {
+        std::cout << "Detected environment variable: DYLD_INSERT_LIBRARIES." << std::endl;
+        std::cout << "To run JackTrip, please omit the this environment variable."
+                  << std::endl;
+        std::exit(1);
+    }
+#endif
+
     // Check for some specific, GUI related command line options.
     bool forceGui = false;
     bool testGui  = false;
