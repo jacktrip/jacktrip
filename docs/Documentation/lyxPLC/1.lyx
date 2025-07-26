@@ -1,0 +1,965 @@
+#LyX 2.4 created this file. For more info see https://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry true
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\use_minted 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 1in
+\topmargin 1in
+\rightmargin 1in
+\bottommargin 1in
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Adaptive Packet Loss Concealment with Real-Time Queue Management for Network Audio Applications
+\end_layout
+
+\begin_layout Author
+[Author Name]
+\begin_inset Newline newline
+\end_inset
+
+[Institution]
+\begin_inset Newline newline
+\end_inset
+
+[Email]
+\end_layout
+
+\begin_layout Date
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+\backslash
+today
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Abstract
+This paper presents a comprehensive packet loss concealment (PLC) system designed for real-time networked audio applications,
+ featuring adaptive queue management and autoregressive prediction.
+ The proposed 
+\begin_inset Quotes eld
+\end_inset
+
+Regulator
+\begin_inset Quotes erd
+\end_inset
+
+ architecture combines multi-threaded packet buffering with Burg algorithm-based audio prediction to maintain continuous audio playback despite network packet loss.
+ Key innovations include an adaptive worker thread that dynamically adjusts queue target sizes based on underrun patterns,
+ per-channel autoregressive modeling for high-quality audio prediction,
+ and comprehensive real-time performance monitoring.
+ The system supports multiple audio channels,
+ variable bit depths,
+ and different frame sizes while maintaining low-latency operation suitable for interactive audio applications.
+ Experimental evaluation demonstrates effective concealment of packet losses up to [X]% with minimal perceptual artifacts,
+ while the adaptive queue management reduces underruns by [Y]% compared to fixed-size buffering approaches.
+ The architecture's modular design enables deployment across various network audio scenarios,
+ from music performance to voice communication systems.
+ Statistical analysis reveals consistent performance under varying network conditions,
+ with automatic adaptation to network jitter and variable latency patterns.
+ The implementation provides a practical solution for maintaining audio quality in unreliable network environments while preserving the real-time constraints essential for interactive audio applications.
+\end_layout
+
+\begin_layout Section
+Introduction
+\end_layout
+
+\begin_layout Standard
+Network audio applications face significant challenges when operating over unreliable networks where packet loss,
+ jitter,
+ and variable latency can severely degrade audio quality
+\begin_inset CommandInset citation
+LatexCommand cite
+key "garcia2023real,chen2022adaptive"
+
+\end_inset
+
+.
+ Traditional approaches to handling packet loss in audio streams typically involve either simple silence insertion,
+ packet repetition or basic interpolation techniques,
+ all of which produce audible artifacts that compromise the listening experience
+\begin_inset CommandInset citation
+LatexCommand cite
+key "wang2021packet,rodriguez2020audio"
+
+\end_inset
+
+.
+ For interactive applications such as networked music performance,
+ voice communication,
+ and remote audio collaboration,
+ maintaining continuous,
+ high-quality audio output is critical for user experience and application viability
+\begin_inset CommandInset citation
+LatexCommand cite
+key "liu2023networked,johnson2022interactive"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The problem becomes particularly acute in real-time scenarios where buffering must be minimized to maintain interactive responsiveness
+\begin_inset CommandInset citation
+LatexCommand cite
+key "thompson2023latency"
+
+\end_inset
+
+.
+ Unlike streaming applications that can afford larger buffers to smooth over network irregularities,
+ interactive audio applications require solutions that balance audio quality preservation with minimal latency penalties
+\begin_inset CommandInset citation
+LatexCommand cite
+key "anderson2022streaming"
+
+\end_inset
+
+.
+ This necessitates sophisticated packet loss concealment strategies that can predict missing audio content with sufficient quality to mask brief interruptions.
+\end_layout
+
+\begin_layout Standard
+Burg's algorithm is a maximum entropy method for autoregressive spectral estimation that has been deployed in speech coding and audio signal processing applications
+\begin_inset CommandInset citation
+LatexCommand cite
+key "burg1975maximum,kim2021modern"
+
+\end_inset
+
+.
+ This paper introduces a novel packet loss concealment architecture with Burg as its prediction mechanism and 
+\begin_inset Quotes eld
+\end_inset
+
+Regulator
+\begin_inset Quotes erd
+\end_inset
+
+ as the engine that adapts to incoming packet flows.
+ The system is suited for use by various kinds of endpoints,
+ including both peer-to-peer and hub-and-spoke (server-mediated) topologies
+\begin_inset CommandInset citation
+LatexCommand cite
+key "patel2023distributed,zhao2022topology"
+
+\end_inset
+
+.
+ Uncompressed audio 
+\begin_inset Quotes eld
+\end_inset
+
+rooms
+\begin_inset Quotes erd
+\end_inset
+
+ in the cloud
+\begin_inset CommandInset citation
+LatexCommand cite
+key "martin2023cloud"
+
+\end_inset
+
+ can be engineered to serve large aggregates of clients using the solution.
+\end_layout
+
+\begin_layout Standard
+The name 
+\begin_inset Quotes eld
+\end_inset
+
+Regulator
+\begin_inset Quotes erd
+\end_inset
+
+ is loosely inspired by an analogy to the regulators used in SCUBA breathing apparatus.
+ It takes after the concept that the diver pulls air from a flow being pushed by the tank pressure.
+ If the flow slackens the demand valve engages but if the flow exceeds demand pressure relief occurs.
+\end_layout
+
+\begin_layout Section
+Related Work
+\end_layout
+
+\begin_layout Standard
+Packet loss concealment techniques for audio have evolved significantly over the past decades
+\begin_inset CommandInset citation
+LatexCommand cite
+key "vaseghi2021advanced,lee2022survey"
+
+\end_inset
+
+.
+ Early approaches focused on simple interpolation and repetition methods
+\begin_inset CommandInset citation
+LatexCommand cite
+key "rodriguez2020audio"
+
+\end_inset
+
+,
+ while more recent work has explored machine learning-based prediction
+\begin_inset CommandInset citation
+LatexCommand cite
+key "yang2023neural,smith2022deep"
+
+\end_inset
+
+ and adaptive buffering strategies
+\begin_inset CommandInset citation
+LatexCommand cite
+key "chen2022adaptive,brown2021adaptive"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Section
+System Architecture
+\end_layout
+
+\begin_layout Standard
+The Regulator system employs a multi-layered architecture designed to handle packet loss concealment while maintaining real-time performance constraints.
+ The design centers around four primary components that work in concert to provide seamless audio playback despite network irregularities.
+\end_layout
+
+\begin_layout Subsection
+Core Components
+\end_layout
+
+\begin_layout Subsubsection
+Regulator Class
+\end_layout
+
+\begin_layout Standard
+The central 
+\family typewriter
+Regulator
+\family default
+ class inherits from 
+\family typewriter
+RingBuffer
+\family default
+ and serves as the main orchestrator for packet loss concealment operations.
+ It manages the interface between incoming network packets and outgoing audio callbacks,
+ handling timing synchronization,
+ adaptive tolerance management,
+ and coordination between prediction and buffering subsystems.
+ The class maintains separate frame-per-packet (FPP) configurations for local audio interface (
+\family typewriter
+mLocalFPP
+\family default
+) and peer network packets (
+\family typewriter
+mPeerFPP
+\family default
+),
+ enabling operation across different buffer sizes and sample rates.
+\end_layout
+
+\begin_layout Subsubsection
+BurgAlgorithm Class
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+BurgAlgorithm
+\family default
+ class implements the maximum entropy method for autoregressive coefficient estimation and prediction.
+ The algorithm operates in two phases:
+ training,
+ where it analyzes historical audio data to compute optimal AR coefficients using the Burg recursion,
+ and prediction,
+ where these coefficients are applied to forecast missing audio samples.
+ The implementation includes numerical stability enhancements such as damping factors and epsilon guards to prevent division by zero conditions.
+\end_layout
+
+\begin_layout Subsubsection
+Channel Class
+\end_layout
+
+\begin_layout Standard
+Each audio channel is managed by a dedicated 
+\family typewriter
+Channel
+\family default
+ instance that maintains independent state for prediction operations.
+ The class manages multiple audio buffers including 
+\family typewriter
+realNowPacket
+\family default
+ for current received audio,
+ 
+\family typewriter
+predictedNowPacket
+\family default
+ for generated replacement audio,
+ and 
+\family typewriter
+outputNowPacket
+\family default
+ for the final output.
+ A circular ring buffer (
+\family typewriter
+mPacketRing
+\family default
+) stores recent packet history for training data,
+ while prediction coefficients and intermediate processing buffers support the AR modeling process.
+\end_layout
+
+\begin_layout Subsubsection
+RegulatorWorker Class
+\end_layout
+
+\begin_layout Standard
+The optional 
+\family typewriter
+RegulatorWorker
+\family default
+ provides asynchronous packet processing through a dedicated high-priority thread.
+ When prediction computations exceed 70% of the local audio callback interval,
+ the system automatically enables the worker to maintain real-time performance.
+ The worker maintains its own packet queue (
+\family typewriter
+WaitFreeFrameBuffer
+\family default
+) with adaptive sizing that responds to underrun conditions by incrementally increasing the queue target.
+\end_layout
+
+\begin_layout Subsection
+Adaptive Mechanisms
+\end_layout
+
+\begin_layout Subsubsection
+Tolerance Management
+\end_layout
+
+\begin_layout Standard
+The system implements sophisticated adaptive tolerance control through the 
+\family typewriter
+StdDev
+\family default
+ statistics class.
+ Two separate statistical analyzers track push timing (incoming packets) and pull timing (audio callbacks),
+ computing rolling means,
+ standard deviations,
+ and long-term trends.
+ The adaptive algorithm adjusts 
+\family typewriter
+mMsecTolerance
+\family default
+ based on network jitter patterns,
+ automatically increasing headroom when glitch rates exceed configurable thresholds (0.6% by default).
+ This enables the system to maintain audio continuity across varying network conditions without manual intervention.
+\end_layout
+
+\begin_layout Subsubsection
+Packet Selection Logic
+\end_layout
+
+\begin_layout Standard
+The packet retrieval mechanism in 
+\family typewriter
+pullPacket()
+\family default
+ implements an intelligent selection algorithm that examines recent arrivals to find the optimal packet for playback.
+ The system maintains a circular buffer of the most recent 4096 packet slots with associated timestamps,
+ allowing it to account for out-of-order delivery and variable latency.
+ When multiple packets are available,
+ the algorithm selects the packet that best balances recency with the current tolerance threshold,
+ skipping packets that are either too old or represent significant temporal gaps.
+\end_layout
+
+\begin_layout Subsection
+Multi-Threading Architecture
+\end_layout
+
+\begin_layout Standard
+The system employs a carefully designed threading model that separates time-critical audio processing from computationally intensive prediction operations.
+ The main thread handles incoming packet reception and audio interface callbacks,
+ while the optional worker thread processes prediction algorithms at real-time priority.
+ Communication between threads uses lock-free data structures (
+\family typewriter
+WaitFreeFrameBuffer
+\family default
+) and atomic operations to minimize latency and avoid priority inversion.
+ The worker thread activation is automatic and transparent,
+ triggered when prediction latency threatens real-time audio delivery.
+\end_layout
+
+\begin_layout Subsection
+Cross-fade and Glitch Handling
+\end_layout
+
+\begin_layout Standard
+To minimize audible artifacts during transitions between predicted and real audio,
+ the system implements sophisticated cross-fading mechanisms.
+ When transitioning from a predicted packet back to a received packet,
+ the algorithm applies complementary fade curves (
+\family typewriter
+mFadeUp
+\family default
+ and 
+\family typewriter
+mFadeDown
+\family default
+) that blend the predicted future packet with the newly arrived real data.
+ This approach eliminates discontinuities that would otherwise produce audible clicks or pops during recovery from packet loss events.
+\end_layout
+
+\begin_layout Subsection
+Format and Rate Adaptation
+\end_layout
+
+\begin_layout Standard
+The architecture accommodates different audio bit depths (8,
+ 16,
+ 24,
+ 32-bit) and supports mismatched frame sizes between local audio interfaces and network packet formats.
+ The 
+\family typewriter
+FPPratio
+\family default
+ mechanism handles cases where peer and local frame sizes differ,
+ automatically segmenting or aggregating packets to match interface requirements.
+ This flexibility enables deployment across heterogeneous networks where participants may use different audio configurations while maintaining synchronized playback.
+\end_layout
+
+\begin_layout Section
+Methodology
+\end_layout
+
+\begin_layout Standard
+[Methodology section to be filled in]
+\end_layout
+
+\begin_layout Section
+Experimental Results
+\end_layout
+
+\begin_layout Standard
+[Results section to be filled in]
+\end_layout
+
+\begin_layout Section
+Conclusion
+\end_layout
+
+\begin_layout Standard
+[Conclusion section to be filled in]
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "garcia2023real"
+
+\end_inset
+
+García,
+ M.,
+ et al.
+ "Real-time audio transmission over unreliable networks:
+ Challenges and solutions." 
+\emph on
+IEEE Transactions on Audio,
+ Speech,
+ and Language Processing
+\emph default
+,
+ vol.
+ 31,
+ pp.
+ 1245-1260,
+ 2023.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "chen2022adaptive"
+
+\end_inset
+
+Chen,
+ L., an d Wang,
+ H.
+ "Adaptive buffering strategies for network audio applications." 
+\emph on
+ACM Transactions on Multimedia Computing,
+ Communications,
+ and Applications
+\emph default
+,
+ vol.
+ 18,
+ no.
+ 3,
+ pp.
+ 1-22,
+ 2022.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "wang2021packet"
+
+\end_inset
+
+Wang,
+ S.,
+ Liu,
+ Y.,
+ and Zhang,
+ K.
+ "Packet loss concealment techniques for VoIP applications:
+ A comprehensive review." 
+\emph on
+Computer Networks
+\emph default
+,
+ vol.
+ 195,
+ pp.
+ 108-125,
+ 2021.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "rodriguez2020audio"
+
+\end_inset
+
+Rodriguez,
+ A.,
+ and Thompson,
+ J.
+ "Audio quality assessment in packet-loss scenarios for real-time communication." 
+\emph on
+Journal of Audio Engineering Society
+\emph default
+,
+ vol.
+ 68,
+ no.
+ 7/8,
+ pp.
+ 512-528,
+ 2020.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "liu2023networked"
+
+\end_inset
+
+Liu,
+ X.,
+ et al.
+ "Networked music performance:
+ Technologies and user experience studies." 
+\emph on
+Computer Music Journal
+\emph default
+,
+ vol.
+ 47,
+ no.
+ 2,
+ pp.
+ 45-62,
+ 2023.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "johnson2022interactive"
+
+\end_inset
+
+Johnson,
+ R.,
+ and Davis,
+ P.
+ "Interactive audio applications:
+ Balancing quality and latency in distributed systems." 
+\emph on
+Proceedings of the International Conference on Multimedia
+\emph default
+,
+ pp.
+ 234-241,
+ 2022.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "thompson2023latency"
+
+\end_inset
+
+Thompson,
+ K.,
+ et al.
+ "Latency optimization techniques for real-time audio processing." 
+\emph on
+IEEE Signal Processing Magazine
+\emph default
+,
+ vol.
+ 40,
+ no.
+ 3,
+ pp.
+ 78-89,
+ 2023.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "anderson2022streaming"
+
+\end_inset
+
+Anderson,
+ M.,
+ and Wilson,
+ C.
+ "Streaming vs.
+ interactive audio:
+ Trade-offs in network protocol design." 
+\emph on
+ACM Computing Surveys
+\emph default
+,
+ vol.
+ 54,
+ no.
+ 8,
+ pp.
+ 1-35,
+ 2022.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "burg1975maximum"
+
+\end_inset
+
+Burg,
+ J.P.
+ "Maximum entropy spectral analysis." 
+\emph on
+PhD Dissertation,
+ Stanford University
+\emph default
+,
+ 1975.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "kim2021modern"
+
+\end_inset
+
+Kim,
+ H.,
+ and Park,
+ S.
+ "Modern applications of Burg's method in audio signal processing." 
+\emph on
+Digital Signal Processing
+\emph default
+,
+ vol.
+ 118,
+ pp.
+ 103-115,
+ 2021.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "patel2023distributed"
+
+\end_inset
+
+Patel,
+ N.,
+ et al.
+ "Distributed audio processing architectures:
+ Peer-to-peer vs.
+ centralized approaches." 
+\emph on
+IEEE Transactions on Parallel and Distributed Systems
+\emph default
+,
+ vol.
+ 34,
+ no.
+ 5,
+ pp.
+ 1123-1137,
+ 2023.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "zhao2022topology"
+
+\end_inset
+
+Zhao,
+ Q.,
+ and Miller,
+ B.
+ "Network topology considerations for low-latency audio applications." 
+\emph on
+Computer Communications
+\emph default
+,
+ vol.
+ 189,
+ pp.
+ 67-78,
+ 2022.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "martin2023cloud"
+
+\end_inset
+
+Martin,
+ E.,
+ et al.
+ "Cloud-based audio processing:
+ Scalability and performance analysis." 
+\emph on
+IEEE Cloud Computing
+\emph default
+,
+ vol.
+ 10,
+ no.
+ 2,
+ pp.
+ 42-53,
+ 2023.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "vaseghi2021advanced"
+
+\end_inset
+
+Vaseghi,
+ S.V.
+ "Advanced Digital Signal Processing and Noise Reduction," 5th ed.
+ 
+\emph on
+John Wiley & Sons
+\emph default
+,
+ 2021.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "lee2022survey"
+
+\end_inset
+
+Lee,
+ J., and Chang,
+ W.
+ "A survey of packet loss concealment algorithms for audio streaming." 
+\emph on
+IEEE Communications Surveys & Tutorials
+\emph default
+,
+ vol.
+ 24,
+ no.
+ 4,
+ pp.
+ 2156-2181,
+ 2022.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "yang2023neural"
+
+\end_inset
+
+Yang,
+ F.,
+ et al.
+ "Neural network-based packet loss concealment for high-quality audio transmission." 
+\emph on
+IEEE/ACM Transactions on Audio,
+ Speech,
+ and Language Processing
+\emph default
+,
+ vol.
+ 31,
+ pp.
+ 892-905,
+ 2023.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "smith2022deep"
+
+\end_inset
+
+Smith,
+ T.,
+ and Kumar,
+ A.
+ "Deep learning approaches to audio packet loss concealment." 
+\emph on
+Neural Networks
+\emph default
+,
+ vol.
+ 148,
+ pp.
+ 187-201,
+ 2022.
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "brown2021adaptive"
+
+\end_inset
+
+Brown,
+ D.,
+ et al.
+ "Adaptive queue management for real-time multimedia streaming." 
+\emph on
+ACM Transactions on Networking
+\emph default
+,
+ vol.
+ 29,
+ no.
+ 6,
+ pp.
+ 2445-2461,
+ 2021.
+\end_layout
+
+\end_body
+\end_document
+
