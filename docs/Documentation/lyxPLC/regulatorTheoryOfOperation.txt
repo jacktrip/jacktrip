@@ -1,0 +1,27 @@
+Regulator
+
+"Regulator", as in scuba gear. Inhale, exhale, taking care to not inhale too much or gasp for air for too long. Breathe evenly if possible, but have a method that kicks in extra oxygen, if not.
+
+Theory of Operation
+
+The Regulator algorithm replaces the typical ring buffer (or "jitter" buffer) used to cushion late arriving packets. Usual methods add delay and also provide some kind of glitchy packet subsitute when the buffer goes empty. Regulator is designed for receivers of time-sensitive packet flows and was originally developed for JackTrip. Its goal is to pass the received stream through the system as near to "now" as possible (no added delay) and provide a way to fix up discontinuities in the signal. Regulator has two main parts, a dispatcher and a packet loss (PLC) concealment algorithm. The latter is an interpolator / predictor algorithm that rides the signal.
+
+Dispatcher
+
+Incoming packets in flight on the network have sequence numbers in their headers but they do not have originating time stamps. A reasonable assumption is that they were exactly clocked out to the network by the audio timing mechanism of the transmitter.
+
+The dispatcher frontend (Regulator::pushPacket) gets called directly by the receiver's UDP socket listener when packets hit the socket. It timestamps incoming packets with local time on arrival. The most recent incoming sequence number received is held in the Regulator::mLastSeqNumIn. Packets and their timestamps are temporarily stored in arrays indexed by their sequence number. 
+
+The dispatcher backend algorithm (Regulator::pullPacket) method gets called at regular intervals by the audio backend (Jack, RtAudio, etc.). This method can either be associated with an audio backend callback function or can be called syncronously in non-callback enviroments (polled, like Chuck). Dispatcher's output is a packet which we'll call the "output packet."
+
+mLastSeqNumOut is the sequence number of the most recent output packet. On the next call to pullPacket mLastSeqNumOut is incremented by 1 such that it correpsonds to the expected index of the next logical packet, namely what it should be if the stream were behaving regularly. Timings of packet arrivals in the vicinity of the next logical packet are then checked. Lost packets are simply ignored because they aren't present in storage and thus can't be checked.
+
+Any packets that arrived before the next logical packet are discarded. The remainder are searched for the first packet to have arrived within a window before the time of the present call (aka, "now"). That packet is then deemed the correct output packet and mLastSeqNumOut records its index.
+
+Discontinuities occur either there's an overrun, in which case the method will skip ahead and create a discontinuity, or also occur if there's an underrun and no candidate packet was found because the stream itself had gaps. For either case, the PLC algorithm attempts to conceal the discontinuity and produces the next output packet. If skipping ahead, it will interpolate across the discontinuity or if filling in missing data it will predict what the data would have been. The index in mLastSeqNumOut either skips ahead or remains fixed, respectively.
+
+Egregious underruns from a stalled stream present a problem for PLC because too much data is mising to make a prediction. These "bad" underruns can happen for a variety of reasons, for example, a client disconnecting improperly or a long network hiccup. PLC uses recent signal history when making its prediction and if the size of the gap is beyond "normal" jitter or isolated instances of packet loss, it fails. When a signal stalls like this, repeated calls of the dispatcher will needlessly invoke PLC and drive up the processing load. Such flailing can lead to an unbalanced or even unresponzive system. To avoid that, before invoking PLC, the time of arrival of the mLastSeqNumOut packet gets checked to see how long of a gap it's going to be dealing with. If it's above a threshold (for example, 30 msec) then the dispatcher continues without PLC and instead produces an output packet of zeroes (mute packet).
+
+
+
+ 
