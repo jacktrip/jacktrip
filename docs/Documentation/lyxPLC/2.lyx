@@ -134,7 +134,8 @@ today
 \begin_layout Abstract
 This paper presents a comprehensive packet loss concealment (PLC) system designed for real-time networked audio applications,
  featuring adaptive queue management and autoregressive prediction.
- The proposed 
+ The system's architecture combines multi-threaded packet buffering with Burg algorithm-based audio prediction to maintain continuous audio playback despite network packet loss.
+ Key innovations of the 
 \begin_inset Quotes eld
 \end_inset
 
@@ -142,11 +143,10 @@ Regulator
 \begin_inset Quotes erd
 \end_inset
 
- architecture combines multi-threaded packet buffering with Burg algorithm-based audio prediction to maintain continuous audio playback despite network packet loss.
- Key innovations include an adaptive worker thread that dynamically adjusts queue target sizes based on underrun patterns,
+ system include an adaptive worker thread that dynamically adjusts queue target sizes based on underrun patterns,
  per-channel autoregressive modeling for high-quality audio prediction,
  and comprehensive real-time performance monitoring.
- The system supports multiple audio channels,
+ The system supports uncompressed audio flows with multiple channels,
  variable bit depths,
  and different frame sizes while maintaining low-latency operation suitable for interactive audio applications.
  Experimental evaluation demonstrates effective concealment of packet losses up to [X]% with minimal perceptual artifacts,
@@ -236,8 +236,7 @@ Regulator
 \end_inset
 
  as the engine that adapts to incoming packet flows.
- The system is suited for use by various kinds of endpoints,
- including both peer-to-peer and hub-and-spoke (server-mediated) topologies
+ The system is suited for use by endpoints of various kinds including peer-to-peer and hub-and-spoke (server-mediated) topologies
 \begin_inset CommandInset citation
 LatexCommand cite
 key "Lazzaro2001"
@@ -245,7 +244,8 @@ key "Lazzaro2001"
 \end_inset
 
 .
- Uncompressed audio 
+ Using the latter,
+ uncompressed audio 
 \begin_inset Quotes eld
 \end_inset
 
@@ -253,7 +253,7 @@ rooms
 \begin_inset Quotes erd
 \end_inset
 
- in the cloud can be engineered to serve large aggregates of clients using the solution.
+ in the cloud can be engineered to serve large aggregates of clients .
 \end_layout
 
 \begin_layout Standard
@@ -265,12 +265,16 @@ Regulator
 \begin_inset Quotes erd
 \end_inset
 
- is loosely inspired by an analogy to the regulators used in SCUBA breathing apparatus.
- It takes after the concept that the diver pulls air from a flow being pushed by the tank pressure.
- If the flow slackens the demand valve engages but if the flow exceeds demand pressure relief occurs.
- Breathe evenly if possible,
- but have a method that kicks in extra oxygen,
- if not.
+ is loosely inspired by an analogy to regulators used in SCUBA breathing apparatus.
+ It takes after the concept that a SCUBA diver pulls air from a flow being pushed by the tank pressure.
+ If the flow slackens,
+ then the demand valve engages but if the flow exceeds demand,
+ then pressure relief occurs.
+ The normal regime of breathing evenly is augmented by a method that kicks in extra oxygen when necessary,
+ and in our case PLC kicks in when the normal regime of regular packet flows is interrupted.
+ The analogy only goes so far:
+ essentially,
+ the system that will be described is an interpolator / predictor algorithm that rides the real-time signal.
 \end_layout
 
 \begin_layout Section
@@ -316,10 +320,11 @@ System Architecture
 \end_layout
 
 \begin_layout Standard
-The system detailed in this article is a buffering strategy for incoming packet flows that was developed for JackTrip,
+The system described in this article is a buffering strategy for incoming packet flows that was developed for JackTrip,
  a network music performance application.
- Its multi-layered architecture is designed to handle packet loss concealment while maintaining real-time performance constraints.
- The design centers around four primary components that work in concert to provide seamless audio playback despite network irregularities.
+ JackTrip provides user-selectable buffering strategies allowing Regulator to be compared to earlier,
+ more traditional approaches as will be detailed below.
+ Regulator's multi-layered design centers around four primary components that work in concert to provide seamless audio playback despite network irregularities.
 \end_layout
 
 \begin_layout Enumerate
@@ -339,11 +344,11 @@ RegulatorWorker Class
 \end_layout
 
 \begin_layout Standard
-The Regulator Class replaces the typical ring buffer (or "jitter" buffer) used to cushion late arriving packets.
+The outer Regulator Class replaces the alternative ring buffer (or "jitter" buffer) classes available in JackTrip.
+ Each shares the same insertion point in the audio processing scheme and provides a mechanism to cushion late arriving packets.
  Usual methods add delay and also provide some kind of glitchy packet subsitute when the buffer goes empty.
  Regulator is designed to pass the received stream through the system as near to "now" as possible (no added delay) and provide a way to fix up discontinuities in the signal.
- Regulator functions as a packet dispatcher that either leaves the signal untouched or invokes the BurgAlgorithm Class methods for packet loss concealment (PLC) when needed.
- The latter is an interpolator / predictor algorithm that rides the signal.
+ Packets received at the insertion point are dispatched in a way that either leaves the signal untouched or invokes the packet loss concealment (PLC) methods of the BurgAlgorithm Class..
  Since PLC should be computed per channel,
  individual channels are instantiated as Channel Class objects.
  The RegulatorWorker Class provides the multi-threaded implementation needed to balance computational load.
@@ -354,16 +359,19 @@ Theory of Operation
 \end_layout
 
 \begin_layout Standard
-Incoming JackTrip packets in flight on the network have sequence numbers in their headers but they do not have originating time stamps.
- A reasonable assumption is that they were exactly clocked out to the network by the audio timing mechanism of the transmitter.
+JackTrip audio packets carry uncompressed audio and JackTrip instances emit a sequence of packets at regular intervals.
+ JackTrip instances receive incoming packets.
+ The packets that are in flight on the network carry sequence numbers in their headers but they do not have originating time stamps.
+ A reasonable assumption is that they were clocked out evenly,
+ with a high degree of precision,
+ onto the network using the internal audio timing mechanism of the transmitting instance.
 \end_layout
 
 \begin_layout Standard
-The dispatcher front-end (Regulator::pushPacket) gets called directly by the receiver's UDP socket listener when packets hit the socket.
- It timestamps incoming packets with local time on arrival.
- The most recent incoming sequence number received is held in the Regulator::mLastSeqNumIn.
+Regulator's front-end dispatcher (Regulator::pushPacket) is called directly by the receiver instance's UDP socket listener when packets hit the socket.
+ It timestamps incoming packets with the local time on arrival.
+ The most recent incoming sequence number received is held in the Regulator::mLastSeqNumIn variable.
  Packets and their timestamps are temporarily stored in arrays indexed by their sequence number.
- 
 \end_layout
 
 \begin_layout Standard
