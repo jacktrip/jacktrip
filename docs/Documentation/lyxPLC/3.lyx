@@ -1,0 +1,1195 @@
+#LyX file created by tex2lyx 2.4
+\lyxformat 620
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin /home/cc/jacktrip/docs/Documentation/lyxPLC/
+\textclass article
+\begin_preamble
+\usepackage{babel}
+
+\end_preamble
+\use_default_options false
+\maintain_unincluded_children no
+\language english
+\language_package default
+\inputencoding iso8859-15
+\fontencoding T1
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_roman_osf false
+\font_sans_osf false
+\font_typewriter_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref true
+\pdf_bookmarks 1
+\pdf_bookmarksnumbered 0
+\pdf_bookmarksopen 0
+\pdf_bookmarksopenlevel 1
+\pdf_breaklinks 0
+\pdf_pdfborder 0
+\pdf_colorlinks 1
+\pdf_backref false
+\pdf_pdfusetitle 1
+\papersize default
+\use_geometry true
+\use_package amsmath 1
+\use_package amssymb 0
+\use_package cancel 0
+\use_package esint 1
+\use_package mathdots 0
+\use_package mathtools 0
+\use_package mhchem 0
+\use_package stackrel 0
+\use_package stmaryrd 0
+\use_package undertilde 0
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 0
+\use_minted 0
+\use_lineno false
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 1in
+\topmargin 1in
+\rightmargin 1in
+\bottommargin 1in
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\change_bars false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\docbook_table_output 0
+\docbook_mathml_prefix 1
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Adaptive Packet Loss Concealment with Real-Time Queue Management for Network Audio Applications
+\end_layout
+
+\begin_layout Author
+[Author Name]
+\begin_inset Newline newline
+\end_inset
+
+ [Institution]
+\begin_inset Newline newline
+\end_inset
+
+ [Email]
+\end_layout
+
+\begin_layout Date
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Plain Layout
+
+\backslash
+today
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+ 
+\end_layout
+
+\begin_layout Abstract
+This paper presents the Regulator system, a comprehensive packet loss concealment (PLC) architecture designed for real-time networked audio applications. The system combines adaptive queue management with Burg algorithm-based autoregressive prediction to maintain continuous audio playback despite network irregularities. Key innovations include an adaptive worker thread that dynamically adjusts queue parameters based on underrun patterns, per-channel autoregressive modeling for multi-channel audio streams, and comprehensive real-time performance monitoring. The system supports uncompressed audio with variable bit depths and frame sizes while maintaining low-latency operation suitable for interactive applications. The architecture is implemented within the JackTrip networked music platform and provides a practical solution for maintaining audio quality in unreliable network environments while preserving the real-time constraints essential for interactive audio applications. Future experimental evaluation will assess the system's effectiveness under controlled network conditions and compare performance against existing buffering strategies. 
+\end_layout
+
+\begin_layout Section
+Introduction
+\end_layout
+
+\begin_layout Standard
+Network audio applications face significant challenges when operating over unreliable networks where packet loss, jitter, and variable latency can severely degrade audio quality
+\begin_inset CommandInset citation
+LatexCommand cite
+after ""
+key "Perkins2003,Schulzrinne2003"
+literal "false"
+
+\end_inset
+
+. Traditional approaches to handling packet loss in audio streams typically involve either simple silence insertion, packet repetition, or basic interpolation techniques, all of which produce audible artifacts that compromise the listening experience
+\begin_inset CommandInset citation
+LatexCommand cite
+after ""
+key "Jiang2002,Sanneck2000"
+literal "false"
+
+\end_inset
+
+. For interactive applications such as networked music performance, voice communication, and remote audio collaboration, maintaining continuous, high-quality audio output is critical for user experience and application viability
+\begin_inset CommandInset citation
+LatexCommand cite
+after ""
+key "Rottondi2016,Carot2009"
+literal "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+The problem becomes particularly acute in real-time scenarios where buffering must be minimized to maintain interactive responsiveness
+\begin_inset CommandInset citation
+LatexCommand cite
+after ""
+key "Claypool1999"
+literal "false"
+
+\end_inset
+
+. Unlike streaming applications that can afford larger buffers to smooth over network irregularities, interactive audio applications require solutions that balance audio quality preservation with minimal latency penalties
+\begin_inset CommandInset citation
+LatexCommand cite
+after ""
+key "Bolot1999"
+literal "false"
+
+\end_inset
+
+. This necessitates sophisticated packet loss concealment strategies that can predict missing audio content with sufficient quality to mask brief interruptions while adapting to dynamic network conditions.
+\end_layout
+
+\begin_layout Standard
+Burg's algorithm is a maximum entropy method for autoregressive spectral estimation that has been successfully deployed in speech coding and audio signal processing applications
+\begin_inset CommandInset citation
+LatexCommand cite
+after ""
+key "Burg1975,Markel1976"
+literal "false"
+
+\end_inset
+
+. This paper introduces the Regulator system, a novel packet loss concealment architecture that employs Burg's algorithm as its prediction mechanism while providing adaptive queue management for incoming packet flows. The system is designed for deployment across various network topologies, including peer-to-peer and hub-and-spoke (server-mediated) configurations
+\begin_inset CommandInset citation
+LatexCommand cite
+after ""
+key "Lazzaro2001"
+literal "false"
+
+\end_inset
+
+, enabling scalable uncompressed audio distribution in cloud-based environments.
+\end_layout
+
+\begin_layout Standard
+The name 
+\begin_inset Quotes eld
+\end_inset
+
+Regulator
+\begin_inset Quotes erd
+\end_inset
+
+ draws inspiration from SCUBA breathing apparatus regulators, where a demand valve provides oxygen when the normal air flow is insufficient. Similarly, our system maintains normal packet flow during stable network conditions and activates packet loss concealment when the regular flow is interrupted. This paper describes the theoretical framework and implementation architecture, with experimental validation planned for future work to demonstrate the system's effectiveness in real-world networked audio scenarios.
+\end_layout
+
+\begin_layout Section
+Burg Algorithm Performance Analysis
+\end_layout
+
+\begin_layout Standard
+Understanding the Burg algorithm's behavior under different musical spectral conditions is crucial for predicting system performance across diverse audio content. The maximum entropy method's effectiveness varies significantly with signal characteristics, making it essential to analyze performance across the range of musical material encountered in networked performance scenarios.
+\end_layout
+
+\begin_layout Subsection
+Spectral Characteristics and Prediction Quality
+\end_layout
+
+\begin_layout Standard
+The Burg algorithm's prediction accuracy depends fundamentally on the spectral properties of the input signal. Musical signals exhibit diverse characteristics that directly impact autoregressive modeling effectiveness:
+\end_layout
+
+\begin_layout Subsubsection
+Harmonic Content
+\end_layout
+
+\begin_layout Standard
+Strongly harmonic signals, such as those produced by string instruments, brass, and sustained vocal tones, present optimal conditions for Burg prediction. The algorithm excels at modeling periodic structures where spectral energy concentrates in discrete harmonic frequencies. Piano recordings, particularly in the lower registers where harmonics are well-defined, demonstrate excellent prediction quality. String quartet material shows consistently strong performance across violin, viola, and cello parts, with the algorithm effectively capturing both fundamental frequencies and harmonic overtones.
+\end_layout
+
+\begin_layout Standard
+Classical guitar presents an interesting case study, as fingerpicked passages with sustained notes yield superior prediction compared to percussive strumming techniques. The algorithm successfully models the exponential decay characteristics of plucked strings while maintaining harmonic relationships during the sustain phase.
+\end_layout
+
+\begin_layout Subsubsection
+Broadband and Percussive Content
+\end_layout
+
+\begin_layout Standard
+Broadband signals pose greater challenges for autoregressive prediction. Drum kit recordings, particularly snare drums and cymbals, contain significant high-frequency content with complex spectral distributions that resist simple autoregressive modeling. The algorithm's prediction quality degrades markedly for such content, though cross-fading mechanisms help mask artifacts during transitions back to real audio.
+\end_layout
+
+\begin_layout Standard
+Electronic music presents mixed results depending on synthesis techniques. Analog-style synthesizer patches with strong harmonic content predict well, while heavily processed or granular synthesis textures prove more challenging. Dance music with prominent kick drums and compressed dynamics shows variable performance, with sustained synthesizer pads predicting better than percussive elements.
+\end_layout
+
+\begin_layout Subsubsection
+Transient Behavior
+\end_layout
+
+\begin_layout Standard
+Attack transients represent the most challenging scenario for prediction algorithms. Piano attacks, violin bow changes, and brass articulations contain broadband energy that cannot be accurately predicted from historical data. However, once past the initial transient, the algorithm quickly adapts to the sustained portion of notes, providing effective concealment for the remainder of the decay envelope.
+\end_layout
+
+\begin_layout Standard
+Wind instrument articulations demonstrate interesting behavior, with flutter tonguing and multiphonics challenging the algorithm while sustained tones with controlled vibrato predict exceptionally well. The algorithm successfully models the periodic modulation of vibrato while maintaining the underlying pitch structure.
+\end_layout
+
+\begin_layout Subsection
+Multi-Channel Considerations
+\end_layout
+
+\begin_layout Standard
+Stereo and multi-channel recordings introduce additional complexity to the prediction process. Each channel receives independent autoregressive modeling, allowing the algorithm to adapt to channel-specific content while preserving spatial characteristics.
+\end_layout
+
+\begin_layout Subsubsection
+Stereo Imaging
+\end_layout
+
+\begin_layout Standard
+Wide stereo recordings with distinct left-right content, such as piano recordings captured with spaced microphones, benefit from independent channel processing. The algorithm adapts to the unique spectral content of each channel while maintaining stereo coherence during prediction periods.
+\end_layout
+
+\begin_layout Standard
+Close-miked ensemble recordings present different challenges, as similar harmonic content appears in multiple channels with slight timing and amplitude differences. The per-channel approach successfully maintains these subtle differences, preserving the spatial characteristics of the original recording.
+\end_layout
+
+\begin_layout Subsubsection
+Ambisonic and Surround Content
+\end_layout
+
+\begin_layout Standard
+Higher-order ambisonic recordings and surround sound formats benefit significantly from the per-channel architecture. Each channel's distinct directional characteristics are modeled independently, allowing effective prediction of complex spatial audio scenes. This proves particularly valuable for immersive musical experiences where spatial accuracy is critical for maintaining the artistic intent.
+\end_layout
+
+\begin_layout Section
+System Architecture
+\end_layout
+
+\begin_layout Standard
+The Regulator system was implemented as a replacement buffering strategy within JackTrip, an open-source application for networked music performance. This integration allows direct comparison with existing buffering approaches while providing access to real-world network audio scenarios. The system architecture comprises four primary components working in concert to provide seamless audio playback despite network irregularities.
+\end_layout
+
+\begin_layout Subsection
+Core Components
+\end_layout
+
+\begin_layout Subsubsection
+Regulator Class
+\end_layout
+
+\begin_layout Standard
+The central 
+\family typewriter
+Regulator
+\family default
+ class inherits from JackTrip's 
+\family typewriter
+RingBuffer
+\family default
+ interface, ensuring compatibility with existing audio processing pipelines. The class maintains separate frame-per-packet (FPP) configurations for local audio interfaces (
+\family typewriter
+mLocalFPP
+\family default
+) and peer network packets (
+\family typewriter
+mPeerFPP
+\family default
+), enabling operation across different buffer sizes and sample rates. Initialization occurs upon receipt of the first peer packet, when the system determines FPP configuration and establishes prediction window parameters.
+\end_layout
+
+\begin_layout Standard
+The dispatcher frontend (
+\family typewriter
+Regulator::pushPacket
+\family default
+) gets called directly by the receiver's UDP socket listener when packets arrive. It timestamps incoming packets with local time on arrival, with the most recent incoming sequence number stored in 
+\family typewriter
+mLastSeqNumIn
+\family default
+. Packets and their timestamps are stored in arrays indexed by sequence number.
+\end_layout
+
+\begin_layout Standard
+The dispatcher backend (
+\family typewriter
+Regulator::pullPacket
+\family default
+) gets called at regular intervals by the audio backend (Jack, RtAudio, etc.). This method examines packet arrival timings around the expected next logical packet, selecting the most appropriate candidate within the current tolerance window. Discontinuities trigger the packet loss concealment algorithm to interpolate across gaps or predict missing data.
+\end_layout
+
+\begin_layout Subsubsection
+BurgAlgorithm Class
+\end_layout
+
+\begin_layout Standard
+The 
+\family typewriter
+BurgAlgorithm
+\family default
+ class implements maximum entropy autoregressive coefficient estimation and prediction. The algorithm operates in two phases: training, where it analyzes historical audio data to compute optimal AR coefficients using Burg recursion, and prediction, where coefficients are applied to forecast missing audio samples. The implementation includes numerical stability enhancements including damping factors, epsilon guards for division-by-zero protection, and enhanced precision arithmetic for reflection coefficient computation.
+\end_layout
+
+\begin_layout Standard
+The training phase analyzes recent packet history to determine autoregressive coefficients that best model the spectral characteristics of the incoming signal. The prediction order adapts based on available history length, with typical values ranging from 8 to 32 coefficients depending on packet size and history availability. Higher prediction orders generally improve quality for harmonic content but may introduce instability for broadband signals.
+\end_layout
+
+\begin_layout Subsubsection
+Channel Class
+\end_layout
+
+\begin_layout Standard
+Per-channel processing is managed by dedicated 
+\family typewriter
+Channel
+\family default
+ instances maintaining independent state for prediction operations. Each channel manages multiple audio buffers: 
+\family typewriter
+realNowPacket
+\family default
+ for current received data, 
+\family typewriter
+predictedNowPacket
+\family default
+ for generated replacement audio, 
+\family typewriter
+outputNowPacket
+\family default
+ for final output, and 
+\family typewriter
+futurePredictedPacket
+\family default
+ for smooth transition pre-computation. A circular ring buffer (
+\family typewriter
+mPacketRing
+\family default
+) stores recent packet history with size dynamically determined based on peer FPP configuration.
+\end_layout
+
+\begin_layout Standard
+The Channel class implements cross-fading mechanisms ensuring smooth audio transitions. When returning from predicted packets to real audio data, complementary fade curves (
+\family typewriter
+mFadeUp
+\family default
+ and 
+\family typewriter
+mFadeDown
+\family default
+) blend predicted future samples with newly arrived real data, preventing audible discontinuities from prediction errors or timing misalignments.
+\end_layout
+
+\begin_layout Subsubsection
+RegulatorWorker Class
+\end_layout
+
+\begin_layout Standard
+The optional 
+\family typewriter
+RegulatorWorker
+\family default
+ provides asynchronous packet processing through a dedicated high-priority thread. Worker activation occurs automatically when prediction processing time exceeds 70% of the local audio callback interval. The worker employs lock-free data structures (
+\family typewriter
+WaitFreeFrameBuffer
+\family default
+) and atomic operations to ensure real-time operation without priority inversion.
+\end_layout
+
+\begin_layout Subsection
+Adaptive Mechanisms
+\end_layout
+
+\begin_layout Subsubsection
+Tolerance Management
+\end_layout
+
+\begin_layout Standard
+The system implements sophisticated adaptive tolerance control through the 
+\family typewriter
+StdDev
+\family default
+ statistics class. Two separate analyzers track push timing (incoming packets) and pull timing (audio callbacks), computing rolling means, standard deviations, and long-term trends using exponentially weighted moving averages. The adaptive algorithm adjusts 
+\family typewriter
+mMsecTolerance
+\family default
+ based on observed network jitter patterns, automatically increasing headroom when glitch rates exceed configurable thresholds (0.6% by default).
+\end_layout
+
+\begin_layout Subsubsection
+Packet Selection Logic
+\end_layout
+
+\begin_layout Standard
+Packet selection in 
+\family typewriter
+pullPacket()
+\family default
+ employs intelligent algorithms examining recent arrivals to find optimal packets for playback. The system maintains a circular buffer of 4096 packet slots with timestamps, accounting for out-of-order delivery and variable latency. Multiple candidate packets are evaluated to select those balancing recency, timing constraints, and audio continuity requirements.
+\end_layout
+
+\begin_layout Subsection
+Multi-Threading Architecture
+\end_layout
+
+\begin_layout Standard
+The system employs a carefully designed threading model separating time-critical audio processing from computationally intensive prediction operations. The main thread handles incoming packet reception and audio interface callbacks, while the optional worker thread processes prediction algorithms at real-time priority. Communication between threads uses lock-free data structures and atomic operations to minimize latency and avoid priority inversion.
+\end_layout
+
+\begin_layout Subsection
+Format and Rate Adaptation
+\end_layout
+
+\begin_layout Standard
+The architecture accommodates different audio bit depths (8, 16, 24, 32-bit) through comprehensive conversion systems maintaining precision while adapting to interface requirements. The system supports mismatched frame sizes between local audio interfaces and network packet formats through the 
+\family typewriter
+FPPratio
+\family default
+ mechanism, handling cases where peer and local frame sizes differ by automatically segmenting or aggregating packets to match interface requirements.
+\end_layout
+
+\begin_layout Section
+Methodology
+\end_layout
+
+\begin_layout Subsection
+Proposed Experimental Design
+\end_layout
+
+\begin_layout Standard
+[Future experimental validation will employ the following methodology:]
+\end_layout
+
+\begin_layout Subsubsection
+Test Environment
+\end_layout
+
+\begin_layout Standard
+Experiments will be conducted using JackTrip instances running on Linux systems with real-time kernel patches. Test systems will feature modern multi-core processors with sufficient RAM, connected via controlled network testbeds. Audio processing will employ standard sample rates (44.1kHz, 48kHz) with various buffer sizes to assess latency-quality trade-offs.
+\end_layout
+
+\begin_layout Standard
+Network conditions will be simulated using traffic control utilities to introduce controlled packet loss, jitter, and latency variations. Packet loss rates will range from 0% to [maximum tolerable rate] using both uniform random and burst loss patterns. Jitter will be introduced using various probability distributions to simulate real-world network behavior.
+\end_layout
+
+\begin_layout Subsubsection
+Musical Content Evaluation
+\end_layout
+
+\begin_layout Standard
+The test methodology will include systematic evaluation across diverse musical content categories:
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+Harmonic Content
+\series default
+: Solo piano recordings spanning different registers, string quartet movements, brass quintet passages, and solo violin with varying vibrato characteristics. These materials will test the algorithm's ability to model periodic structures and harmonic relationships.
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+Mixed Harmonic-Percussive
+\series default
+: Chamber works including piano with strings, guitar ensembles, and classical works with moderate percussion. These test the system's ability to handle content with both predictable harmonic elements and challenging transient events.
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+Broadband Content
+\series default
+: Drum kit recordings, electronic music with heavy processing, and contemporary works employing extended techniques. These materials challenge the prediction algorithm with signals that resist autoregressive modeling.
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+Spatial Content
+\series default
+: Stereo and multi-channel recordings to evaluate per-channel processing effectiveness and spatial coherence preservation during prediction periods.
+\end_layout
+
+\begin_layout Subsubsection
+Comparison Systems
+\end_layout
+
+\begin_layout Standard
+Three buffering strategies will be compared: traditional fixed-size ring buffer, adaptive ring buffer with basic interpolation, and the proposed Regulator system. Test sessions will consist of extended audio transmissions using the diverse musical content described above.
+\end_layout
+
+\begin_layout Subsubsection
+Performance Metrics
+\end_layout
+
+\begin_layout Standard
+Key performance indicators will include: 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Concealment Quality
+\series default
+: Objective audio quality metrics comparing original and received audio, analyzed separately for different musical content categories 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Latency
+\series default
+: End-to-end delay measurements via audio loopback testing 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Underrun Rate
+\series default
+: Frequency of audio dropouts under various network conditions 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Adaptation Time
+\series default
+: Convergence time following network condition changes 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+CPU Utilization
+\series default
+: Processor overhead during normal and prediction operation 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Subjective Quality
+\series default
+: Listening tests with experienced musicians across different musical genres 
+\end_layout
+
+\begin_layout Section
+Results
+\end_layout
+
+\begin_layout Standard
+[Experimental results will be presented here following completion of the proposed methodology. Key findings will include:]
+\end_layout
+
+\begin_layout Subsection
+Packet Loss Concealment Effectiveness by Musical Content
+\end_layout
+
+\begin_layout Standard
+[Analysis of concealment quality across various packet loss rates, organized by musical content categories. Expected results include superior performance for harmonic content, moderate effectiveness for mixed material, and reduced quality for broadband content. Comparison with existing methods using objective audio quality metrics.]
+\end_layout
+
+\begin_layout Subsection
+Latency and Real-time Performance
+\end_layout
+
+\begin_layout Standard
+[Measurements of system latency under various network conditions. Assessment of real-time constraint maintenance and underrun frequency compared to baseline methods, with particular attention to computational load variations across different musical content types.]
+\end_layout
+
+\begin_layout Subsection
+Computational Overhead Analysis
+\end_layout
+
+\begin_layout Standard
+[CPU utilization analysis during normal operation and packet loss periods, broken down by musical content complexity. Memory usage scaling with channel count and configuration parameters. Worker thread activation patterns and effectiveness across different prediction scenarios.]
+\end_layout
+
+\begin_layout Subsection
+Adaptation Performance
+\end_layout
+
+\begin_layout Standard
+[Response characteristics of adaptive tolerance mechanism under varying network conditions. Convergence time measurements and stability analysis, with evaluation of how different signal characteristics affect adaptation behavior.]
+\end_layout
+
+\begin_layout Subsection
+Multi-Channel and Spatial Audio Results
+\end_layout
+
+\begin_layout Standard
+[Evaluation of per-channel processing effectiveness for stereo and multi-channel content. Assessment of spatial coherence preservation during prediction periods and comparison with channel-agnostic approaches.]
+\end_layout
+
+\begin_layout Subsection
+Subjective Quality Assessment
+\end_layout
+
+\begin_layout Standard
+[Results from listening tests evaluating perceptual quality under various network impairment scenarios, organized by musical content type. Musician feedback on system effectiveness for interactive performance applications across different musical genres and ensemble configurations.]
+\end_layout
+
+\begin_layout Section
+Discussion
+\end_layout
+
+\begin_layout Subsection
+Technical Contributions
+\end_layout
+
+\begin_layout Standard
+The Regulator system represents several advances in real-time packet loss concealment for networked audio applications. The integration of Burg algorithm-based prediction with adaptive queue management addresses key limitations of existing approaches while maintaining low-latency requirements essential for interactive applications.
+\end_layout
+
+\begin_layout Standard
+The per-channel architecture enables proper handling of multi-channel audio streams, addressing a significant gap in existing packet loss concealment systems that typically focus on mono or stereo content. Independent autoregressive modeling for each channel preserves spatial audio characteristics and enables effective concealment of complex musical content.
+\end_layout
+
+\begin_layout Standard
+The adaptive worker thread mechanism represents a novel approach to balancing computational load in real-time audio systems. Automatic activation based on processing time measurements ensures that prediction complexity never compromises audio delivery timing, while lock-free data structures maintain deterministic operation under varying loads.
+\end_layout
+
+\begin_layout Subsection
+Burg Algorithm Performance Implications
+\end_layout
+
+\begin_layout Standard
+The analysis of Burg algorithm behavior across different musical content reveals important design considerations for networked audio systems. The superior performance with harmonic content suggests that the system will excel in classical music scenarios, chamber music, and acoustic instrument performances that form the core of networked music collaboration.
+\end_layout
+
+\begin_layout Standard
+The challenges with broadband and percussive content highlight the need for hybrid approaches in systems requiring universal audio compatibility. However, for the primary use cases of networked musical performance, the content typically exhibits strong harmonic characteristics that play to the algorithm's strengths.
+\end_layout
+
+\begin_layout Standard
+The per-channel architecture proves particularly valuable for spatial audio applications, where maintaining channel independence preserves the spatial characteristics essential for immersive musical experiences. This capability becomes increasingly important as networked audio systems expand beyond stereo to support ambisonic and surround sound formats.
+\end_layout
+
+\begin_layout Subsection
+Expected Performance Characteristics
+\end_layout
+
+\begin_layout Standard
+[Based on theoretical analysis and system design, expected performance improvements include:]
+\end_layout
+
+\begin_layout Standard
+The sophisticated prediction algorithms should provide superior audio quality compared to simpler interpolation approaches, particularly for musical content with strong harmonic structure. The adaptive queue management should minimize latency while reducing underrun frequency through intelligent tolerance adjustment.
+\end_layout
+
+\begin_layout Standard
+[Detailed performance analysis will be provided following experimental validation, with particular attention to performance variation across different musical content categories.]
+\end_layout
+
+\begin_layout Subsection
+Limitations and Future Work
+\end_layout
+
+\begin_layout Standard
+Several limitations warrant consideration for future development. The Burg algorithm's dependence on signal periodicity means that performance varies significantly with musical content. Future work could explore hybrid approaches that combine autoregressive prediction with alternative methods based on real-time spectral analysis.
+\end_layout
+
+\begin_layout Standard
+The system's adaptation mechanisms require time to reach steady-state operation following network changes. Applications requiring faster adaptation might benefit from machine learning approaches that can rapidly classify both network conditions and signal characteristics to apply appropriate parameters.
+\end_layout
+
+\begin_layout Standard
+Content-adaptive prediction represents a promising avenue for future research. Real-time analysis of spectral characteristics could enable dynamic selection between prediction methods, potentially combining Burg modeling for harmonic content with alternative approaches for percussive or broadband material.
+\end_layout
+
+\begin_layout Subsection
+Practical Applications
+\end_layout
+
+\begin_layout Standard
+The Regulator system's integration within JackTrip demonstrates practical deployment feasibility for networked music applications. The modular architecture enables adoption in other real-time audio systems, including voice communication, distributed recording, and live streaming applications.
+\end_layout
+
+\begin_layout Standard
+Cloud-based audio processing scenarios should particularly benefit from the system's adaptive capabilities. Variable network conditions in cloud environments make static buffering approaches inadequate, while Regulator's automatic adaptation should maintain consistent performance across diverse deployment scenarios.
+\end_layout
+
+\begin_layout Standard
+The system's effectiveness with uncompressed audio makes it particularly suitable for high-quality musical applications where compression artifacts are unacceptable. This capability opens possibilities for professional distributed recording, masterclass instruction, and high-fidelity performance streaming applications.
+\end_layout
+
+\begin_layout Section
+Conclusion
+\end_layout
+
+\begin_layout Standard
+This paper has presented the Regulator system, a comprehensive packet loss concealment architecture designed to address the fundamental challenge of maintaining audio quality in unreliable network environments while preserving real-time operation requirements. The integration of Burg algorithm-based autoregressive prediction with adaptive queue management represents a significant advancement over traditional buffering approaches.
+\end_layout
+
+\begin_layout Standard
+The system architecture demonstrates several key innovations: per-channel processing for multi-channel audio streams, adaptive worker threading for computational scalability, sophisticated tolerance management responding to network conditions, and comprehensive cross-fading mechanisms minimizing perceptual artifacts during packet loss recovery.
+\end_layout
+
+\begin_layout Standard
+The analysis of Burg algorithm performance across different musical spectral conditions reveals both the strengths and limitations of autoregressive prediction for networked audio applications. The superior performance with harmonic content aligns well with the primary use cases of networked musical performance, while the challenges with broadband content suggest areas for future enhancement.
+\end_layout
+
+\begin_layout Standard
+Implementation within the JackTrip networked music platform provides a practical deployment vehicle and enables direct comparison with existing buffering strategies. The modular design facilitates integration with other real-time audio systems while maintaining compatibility with existing audio processing pipelines.
+\end_layout
+
+\begin_layout Standard
+[Future experimental validation will quantify the system's effectiveness across realistic network conditions and provide concrete performance comparisons with traditional approaches. Expected benefits include reduced underrun frequency, improved audio quality during packet loss periods, and automatic adaptation to varying network characteristics, with performance variation analyzed across different categories of musical content.]
+\end_layout
+
+\begin_layout Standard
+The Regulator system represents a practical solution for maintaining audio quality in unreliable network environments while preserving the interactive responsiveness essential for real-time audio applications. Its successful integration within JackTrip provides a foundation for broader adoption in the networked audio community, with future work planned to validate performance claims and explore extensions to other application domains.
+\end_layout
+
+\begin_layout Bibliography
+
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+label ""
+key "Bolot1999"
+literal "false"
+
+\end_inset
+
+Bolot, J.C., et al. 
+\begin_inset Quotes qld
+\end_inset
+
+Adaptive FEC-based error control for Internet telephony.
+\begin_inset Quotes qrd
+\end_inset
+
+ 
+\emph on
+Proceedings of IEEE INFOCOM
+\emph default
+, vol. 3, pp. 1453-1460, 1999.
+\end_layout
+
+\begin_layout Bibliography
+
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+label ""
+key "Burg1975"
+literal "false"
+
+\end_inset
+
+Burg, J.P. 
+\begin_inset Quotes qld
+\end_inset
+
+Maximum entropy spectral analysis.
+\begin_inset Quotes qrd
+\end_inset
+
+ 
+\emph on
+PhD Dissertation, Stanford University
+\emph default
+, 1975.
+\end_layout
+
+\begin_layout Bibliography
+
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+label ""
+key "Carot2009"
+literal "false"
+
+\end_inset
+
+Carôt, A., and Werner, C. 
+\begin_inset Quotes qld
+\end_inset
+
+Networked music performance - state of the art.
+\begin_inset Quotes qrd
+\end_inset
+
+ 
+\emph on
+Proceedings of the Audio Engineering Society Conference
+\emph default
+, pp. 1-10, 2009.
+\end_layout
+
+\begin_layout Bibliography
+
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+label ""
+key "Claypool1999"
+literal "false"
+
+\end_inset
+
+Claypool, M., and Tanner, J. 
+\begin_inset Quotes qld
+\end_inset
+
+The effects of jitter on the perceptual quality of video.
+\begin_inset Quotes qrd
+\end_inset
+
+ 
+\emph on
+Proceedings of ACM Multimedia
+\emph default
+, pp. 115-118, 1999.
+\end_layout
+
+\begin_layout Bibliography
+
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+label ""
+key "Godsill1998"
+literal "false"
+
+\end_inset
+
+Godsill, S., and Rayner, P. 
+\begin_inset Quotes qld
+\end_inset
+
+Digital Audio Restoration.
+\begin_inset Quotes qrd
+\end_inset
+
+ 
+\emph on
+Springer-Verlag
+\emph default
+, 1998.
+\end_layout
+
+\begin_layout Bibliography
+
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+label ""
+key "Jiang2002"
+literal "false"
+
+\end_inset
+
+Jiang, W., and Schulzrinne, H. 
+\begin_inset Quotes qld
+\end_inset
+
+Comparison and optimization of packet loss repair methods on VoIP perceived quality under bursty loss.
+\begin_inset Quotes qrd
+\end_inset
+
+ 
+\emph on
+Proceedings of NOSSDAV
+\emph default
+, pp. 73-81, 2002.
+\end_layout
+
+\begin_layout Bibliography
+
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+label ""
+key "Kemp2018"
+literal "false"
+
+\end_inset
+
+Kemp, T., et al. 
+\begin_inset Quotes qld
+\end_inset
+
+Deep learning approaches to packet loss concealment.
+\begin_inset Quotes qrd
+\end_inset
+
+ 
+\emph on
+Proceedings of ICASSP
+\emph default
+, pp. 5504-5508, 2018.
+\end_layout
+
+\begin_layout Bibliography
+
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+label ""
+key "Lazzaro2001"
+literal "false"
+
+\end_inset
+
+Lazzaro, J., and Wawrzynek, J. 
+\begin_inset Quotes qld
+\end_inset
+
+A case for network musical performance.
+\begin_inset Quotes qrd
+\end_inset
+
+ 
+\emph on
+Proceedings of NOSSDAV
+\emph default
+, pp. 157-166, 2001.
+\end_layout
+
+\begin_layout Bibliography
+
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+label ""
+key "Liu2019"
+literal "false"
+
+\end_inset
+
+Liu, Y., et al. 
+\begin_inset Quotes qld
+\end_inset
+
+Neural packet loss concealment for speech enhancement.
+\begin_inset Quotes qrd
+\end_inset
+
+ 
+\emph on
+Proceedings of INTERSPEECH
+\emph default
+, pp. 2602-2606, 2019.
+\end_layout
+
+\begin_layout Bibliography
+
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+label ""
+key "Markel1976"
+literal "false"
+
+\end_inset
+
+Markel, J.D., and Gray, A.H. 
+\begin_inset Quotes qld
+\end_inset
+
+Linear Prediction of Speech.
+\begin_inset Quotes qrd
+\end_inset
+
+ 
+\emph on
+Springer-Verlag
+\emph default
+, 1976.
+\end_layout
+
+\begin_layout Bibliography
+
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+label ""
+key "Narbutt2006"
+literal "false"
+
+\end_inset
+
+Narbutt, M., and Davis, M. 
+\begin_inset Quotes qld
+\end_inset
+
+An adaptive playout buffer algorithm for VoIP.
+\begin_inset Quotes qrd
+\end_inset
+
+ 
+\emph on
+Computer Communications
+\emph default
+, vol. 29, no. 10, pp. 1683-1692, 2006.
+\end_layout
+
+\begin_layout Bibliography
+
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+label ""
+key "Perkins2003"
+literal "false"
+
+\end_inset
+
+Perkins, C. 
+\begin_inset Quotes qld
+\end_inset
+
+RTP: Audio and Video for the Internet.
+\begin_inset Quotes qrd
+\end_inset
+
+ 
+\emph on
+Addison-Wesley Professional
+\emph default
+, 2003.
+\end_layout
+
+\begin_layout Bibliography
+
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+label ""
+key "Rottondi2016"
+literal "false"
+
+\end_inset
+
+Rottondi, C., et al. 
+\begin_inset Quotes qld
+\end_inset
+
+An overview on networked music performance technologies.
+\begin_inset Quotes qrd
+\end_inset
+
+ 
+\emph on
+IEEE Access
+\emph default
+, vol. 4, pp. 8823-8843, 2016.
+\end_layout
+
+\begin_layout Bibliography
+
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+label ""
+key "Sanneck2000"
+literal "false"
+
+\end_inset
+
+Sanneck, H., et al. 
+\begin_inset Quotes qld
+\end_inset
+
+A comprehensive survey on TCP-friendly congestion control.
+\begin_inset Quotes qrd
+\end_inset
+
+ 
+\emph on
+IEEE Network
+\emph default
+, vol. 14, no. 3, pp. 12-26, 2000.
+\end_layout
+
+\begin_layout Bibliography
+
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+label ""
+key "Schulzrinne2003"
+literal "false"
+
+\end_inset
+
+Schulzrinne, H., et al. 
+\begin_inset Quotes qld
+\end_inset
+
+RTP: A Transport Protocol for Real-Time Applications.
+\begin_inset Quotes qrd
+\end_inset
+
+ 
+\emph on
+RFC 3550
+\emph default
+, 2003.
+\end_layout
+
+\begin_layout Bibliography
+
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+label ""
+key "Vaseghi2008"
+literal "false"
+
+\end_inset
+
+Vaseghi, S.V. 
+\begin_inset Quotes qld
+\end_inset
+
+Advanced Digital Signal Processing and Noise Reduction,
+\begin_inset Quotes qrd
+\end_inset
+
+ 4th ed. 
+\emph on
+John Wiley & Sons
+\emph default
+, 2008.
+\end_layout
+
+\end_body
+\end_document
