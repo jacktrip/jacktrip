@@ -270,11 +270,20 @@ Regulator
  If the flow slackens,
  then the demand valve engages but if the flow exceeds demand,
  then pressure relief occurs.
- The normal regime of breathing evenly is augmented by a method that kicks in extra oxygen when necessary,
+ Breathing evenly depends on having extra oxygen when necessary,
  and in our case PLC kicks in when the normal regime of regular packet flows is interrupted.
- The analogy only goes so far:
- essentially,
- the system that will be described is an interpolator / predictor algorithm that rides the real-time signal.
+ 
+\end_layout
+
+\begin_layout Standard
+In a large server-mediated,
+ cloud room with potentially 100's of clients,
+ separate instances of Regulator ride each of the real-time flows at both ends,
+ server-side and client-side,
+ adapting to the flow qualities.
+ The resulting audio experience is much improved even on less well-provisioned endpoints using,
+ for example,
+ WIFI or LEO satellite connectivity.
 \end_layout
 
 \begin_layout Section
@@ -316,7 +325,7 @@ key "Bolot1999,Narbutt2006"
 \end_layout
 
 \begin_layout Section
-System Architecture
+Method
 \end_layout
 
 \begin_layout Standard
@@ -355,7 +364,7 @@ The outer Regulator Class replaces the alternative ring buffer (or "jitter" buff
 \end_layout
 
 \begin_layout Subsection
-Theory of Operation
+Packet Interface
 \end_layout
 
 \begin_layout Standard
@@ -365,6 +374,10 @@ JackTrip audio packets carry uncompressed audio and JackTrip instances emit a se
  A reasonable assumption is that they were clocked out evenly,
  with a high degree of precision,
  onto the network using the internal audio timing mechanism of the transmitting instance.
+\end_layout
+
+\begin_layout Subsubsection
+Push / Pull
 \end_layout
 
 \begin_layout Standard
@@ -385,7 +398,7 @@ The dispatcher back-end algorithm (Regulator::pullPacket) method gets called at 
 
 \begin_layout Standard
 mLastSeqNumOut is the sequence number of the most recent output packet.
- On the next call to pullPacket mLastSeqNumOut is incremented by 1 such that it correpsonds to the expected index of the next logical packet,
+ On the next call to pullPacket mLastSeqNumOut is incremented by 1 such that it corresponds to the expected index of the next logical packet,
  namely what it should be if the stream were behaving regularly.
  Timings of packet arrivals in the vicinity of the next logical packet are then checked.
  Lost packets are simply ignored because they aren't present in storage and thus can't be checked.
@@ -398,29 +411,44 @@ Any packets that arrived before the next logical packet are discarded.
  That packet is then deemed the correct output packet and mLastSeqNumOut records its index.
 \end_layout
 
+\begin_layout Subsubsection
+Handling discontinuities
+\end_layout
+
 \begin_layout Standard
-Discontinuities occur either there's an overrun,
- in which case the method will skip ahead and create a discontinuity,
- or also occur if there's an underrun and no candidate packet was found because the stream itself had gaps.
+Discontinuities occur either because there's an overrun,
+ in which case the method will skip ahead,
+ or because there's an underrun and no candidate packet was found.
  For either case,
- the PLC algorithm attempts to conceal the discontinuity and produces the next output packet.
- If skipping ahead,
- it will interpolate across the discontinuity or if filling in missing data it will predict what the data would have been.
+ the PLC algorithm attempts to conceal the discontinuity and produce the next output packet.
+ When skipping ahead,
+ PLC will interpolate across the discontinuity and when filling a gap it will predict what the data would have been.
  The index in mLastSeqNumOut either skips ahead or remains fixed,
  respectively.
 \end_layout
 
+\begin_layout Subsubsection
+Limitations
+\end_layout
+
 \begin_layout Standard
-Egregious underruns from a stalled stream present a problem for PLC because too much data is mising to make a prediction.
+Sometimes too much data is missing to make a prediction.
  These "bad" underruns can happen for a variety of reasons,
  for example,
  a client disconnecting improperly or a long network hiccup.
- PLC uses recent signal history when making its prediction and if the size of the gap is beyond "normal" jitter or isolated instances of packet loss,
- it fails.
- When a signal stalls like this,
+ PLC depends on recent signal history when making its prediction and if the size of the gap is beyond "normal," it fails.
+ 
+\end_layout
+
+\begin_layout Standard
+When a signal stalls like this,
  repeated calls of the dispatcher will needlessly invoke PLC and drive up the processing load.
- Such flailing can lead to an unbalanced or even unresponzive system.
- To avoid that,
+ Such flailing can lead to an unbalanced or even unresponsive system.
+ 
+\end_layout
+
+\begin_layout Standard
+To avoid that,
  before invoking PLC,
  the time of arrival of the mLastSeqNumOut packet gets checked to see how long of a gap it's going to be dealing with.
  If it's above a threshold (for example,
