@@ -214,6 +214,7 @@ HEADERS += src/DataProtocol.h \
            src/CompressorPresets.h \
            src/Limiter.h \
            src/Regulator.h \
+           src/RegulatorTest.h \
            src/WaitFreeRingBuffer.h \
            src/WaitFreeFrameBuffer.h \
            src/Reverb.h \
@@ -296,6 +297,7 @@ SOURCES += src/DataProtocol.cpp \
            src/Compressor.cpp \
            src/Limiter.cpp \
            src/Regulator.cpp \
+           src/RegulatorTest.cpp \
            src/Reverb.cpp \
            src/Meter.cpp \
            src/Monitor.cpp \
