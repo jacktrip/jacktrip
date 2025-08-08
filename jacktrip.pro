@@ -6,6 +6,9 @@ CONFIG += c++17 console
 CONFIG -= app_bundle
 
 CONFIG += qt thread debug_and_release qtquickcompiler novs
+unix: CONFIG += link_pkgconfig
+unix: PKGCONFIG += gtest
+
 # CONFIG += qt thread debug_and_release build_all qtquickcompiler
 CONFIG(debug, debug|release) {
     TARGET = jacktrip_debug

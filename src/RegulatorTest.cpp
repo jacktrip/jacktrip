@@ -228,7 +228,7 @@ double RegulatorTest::calculateRMS(const std::vector<int8_t>& buffer)
     int samples = buffer.size() / mBitRes;
     
     for (int i = 0; i < samples; i++) {
-        int16_t sample = byt esToInt16(&buffer[i * mBitRes]);
+        int16_t sample = bytesToInt16(&buffer[i * mBitRes]);
         double normalized = sample / 32767.0;
         sum_squares += normalized * normalized;
     }
