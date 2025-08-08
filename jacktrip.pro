@@ -5,7 +5,8 @@
 CONFIG += c++17 console
 CONFIG -= app_bundle
 
-CONFIG += qt thread debug_and_release build_all qtquickcompiler
+CONFIG += qt thread debug_and_release qtquickcompiler novs
+# CONFIG += qt thread debug_and_release build_all qtquickcompiler
 CONFIG(debug, debug|release) {
     TARGET = jacktrip_debug
     application_id = 'org.jacktrip.JackTrip.Devel'
