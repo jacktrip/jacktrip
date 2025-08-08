@@ -6,9 +6,6 @@ CONFIG += c++17 console
 CONFIG -= app_bundle
 
 CONFIG += qt thread debug_and_release qtquickcompiler novs
-unix: CONFIG += link_pkgconfig
-unix: PKGCONFIG += gtest
-
 # CONFIG += qt thread debug_and_release build_all qtquickcompiler
 CONFIG(debug, debug|release) {
     TARGET = jacktrip_debug
@@ -217,7 +214,6 @@ HEADERS += src/DataProtocol.h \
            src/CompressorPresets.h \
            src/Limiter.h \
            src/Regulator.h \
-           src/RegulatorTest.h \
            src/WaitFreeRingBuffer.h \
            src/WaitFreeFrameBuffer.h \
            src/Reverb.h \
@@ -300,7 +296,6 @@ SOURCES += src/DataProtocol.cpp \
            src/Compressor.cpp \
            src/Limiter.cpp \
            src/Regulator.cpp \
-           src/RegulatorTest.cpp \
            src/Reverb.cpp \
            src/Meter.cpp \
            src/Monitor.cpp \
@@ -451,3 +446,52 @@ if(linux-g++ | linux-g++-64):!nogui {
 
     INSTALLS += metainfo desktop icon48 icon_svg icon_symbolic
 }
+
+# GTest configuration (always available)
+unix: CONFIG += link_pkgconfig
+unix: PKGCONFIG += gtest
+
+# Test configuration
+test {
+    TARGET = regulator_tests
+
+    # Add test-specific sources
+    SOURCES += \
+        tests/RegulatorTest.cpp \
+        tests/main.cpp
+
+    HEADERS += \
+        tests/RegulatorTest.h
+
+    # Remove main application entry point for test build
+    SOURCES -= src/main.cpp
+
+    # Add test-specific include path
+    INCLUDEPATH += tests
+
+    # and sources to be tested
+    INCLUDEPATH += src
+
+    # Test-specific defines
+    DEFINES += TESTING_BUILD
+
+    # Ensure we link gtest_main for test executable
+    LIBS += -lgtest_main
+}
+
+# Create test target that builds and runs tests
+tests.target = tests
+tests.commands = qmake CONFIG+=test && make clean && make && ./regulator_tests
+tests.depends = FORCE
+QMAKE_EXTRA_TARGETS += tests
+
+# Alternative: just build test executable
+build_tests.target = build_tests
+build_tests.commands = qmake CONFIG+=test && make
+build_tests.depends = FORCE
+QMAKE_EXTRA_TARGETS += build_tests
+
+# Clean test builds
+clean_tests.target = clean_tests
+clean_tests.commands = qmake CONFIG+=test && make clean && qmake && make clean
+QMAKE_EXTRA_TARGETS += clean_tests

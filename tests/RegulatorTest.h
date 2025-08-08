@@ -133,7 +133,36 @@ protected:
     int mOverruns;
     bool mTestRunning;
 
+    void printDetailedStatistics(const std::string& testName);
+
+    // Realistic timing methods
+    void realtimeDelay(double targetMs);
+    void simulateAudioCallback();
+    void simulatePacketArrival(int seq_num, const std::vector<int8_t>& packet);
+    void runRealtimeTest(int durationMs, std::function<std::vector<int8_t>(int)> packetGenerator, double jitterPercent = 0.0);
+    double mAudioCallbackIntervalMs;  // Audio callback timing (should be 1.33ms)
+
+    // Add these declarations to the protected section of RegulatorTest.h:
+
+    // WAV recording methods
+    void enableWavRecording(bool enable = true);
+    void recordInputPacket(const std::vector<int8_t>& packet);
+    void recordOutputBuffer();
+    void recordSilentInput();
+    void writeWavFile(const std::string& filename);
+
+    // Packet loss simulation
+    void simulatePacketLoss();
+
+    // Add these to the private member variables:
+   private:
+
 private:
+    // WAV recording
+    bool mRecordingEnabled;
+    std::vector<double> mInputSamples;
+    std::vector<double> mOutputSamples;
+
     // Internal helper methods
     void initializeTestDefaults();
     double sampleToFloat(int8_t* sample_ptr, int bit_res);
