@@ -1,0 +1,622 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="600"
+   height="700"
+   version="1.1"
+   id="svg49"
+   sodipodi:docname="pullPacket.svg"
+   inkscape:export-filename="pullPacket.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
+   inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview49"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="0.70428571"
+     inkscape:cx="299.59432"
+     inkscape:cy="350"
+     inkscape:window-width="1280"
+     inkscape:window-height="737"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg49" />
+  <!-- Start -->
+  <ellipse
+     cx="247.46451"
+     cy="48.519268"
+     rx="60"
+     ry="20"
+     fill="none"
+     stroke="#000000"
+     stroke-width="2"
+     id="ellipse1" />
+  <text
+     x="247.46451"
+     y="53.519268"
+     font-family="sans-serif"
+     font-size="10px"
+     text-anchor="middle"
+     id="text1">START</text>
+  <!-- Initialize -->
+  <rect
+     x="167.46451"
+     y="88.519272"
+     width="160"
+     height="40"
+     fill="none"
+     stroke="#000000"
+     stroke-width="1"
+     id="rect1" />
+  <text
+     x="247.46451"
+     y="103.51927"
+     font-family="sans-serif"
+     font-size="9px"
+     text-anchor="middle"
+     id="text2">new_pkts = count packets</text>
+  <text
+     x="247.46451"
+     y="118.51927"
+     font-family="sans-serif"
+     font-size="9px"
+     text-anchor="middle"
+     id="text3">i = new_pkts - 1</text>
+  <!-- Decision: i >= 0? -->
+  <polygon
+     points="350,180 300,210 250,180 300,150 "
+     fill="none"
+     stroke="#000000"
+     stroke-width="2"
+     id="polygon3"
+     transform="translate(-52.535497,8.5192698)" />
+  <text
+     x="247.46451"
+     y="186.51927"
+     font-family="sans-serif"
+     font-size="9px"
+     text-anchor="middle"
+     id="text4">i ≥ 0?</text>
+  <text
+     x="247.46451"
+     y="198.51927"
+     font-family="sans-serif"
+     font-size="9px"
+     text-anchor="middle"
+     id="text5" />
+  <!-- Get candidate packet -->
+  <rect
+     x="367.46451"
+     y="168.51927"
+     width="140"
+     height="40"
+     fill="none"
+     stroke="#000000"
+     stroke-width="1"
+     id="rect5" />
+  <text
+     x="437.46451"
+     y="183.51927"
+     font-family="sans-serif"
+     font-size="9px"
+     text-anchor="middle"
+     id="text6">candidate = packet[next+i]</text>
+  <text
+     x="437.46451"
+     y="198.51927"
+     font-family="sans-serif"
+     font-size="9px"
+     text-anchor="middle"
+     id="text7">age = now - arrival_time</text>
+  <!-- Decision: age <= tolerance? -->
+  <polygon
+     points="540,260 490,290 440,260 490,230 "
+     fill="none"
+     stroke="#000000"
+     stroke-width="2"
+     id="polygon7"
+     transform="translate(-52.535497,8.5192698)" />
+  <text
+     x="437.46451"
+     y="266.51926"
+     font-family="sans-serif"
+     font-size="9px"
+     text-anchor="middle"
+     id="text8">age ≤</text>
+  <text
+     x="437.46451"
+     y="278.51926"
+     font-family="sans-serif"
+     font-size="9px"
+     text-anchor="middle"
+     id="text9">tolerance?</text>
+  <!-- Update sequence and goto PACKET_OK -->
+  <rect
+     x="367.46451"
+     y="328.51926"
+     width="140"
+     height="40"
+     fill="none"
+     stroke="#000000"
+     stroke-width="1"
+     id="rect9" />
+  <text
+     x="437.46451"
+     y="343.51926"
+     font-family="sans-serif"
+     font-size="9px"
+     text-anchor="middle"
+     id="text10">mLastSeqNumOut = candidate</text>
+  <text
+     x="437.46451"
+     y="358.51926"
+     font-family="sans-serif"
+     font-size="9px"
+     text-anchor="middle"
+     id="text11">goto PACKET_OK</text>
+  <!-- Increment skipped and decrement i -->
+  <rect
+     x="167.46451"
+     y="328.51926"
+     width="120"
+     height="40"
+     fill="none"
+     stroke="#000000"
+     stroke-width="1"
+     id="rect11" />
+  <text
+     x="227.46451"
+     y="343.51926"
+     font-family="sans-serif"
+     font-size="9px"
+     text-anchor="middle"
+     id="text12">skipped++</text>
+  <text
+     x="227.46451"
+     y="358.51926"
+     font-family="sans-serif"
+     font-size="9px"
+     text-anchor="middle"
+     id="text13">i--</text>
+  <!-- UNDERRUN label -->
+  <rect
+     x="27.464502"
+     y="168.51927"
+     width="100"
+     height="30"
+     fill="none"
+     stroke="#000000"
+     stroke-width="2"
+     id="rect13" />
+  <text
+     x="77.4645"
+     y="188.51927"
+     font-family="sans-serif"
+     font-size="10px"
+     text-anchor="middle"
+     font-weight="bold"
+     id="text14">UNDERRUN</text>
+  <!-- PACKET_OK decision -->
+  <rect
+     x="367.46451"
+     y="408.51926"
+     width="140"
+     height="30"
+     fill="none"
+     stroke="#000000"
+     stroke-width="2"
+     id="rect14" />
+  <text
+     x="437.46451"
+     y="428.51926"
+     font-family="sans-serif"
+     font-size="10px"
+     text-anchor="middle"
+     font-weight="bold"
+     id="text15">PACKET_OK</text>
+  <!-- Decision: skipped > 0 and not lastGlitch? -->
+  <polygon
+     points="560,490 490,520 420,490 490,460 "
+     fill="none"
+     stroke="#000000"
+     stroke-width="2"
+     id="polygon15"
+     transform="translate(-52.535497,8.5192698)" />
+  <text
+     x="437.46451"
+     y="493.51926"
+     font-family="sans-serif"
+     font-size="8px"
+     text-anchor="middle"
+     id="text16">skipped &gt; 0 &amp;</text>
+  <text
+     x="437.46451"
+     y="505.51926"
+     font-family="sans-serif"
+     font-size="8px"
+     text-anchor="middle"
+     id="text17">not lastGlitch?</text>
+  <!-- Process with GLITCH=true (prediction) -->
+  <rect
+     x="327.46451"
+     y="558.51929"
+     width="120"
+     height="40"
+     fill="none"
+     stroke="#000000"
+     stroke-width="1"
+     id="rect17" />
+  <text
+     x="387.46451"
+     y="573.51929"
+     font-family="sans-serif"
+     font-size="9px"
+     text-anchor="middle"
+     id="text18">processPacket</text>
+  <text
+     x="387.46451"
+     y="588.51929"
+     font-family="sans-serif"
+     font-size="9px"
+     text-anchor="middle"
+     id="text19">(GLITCH=true)</text>
+  <!-- Process with GLITCH=false (real data) -->
+  <rect
+     x="467.46451"
+     y="558.51929"
+     width="120"
+     height="40"
+     fill="none"
+     stroke="#000000"
+     stroke-width="1"
+     id="rect19" />
+  <text
+     x="527.46448"
+     y="573.51929"
+     font-family="sans-serif"
+     font-size="9px"
+     text-anchor="middle"
+     id="text20">processPacket</text>
+  <text
+     x="527.46448"
+     y="588.51929"
+     font-family="sans-serif"
+     font-size="9px"
+     text-anchor="middle"
+     id="text21">(GLITCH=false)</text>
+  <!-- UNDERRUN process -->
+  <rect
+     x="17.464502"
+     y="558.51929"
+     width="120"
+     height="40"
+     fill="none"
+     stroke="#000000"
+     stroke-width="1"
+     id="rect21" />
+  <text
+     x="77.4645"
+     y="573.51929"
+     font-family="sans-serif"
+     font-size="9px"
+     text-anchor="middle"
+     id="text22">processPacket</text>
+  <text
+     x="77.4645"
+     y="588.51929"
+     font-family="sans-serif"
+     font-size="9px"
+     text-anchor="middle"
+     id="text23">(GLITCH=true)</text>
+  <!-- End -->
+  <ellipse
+     cx="247.46451"
+     cy="648.51929"
+     rx="40"
+     ry="20"
+     fill="none"
+     stroke="#000000"
+     stroke-width="2"
+     id="ellipse23" />
+  <text
+     x="247.46451"
+     y="653.51929"
+     font-family="sans-serif"
+     font-size="10px"
+     text-anchor="middle"
+     id="text24">END</text>
+  <!-- Flow arrows -->
+  <line
+     x1="247.46451"
+     y1="68.519272"
+     x2="247.46451"
+     y2="88.519272"
+     stroke="#000000"
+     stroke-width="1"
+     marker-end="url(#arrowhead)"
+     id="line24" />
+  <line
+     x1="247.46451"
+     y1="128.51927"
+     x2="247.46451"
+     y2="158.51927"
+     stroke="#000000"
+     stroke-width="1"
+     marker-end="url(#arrowhead)"
+     id="line25" />
+  <!-- YES arrow from i>=0 decision -->
+  <line
+     x1="297.46451"
+     y1="188.51927"
+     x2="367.46451"
+     y2="188.51927"
+     stroke="#000000"
+     stroke-width="1"
+     marker-end="url(#arrowhead)"
+     id="line26" />
+  <text
+     x="332.46451"
+     y="183.51927"
+     font-family="sans-serif"
+     font-size="8px"
+     id="text26">YES</text>
+  <!-- NO arrow from i>=0 decision to UNDERRUN -->
+  <line
+     x1="197.46451"
+     y1="188.51927"
+     x2="127.4645"
+     y2="188.51927"
+     stroke="#000000"
+     stroke-width="1"
+     marker-end="url(#arrowhead)"
+     id="line27" />
+  <text
+     x="162.46451"
+     y="183.51927"
+     font-family="sans-serif"
+     font-size="8px"
+     id="text27">NO</text>
+  <line
+     x1="437.46451"
+     y1="208.51927"
+     x2="437.46451"
+     y2="238.51927"
+     stroke="#000000"
+     stroke-width="1"
+     marker-end="url(#arrowhead)"
+     id="line28" />
+  <!-- YES arrow from tolerance decision -->
+  <line
+     x1="437.46451"
+     y1="298.51926"
+     x2="437.46451"
+     y2="328.51926"
+     stroke="#000000"
+     stroke-width="1"
+     marker-end="url(#arrowhead)"
+     id="line29" />
+  <text
+     x="452.46451"
+     y="313.51926"
+     font-family="sans-serif"
+     font-size="8px"
+     id="text29">YES</text>
+  <!-- NO arrow from tolerance decision -->
+  <line
+     x1="387.46451"
+     y1="268.51926"
+     x2="287.46451"
+     y2="268.51926"
+     stroke="#000000"
+     stroke-width="1"
+     id="line30" />
+  <line
+     x1="287.46451"
+     y1="268.51926"
+     x2="287.46451"
+     y2="328.51926"
+     stroke="#000000"
+     stroke-width="1"
+     marker-end="url(#arrowhead)"
+     id="line31" />
+  <text
+     x="337.46451"
+     y="263.51926"
+     font-family="sans-serif"
+     font-size="8px"
+     id="text31">NO</text>
+  <!-- Loop back arrow -->
+  <line
+     x1="227.46451"
+     y1="328.51926"
+     x2="227.46451"
+     y2="308.51926"
+     stroke="#000000"
+     stroke-width="1"
+     id="line32" />
+  <line
+     x1="227.46451"
+     y1="308.51926"
+     x2="147.46451"
+     y2="308.51926"
+     stroke="#000000"
+     stroke-width="1"
+     id="line33" />
+  <line
+     x1="147.46451"
+     y1="308.51926"
+     x2="147.46451"
+     y2="188.51927"
+     stroke="#000000"
+     stroke-width="1"
+     id="line34" />
+  <line
+     x1="147.46451"
+     y1="188.51927"
+     x2="197.46451"
+     y2="188.51927"
+     stroke="#000000"
+     stroke-width="1"
+     marker-end="url(#arrowhead)"
+     id="line35" />
+  <!-- PACKET_OK flow -->
+  <line
+     x1="437.46451"
+     y1="368.51926"
+     x2="437.46451"
+     y2="408.51926"
+     stroke="#000000"
+     stroke-width="1"
+     marker-end="url(#arrowhead)"
+     id="line36" />
+  <line
+     x1="437.46451"
+     y1="438.51926"
+     x2="437.46451"
+     y2="468.51926"
+     stroke="#000000"
+     stroke-width="1"
+     marker-end="url(#arrowhead)"
+     id="line37" />
+  <!-- Decision outcomes -->
+  <line
+     x1="407.46451"
+     y1="513.51929"
+     x2="387.46451"
+     y2="533.51929"
+     stroke="#000000"
+     stroke-width="1"
+     id="line38" />
+  <line
+     x1="387.46451"
+     y1="533.51929"
+     x2="387.46451"
+     y2="558.51929"
+     stroke="#000000"
+     stroke-width="1"
+     marker-end="url(#arrowhead)"
+     id="line39" />
+  <text
+     x="367.46451"
+     y="528.51929"
+     font-family="sans-serif"
+     font-size="8px"
+     id="text39">YES</text>
+  <line
+     x1="467.46451"
+     y1="513.51929"
+     x2="527.46448"
+     y2="533.51929"
+     stroke="#000000"
+     stroke-width="1"
+     id="line40" />
+  <line
+     x1="527.46448"
+     y1="533.51929"
+     x2="527.46448"
+     y2="558.51929"
+     stroke="#000000"
+     stroke-width="1"
+     marker-end="url(#arrowhead)"
+     id="line41" />
+  <text
+     x="547.46448"
+     y="528.51929"
+     font-family="sans-serif"
+     font-size="8px"
+     id="text41">NO</text>
+  <!-- UNDERRUN to process -->
+  <line
+     x1="77.4645"
+     y1="198.51927"
+     x2="77.4645"
+     y2="558.51929"
+     stroke="#000000"
+     stroke-width="1"
+     marker-end="url(#arrowhead)"
+     id="line42" />
+  <!-- All paths to END -->
+  <line
+     x1="387.46451"
+     y1="598.51929"
+     x2="387.46451"
+     y2="618.51929"
+     stroke="#000000"
+     stroke-width="1"
+     id="line43" />
+  <line
+     x1="387.46451"
+     y1="618.51929"
+     x2="247.46451"
+     y2="618.51929"
+     stroke="#000000"
+     stroke-width="1"
+     id="line44" />
+  <line
+     x1="247.46451"
+     y1="618.51929"
+     x2="247.46451"
+     y2="628.51929"
+     stroke="#000000"
+     stroke-width="1"
+     marker-end="url(#arrowhead)"
+     id="line45" />
+  <line
+     x1="527.46448"
+     y1="598.51929"
+     x2="527.46448"
+     y2="618.51929"
+     stroke="#000000"
+     stroke-width="1"
+     id="line46" />
+  <line
+     x1="527.46448"
+     y1="618.51929"
+     x2="247.46451"
+     y2="618.51929"
+     stroke="#000000"
+     stroke-width="1"
+     id="line47" />
+  <line
+     x1="77.4645"
+     y1="598.51929"
+     x2="77.4645"
+     y2="618.51929"
+     stroke="#000000"
+     stroke-width="1"
+     id="line48" />
+  <line
+     x1="77.4645"
+     y1="618.51929"
+     x2="247.46451"
+     y2="618.51929"
+     stroke="#000000"
+     stroke-width="1"
+     id="line49" />
+  <!-- Arrow marker definition -->
+  <defs
+     id="defs49">
+    <marker
+       id="arrowhead"
+       markerWidth="10"
+       markerHeight="7"
+       refX="9"
+       refY="3.5"
+       orient="auto">
+      <polygon
+         points="0 0, 10 3.5, 0 7"
+         fill="black"
+         id="polygon49" />
+    </marker>
+  </defs>
+</svg>

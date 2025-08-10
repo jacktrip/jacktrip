@@ -1,0 +1,179 @@
+<svg viewBox="0 0 1400 900" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1400" height="900" fill="#f8f9fa"/>
+  
+  <!-- Title -->
+  <text x="700" y="30" text-anchor="middle" font-family="Arial" font-size="18" font-weight="bold" fill="#333">JackTrip Hub Server - Detailed Client Flow</text>
+  <text x="700" y="50" text-anchor="middle" font-family="Arial" font-size="12" fill="#666">One Client Detailed + Multiple Client Abstract Representation</text>
+  
+  <!-- Internet Cloud -->
+  <ellipse cx="200" cy="450" rx="120" ry="80" fill="#e3f2fd" stroke="#1976d2" stroke-width="3"/>
+  <text x="200" y="445" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold" fill="#1976d2">Internet</text>
+  <text x="200" y="460" text-anchor="middle" font-family="Arial" font-size="12" fill="#1976d2">Network</text>
+  
+  <!-- Detailed Client A -->
+  <rect x="30" y="200" width="140" height="100" rx="8" fill="#ffebee" stroke="#d32f2f" stroke-width="3"/>
+  <text x="100" y="225" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold" fill="#d32f2f">Client A</text>
+  <text x="100" y="245" text-anchor="middle" font-family="Arial" font-size="11" fill="#d32f2f">Piano Player</text>
+  <text x="100" y="260" text-anchor="middle" font-family="Arial" font-size="10" fill="#d32f2f">Audio Interface</text>
+  <text x="100" y="275" text-anchor="middle" font-family="Arial" font-size="9" fill="#d32f2f">64 samples @ 48kHz</text>
+  <text x="100" y="290" text-anchor="middle" font-family="Arial" font-size="9" fill="#d32f2f">UDP packets</text>
+  
+  <!-- Abstract Multiple Clients -->
+  <rect x="30" y="570" width="140" height="80" rx="8" fill="#e8f5e8" stroke="#388e3c" stroke-width="2" stroke-dasharray="5,5"/>
+  <text x="100" y="595" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="#388e3c">Clients B, C, D...</text>
+  <text x="100" y="610" text-anchor="middle" font-family="Arial" font-size="10" fill="#388e3c">Violin, Guitar, Vocals</text>
+  <text x="100" y="625" text-anchor="middle" font-family="Arial" font-size="9" fill="#388e3c">Same architecture</text>
+  <text x="100" y="640" text-anchor="middle" font-family="Arial" font-size="9" fill="#388e3c">as Client A</text>
+  
+  <!-- Hub Server Container -->
+  <rect x="400" y="100" width="950" height="700" rx="15" fill="#ffffff" stroke="#333" stroke-width="3"/>
+  <text x="875" y="130" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="#333">JackTrip Hub Server</text>
+  
+  <!-- UDP Hub Listener -->
+  <rect x="450" y="160" width="180" height="60" rx="8" fill="#e8eaf6" stroke="#3f51b5" stroke-width="2"/>
+  <text x="540" y="185" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="#3f51b5">UdpHubListener</text>
+  <text x="540" y="200" text-anchor="middle" font-family="Arial" font-size="10" fill="#3f51b5">Port: 4464</text>
+  <text x="540" y="215" text-anchor="middle" font-family="Arial" font-size="10" fill="#3f51b5">Route to client streams</text>
+  
+  <!-- Detailed Regulator A with internal components -->
+  <rect x="450" y="260" width="300" height="200" rx="8" fill="#ffebee" stroke="#d32f2f" stroke-width="2"/>
+  <text x="600" y="285" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold" fill="#d32f2f">Regulator A (Piano Stream)</text>
+  
+  <!-- Internal Regulator components -->
+  <rect x="470" y="300" width="90" height="30" rx="4" fill="#e8f5e8" stroke="#4caf50" stroke-width="1"/>
+  <text x="515" y="320" text-anchor="middle" font-family="Arial" font-size="9" fill="#4caf50">insertSlotNB()</text>
+  
+  <rect x="580" y="300" width="80" height="30" rx="4" fill="#e8f5e8" stroke="#4caf50" stroke-width="1"/>
+  <text x="620" y="320" text-anchor="middle" font-family="Arial" font-size="9" fill="#4caf50">mSlots[4096]</text>
+  
+  <rect x="480" y="350" width="80" height="30" rx="4" fill="#e8f5e8" stroke="#4caf50" stroke-width="1"/>
+  <text x="520" y="370" text-anchor="middle" font-family="Arial" font-size="9" fill="#4caf50">pullPacket()</text>
+  
+  <rect x="580" y="350" width="80" height="30" rx="4" fill="#fff3e0" stroke="#ff9800" stroke-width="1"/>
+  <text x="620" y="370" text-anchor="middle" font-family="Arial" font-size="9" fill="#ff9800">burg() PLC</text>
+  
+  <rect x="470" y="400" width="120" height="30" rx="4" fill="#fce4ec" stroke="#e91e63" stroke-width="1"/>
+  <text x="530" y="420" text-anchor="middle" font-family="Arial" font-size="9" fill="#e91e63">processPacket()</text>
+  
+  <rect x="610" y="400" width="120" height="30" rx="4" fill="#fce4ec" stroke="#e91e63" stroke-width="1"/>
+  <text x="670" y="420" text-anchor="middle" font-family="Arial" font-size="9" fill="#e91e63">Cross-fade Logic</text>
+  
+  <!-- Abstract Multiple Regulators -->
+  <rect x="450" y="490" width="300" height="80" rx="8" fill="#e8f5e8" stroke="#388e3c" stroke-width="2" stroke-dasharray="5,5"/>
+  <text x="600" y="515" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="#388e3c">Regulators B, C, D...</text>
+  <text x="600" y="535" text-anchor="middle" font-family="Arial" font-size="10" fill="#388e3c">Same internal architecture</text>
+  <text x="600" y="550" text-anchor="middle" font-family="Arial" font-size="10" fill="#388e3c">Independent PLC per stream</text>
+  
+  <!-- Audio Mixer/Patcher -->
+  <rect x="800" y="350" width="180" height="120" rx="8" fill="#e1f5fe" stroke="#0277bd" stroke-width="2"/>
+  <text x="890" y="380" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="#0277bd">Audio Mixer</text>
+  <text x="890" y="395" text-anchor="middle" font-family="Arial" font-size="10" fill="#0277bd">Patcher Class</text>
+  
+  <!-- Mixer details -->
+  <rect x="820" y="410" width="140" height="20" rx="3" fill="#ffffff" stroke="#0277bd" stroke-width="1"/>
+  <text x="890" y="425" text-anchor="middle" font-family="Arial" font-size="9" fill="#0277bd">Mix: Piano + Violin + Guitar...</text>
+  
+  <rect x="820" y="435" width="140" height="20" rx="3" fill="#ffffff" stroke="#0277bd" stroke-width="1"/>
+  <text x="890" y="450" text-anchor="middle" font-family="Arial" font-size="9" fill="#0277bd">Route to all clients</text>
+  
+  <!-- Output Distribution -->
+  <rect x="1050" y="200" width="220" height="400" rx="8" fill="#f1f8e9" stroke="#689f38" stroke-width="2"/>
+  <text x="1160" y="230" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="#689f38">Output Distribution</text>
+  
+  <!-- Detailed output for Client A -->
+  <rect x="1070" y="250" width="180" height="60" rx="4" fill="#ffebee" stroke="#d32f2f" stroke-width="2"/>
+  <text x="1160" y="270" text-anchor="middle" font-family="Arial" font-size="11" font-weight="bold" fill="#d32f2f">Mix → Client A</text>
+  <text x="1160" y="285" text-anchor="middle" font-family="Arial" font-size="9" fill="#d32f2f">Ensemble - own piano</text>
+  <text x="1160" y="300" text-anchor="middle" font-family="Arial" font-size="9" fill="#d32f2f">UDP packets back</text>
+  
+  <!-- Abstract outputs for other clients -->
+  <rect x="1070" y="330" width="180" height="80" rx="4" fill="#e8f5e8" stroke="#388e3c" stroke-width="2" stroke-dasharray="5,5"/>
+  <text x="1160" y="355" text-anchor="middle" font-family="Arial" font-size="11" font-weight="bold" fill="#388e3c">Mix → Clients B, C, D...</text>
+  <text x="1160" y="375" text-anchor="middle" font-family="Arial" font-size="9" fill="#388e3c">Each gets full ensemble</text>
+  <text x="1160" y="390" text-anchor="middle" font-family="Arial" font-size="9" fill="#388e3c">minus their own instrument</text>
+  
+  <!-- Performance Monitor -->
+  <rect x="1070" y="450" width="180" height="80" rx="4" fill="#fff3e0" stroke="#f57c00" stroke-width="1"/>
+  <text x="1160" y="475" text-anchor="middle" font-family="Arial" font-size="11" font-weight="bold" fill="#f57c00">Performance Monitor</text>
+  <text x="1160" y="490" text-anchor="middle" font-family="Arial" font-size="9" fill="#f57c00">PLC activation rates</text>
+  <text x="1160" y="505" text-anchor="middle" font-family="Arial" font-size="9" fill="#f57c00">Network quality per client</text>
+  <text x="1160" y="520" text-anchor="middle" font-family="Arial" font-size="9" fill="#f57c00">Adaptive tolerance tuning</text>
+  
+  <!-- Arrow definitions -->
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#333"/>
+    </marker>
+    <marker id="arrowRed" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#d32f2f"/>
+    </marker>
+    <marker id="arrowGreen" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#388e3c"/>
+    </marker>
+    <marker id="arrowBlue" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#0277bd"/>
+    </marker>
+  </defs>
+  
+  <!-- Detailed flow for Client A -->
+  <!-- Client A to Internet -->
+  <path d="M 170 250 Q 190 300 320 380" stroke="#d32f2f" stroke-width="3" fill="none" marker-end="url(#arrowRed)"/>
+  <text x="230" y="290" font-family="Arial" font-size="9" fill="#d32f2f">Piano audio</text>
+  <text x="230" y="305" font-family="Arial" font-size="9" fill="#d32f2f">1.33ms packets</text>
+  
+  <!-- Internet to Hub Listener -->
+  <path d="M 320 430 Q 375 400 450 220" stroke="#d32f2f" stroke-width="3" fill="none" marker-end="url(#arrowRed)"/>
+  
+  <!-- Hub Listener to Regulator A -->
+  <path d="M 540 220 Q 540 240 540 260" stroke="#333" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <text x="550" y="245" font-family="Arial" font-size="9" fill="#333">Route by ID</text>
+  
+  <!-- Internal Regulator A flow -->
+  <path d="M 515 300 Q 515 280 580 315" stroke="#4caf50" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 620 330 Q 620 340 560 365" stroke="#4caf50" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 520 380 Q 520 390 530 400" stroke="#e91e63" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <path d="M 620 380 Q 620 390 670 400" stroke="#ff9800" stroke-width="2" fill="none" marker-end="url(#arrow)" stroke-dasharray="3,3"/>
+  <text x="575" y="395" font-family="Arial" font-size="8" fill="#ff9800">If packet lost</text>
+  
+  <!-- Regulator A to Mixer -->
+  <path d="M 750 360 Q 775 360 800 380" stroke="#d32f2f" stroke-width="3" fill="none" marker-end="url(#arrowBlue)"/>
+  <text x="760" y="350" font-family="Arial" font-size="9" fill="#d32f2f">Clean piano</text> <!-- Abstract multiple client flows -->
+  <path d="M 170 610 Q 190 550 320 480" stroke="#388e3c" stroke-width="2" fill="none" marker-end="url(#arrowGreen)" stroke-dasharray="5,5"/>
+  <path d="M 320 470 Q 375 450 450 200" stroke="#388e3c" stroke-width="2" fill="none" marker-end="url(#arrowGreen)" stroke-dasharray="5,5"/>
+  <path d="M 540 200 Q 540 380 580 490" stroke="#333" stroke-width="1" fill="none" marker-end="url(#arrow)" stroke-dasharray="3,3"/>
+  <path d="M 750 530 Q 775 530 800 420" stroke="#388e3c" stroke-width="2" fill="none" marker-end="url(#arrowBlue)" stroke-dasharray="5,5"/>
+  
+  <!-- Mixer to Output Distribution -->
+  <path d="M 980 410 Q 1015 410 1050 410" stroke="#333" stroke-width="4" fill="none" marker-end="url(#arrow)"/>
+  <text x="1000" y="400" font-family="Arial" font-size="10" fill="#333">Mixed ensemble</text>
+  
+  <!-- Output back to Client A -->
+  <path d="M 1070 280 Q 950 320 320 520" stroke="#d32f2f" stroke-width="3" fill="none" marker-end="url(#arrowRed)" stroke-dasharray="4,4"/>
+  <path d="M 320 500 Q 250 480 170 280" stroke="#d32f2f" stroke-width="3" fill="none" marker-end="url(#arrowRed)" stroke-dasharray="4,4"/>
+  <text x="800" y="290" font-family="Arial" font-size="9" fill="#d32f2f">Ensemble mix</text>
+  <text x="800" y="305" font-family="Arial" font-size="9" fill="#d32f2f">back to client</text>
+  
+  <!-- Abstract output to other clients -->
+  <path d="M 1070 370 Q 950 400 320 520" stroke="#388e3c" stroke-width="2" fill="none" marker-end="url(#arrowGreen)" stroke-dasharray="3,3"/>
+  <path d="M 320 500 Q 250 520 170 640" stroke="#388e3c" stroke-width="2" fill="none" marker-end="url(#arrowGreen)" stroke-dasharray="3,3"/>
+  
+  <!-- Timing and flow annotations -->
+  <rect x="450" y="600" width="300" height="80" rx="5" fill="#fff9c4" stroke="#f57c00" stroke-width="2"/>
+  <text x="600" y="625" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="#f57c00">Critical Timing Per Client</text>
+  <text x="600" y="645" text-anchor="middle" font-family="Arial" font-size="10" fill="#f57c00">• Each Regulator: 1.33ms audio callback</text>
+  <text x="600" y="660" text-anchor="middle" font-family="Arial" font-size="10" fill="#f57c00">• Independent PLC per stream</text>
+  <text x="600" y="675" text-anchor="middle" font-family="Arial" font-size="10" fill="#f57c00">• Parallel processing architecture</text>
+  
+  <!-- Data flow labels -->
+  <text x="250" y="180" font-family="Arial" font-size="11" font-weight="bold" fill="#666">DETAILED: Client A Flow</text>
+  <text x="250" y="680" font-family="Arial" font-size="11" font-weight="bold" fill="#666">ABSTRACT: Clients B,C,D... Same Pattern</text>
+  
+  <!-- Architecture advantage box -->
+  <rect x="800" y="600" width="200" height="80" rx="5" fill="#e8f5e8" stroke="#4caf50" stroke-width="2"/>
+  <text x="900" y="625" text-anchor="middle" font-family="Arial" font-size="11" font-weight="bold" fill="#4caf50">Scalability Benefits</text>
+  <text x="900" y="645" text-anchor="middle" font-family="Arial" font-size="9" fill="#4caf50">• Independent fault isolation</text>
+  <text x="900" y="658" text-anchor="middle" font-family="Arial" font-size="9" fill="#4caf50">• Per-client quality adaptation</text>
+  <text x="900" y="671" text-anchor="middle" font-family="Arial" font-size="9" fill="#4caf50">• Parallel regulator processing</text>
+</svg>
+

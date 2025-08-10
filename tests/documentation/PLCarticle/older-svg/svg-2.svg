@@ -1,0 +1,163 @@
+<svg viewBox="0 0 1200 500" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1200" height="500" fill="#f8f9fa"/>
+  
+  <!-- Network Input -->
+  <rect x="50" y="100" width="140" height="80" rx="8" fill="#e8eaf6" stroke="#3f51b5" stroke-width="2"/>
+  <text x="120" y="125" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="#3f51b5">UdpDataProtocol</text>
+  <text x="120" y="145" text-anchor="middle" font-family="Arial" font-size="11" fill="#3f51b5">Network Packet</text>
+  <text x="120" y="165" text-anchor="middle" font-family="Arial" font-size="11" fill="#3f51b5">Arrives</text>
+  
+  <!-- insertSlotNonBlocking -->
+  <rect x="240" y="120" width="120" height="40" rx="5" fill="#e8f5e8" stroke="#4caf50" stroke-width="2"/>
+  <text x="300" y="140" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#4caf50">insertSlotNon</text>
+  <text x="300" y="152" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#4caf50">Blocking()</text>
+  
+  <!-- pushPacket -->
+  <rect x="410" y="120" width="100" height="40" rx="5" fill="#e8f5e8" stroke="#4caf50" stroke-width="2"/>
+  <text x="460" y="145" text-anchor="middle" font-family="Arial" font-size="11" font-weight="bold" fill="#4caf50">pushPacket()</text>
+  
+  <!-- Packet Storage -->
+  <rect x="560" y="120" width="100" height="40" rx="5" fill="#e8f5e8" stroke="#4caf50" stroke-width="2"/>
+  <text x="610" y="138" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#4caf50">mSlots[4096]</text>
+  <text x="610" y="152" text-anchor="middle" font-family="Arial" font-size="9" fill="#4caf50">Packet Storage</text>
+  
+  <!-- Audio Callback Trigger -->
+  <rect x="50" y="250" width="140" height="80" rx="8" fill="#e3f2fd" stroke="#2196f3" stroke-width="2"/>
+  <text x="120" y="275" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="#2196f3">Audio Interface</text>
+  <text x="120" y="295" text-anchor="middle" font-family="Arial" font-size="11" fill="#2196f3">Callback Timer</text>
+  <text x="120" y="315" text-anchor="middle" font-family="Arial" font-size="10" fill="#2196f3">1.33ms @ 48kHz</text>
+  
+  <!-- readSlotNonBlocking -->
+  <rect x="240" y="270" width="120" height="40" rx="5" fill="#e8f5e8" stroke="#4caf50" stroke-width="2"/>
+  <text x="300" y="290" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#4caf50">readSlotNon</text>
+  <text x="300" y="302" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#4caf50">Blocking()</text>
+  
+  <!-- pullPacket -->
+  <rect x="410" y="270" width="100" height="40" rx="5" fill="#e8f5e8" stroke="#4caf50" stroke-width="2"/>
+  <text x="460" y="295" text-anchor="middle" font-family="Arial" font-size="11" font-weight="bold" fill="#4caf50">pullPacket()</text>
+  
+  <!-- Decision Point -->
+  <polygon points="580,270 620,290 580,310 540,290" fill="#fff3e0" stroke="#f57c00" stroke-width="2"/>
+  <text x="580" y="285" text-anchor="middle" font-family="Arial" font-size="9" fill="#f57c00">Packet</text>
+  <text x="580" y="297" text-anchor="middle" font-family="Arial" font-size="9" fill="#f57c00">Found?</text>
+  
+  <!-- processPacket -->
+  <rect x="680" y="270" width="100" height="40" rx="5" fill="#fce4ec" stroke="#e91e63" stroke-width="2"/>
+  <text x="730" y="290" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#e91e63">processPacket()</text>
+  <text x="730" y="302" text-anchor="middle" font-family="Arial" font-size="9" fill="#e91e63">glitch=true/false</text>
+  
+  <!-- PLC Branch (when packet missing) -->
+  <rect x="560" y="360" width="100" height="40" rx="5" fill="#fff3e0" stroke="#ff9800" stroke-width="2"/>
+  <text x="610" y="378" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#ff9800">burg()</text>
+  <text x="610" y="392" text-anchor="middle" font-family="Arial" font-size="9" fill="#ff9800">PLC Prediction</text>
+  
+  <!-- Channel Processing -->
+  <rect x="830" y="270" width="120" height="40" rx="5" fill="#fce4ec" stroke="#e91e63" stroke-width="2"/>
+  <text x="890" y="285" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#e91e63">Channel</text>
+  <text x="890" y="297" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#e91e63">Processing</text>
+  
+  <!-- Cross-fade Logic -->
+  <rect x="830" y="340" width="120" height="40" rx="5" fill="#fce4ec" stroke="#e91e63" stroke-width="2"/>
+  <text x="890" y="355" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#e91e63">Cross-fade</text>
+  <text x="890" y="367" text-anchor="middle" font-family="Arial" font-size="9" fill="#e91e63">mFadeUp/Down</text>
+  
+  <!-- Output Buffer -->
+  <rect x="1000" y="270" width="100" height="40" rx="5" fill="#e3f2fd" stroke="#2196f3" stroke-width="2"/>
+  <text x="1050" y="285" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#2196f3">Output</text>
+  <text x="1050" y="297" text-anchor="middle" font-family="Arial" font-size="10" font-weight="bold" fill="#2196f3">Buffer</text>
+  
+  <!-- Arrow definitions -->
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#333"/>
+    </marker>
+    <marker id="arrowPLC" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#ff9800"/>
+    </marker>
+  </defs>
+  
+  <!-- Main flow - Network input path (top) -->
+  <!-- Network to insertSlot -->
+  <path d="M 190 140 Q 215 140 240 140" stroke="#333" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+  
+  <!-- insertSlot to pushPacket -->
+  <path d="M 360 140 Q 385 140 410 140" stroke="#333" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+  
+  <!-- pushPacket to storage -->
+  <path d="M 510 140 Q 535 140 560 140" stroke="#333" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+  
+  <!-- Main flow - Audio output path (bottom) -->
+  <!-- Audio callback to readSlot -->
+  <path d="M 190 290 Q 215 290 240 290" stroke="#333" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+  
+  <!-- readSlot to pullPacket -->
+  <path d="M 360 290 Q 385 290 410 290" stroke="#333" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+  
+  <!-- pullPacket to decision -->
+  <path d="M 510 290 Q 525 290 540 290" stroke="#333" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+  
+  <!-- Storage connection (curved from top to decision) -->
+  <path d="M 610 160 Q 610 200 580 270" stroke="#4caf50" stroke-width="2" fill="none" marker-end="url(#arrow)" stroke-dasharray="3,3"/>
+  <text x="620" y="210" font-family="Arial" font-size="9" fill="#4caf50">Lookup</text>
+  
+  <!-- Decision to processPacket (normal path) -->
+  <path d="M 620 290 Q 650 290 680 290" stroke="#333" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+  <text x="635" y="280" font-family="Arial" font-size="9" fill="#388e3c">Yes</text>
+  
+  <!-- Decision to PLC (missing packet path) -->
+  <path d="M 580 310 Q 590 335 600 360" stroke="#ff9800" stroke-width="2" fill="none" marker-end="url(#arrowPLC)" stroke-dasharray="4,4"/>
+  <text x="575" y="340" font-family="Arial" font-size="9" fill="#ff9800">No/Late</text>
+  
+  <!-- PLC back to processPacket -->
+  <path d="M 660 380 Q 720 350 730 310" stroke="#ff9800" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <text x="690" y="350" font-family="Arial" font-size="9" fill="#ff9800">Predicted</text>
+  
+  <!-- processPacket to Channel Processing -->
+  <path d="M 780 290 Q 805 290 830 290" stroke="#333" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+  
+  <!-- Channel Processing to Cross-fade -->
+  <path d="M 890 310 Q 890 325 890 340" stroke="#e91e63" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  
+  <!-- Cross-fade to Output -->
+  <path d="M 950 360 Q 975 315 1000 290" stroke="#333" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+  
+  <!-- Parameter labels -->
+  <rect x="300" y="105" width="80" height="15" rx="7" fill="#ffffff" stroke="#666" stroke-width="1"/>
+  <text x="340" y="117" text-anchor="middle" font-family="Arial" font-size="9" fill="#666">seq_num, len</text>
+  
+  <rect x="300" y="320" width="80" height="15" rx="7" fill="#ffffff" stroke="#666" stroke-width="1"/>
+  <text x="340" y="332" text-anchor="middle" font-family="Arial" font-size="9" fill="#666">ptrToReadSlot</text>
+  
+  <rect x="730" y="250" width="70" height="15" rx="7" fill="#ffffff" stroke="#666" stroke-width="1"/>
+  <text x="765" y="262" text-anchor="middle" font-family="Arial" font-size="9" fill="#666">glitch flag</text>
+  
+  <!-- Class Legend -->
+  <rect x="50" y="420" width="1100" height="60" rx="5" fill="#ffffff" stroke="#cccccc" stroke-width="1"/>
+  <text x="600" y="440" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold">Class Colors and Key Methods</text>
+  
+  <rect x="80" y="450" width="15" height="12" fill="#e8eaf6" stroke="#3f51b5"/>
+  <text x="105" y="461" font-family="Arial" font-size="10">Network Layer</text>
+  
+  <rect x="200" y="450" width="15" height="12" fill="#e8f5e8" stroke="#4caf50"/>
+  <text x="225" y="461" font-family="Arial" font-size="10">Regulator Core</text>
+  
+  <rect x="320" y="450" width="15" height="12" fill="#fff3e0" stroke="#ff9800"/>
+  <text x="345" y="461" font-family="Arial" font-size="10">PLC/Burg</text>
+  
+  <rect x="420" y="450" width="15" height="12" fill="#fce4ec" stroke="#e91e63"/>
+  <text x="445" y="461" font-family="Arial" font-size="10">Channel Processing</text>
+  
+  <rect x="560" y="450" width="15" height="12" fill="#e3f2fd" stroke="#2196f3"/>
+  <text x="585" y="461" font-family="Arial" font-size="10">Audio Interface</text>
+  
+  <!-- Timing info -->
+  <rect x="800" y="50" width="350" height="40" rx="5" fill="#fff9c4" stroke="#f57c00" stroke-width="2"/>
+  <text x="975" y="68" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="#f57c00">Critical Timing: 1.33ms intervals (64 samples @ 48kHz)</text>
+  <text x="975" y="82" text-anchor="middle" font-family="Arial" font-size="10" fill="#f57c00">Network packets → Storage → Retrieval → PLC if needed → Audio output</text>
+  
+  <!-- Flow direction indicator -->
+  <path d="M 100 50 L 1100 50" stroke="#666" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <text x="600" y="40" text-anchor="middle" font-family="Arial" font-size="12" font-weight ="bold" fill="#666">Packet Flow Direction</text>
+</svg>
+

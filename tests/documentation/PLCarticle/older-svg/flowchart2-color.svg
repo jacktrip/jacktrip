@@ -1,0 +1,231 @@
+<svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1200" height="800" fill="#f8f9fa" id="background"/>
+  
+  <!-- Title -->
+  <text x="600" y="30" text-anchor="middle" font-size="20" font-weight="bold" fill="#2c3e50" id="title">
+    JackTrip Regulator Class Process Flow
+  </text>
+  
+  <!-- Network Input Section Group -->
+  <g id="network-input-section">
+    <rect x="50" y="80" width="300" height="120" rx="10" fill="#e8f4fd" stroke="#3498db" stroke-width="2"/>
+    <text x="200" y="105" text-anchor="middle" font-size="14" font-weight="bold" fill="#2980b9">Network Input Layer</text>
+    
+    <!-- UDP Reception -->
+    <g id="udp-reception">
+      <rect x="70" y="120" width="120" height="40" rx="5" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+      <text x="130" y="145" text-anchor="middle" font-size="10" fill="white">UDP Packet Reception</text>
+    </g>
+    
+    <!-- Insert Slot -->
+    <g id="insert-slot">
+      <rect x="210" y="120" width="120" height="40" rx="5" fill="#3498db" stroke="#2980b9" stroke-width="2"/>
+      <text x="270" y="145" text-anchor="middle" font-size="10" fill="white">insertSlotNonBlocking</text>
+    </g>
+  </g>
+  
+  <!-- Buffer Management Section Group -->
+  <g id="buffer-management-section">
+    <rect x="400" y="80" width="350" height="200" rx="10" fill="#f0f8e8" stroke="#27ae60" stroke-width="2"/>
+    <text x="575" y="105" text-anchor="middle" font-size="14" font-weight="bold" fill="#1e8449">Buffer Management Core</text>
+    
+    <!-- Packet Storage -->
+    <g id="packet-storage">
+      <rect x="420" y="130" width="100" height="60" rx="5" fill="#27ae60" stroke="#1e8449" stroke-width="2"/>
+      <text x="470" y="155" text-anchor="middle" font-size="10" fill="white">Packet Storage</text>
+      <text x="470" y="170" text-anchor="middle" font-size="9" fill="white">mSlots[4096]</text>
+    </g>
+    
+    <!-- Pull Packet Decision -->
+    <g id="pull-packet-decision">
+      <polygon points="600,130 650,155 600,180 550,155" fill="#f39c12" stroke="#e67e22" stroke-width="2"/>
+      <text x="600" y="160" text-anchor="middle" font-size="9" fill="white">pullPacket Decision</text>
+    </g>
+    
+    <!-- FPP Ratio Handler -->
+    <g id="fpp-ratio-handler">
+      <rect x="420" y="210" width="120" height="50" rx="5" fill="#9b59b6" stroke="#8e44ad" stroke-width="2"/>
+      <text x="480" y="235" text-anchor="middle" font-size="10" fill="white">FPP Ratio Handler</text>
+      <text x="480" y="250" text-anchor="middle" font-size="8" fill="white">1/2, 1/4, 2/1, 4/1</text>
+    </g>
+    
+    <!-- Worker Thread -->
+    <g id="worker-thread">
+      <rect x="570" y="210" width="120" height="50" rx="5" fill="#8e44ad" stroke="#663399" stroke-width="2"/>
+      <text x="630" y="235" text-anchor="middle" font-size="10" fill="white">Worker Thread</text>
+      <text x="630" y="250" text-anchor="middle" font-size="8" fill="white">Prediction when needed</text>
+    </g>
+  </g>
+  
+  <!-- Audio Processing Section Group -->
+  <g id="audio-processing-section">
+    <rect x="800" y="80" width="350" height="280" rx="10" fill="#fdf2e9" stroke="#f39c12" stroke-width="2"/>
+    <text x="975" y="105" text-anchor="middle" font-size="14" font-weight="bold" fill="#e67e22">Audio Processing Pipeline</text>
+    
+    <!-- Audio Interface Callback -->
+    <g id="audio-interface-callback">
+      <rect x="820" y="130" width="130" height="50" rx="5" fill="#1abc9c" stroke="#16a085" stroke-width="2"/>
+      <text x="885" y="155" text-anchor="middle" font-size="10" fill="white">Audio Interface</text>
+      <text x="885" y="170" text-anchor="middle" font-size="9" fill="white">1.33ms @ 48kHz</text>
+    </g>
+    
+    <!-- Read Slot -->
+    <g id="read-slot">
+      <rect x="970" y="130" width="130" height="50" rx="5" fill="#1abc9c" stroke="#16a085" stroke-width="2"/>
+      <text x="1035" y="155" text-anchor="middle" font-size="10" fill="white">readSlotNonBlocking</text>
+      <text x="1035" y="170" text-anchor="middle" font-size="9" fill="white">Copy to output</text>
+    </g>
+    
+    <!-- Process Packet -->
+    <g id="process-packet">
+      <rect x="820" y="200" width="110" height="40" rx="5" fill="#e91e63" stroke="#c2185b" stroke-width="2"/>
+      <text x="875" y="225" text-anchor="middle" font-size="10" fill="white">processPacket</text>
+    </g>
+    
+    <!-- PLC Burg Algorithm -->
+    <g id="plc-burg">
+      <rect x="950" y="200" width="110" height="40" rx="5" fill="#ff9800" stroke="#f57c00" stroke-width="2"/>
+      <text x="1005" y="225" text-anchor="middle" font-size="10" fill="white">burg PLC</text>
+    </g>
+    
+    <!-- Channel Processing -->
+    <g id="channel-processing">
+      <rect x="820" y="260" width="110" height="40" rx="5" fill="#e91e63" stroke="#c2185b" stroke-width="2"/>
+      <text x="875" y="285" text-anchor="middle" font-size="10" fill="white">Channel Processing</text>
+    </g>
+    
+    <!-- Cross Fade -->
+    <g id="cross-fade">
+      <rect x="950" y="260" width="110" height="40" rx="5" fill="#e91e63" stroke="#c2185b" stroke-width="2"/>
+      <text x="1005" y="285" text-anchor="middle" font-size="10" fill="white">Cross-fade</text>
+    </g>
+    
+    <!-- Audio Output -->
+    <g id="audio-output">
+      <rect x="850" y="320" width="200" height="40" rx="5" fill="#27ae60" stroke="#1e8449" stroke-width="2"/>
+      <text x="950" y="345" text-anchor="middle" font-size="11" fill="white">Audio Output</text>
+    </g>
+  </g>
+  
+  <!-- Statistics Section Group -->
+  <g id="statistics-section">
+    <rect x="50" y="400" width="300" height="120" rx="10" fill="#fef9e7" stroke="#f1c40f" stroke-width="2"/>
+    <text x="200" y="425" text-anchor="middle" font-size="14" font-weight="bold" fill="#f39c12">Statistics and Monitoring</text>
+    
+    <!-- Pull Stats -->
+    <g id="pull-stats">
+      <rect x="70" y="450" width="120" height="50" rx="5" fill="#f1c40f" stroke="#f39c12" stroke-width="2"/>
+      <text x="130" y="475" text-anchor="middle" font-size="10" fill="white">pullStat</text>
+      <text x="130" y="490" text-anchor="middle" font-size="9" fill="white">Overruns/Underruns</text>
+    </g>
+    
+    <!-- Timing Stats -->
+    <g id="timing-stats">
+      <rect x="210" y="450" width="120" height="50" rx="5" fill="#f1c40f" stroke="#f39c12" stroke-width="2"/>
+      <text x="270" y="475" text-anchor="middle" font-size="10" fill="white">Timing Stats</text>
+      <text x="270" y="490" text-anchor="middle" font-size="9" fill="white">mIncomingTiming</text>
+    </g>
+  </g>
+  
+  <!-- Configuration Section Group -->
+  <g id="configuration-section">
+    <rect x="400" y="400" width="350" height="120" rx="10" fill="#eaf2f8" stroke="#5dade2" stroke-width="2"/>
+    <text x="575" y="425" text-anchor="middle" font-size="14" font-weight="bold" fill="#2980b9">Configuration Parameters</text>
+    
+    <!-- Sample Rate Config -->
+    <g id="sample-rate-config">
+      <rect x="420" y="450" width="100" height="50" rx="5" fill="#5dade2" stroke="#2980b9" stroke-width="2"/>
+      <text x="470" y="475" text-anchor="middle" font-size="9" fill="white">Sample Rate</text>
+      <text x="470" y="490" text-anchor="middle" font-size="8" fill="white">mSampleRate</text>
+    </g>
+    
+    <!-- FPP Ratios Config -->
+    <g id="fpp-ratios-config">
+      <rect x="540" y="450" width="100" height="50" rx="5" fill="#5dade2" stroke="#2980b9" stroke-width="2"/>
+      <text x="590" y="475" text-anchor="middle" font-size="9" fill="white">FPP Ratios</text>
+      <text x="590" y="490" text-anchor="middle" font-size="8" fill="white">Numerator/Denominator</text>
+    </g>
+    
+    <!-- Buffer Config -->
+    <g id="buffer-config">
+      <rect x="630" y="450" width="100" height="50" rx="5" fill="#5dade2" stroke="#2980b9" stroke-width="2"/>
+      <text x="680" y="475" text-anchor="middle" font-size="9" fill="white">Buffer Config</text>
+      <text x="680" y="490" text-anchor="middle" font-size="8" fill="white">qLen/mXfrBuffer</text>
+    </g>
+  </g>
+  
+  <!-- Key Features Section Group -->
+  <g id="key-features-section">
+    <rect x="800" y="400" width="350" height="120" rx="10" fill="#f4ecf7" stroke="#ab47bc" stroke-width="2"/>
+    <text x="975" y="425" text-anchor="middle" font-size="14" font-weight="bold" fill="#8e24aa">Key Features</text>
+    
+    <text x="820" y="450" font-size="10" fill="#6a1b9a">Different FPP sizes (16-1024)</text>
+    <text x="820" y="465" font-size="10" fill="#6a1b9a">Varying channel counts</text>
+    <text x="820" y="480" font-size="10" fill="#6a1b9a">Auto buffer strategy</text>
+    <text x="820" y="495" font-size="10" fill="#6a1b9a">Packet Loss Concealment</text>
+    <text x="820" y="510" font-size="10" fill="#6a1b9a">Real-time audio regulation</text>
+  </g>
+  
+  <!-- Simple Arrows Group -->
+  <g id="main-flow-arrows">
+    <!-- Network flow -->
+    <path d="M 190 140 L 210 140" stroke="#2c3e50" stroke-width="3" fill="none" id="arrow-1"/>
+    <polygon points="207,137 217,140 207,143" fill="#2c3e50" id="arrow-1-head"/>
+    
+    <!-- To buffer -->
+    <path d="M 330 140 L 420 155" stroke="#2c3e50" stroke-width="3" fill="none" id="arrow-2"/>
+    <polygon points="417,152 427,155 417,158" fill="#2c3e50" id="arrow-2-head"/>
+    
+    <!-- Buffer to decision -->
+    <path d="M 520 155 L 550 155" stroke="#2c3e50" stroke-width="3" fill="none" id="arrow-3"/>
+    <polygon points="547,152 557,155 547,158" fill="#2c3e50" id="arrow-3-head"/>
+    
+    <!-- Decision to audio -->
+    <path d="M 650 155 L 820 155" stroke="#2c3e50" stroke-width="3" fill="none" id="arrow-4"/>
+    <polygon points="817,152 827,155 817,158" fill="#2c3e50" id="arrow-4-head"/>
+    
+    <!-- Audio interface to read -->
+    <path d="M 950 155 L 970 155" stroke="#2c3e50" stroke-width="3" fill="none" id="arrow-5"/>
+    <polygon points="967,152 977,155 967,158" fill="#2c3e50" id="arrow-5-head"/>
+    
+    <!-- Missing packet branch -->
+    <path d="M 600 180 Q 750 200 1005 200" stroke="#f39c12" stroke-width="3" fill="none" stroke-dasharray="5,5" id="arrow-plc"/>
+    <polygon points="1002,197 1012,200 1002,203" fill="#f39c12" id="arrow-plc-head"/>
+    <text x="800" y="190" text-anchor="middle" font-size="10" fill="#f39c12" id="missing-packet-label">Missing packet triggers PLC</text>
+    
+    <!-- Processing flow -->
+    <path d="M 885 180 L 885 200" stroke="#2c3e50" stroke-width="3" fill="none" id="arrow-6"/>
+    <polygon points="882,197 885,207 888,197" fill="#2c3e50" id="arrow-6-head"/>
+    
+    <path d="M 930 220 L 950 220" stroke="#2c3e50" stroke-width="3" fill="none" id="arrow-7"/>
+    <polygon points="947,217 957,220 947,223" fill="#2c3e50" id="arrow-7-head"/>
+    
+    <path d="M 875 240 L 875 260" stroke="#2c3e50" stroke-width="3" fill="none" id=" arrow-8"/>
+    <polygon points="872,257 875,267 878,257" fill="#2c3e50" id="arrow-8-head"/>
+    
+    <path d="M 930 280 L 950 280" stroke="#2c3e50" stroke-width="3" fill="none" id="arrow-9"/>
+    <polygon points="947,277 957,280 947,283" fill="#2c3e50" id="arrow-9-head"/>
+    
+    <path d="M 950 300 L 950 320" stroke="#2c3e50" stroke-width="3" fill="none" id="arrow-10"/>
+    <polygon points="947,317 950,327 953,317" fill="#2c3e50" id="arrow-10-head"/>
+  </g>
+  
+  <!-- Timing Info -->
+  <g id="timing-info">
+    <rect x="50" y="550" width="400" height="40" rx="5" fill="#fff3cd" stroke="#ffc107" stroke-width="2"/>
+    <text x="250" y="575" text-anchor="middle" font-size="12" font-weight="bold" fill="#856404">
+      Critical Timing: Audio callback every 1.33ms (64 samples @ 48kHz)
+    </text>
+  </g>
+  
+  <!-- Overall Flow Direction -->
+  <g id="flow-direction">
+    <path d="M 100 60 L 1100 60" stroke="#666" stroke-width="2" fill="none"/>
+    <polygon points="1097,57 1107,60 1097,63" fill="#666"/>
+    <text x="600" y="50" text-anchor="middle" font-size="12" font-weight="bold" fill="#666">
+      Data Flow: Network Input to Audio Output
+    </text>
+  </g>
+</svg>
+

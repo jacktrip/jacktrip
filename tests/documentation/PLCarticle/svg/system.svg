@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 800 600"
+   version="1.1"
+   id="svg25"
+   sodipodi:docname="system.svg"
+   inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
+   inkscape:export-filename="system.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview25"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="0.82166667"
+     inkscape:cx="400.40568"
+     inkscape:cy="300"
+     inkscape:window-width="1280"
+     inkscape:window-height="737"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg25" />
+  <!-- Title -->
+  <!-- Input: Incoming UDP Packets -->
+  <rect
+     x="50"
+     y="80"
+     width="120"
+     height="50"
+     fill="none"
+     stroke="black"
+     stroke-width="2"
+     id="rect1" />
+  <text
+     x="110"
+     y="100"
+     text-anchor="middle"
+     font-family="sans-serif"
+     font-size="12"
+     fill="black"
+     id="text2">
+    Incoming UDP
+  </text>
+  <text
+     x="110"
+     y="115"
+     text-anchor="middle"
+     font-family="sans-serif"
+     font-size="12"
+     fill="black"
+     id="text3">
+    Packets
+  </text>
+  <!-- RegulatorWorker Optional Container -->
+  <rect
+     x="250"
+     y="150"
+     width="300"
+     height="200"
+     fill="none"
+     stroke="black"
+     stroke-width="1"
+     stroke-dasharray="5,5"
+     id="rect3" />
+  <text
+     x="255"
+     y="170"
+     font-family="sans-serif"
+     font-size="12"
+     font-style="italic"
+     fill="black"
+     id="text4">
+    RegulatorWorker (optional threading)
+  </text>
+  <!-- Regulator Class (Central Orchestrator) -->
+  <rect
+     x="300"
+     y="180"
+     width="200"
+     height="100"
+     fill="none"
+     stroke="black"
+     stroke-width="2"
+     id="rect4" />
+  <text
+     x="400"
+     y="205"
+     text-anchor="middle"
+     font-family="sans-serif"
+     font-size="14"
+     font-weight="bold"
+     fill="black"
+     id="text5">
+    Regulator Class
+  </text>
+  <text
+     x="400"
+     y="225"
+     text-anchor="middle"
+     font-family="sans-serif"
+     font-size="12"
+     fill="black"
+     id="text6">
+    (Central Orchestrator)
+  </text>
+  <text
+     x="400"
+     y="245"
+     text-anchor="middle"
+     font-family="sans-serif"
+     font-size="10"
+     fill="black"
+     id="text7">
+    Packet management
+  </text>
+  <text
+     x="400"
+     y="260"
+     text-anchor="middle"
+     font-family="sans-serif"
+     font-size="10"
+     fill="black"
+     id="text8">
+    Buffer coordination
+  </text>
+  <!-- Worker queue and threading info -->
+  <text
+     x="400"
+     y="320"
+     text-anchor="middle"
+     font-family="sans-serif"
+     font-size="10"
+     fill="black"
+     id="text9">
+    WaitFreeFrameBuffer queue
+  </text>
+  <text
+     x="400"
+     y="335"
+     text-anchor="middle"
+     font-family="sans-serif"
+     font-size="10"
+     fill="black"
+     id="text10">
+    Async processing when needed
+  </text>
+  <!-- Channel Classes with embedded Burg -->
+  <rect
+     x="580"
+     y="380"
+     width="180"
+     height="120"
+     fill="none"
+     stroke="black"
+     stroke-width="2"
+     id="rect10" />
+  <text
+     x="670"
+     y="405"
+     text-anchor="middle"
+     font-family="sans-serif"
+     font-size="14"
+     font-weight="bold"
+     fill="black"
+     id="text11">
+    Channel Classes
+  </text>
+  <text
+     x="670"
+     y="425"
+     text-anchor="middle"
+     font-family="sans-serif"
+     font-size="12"
+     fill="black"
+     id="text12">
+    (Per-channel Processing)
+  </text>
+  <!-- Nested BurgAlgorithm inside Channel -->
+  <rect
+     x="590"
+     y="435"
+     width="160"
+     height="55"
+     fill="none"
+     stroke="black"
+     stroke-width="1"
+     stroke-dasharray="3,3"
+     id="rect12" />
+  <text
+     x="670"
+     y="455"
+     text-anchor="middle"
+     font-family="sans-serif"
+     font-size="12"
+     font-weight="bold"
+     fill="black"
+     id="text13">
+    BurgAlgorithm
+  </text>
+  <text
+     x="670"
+     y="470"
+     text-anchor="middle"
+     font-family="sans-serif"
+     font-size="10"
+     fill="black"
+     id="text14">
+    Loss concealment per channel
+  </text>
+  <text
+     x="670"
+     y="485"
+     text-anchor="middle"
+     font-family="sans-serif"
+     font-size="10"
+     fill="black"
+     id="text15">
+    Format conversion
+  </text>
+  <!-- Output: Audio Output -->
+  <rect
+     x="610"
+     y="530"
+     width="120"
+     height="50"
+     fill="none"
+     stroke="black"
+     stroke-width="2"
+     id="rect15" />
+  <text
+     x="670"
+     y="550"
+     text-anchor="middle"
+     font-family="sans-serif"
+     font-size="12"
+     fill="black"
+     id="text16">
+    Audio Output
+  </text>
+  <text
+     x="670"
+     y="565"
+     text-anchor="middle"
+     font-family="sans-serif"
+     font-size="12"
+     fill="black"
+     id="text17">
+    (Continuous)
+  </text>
+  <!-- Arrow markers -->
+  <defs
+     id="defs17">
+    <marker
+       id="arrow"
+       markerWidth="10"
+       markerHeight="10"
+       refX="8"
+       refY="3"
+       orient="auto"
+       markerUnits="strokeWidth">
+      <path
+         d="M0,0 L0,6 L9,3 z"
+         fill="black"
+         id="path17" />
+    </marker>
+  </defs>
+  <!-- Arrows showing data flow -->
+  <!-- UDP Packets to Regulator (through optional worker) -->
+  <line
+     x1="170"
+     y1="105"
+     x2="300"
+     y2="205"
+     stroke="black"
+     stroke-width="2"
+     marker-end="url(#arrow)"
+     id="line17" />
+  <!-- Regulator to Channel -->
+  <line
+     x1="500"
+     y1="230"
+     x2="580"
+     y2="380"
+     stroke="black"
+     stroke-width="2"
+     marker-end="url(#arrow)"
+     id="line18" />
+  <!-- Channel to Audio Output -->
+  <line
+     x1="670"
+     y1="500"
+     x2="670"
+     y2="530"
+     stroke="black"
+     stroke-width="2"
+     marker-end="url(#arrow)"
+     id="line19" />
+  <!-- Worker activation condition -->
+  <!-- Note about encapsulation -->
+</svg>
