@@ -1478,7 +1478,7 @@ void VirtualStudio::processError(const QString& errorMessage)
         msgBox.setWindowTitle(QStringLiteral("No JACK server"));
     } else if (errorMessage == QLatin1String("Peer Stopped")) {
         // Report the other end quitting as a regular occurance rather than an error.
-        msgBox.setText("The Studio has been stopped.");
+        msgBox.setText("Lost connection to the studio.");
         msgBox.setWindowTitle(QStringLiteral("Disconnected"));
     } else if (errorMessage.startsWith(RtAudioErrorMsg)) {
         if (errorMessage.length() > RtAudioErrorMsg.length() + 2) {
