@@ -311,7 +311,6 @@ class VirtualStudio : public QObject
     QString m_updateChannel;
     QString m_refreshToken;
     QString m_userId;
-    QString m_apiHost               = PROD_API_HOST;
     ReconnectState m_reconnectState = ReconnectState::NOT_RECONNECTING;
 
     bool m_firstRefresh           = true;

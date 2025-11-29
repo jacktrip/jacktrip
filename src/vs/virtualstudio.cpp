@@ -128,10 +128,7 @@ VirtualStudio::VirtualStudio(UserInterface& parent)
 
     // instantiate API
     m_api.reset(new VsApi(m_networkAccessManagerPtr));
-    m_api->setApiHost(PROD_API_HOST);
-    if (m_testMode) {
-        m_api->setApiHost(TEST_API_HOST);
-    }
+    m_api->setApiHost(m_testMode ? TEST_API_HOST : PROD_API_HOST);
 
     // instantiate auth
     m_auth.reset(new VsAuth(m_networkAccessManagerPtr, m_api.data()));
@@ -620,14 +617,14 @@ void VirtualStudio::setWindowState(QString state)
 
 QString VirtualStudio::apiHost()
 {
-    return m_apiHost;
+    return m_api.isNull() ? PROD_API_HOST : m_api->getApiHost();
 }
 
 void VirtualStudio::setApiHost(QString host)
 {
-    if (m_apiHost == host)
+    if (m_api.isNull() || m_api->getApiHost() == host)
         return;
-    m_apiHost = host;
+    m_api->setApiHost(host);
     emit apiHostChanged();
 }
 
@@ -1371,11 +1368,7 @@ void VirtualStudio::slotAuthSucceeded()
     raiseToTop();
 
     // Determine which API host to use
-    m_apiHost = PROD_API_HOST;
-    if (m_testMode) {
-        m_apiHost = TEST_API_HOST;
-    }
-    m_api->setApiHost(m_apiHost);
+    setApiHost(m_testMode ? TEST_API_HOST : PROD_API_HOST);
 
     // initialize new VsDevice and wire up signals/slots before registering app
     if (!m_devicePtr.isNull()) {
