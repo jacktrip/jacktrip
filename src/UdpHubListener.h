@@ -59,7 +59,9 @@
 #include "OscServer.h"
 #include "SslServer.h"
 
-class JackTripWorker;  // forward declaration
+// forward declarations
+class JackTripWorker;
+class WebRtcPeerConnection;
 class Settings;
 
 /** \brief Hub UDP listener on the Server.
@@ -89,6 +91,8 @@ class UdpHubListener : public QObject
     int releaseThread(int id);
     void releaseDuplicateThreads(JackTripWorker* worker, uint16_t actual_peer_port);
     void getClientLatencies(QVector<QString>& clientNames, QVector<double>& latencies);
+    int getBasePort() const { return mBasePort; }
+    bool getConnectDefaultAudioPorts() const { return m_connectDefaultAudioPorts; }
 
     void setConnectDefaultAudioPorts(bool connectDefaultAudioPorts)
     {
@@ -123,12 +127,17 @@ class UdpHubListener : public QObject
     void signalError(const QString& errorMessage);
 
    private:
+
+    // new bytes are ready to read from the client connection
+    void readyRead(QSslSocket* clientConnection);
+
+    /// \brief Create a WebRTC worker for a new connection
+    int createWebRtcWorker(QSslSocket* signalingSocket, const QString& clientName);
+
     /** \brief Binds a QUdpSocket. It chooses the available (active) interface.
      * \param udpsocket a QUdpSocket
      * \param port Port number
      */
-    void receivedClientInfo(QSslSocket* clientConnection);
-
     static void bindUdpSocket(QUdpSocket& udpsocket, int port);
 
     int readClientUdpPort(QSslSocket* clientConnection, QString& clientName);
@@ -217,6 +226,9 @@ class UdpHubListener : public QObject
     double mSimulatedDelayRel;
     bool mUseRtUdpPriority;
 
+    /// \brief ICE servers for WebRTC connections
+    QStringList mIceServers;
+
 #ifdef WAIR  // wair
     bool mWAIR;
     void connectMesh(bool spawn);
@@ -289,6 +301,9 @@ class UdpHubListener : public QObject
     void setBroadcast(int broadcast_queue) { mBroadcastQueue = broadcast_queue; }
     void setUseRtUdpPriority(bool use) { mUseRtUdpPriority = use; }
     bool mAppendThreadID = false;
+
+    /// \brief Set ICE servers for WebRTC connections
+    void setIceServers(const QStringList& servers) { mIceServers = servers; }
 };
 
 #endif  //__UDPHUBLISTENER_H__

@@ -1,0 +1,9 @@
+[wrap-file]
+directory = libdatachannel-0.24.0
+source_url = https://files.jacktrip.org/contrib/libdatachannel-0.24.0.tar.gz
+source_filename = libdatachannel-0.24.0.tar.gz
+source_hash = 65b8ffbf50e607c33292d7a5cd929e423e58a0783c81dc8d771bc8b142837a00
+
+[provide]
+dependency_names = libdatachannel
+

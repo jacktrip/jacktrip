@@ -38,6 +38,7 @@
 #include "JackTripWorker.h"
 
 #include <QMutexLocker>
+#include <QScopedArrayPointer>
 #include <QTimer>
 #include <QWaitCondition>
 #include <iostream>
@@ -52,7 +53,13 @@
 #include "dcblock2gain.dsp.h"
 #endif  // endwhere
 
+#ifdef WEBRTC_SUPPORT
+#include "webrtc/WebRtcDataProtocol.h"
+#include <rtc/rtc.hpp>
+#endif
+
 using std::cout;
+using std::cerr;
 using std::endl;
 
 //*******************************************************************************
@@ -71,7 +78,7 @@ JackTripWorker::JackTripWorker(UdpHubListener* udphublistener, int BufferQueueLe
     // mNetks = new NetKS;
     // mNetks->play();
     connect(&mUdpSockTemp, &QUdpSocket::readyRead, this,
-            &JackTripWorker::receivedDataUDP);
+            &JackTripWorker::receivedFirstPacketUDP);
 }
 
 //*******************************************************************************
@@ -207,7 +214,7 @@ void JackTripWorker::start()
         cout << "---> JackTripWorker: setJackTripFromClientHeader..." << endl;
     if (!mUdpSockTemp.bind(QHostAddress::Any, mServerPort,
                            QUdpSocket::DefaultForPlatform)) {
-        std::cerr
+        cerr
             << "in JackTripWorker: Could not bind UDP socket. It may already be bound."
             << endl;
         throw std::runtime_error("Could not bind UDP socket. It may already be bound.");
@@ -232,9 +239,18 @@ void JackTripWorker::stopThread()
         mUdpSockTemp.close();
         mTimeoutTimer.stop();
     }
+
+#ifdef WEBRTC_SUPPORT
+    // Clean up WebRTC connection
+    if (mWebRtcPeerConnection) {
+        mWebRtcPeerConnection->close();
+        mWebRtcPeerConnection->deleteLater();
+        mWebRtcPeerConnection = nullptr;
+    }
+#endif
 }
 
-void JackTripWorker::receivedDataUDP()
+void JackTripWorker::receivedFirstPacketUDP()
 {
     QMutexLocker lock(&mMutex);
 
@@ -247,8 +263,8 @@ void JackTripWorker::receivedDataUDP()
     // Set our jacktrip parameters from the received header data.
     quint16 port;
     int packet_size     = mUdpSockTemp.pendingDatagramSize();
-    int8_t* full_packet = new int8_t[packet_size];
-    mUdpSockTemp.readDatagram(reinterpret_cast<char*>(full_packet), packet_size, nullptr,
+    QScopedArrayPointer<int8_t> full_packet(new int8_t[packet_size]);
+    mUdpSockTemp.readDatagram(reinterpret_cast<char*>(full_packet.get()), packet_size, nullptr,
                               &port);
     mUdpSockTemp.close();  // close the socket
 
@@ -257,12 +273,19 @@ void JackTripWorker::receivedDataUDP()
     // variable on this object.
     mUdpHubListener->releaseDuplicateThreads(this, port);
 
+    // Process peer settings and configure channels
+    processPeerSettings(full_packet.get());
+}
+
+//*******************************************************************************
+void JackTripWorker::processPeerSettings(int8_t* full_packet)
+{
+    // Extract peer settings from the packet header
     int PeerBufferSize          = mJackTrip->getPeerBufferSize(full_packet);
     int PeerSamplingRate        = mJackTrip->getPeerSamplingRate(full_packet);
     int PeerBitResolution       = mJackTrip->getPeerBitResolution(full_packet);
     int PeerNumIncomingChannels = mJackTrip->getPeerNumIncomingChannels(full_packet);
     int PeerNumOutgoingChannels = mJackTrip->getPeerNumOutgoingChannels(full_packet);
-    delete[] full_packet;
 
     if (gVerboseFlag) {
         cout << "JackTripWorker: getPeerBufferSize       = " << PeerBufferSize << "\n"
@@ -290,10 +313,12 @@ void JackTripWorker::receivedDataUDP()
         mJackTrip->setNumOutputChannels(PeerNumOutgoingChannels);
     }
 
-    if (PeerNumOutgoingChannels == -1) {
+    if (PeerNumOutgoingChannels < 0 || PeerNumIncomingChannels < 0) {
         // Shut it down
+        cerr << "JackTripWorker: invalid peer settings, shutting down" << std::endl;
         mSpawning = false;
         mUdpHubListener->releaseThread(mID);
+        return;
     }
 
     // Connect signals and slots
@@ -340,7 +365,7 @@ void JackTripWorker::udpTimerTick()
         cout << "---------> ELAPSED TIME: " << mElapsedTime << endl;
     // Check if we've timed out.
     if (gTimeOutMultiThreadedServer > 0 && mElapsedTime >= gTimeOutMultiThreadedServer) {
-        std::cerr << "--->JackTripWorker: is not receiving Datagrams (timeout)" << endl;
+        cerr << "--->JackTripWorker: is not receiving Datagrams (timeout)" << endl;
         mTimeoutTimer.stop();
         mUdpSockTemp.close();
         mSpawning = false;
@@ -376,3 +401,159 @@ void JackTripWorker::alertPatcher()
     }
 #endif
 }
+
+#ifdef WEBRTC_SUPPORT
+//*******************************************************************************
+void JackTripWorker::startWebRtc()
+{
+    QMutexLocker lock(&mMutex);
+
+    auto dataChannel = mWebRtcPeerConnection ? mWebRtcPeerConnection->getDataChannel() : nullptr;
+
+    if (!mSpawning || !dataChannel) {
+        cerr << "JackTripWorker::startWebRtc: ERROR - Cannot start WebRTC - not ready"
+             << " (mSpawning=" << mSpawning
+             << ", dataChannel=" << (dataChannel ? "valid" : "null")
+             << ")" << endl;
+        return;
+    }
+
+    mJackTrip->setConnectDefaultAudioPorts(m_connectDefaultAudioPorts);
+    mJackTrip->setUnderRunMode(mUnderRunMode);
+    mJackTrip->setAudioBitResolution(mAudioBitResolution);
+
+    if (mIOStatTimeout > 0) {
+        mJackTrip->setIOStatTimeout(mIOStatTimeout);
+        mJackTrip->setIOStatStream(mIOStatStream);
+    }
+
+    if (!mClientName.isEmpty()) {
+        mJackTrip->setClientName(mClientName);
+    }
+
+    if (mAppendThreadID) {
+        mJackTrip->setID(mID + 1);
+    }
+
+    mJackTrip->setPeerAddress(mClientAddress);
+    mJackTrip->setBindPorts(mServerPort);
+    mJackTrip->setBufferStrategy(mBufferStrategy);
+    mJackTrip->setNetIssuesSimulation(mSimulatedLossRate, mSimulatedJitterRate,
+                                      mSimulatedDelayRel);
+    mJackTrip->setBroadcast(mBroadcastQueue);
+    mJackTrip->setUseRtUdpPriority(mUseRtUdpPriority);
+
+    // Set the data protocol to WebRTC and provide the data channel
+    mJackTrip->setDataProtocoType(JackTrip::WEBRTC);
+    mJackTrip->setWebRtcDataChannel(dataChannel);
+
+    // Set up a lambda to capture the first message and forward to our handler
+    dataChannel->onMessage([this](rtc::message_variant data) {
+        if (std::holds_alternative<rtc::binary>(data)) {
+            auto& binary = std::get<rtc::binary>(data);
+
+            // Forward to our handler (needs to be thread-safe)
+            // Use QMetaObject::invokeMethod to call in the worker's thread
+            QMetaObject::invokeMethod(this, [this, binary]() {
+                receivedFirstPacketWebRtc(binary);
+            }, Qt::QueuedConnection);
+        }
+    });
+}
+
+//*******************************************************************************
+void JackTripWorker::receivedFirstPacketWebRtc(const std::vector<std::byte>& packet)
+{
+    QMutexLocker lock(&mMutex);
+
+    if (!mSpawning) {
+        // Already processed or cancelled
+        return;
+    }
+
+    // Extract peer settings from the packet and configure channels
+    const int8_t* full_packet = reinterpret_cast<const int8_t*>(packet.data());
+    processPeerSettings(const_cast<int8_t*>(full_packet));
+}
+
+//*******************************************************************************
+void JackTripWorker::createWebRtcPeerConnection(QSslSocket* signalingSocket,
+                                                const QStringList& iceServers)
+{
+    // Clean up old connection if exists
+    if (mWebRtcPeerConnection) {
+        cout << "JackTripWorker: Warning - replacing existing WebRTC connection" << endl;
+        mWebRtcPeerConnection->close();
+        mWebRtcPeerConnection->deleteLater();
+    }
+
+    // Create the WebRTC peer connection with signaling socket
+    // The peer connection will manage the signaling internally
+    mWebRtcPeerConnection = new WebRtcPeerConnection(signalingSocket, iceServers, this);
+
+    // Connect signals from peer connection to our slots
+    connect(mWebRtcPeerConnection, &WebRtcPeerConnection::dataChannelOpen, this,
+            &JackTripWorker::onWebRtcDataChannelOpen);
+    connect(mWebRtcPeerConnection, &WebRtcPeerConnection::dataChannelClosed, this,
+            &JackTripWorker::onWebRtcDataChannelClosed);
+    connect(mWebRtcPeerConnection, &WebRtcPeerConnection::connectionFailed, this,
+            &JackTripWorker::onWebRtcConnectionFailed);
+}
+
+//*******************************************************************************
+void JackTripWorker::onWebRtcDataChannelOpen()
+{
+    if (!mWebRtcPeerConnection) {
+        cerr << "JackTripWorker: ERROR - No peer connection" << std::endl;
+        return;
+    }
+
+    // Get the data channel from the peer connection
+    auto dataChannel = mWebRtcPeerConnection->getDataChannel();
+    if (!dataChannel) {
+        cerr << "JackTripWorker: ERROR - No data channel available" << endl;
+        return;
+    }
+
+    // Get peer address
+    QString peerAddress = mWebRtcPeerConnection->getPeerAddress();
+    if (peerAddress.isEmpty()) {
+        peerAddress = QStringLiteral("webrtc-peer");
+    }
+
+    // Get the base port from the hub listener and calculate the server port
+    int basePort = mUdpHubListener->getBasePort();
+    uint16_t serverPort = static_cast<uint16_t>(basePort + mID);
+    bool connectDefaultPorts = mUdpHubListener->getConnectDefaultAudioPorts();
+    
+    setJackTrip(mID, peerAddress, serverPort, 0, connectDefaultPorts);
+    
+    // Set protocol to WebRTC
+    setDataProtocol(JackTrip::WEBRTC);
+
+    // Start the worker with WebRTC transport
+    startWebRtc();
+}
+
+//*******************************************************************************
+void JackTripWorker::onWebRtcDataChannelClosed()
+{
+    // Stop the JackTrip process
+    stopThread();
+
+    // Signal the hub listener to remove this thread
+    emit signalRemoveThread();
+}
+
+//*******************************************************************************
+void JackTripWorker::onWebRtcConnectionFailed(const QString& reason)
+{
+    cerr << "JackTripWorker: WebRTC connection failed for worker " << mID
+         << ": " << reason.toStdString() << std::endl;
+
+    // Stop the thread and signal removal
+    stopThread();
+    emit signalRemoveThread();
+}
+
+#endif  // WEBRTC_SUPPORT
