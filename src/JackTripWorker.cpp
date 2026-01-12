@@ -58,6 +58,10 @@
 #include <rtc/rtc.hpp>
 #endif
 
+#ifdef WEBTRANSPORT_SUPPORT
+#include "webtransport/WebTransportDataProtocol.h"
+#endif
+
 using std::cout;
 using std::cerr;
 using std::endl;
@@ -557,3 +561,131 @@ void JackTripWorker::onWebRtcConnectionFailed(const QString& reason)
 }
 
 #endif  // WEBRTC_SUPPORT
+
+#ifdef WEBTRANSPORT_SUPPORT
+
+//*******************************************************************************
+void JackTripWorker::createWebTransportSession(QSslSocket* socket)
+{
+    // Clean up old session if exists
+    if (mWebTransportSession) {
+        cout << "JackTripWorker: Warning - replacing existing WebTransport session" << endl;
+        mWebTransportSession->close();
+        mWebTransportSession->deleteLater();
+    }
+
+    // Create the WebTransport session
+    mWebTransportSession = new WebTransportSession(socket, this);
+
+    // Connect signals from session to our slots
+    connect(mWebTransportSession, &WebTransportSession::sessionEstablished, this,
+            &JackTripWorker::onWebTransportSessionEstablished);
+    connect(mWebTransportSession, &WebTransportSession::sessionClosed, this,
+            &JackTripWorker::onWebTransportSessionClosed);
+    connect(mWebTransportSession, &WebTransportSession::sessionFailed, this,
+            &JackTripWorker::onWebTransportSessionFailed);
+
+    // Read any pending data and complete the handshake
+    QByteArray pendingData = socket->readAll();
+    if (!pendingData.isEmpty()) {
+        mWebTransportSession->completeHandshake(pendingData);
+    }
+}
+
+//*******************************************************************************
+void JackTripWorker::startWebTransport()
+{
+    if (!mWebTransportSession || !mWebTransportSession->isConnected()) {
+        cerr << "JackTripWorker: Cannot start WebTransport - session not connected" << endl;
+        return;
+    }
+
+    if (mJackTrip.isNull()) {
+        cerr << "JackTripWorker: Cannot start WebTransport - JackTrip not configured" << endl;
+        return;
+    }
+
+    cout << "JackTripWorker: Starting with WebTransport transport" << endl;
+
+    // Create WebTransport data protocol instances
+    WebTransportDataProtocol* senderProtocol =
+        new WebTransportDataProtocol(mJackTrip.data(), DataProtocol::SENDER,
+                                     mWebTransportSession);
+    WebTransportDataProtocol* receiverProtocol =
+        new WebTransportDataProtocol(mJackTrip.data(), DataProtocol::RECEIVER,
+                                     mWebTransportSession);
+
+    mJackTrip->setDataProtocolSender(senderProtocol);
+    mJackTrip->setDataProtocolReceiver(receiverProtocol);
+
+    // Mark as running
+    {
+        QMutexLocker lock(&mMutex);
+        mSpawning = true;
+        mRunning = true;
+    }
+
+    // Complete the connection setup (starts audio and data threads)
+    mJackTrip->completeConnection();
+}
+
+//*******************************************************************************
+void JackTripWorker::onWebTransportSessionEstablished()
+{
+    if (!mWebTransportSession) {
+        cerr << "JackTripWorker: ERROR - No WebTransport session" << std::endl;
+        return;
+    }
+
+    cout << "JackTripWorker: WebTransport session established" << endl;
+
+    // Get peer address
+    QString peerAddress = mWebTransportSession->getPeerAddress();
+    if (peerAddress.isEmpty()) {
+        peerAddress = QStringLiteral("webtransport-peer");
+    }
+
+    // Get client name from session if available
+    QString clientName = mWebTransportSession->getClientName();
+    if (!clientName.isEmpty()) {
+        mAssignedClientName = clientName;
+    }
+
+    // Get the base port from the hub listener and calculate the server port
+    int basePort = mUdpHubListener->getBasePort();
+    uint16_t serverPort = static_cast<uint16_t>(basePort + mID);
+    bool connectDefaultPorts = mUdpHubListener->getConnectDefaultAudioPorts();
+
+    setJackTrip(mID, peerAddress, serverPort, 0, connectDefaultPorts);
+
+    // Set protocol to WebTransport
+    setDataProtocol(JackTrip::WEBTRANSPORT);
+
+    // Start the worker with WebTransport
+    startWebTransport();
+}
+
+//*******************************************************************************
+void JackTripWorker::onWebTransportSessionClosed()
+{
+    cout << "JackTripWorker: WebTransport session closed" << endl;
+
+    // Stop the JackTrip process
+    stopThread();
+
+    // Signal the hub listener to remove this thread
+    emit signalRemoveThread();
+}
+
+//*******************************************************************************
+void JackTripWorker::onWebTransportSessionFailed(const QString& reason)
+{
+    cerr << "JackTripWorker: WebTransport session failed for worker " << mID
+         << ": " << reason.toStdString() << std::endl;
+
+    // Stop the thread and signal removal
+    stopThread();
+    emit signalRemoveThread();
+}
+
+#endif  // WEBTRANSPORT_SUPPORT

@@ -82,10 +82,11 @@ class JackTrip : public QObject
     //----------ENUMS------------------------------------------
     /// \brief Enum for the data Protocol. At this time only UDP is implemented
     enum dataProtocolT {
-        UDP,    ///< Use UDP (User Datagram Protocol)
-        TCP,    ///< <B>NOT IMPLEMENTED</B>: Use TCP (Transmission Control Protocol)
-        SCTP,   ///< <B>NOT IMPLEMENTED</B>: Use SCTP (Stream Control Transmission Protocol)
-        WEBRTC  ///< Use WebRTC Data Channels (requires libdatachannel)
+        UDP,          ///< Use UDP (User Datagram Protocol)
+        TCP,          ///< <B>NOT IMPLEMENTED</B>: Use TCP (Transmission Control Protocol)
+        SCTP,         ///< <B>NOT IMPLEMENTED</B>: Use SCTP (Stream Control Transmission Protocol)
+        WEBRTC,       ///< Use WebRTC Data Channels (requires libdatachannel)
+        WEBTRANSPORT  ///< Use WebTransport (HTTP/3 based transport)
     };
 
     /// \brief Enum for the JackTrip mode

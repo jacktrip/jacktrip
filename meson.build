@@ -434,6 +434,19 @@ if found_libdatachannel
 	]
 endif
 
+# WebTransport support (only requires Qt)
+if get_option('nowebtransport') == false
+	defines += '-DWEBTRANSPORT_SUPPORT'
+	src += [
+		'src/webtransport/WebTransportSession.cpp',
+		'src/webtransport/WebTransportDataProtocol.cpp'
+	]
+	moc_h += [
+		'src/webtransport/WebTransportSession.h',
+		'src/webtransport/WebTransportDataProtocol.h'
+	]
+endif
+
 if host_machine.system() == 'darwin'
 	src += ['src/NoNap.mm']
 	# Adding CoreAudio here is a workaround and should be removed
@@ -514,4 +527,5 @@ summary({'Application ID': application_id,
 	'WAIR': get_option('wair'),
 	'Sample rate conversions': found_libsamplerate,
 	'WebRTC Data Channels': found_libdatachannel,
+	'WebTransport': not get_option('nowebtransport'),
 	'Manpage': help2man.found()}, bool_yn: true, section: 'Configuration')

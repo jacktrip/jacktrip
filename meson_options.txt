@@ -20,3 +20,5 @@ option('vst-sdkdir', type : 'string', value : '', yield : true,
   description : 'Directory with VST SDK3 headers (e.g. public.sdk/source/vst/hosting/module.h)')
 option('libdatachannel', type : 'feature', value : 'auto',
   description : 'Build with WebRTC data channel support (requires libdatachannel)')
+option('nowebtransport', type : 'boolean', value : false,
+  description : 'Build without WebTransport support')

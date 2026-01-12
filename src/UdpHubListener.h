@@ -131,9 +131,6 @@ class UdpHubListener : public QObject
     // new bytes are ready to read from the client connection
     void readyRead(QSslSocket* clientConnection);
 
-    /// \brief Create a WebRTC worker for a new connection
-    int createWebRtcWorker(QSslSocket* signalingSocket, const QString& clientName);
-
     /** \brief Binds a QUdpSocket. It chooses the available (active) interface.
      * \param udpsocket a QUdpSocket
      * \param port Port number
@@ -163,13 +160,16 @@ class UdpHubListener : public QObject
      */
     // void sendToPoolPrototype(int id);
 
-    /**
-     * \brief Check if address is already handled and reuse or create
-     * a JackTripWorker as appropriate
-     * \param address as string (IPv4 or IPv6)
-     * \return id number of JackTripWorker
-     */
-    int getJackTripWorker(const QString& address, uint16_t port, QString& clientName);
+    /// \brief Create a new JackTripWorker and allocate it a slot
+    /// \param clientName The client name (will be modified if mAppendThreadID is set)
+    /// \return The slot id, or -1 if no slots available
+    int createWorker(QString& clientName);
+
+    /// \brief Create a WebRTC worker for a new connection
+    int createWebRtcWorker(QSslSocket* signalingSocket, const QString& clientName);
+
+    /// \brief Create a WebTransport worker for a new connection
+    int createWebTransportWorker(QSslSocket* socket, const QString& clientName);
 
     /** \brief Returns the ID of the client in the pool. If the client
      * is not in the pool yet, returns -1.

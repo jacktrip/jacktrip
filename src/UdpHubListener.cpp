@@ -60,6 +60,10 @@
 #include "webrtc/WebRtcPeerConnection.h"
 #endif
 
+#ifdef WEBTRANSPORT_SUPPORT
+#include "webtransport/WebTransportSession.h"
+#endif
+
 using std::cout;
 using std::cerr;
 using std::endl;
@@ -252,17 +256,38 @@ void UdpHubListener::receivedNewConnection()
 
 void UdpHubListener::readyRead(QSslSocket* clientConnection)
 {
-#ifdef WEBRTC_SUPPORT
+#if defined(WEBTRANSPORT_SUPPORT) || defined(WEBRTC_SUPPORT)
     if (!clientConnection->isEncrypted()) {
-        // Check for WebSocket upgrade request (starts with "GET")
-        QByteArray peekData = clientConnection->peek(256);
-        if (peekData.startsWith("GET")) {
-            // This looks like an HTTP/WebSocket request for WebRTC
+        // Check for HTTP-based upgrade requests (starts with "GET" or "CONNECT")
+        QByteArray peekData = clientConnection->peek(512);
+
+        if (peekData.startsWith("GET") || peekData.startsWith("CONNECT")) {
+            // Check if this is a WebTransport request
+            // WebTransport requests have /webtransport in the path or
+            // Sec-WebSocket-Protocol: webtransport header
+            bool isWebTransport = peekData.contains("/webtransport") ||
+                                  peekData.toLower().contains("sec-websocket-protocol: webtransport");
 
             // Disconnect all signals from this socket to UdpHubListener
-            // before transferring ownership to WebRTC components
+            // before transferring ownership
             disconnect(clientConnection, nullptr, this, nullptr);
 
+#ifdef WEBTRANSPORT_SUPPORT
+            if (isWebTransport) {
+                // Create a WebTransport worker
+                int workerId = createWebTransportWorker(clientConnection,
+                                                        QStringLiteral("webtransport"));
+                if (workerId < 0) {
+                    cerr << "JackTrip HUB SERVER: No available slots for WebTransport client" << endl;
+                    clientConnection->close();
+                    clientConnection->deleteLater();
+                }
+                return;
+            }
+#endif  // WEBTRANSPORT_SUPPORT
+
+#ifdef WEBRTC_SUPPORT
+            // This looks like an HTTP/WebSocket request for WebRTC
             // Create a WebRTC worker - this will create a peer connection
             // that manages the signaling internally
             // Note: ownership of clientConnection is transferred to the peer connection
@@ -273,9 +298,16 @@ void UdpHubListener::readyRead(QSslSocket* clientConnection)
                 clientConnection->deleteLater();
             }
             return;
+#else
+            // WebRTC not available, reject non-WebTransport HTTP requests
+            cerr << "JackTrip HUB SERVER: WebRTC not available, rejecting HTTP request" << endl;
+            clientConnection->close();
+            clientConnection->deleteLater();
+            return;
+#endif  // WEBRTC_SUPPORT
         }
     }
-#endif
+#endif  // WEBTRANSPORT_SUPPORT || WEBRTC_SUPPORT
 
     QHostAddress PeerAddress = clientConnection->peerAddress();
     cout << "JackTrip HUB SERVER: Client Connect Received from Address : "
@@ -351,39 +383,36 @@ void UdpHubListener::readyRead(QSslSocket* clientConnection)
     // or port yet. We need to wait until we receive the port value from the UDP header to
     // accommodate NAT.
     // -----------------------------
-    int id = getJackTripWorker(PeerAddress.toString(), peer_udp_port, clientName);
-
-    // Assign server port and send it to Client
-    if (id != -1) {
-        cout << "JackTrip HUB SERVER: Sending Final UDP Port to Client: "
-             << clientName.toStdString() << " = " << mJTWorkers->at(id)->getServerPort()
-             << endl;
-    }
-
-    if (id == -1
-        || sendUdpPort(clientConnection, mJTWorkers->at(id)->getServerPort()) == 0) {
+    int id = createWorker(clientName);
+    if (id < 0) {
+        cerr << "JackTrip HUB SERVER: No available slots for new client" << endl;
         clientConnection->close();
         clientConnection->deleteLater();
-        if (id != -1)
-            releaseThread(id);
         return;
     }
+
+    mJTWorkers->at(id)->setJackTrip(
+        id, PeerAddress.toString(), mBasePort + id,
+        0,  // Set client port to 0 initially until we receive a UDP packet.
+        m_connectDefaultAudioPorts);
+
+    // Assign server port and send it to Client
+    cout << "JackTrip HUB SERVER: Sending Final UDP Port to Client: "
+            << clientName.toStdString() << " = " << mJTWorkers->at(id)->getServerPort()
+            << endl;
+
+    int send_port_result = sendUdpPort(clientConnection, mJTWorkers->at(id)->getServerPort());
 
     // Close and mark socket for deletion
     // ----------------------------------
     clientConnection->close();
     clientConnection->deleteLater();
-    cout << "JackTrip HUB SERVER: Client TCP Connection Closed!" << endl;
 
-    if (mIOStatTimeout > 0) {
-        mJTWorkers->at(id)->setIOStatTimeout(mIOStatTimeout);
-        mJTWorkers->at(id)->setIOStatStream(mIOStatStream);
+    if (send_port_result == 0) {
+        releaseThread(id);
+        return;
     }
-    mJTWorkers->at(id)->setBufferStrategy(mBufferStrategy);
-    mJTWorkers->at(id)->setNetIssuesSimulation(mSimulatedLossRate, mSimulatedJitterRate,
-                                               mSimulatedDelayRel);
-    mJTWorkers->at(id)->setBroadcast(mBroadcastQueue);
-    mJTWorkers->at(id)->setUseRtUdpPriority(mUseRtUdpPriority);
+
     cout << "JackTrip HUB SERVER: Starting JackTripWorker..." << endl;
     mJTWorkers->at(id)->start();
 }
@@ -572,34 +601,43 @@ void UdpHubListener::bindUdpSocket(QUdpSocket& udpsocket, int port)
 }
 
 //*******************************************************************************
-int UdpHubListener::getJackTripWorker(const QString& address,
-                                      [[maybe_unused]] uint16_t port, QString& clientName)
+int UdpHubListener::createWorker(QString& clientName)
 {
-    // Find our first empty slot in our vector of worker object pointers.
-    // Return -1 if we have no space left for additional threads, or the index of the new
-    // JackTripWorker.
     QMutexLocker lock(&mMutex);
+
+    // Find first empty slot
     int id = -1;
     for (int i = 0; i < gMaxThreads; i++) {
         if (mJTWorkers->at(i) == nullptr) {
             id = i;
-            i  = gMaxThreads;
+            break;
         }
     }
 
-    if (id >= 0) {
-        mTotalRunningThreads++;
-        if (mAppendThreadID) {
-            clientName = clientName + QStringLiteral("_%1").arg(id + 1);
-        }
-        mJTWorkers->replace(id,
-                            new JackTripWorker(this, mBufferQueueLength, mUnderRunMode,
-                                               mAudioBitResolution, clientName));
-        mJTWorkers->at(id)->setJackTrip(
-            id, address, mBasePort + id,
-            0,  // Set client port to 0 initially until we receive a UDP packet.
-            m_connectDefaultAudioPorts);  //
+    if (id < 0) {
+        return -1;  // No available slots
     }
+
+    mTotalRunningThreads++;
+    if (mAppendThreadID) {
+        clientName = clientName + QStringLiteral("_%1").arg(id + 1);
+    }
+
+    // Create a JackTripWorker
+    JackTripWorker* worker = new JackTripWorker(this, mBufferQueueLength, mUnderRunMode,
+                                                mAudioBitResolution, clientName);
+
+    if (mIOStatTimeout > 0) {
+        worker->setIOStatTimeout(mIOStatTimeout);
+        worker->setIOStatStream(mIOStatStream);
+    }
+    worker->setBufferStrategy(mBufferStrategy);
+    worker->setNetIssuesSimulation(mSimulatedLossRate, mSimulatedJitterRate,
+                                    mSimulatedDelayRel);
+    worker->setBroadcast(mBroadcastQueue);
+    worker->setUseRtUdpPriority(mUseRtUdpPriority);
+
+    mJTWorkers->replace(id, worker);
 
     return id;
 }
@@ -743,44 +781,13 @@ void UdpHubListener::stopAllThreads()
 //*******************************************************************************
 int UdpHubListener::createWebRtcWorker(QSslSocket* signalingSocket, const QString& clientName)
 {
-    int id = -1;
-
 #ifdef WEBRTC_SUPPORT
-    QMutexLocker lock(&mMutex);
-
-    // Find first empty slot
-    for (int i = 0; i < gMaxThreads; i++) {
-        if (mJTWorkers->at(i) == nullptr) {
-            id = i;
-            break;
-        }
-    }
-
+    QString name = clientName;
+    int id = createWorker(name);
     if (id < 0) {
         return -1;  // No available slots
     }
-
-    mTotalRunningThreads++;
-    QString name = clientName;
-    if (mAppendThreadID) {
-        name = name + QStringLiteral("_%1").arg(id + 1);
-    }
-
-    // Create a JackTripWorker (similar to UDP, but we'll configure it for WebRTC later)
-    JackTripWorker* worker = new JackTripWorker(this, mBufferQueueLength, mUnderRunMode,
-                                                mAudioBitResolution, name);
-    mJTWorkers->replace(id, worker);
-
-    // Configure worker properties before setting up the connection
-    if (mIOStatTimeout > 0) {
-        worker->setIOStatTimeout(mIOStatTimeout);
-        worker->setIOStatStream(mIOStatStream);
-    }
-    worker->setBufferStrategy(mBufferStrategy);
-    worker->setNetIssuesSimulation(mSimulatedLossRate, mSimulatedJitterRate,
-                                   mSimulatedDelayRel);
-    worker->setBroadcast(mBroadcastQueue);
-    worker->setUseRtUdpPriority(mUseRtUdpPriority);
+    JackTripWorker* worker = mJTWorkers->at(id);
 
     // Have the worker create its own WebRTC peer connection
     // The worker will handle connection lifecycle and start when ready
@@ -788,9 +795,37 @@ int UdpHubListener::createWebRtcWorker(QSslSocket* signalingSocket, const QStrin
 
     // Note: We don't call setJackTrip yet because we don't have the data channel.
     // The worker will be started when the data channel opens (handled by worker).
-#endif  // WEBRTC_SUPPORT
-
     return id;
+#else
+    Q_UNUSED(signalingSocket);
+    Q_UNUSED(clientName);
+    return -1;
+#endif  // WEBRTC_SUPPORT
+}
+
+//*******************************************************************************
+int UdpHubListener::createWebTransportWorker(QSslSocket* socket, const QString& clientName)
+{
+#ifdef WEBTRANSPORT_SUPPORT
+    QString name = clientName;
+    int id = createWorker(name);
+    if (id < 0) {
+        return -1;  // No available slots
+    }
+    JackTripWorker* worker = mJTWorkers->at(id);
+
+    // Have the worker create its WebTransport session
+    // The worker will handle connection lifecycle and start when ready
+    worker->createWebTransportSession(socket);
+
+    // Note: We don't call setJackTrip yet because the session isn't established.
+    // The worker will be started when the session is established (handled by worker).
+    return id;
+#else
+    Q_UNUSED(socket);
+    Q_UNUSED(clientName);
+    return -1;
+#endif  // WEBTRANSPORT_SUPPORT
 }
 
 // TODO:

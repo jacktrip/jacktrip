@@ -55,6 +55,10 @@
 #include "webrtc/WebRtcPeerConnection.h"
 #endif
 
+#ifdef WEBTRANSPORT_SUPPORT
+#include "webtransport/WebTransportSession.h"
+#endif
+
 // class JackTrip; // forward declaration
 class UdpHubListener;  // forward declaration
 
@@ -158,6 +162,15 @@ class JackTripWorker : public QObject
     void receivedFirstPacketWebRtc(const std::vector<std::byte>& packet);
 #endif
 
+#ifdef WEBTRANSPORT_SUPPORT
+    /// \brief Create and initialize WebTransport session
+    /// \param socket The SSL socket for the WebTransport session (ownership transferred)
+    void createWebTransportSession(QSslSocket* socket);
+
+    /// \brief Start the worker with WebTransport (called when session is established)
+    void startWebTransport();
+#endif
+
     double getLatency()
     {
         QMutexLocker lock(&mMutex);
@@ -175,6 +188,12 @@ class JackTripWorker : public QObject
     void onWebRtcDataChannelOpen();
     void onWebRtcDataChannelClosed();
     void onWebRtcConnectionFailed(const QString& reason);
+#endif
+
+#ifdef WEBTRANSPORT_SUPPORT
+    void onWebTransportSessionEstablished();
+    void onWebTransportSessionClosed();
+    void onWebTransportSessionFailed(const QString& reason);
 #endif
 
    signals:
@@ -225,6 +244,10 @@ class JackTripWorker : public QObject
 
 #ifdef WEBRTC_SUPPORT
     WebRtcPeerConnection* mWebRtcPeerConnection = nullptr;  ///< WebRTC peer connection (owned)
+#endif
+
+#ifdef WEBTRANSPORT_SUPPORT
+    WebTransportSession* mWebTransportSession = nullptr;    ///< WebTransport session (owned)
 #endif
 
     int mBufferStrategy         = 1;
