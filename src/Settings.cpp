@@ -1089,10 +1089,17 @@ UdpHubListener* Settings::getConfiguredHubServer()
         //(We don't need to check the validity of these files because it's done by the
         // UdpHubListener.)
         udpHub->setRequireAuth(mAuth);
-        udpHub->setCertFile(mCertFile);
-        udpHub->setKeyFile(mKeyFile);
         udpHub->setCredsFile(mCredsFile);
     }
+
+    if (!mCertFile.isEmpty()) {
+        udpHub->setCertFile(mCertFile);
+    }
+
+    if (!mKeyFile.isEmpty()) {
+        udpHub->setKeyFile(mKeyFile);
+    }
+
     return udpHub;
 }
 

@@ -434,9 +434,41 @@ if found_libdatachannel
 	]
 endif
 
-# WebTransport support (only requires Qt)
-if get_option('nowebtransport') == false
+# WebTransport support (requires msquic)
+found_msquic = false
+if get_option('msquic').allowed()
+	# First try to find msquic as a system dependency
+	msquic_dep = dependency('msquic', required: false)
+	if msquic_dep.found()
+		found_msquic = true
+	else
+		# Try to build msquic as a subproject
+		opt_var = cmake.subproject_options()
+		if get_option('buildtype') == 'release'
+			opt_var.add_cmake_defines({'CMAKE_BUILD_TYPE': 'Release'})
+		else
+			opt_var.add_cmake_defines({'CMAKE_BUILD_TYPE': 'Debug'})
+		endif
+		opt_var.add_cmake_defines({'CMAKE_POSITION_INDEPENDENT_CODE': 'ON'})
+		# Configure msquic build options
+		opt_var.add_cmake_defines({'QUIC_BUILD_SHARED': 'OFF'})
+		opt_var.add_cmake_defines({'QUIC_BUILD_TEST': 'OFF'})
+		opt_var.add_cmake_defines({'QUIC_BUILD_TOOLS': 'OFF'})
+		opt_var.add_cmake_defines({'QUIC_BUILD_PERF': 'OFF'})
+		opt_var.add_cmake_defines({'QUIC_ENABLE_LOGGING': 'OFF'})
+		msquic_subproject = cmake.subproject('msquic', options: opt_var, required: false)
+		if msquic_subproject.found()
+			msquic_dep = msquic_subproject.dependency('msquic')
+			found_msquic = msquic_dep.found()
+		endif
+		if not found_msquic and not get_option('msquic').auto()
+			error('msquic requested but could not be configured')
+		endif
+	endif
+endif
+if found_msquic
 	defines += '-DWEBTRANSPORT_SUPPORT'
+	deps += msquic_dep
 	src += [
 		'src/webtransport/WebTransportSession.cpp',
 		'src/webtransport/WebTransportDataProtocol.cpp'
@@ -527,5 +559,5 @@ summary({'Application ID': application_id,
 	'WAIR': get_option('wair'),
 	'Sample rate conversions': found_libsamplerate,
 	'WebRTC Data Channels': found_libdatachannel,
-	'WebTransport': not get_option('nowebtransport'),
+	'WebTransport API': found_msquic,
 	'Manpage': help2man.found()}, bool_yn: true, section: 'Configuration')

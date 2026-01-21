@@ -52,6 +52,13 @@
 #include "JackTrip.h"
 #include "jacktrip_globals.h"
 #include "jacktrip_types.h"
+
+#ifdef WEBTRANSPORT_SUPPORT
+// Forward declare msquic types
+struct QUIC_API_TABLE;
+struct QUIC_HANDLE;
+typedef QUIC_HANDLE* HQUIC;
+#endif
 #ifndef NO_JACK
 #include "Patcher.h"
 #endif
@@ -119,6 +126,7 @@ class UdpHubListener : public QObject
     void stopCheck();
     void queueBufferChanged(int queueBufferSize);
     void handleLatencyRequest(const QHostAddress& sender, quint16 senderPort);
+    void handleWorkerRemoval();
 
    signals:
     void signalStarted();
@@ -144,7 +152,7 @@ class UdpHubListener : public QObject
     void startOscServer()
     {
         // start osc server to listen to config updates
-        mOscServer = new OscServer(mServerPort, this);
+        mOscServer = new OscServer(mServerPort + 1, this);
         mOscServer->start();
 
         QObject::connect(mOscServer, &OscServer::signalQueueBufferChanged, this,
@@ -168,8 +176,11 @@ class UdpHubListener : public QObject
     /// \brief Create a WebRTC worker for a new connection
     int createWebRtcWorker(QSslSocket* signalingSocket, const QString& clientName);
 
-    /// \brief Create a WebTransport worker for a new connection
-    int createWebTransportWorker(QSslSocket* socket, const QString& clientName);
+#ifdef WEBTRANSPORT_SUPPORT
+    /// \brief Create a WebTransport worker for a new QUIC connection
+    int createWebTransportWorker(HQUIC connection, const QHostAddress& peerAddress,
+                                 quint16 peerPort, const QString& clientName);
+#endif
 
     /** \brief Returns the ID of the client in the pool. If the client
      * is not in the pool yet, returns -1.
@@ -228,6 +239,26 @@ class UdpHubListener : public QObject
 
     /// \brief ICE servers for WebRTC connections
     QStringList mIceServers;
+
+#ifdef WEBTRANSPORT_SUPPORT
+    /// \brief msquic API table
+    const QUIC_API_TABLE* mQuicApi;
+
+    /// \brief msquic registration handle
+    HQUIC mQuicRegistration;
+
+    /// \brief msquic configuration handle
+    HQUIC mQuicConfiguration;
+
+    /// \brief msquic listener handle (for QUIC connections on UDP)
+    HQUIC mQuicListener;
+
+    /// \brief Initialize msquic library
+    bool initMsQuic();
+
+    /// \brief Cleanup msquic resources
+    void cleanupMsQuic();
+#endif
 
 #ifdef WAIR  // wair
     bool mWAIR;
@@ -304,6 +335,15 @@ class UdpHubListener : public QObject
 
     /// \brief Set ICE servers for WebRTC connections
     void setIceServers(const QStringList& servers) { mIceServers = servers; }
+
+#ifdef WEBTRANSPORT_SUPPORT
+   public:
+    /// \brief Handle incoming QUIC connection (must be public for static callback)
+    unsigned int handleQuicConnection(HQUIC connection, void* event);
+
+    /// \brief Handle listener events (must be public for static callback)
+    unsigned int handleListenerEvent(HQUIC listener, void* event);
+#endif
 };
 
 #endif  //__UDPHUBLISTENER_H__

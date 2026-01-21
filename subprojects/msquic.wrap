@@ -1,0 +1,9 @@
+[wrap-file]
+directory = msquic-2.5.6
+source_url = https://files.jacktrip.org/contrib/msquic-2.5.6.tar.gz
+source_filename = msquic-2.5.6.tar.gz
+source_hash = b2af405697823f6f31df24e3eddc964e6c322dcd55c142d2aa60a890fc7d5bcf
+
+[provide]
+dependency_names = msquic
+

@@ -39,6 +39,8 @@
 #define __JACKTRIP_H__
 
 // #include <tr1/memory> //for shared_ptr
+#include <functional>
+
 #include <QObject>
 #include <QSharedPointer>
 #include <QSslSocket>
@@ -63,6 +65,10 @@
 namespace rtc {
 class DataChannel;
 }
+#endif
+
+#ifdef WEBTRANSPORT_SUPPORT
+class WebTransportSession;
 #endif
 
 // #include <signal.h>
@@ -400,9 +406,26 @@ class JackTrip : public QObject
     void putHeaderInOutgoingPacket(int8_t* full_packet, int8_t* audio_packet);
     int getSendPacketSizeInBytes() const;
     int getReceivePacketSizeInBytes() const;
+
+    /// \brief Callback type for direct packet sending (bypasses ring buffer)
+    using DirectSendCallback = std::function<void(const int8_t*, int)>;
+
+    /// \brief Set a direct send callback (used by WebTransport for real-time sending)
+    void setDirectSendCallback(DirectSendCallback callback)
+    {
+        mDirectSendCallback = callback;
+    }
+
     virtual void sendNetworkPacket(const int8_t* ptrToSlot)
     {
-        mSendRingBuffer->insertSlotNonBlocking(ptrToSlot, 0, 0, 0);
+        if (mDirectSendCallback) {
+            // Use direct callback for real-time protocols (WebTransport)
+            // ptrToSlot points to audio data only (no header), so pass audio size only
+            mDirectSendCallback(ptrToSlot, getTotalAudioInputPacketSizeInBytes());
+        } else {
+            // Use ring buffer for traditional protocols (UDP, WebRTC)
+            mSendRingBuffer->insertSlotNonBlocking(ptrToSlot, 0, 0, 0);
+        }
     }
     virtual void receiveBroadcastPacket(int8_t* ptrToReadSlot)
     {
@@ -597,6 +620,15 @@ class JackTrip : public QObject
         mWebRtcDataChannel = dataChannel;
     }
 #endif
+
+#ifdef WEBTRANSPORT_SUPPORT
+    /// \brief Set the WebTransport session for transport
+    void setWebTransportSession(WebTransportSession* session)
+    {
+        mWebTransportSession = session;
+    }
+#endif
+
     void queueLengthChanged(int queueLength)
     {
         emit signalQueueLengthChanged(queueLength);
@@ -728,6 +760,8 @@ class JackTrip : public QObject
     RingBuffer* mSendRingBuffer;
     /// Pointer for the Receive RingBuffer
     RingBuffer* mReceiveRingBuffer;
+    /// Direct send callback (bypasses ring buffer for real-time protocols)
+    DirectSendCallback mDirectSendCallback;
 
     int mReceiverBindPort;  ///< Incoming (receiving) port for local machine
     int mSenderPeerPort;    ///< Incoming (receiving) port for peer machine
@@ -784,6 +818,10 @@ class JackTrip : public QObject
 
 #ifdef WEBRTC_SUPPORT
     std::shared_ptr<rtc::DataChannel> mWebRtcDataChannel;  ///< WebRTC data channel
+#endif
+
+#ifdef WEBTRANSPORT_SUPPORT
+    WebTransportSession* mWebTransportSession;  ///< WebTransport session (not owned)
 #endif
 };
 

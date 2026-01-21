@@ -44,22 +44,25 @@
 #include <condition_variable>
 #include <memory>
 #include <mutex>
-#include <vector>
 
 #include "../DataProtocol.h"
 #include "../jacktrip_globals.h"
 
+#include <msquic.h>  // For QUIC_BUFFER
+
 class JackTrip;
 class WebTransportSession;
 
-/** \brief WebTransport implementation of DataProtocol class
+/** \brief WebTransport implementation of DataProtocol class using msquic
  *
- * This class implements audio packet transport over WebTransport,
- * providing low-latency, NAT-traversal-friendly communication.
+ * This class implements audio packet transport over WebTransport using
+ * msquic for native QUIC support with unreliable datagrams (RFC 9221).
  *
- * WebTransport supports unreliable datagrams which provide
- * UDP-like semantics without retransmissions, ideal for
- * real-time audio where timeliness is critical.
+ * QUIC datagrams provide UDP-like semantics:
+ * - No retransmissions (unreliable delivery)
+ * - No head-of-line blocking
+ * - Built-in encryption (TLS 1.3)
+ * - NAT traversal via connection migration
  */
 class WebTransportDataProtocol : public DataProtocol
 {
@@ -69,7 +72,7 @@ class WebTransportDataProtocol : public DataProtocol
     /** \brief The class constructor
      * \param jacktrip Pointer to the JackTrip class that connects all classes (mediator)
      * \param runmode Sets the run mode, use either SENDER or RECEIVER
-     * \param session Shared pointer to the WebTransport session
+     * \param session Pointer to the WebTransport session (not owned)
      */
     WebTransportDataProtocol(JackTrip* jacktrip, const runModeT runmode,
                              WebTransportSession* session);
@@ -99,13 +102,6 @@ class WebTransportDataProtocol : public DataProtocol
     virtual void setSocket(int& socket) override;
 #endif
 
-    /** \brief Sends a packet over the WebTransport session
-     *
-     * \param buf Buffer containing the packet to send
-     * \param n size of packet
-     * \return number of bytes sent, -1 on error
-     */
-    int sendPacket(const char* buf, const size_t n);
 
     /** \brief Implements the Thread Loop
      *
@@ -122,6 +118,24 @@ class WebTransportDataProtocol : public DataProtocol
      */
     virtual bool getStats(PktStat* stat) override;
 
+    //--------------------------------------------------------------------------
+    // Public types and methods for buffer pool management
+    // (must be public for MsQuic callback in WebTransportSession)
+    //--------------------------------------------------------------------------
+
+    /** \brief Context passed to MsQuic for buffer cleanup */
+    struct SendContext {
+        uint8_t* buffer;                      ///< Buffer to release
+        WebTransportDataProtocol* owner;      ///< Protocol that owns the buffer
+        QUIC_BUFFER quicBuffer;               ///< MsQuic buffer struct (must stay alive!)
+    };
+
+    /** \brief Static callback for MsQuic to release buffer
+     * 
+     * Called from WebTransportSession's MsQuic callback when datagram send completes
+     */
+    static void releaseSendContext(SendContext* ctx);
+
    signals:
     /// \brief Signal emitted when session is connected
     void signalSessionConnected();
@@ -134,9 +148,15 @@ class WebTransportDataProtocol : public DataProtocol
 
    private slots:
     void printWaitedTooLong(int wait_msec);
-    void onDatagramReceived(const std::vector<std::byte>& data);
+    void onSessionClosed();
 
    private:
+    // Called by session datagram callback (lock-free, zero-copy)
+    void onDatagramReceived(const uint8_t* data, size_t len);
+
+    // Called from audio thread via direct send callback (real-time safe)
+    void sendPacketDirect(const int8_t* packet, int size);
+
     // Process control packets (e.g., exit signal)
     void processControlPacket(const char* buf, size_t size);
 
@@ -145,13 +165,31 @@ class WebTransportDataProtocol : public DataProtocol
     void runSender(int full_packet_size);
     void processReceivedPacket(int8_t* packet, int packet_size, int full_packet_size);
 
+    // Buffer pool management (private)
+    struct BufferPoolEntry {
+        uint8_t* buffer;       ///< Pre-allocated buffer
+        std::atomic<bool> inUse;
+    };
+    
+    static constexpr size_t BUFFER_POOL_SIZE = 16;  ///< Number of buffers in pool
+    BufferPoolEntry mBufferPool[BUFFER_POOL_SIZE];
+    SendContext mSendContextPool[BUFFER_POOL_SIZE];  ///< SendContext for each buffer
+    std::atomic<size_t> mNextBufferIndex{0};
+    size_t mPoolBufferSize{0};  ///< Size of each buffer in pool (set during initialization)
+    
+    // Acquire a buffer from the pool (lock-free), returns index or -1
+    int acquirePoolBuffer();
+    
+    // Release a buffer back to the pool by index
+    void releasePoolBuffer(int index);
+
     WebTransportSession* mSession;  ///< WebTransport session (not owned)
     const runModeT mRunMode;
 
     // Audio packet buffers
-    QScopedPointer<int8_t> mAudioPacket;
-    QScopedPointer<int8_t> mFullPacket;
-    std::vector<int8_t> mReceivedPacketBuffer;
+    QScopedPointer<int8_t> mAudioPacket;  ///< Raw audio data buffer (always used)
+    QScopedPointer<int8_t> mFullPacket;   ///< Full packet with header (RECEIVER only)
+    std::vector<int8_t> mBuffer;          ///< Temp buffer for channel conversion (RECEIVER only)
     int mChans;
     int mSmplSize;
 
@@ -171,11 +209,6 @@ class WebTransportDataProtocol : public DataProtocol
     // Sequence number tracking
     uint16_t mLastSeqNum;
     bool mInitialState;
-
-    // Received packet queue
-    std::vector<std::vector<std::byte>> mReceivedPackets;
-    std::mutex mReceivedPacketsMutex;
-    std::condition_variable mReceivedPacketsCv;
 };
 
 #endif  // __WEBTRANSPORTDATAPROTOCOL_H__

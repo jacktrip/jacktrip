@@ -163,12 +163,15 @@ class JackTripWorker : public QObject
 #endif
 
 #ifdef WEBTRANSPORT_SUPPORT
-    /// \brief Create and initialize WebTransport session
-    /// \param socket The SSL socket for the WebTransport session (ownership transferred)
-    void createWebTransportSession(QSslSocket* socket);
+    /// \brief Set the WebTransport session for this worker
+    /// \param session The WebTransport session (ownership transferred to this worker)
+    void createWebTransportSession(WebTransportSession* session);
 
-    /// \brief Start the worker with WebTransport (called when session is established)
-    void startWebTransport();
+    /// \brief Called when first packet is received on WebTransport
+    /// Similar to receivedFirstPacketWebRtc() for WebRTC mode
+    /// \param data Pointer to packet data (zero-copy)
+    /// \param len Length of packet in bytes
+    void receivedFirstPacketWebTransport(const uint8_t* data, size_t len);
 #endif
 
     double getLatency()
