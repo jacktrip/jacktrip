@@ -481,18 +481,8 @@ void Regulator::updateTolerance(int glitches, int skipped)
     // update headroom
     if (mAutoHeadroom < 0) {
         // variable headroom: automatically increase to minimize glitch counts
-        int glitchesAllowed;
-        if (mMsecTolerance >= (mPeerFPPdurMsec * 2)) {
-            // calculate glitches allowed if tolerance is above or equal to
-            // the duration of two packets
-            glitchesAllowed = std::ceil(
-                static_cast<float>(AutoHeadroomGlitchTolerance * mSampleRate) / mPeerFPP);
-        } else {
-            // zero glitches allowed if tolerance is below duration of two packets
-            glitchesAllowed = 0;
-            // also don't require two intervals in a row (override)
-            mSkipAutoHeadroom = false;
-        }
+        const int glitchesAllowed = std::ceil(
+            static_cast<float>(AutoHeadroomGlitchTolerance * mSampleRate) / mPeerFPP);
         // sanity check: prevent headroom from growing beyond the greater of
         // 3x rolling average of max, or 10ms higher than the max latency observed
         const int maxHeadroom =
@@ -507,7 +497,8 @@ void Regulator::updateTolerance(int glitches, int skipped)
                 if (mLastMaxLatency > mMsecTolerance + 1) {
                     // increase headroom enough to cover any skipped packets
                     mCurrentHeadroom = std::min<double>(
-                        maxHeadroom, std::ceil(mLastMaxLatency - mMsecTolerance));
+                        maxHeadroom,
+                        mCurrentHeadroom + std::ceil(mLastMaxLatency - mMsecTolerance));
                 } else {
                     ++mCurrentHeadroom;
                 }
@@ -630,15 +621,24 @@ bool Regulator::pullPacket()
     const double now       = (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
     const int lastSeqNumIn = mLastSeqNumIn.load(std::memory_order_acquire);
     int skipped            = 0;
+    int firstGoodSkipped   = -1;
 
     if ((lastSeqNumIn == -1) || (!mInitialized) || (now < mMsecTolerance)) {
         // return silence during startup:
         // * no packets arrived yet
         // * not initialized
         // * hasn't run long enough to meet tolerance
-        goto ZERO_OUTPUT;
+        memset(mXfrBuffer, 0, mPeerBytes);
+        return false;
+    } else if (mStashedPacket != -1) {
+        // use the stashed packet as the best candidate
+        memcpy(mXfrBuffer, mSlots[mStashedPacket], mPeerBytes);
+        mLastSeqNumOut = mStashedPacket;
+        mStashedPacket = -1;
+        processPacket(false);
+        return false;
     } else if (lastSeqNumIn == mLastSeqNumOut) {
-        goto UNDERRUN;
+        return underrun(now, lastSeqNumIn);
     } else {
         // calculate how many new packets we want to look at to
         // find the next packet to pull
@@ -670,45 +670,49 @@ bool Regulator::pullPacket()
             }
             // check if packet's age matches tolerance, or is the best candidate we have
             if (mIncomingTiming[next] + mMsecTolerance >= now || i == 0) {
+                if (skipped == 1 && firstGoodSkipped >= 0) {
+                    // special case where we are about to skip 1 good packet.
+                    // this defers latency adjustments until they are at least
+                    // 2 packets wide.
+                    mStashedPacket = next;
+                    next           = firstGoodSkipped;
+                } else if (skipped > 0) {
+                    // process a glitch to account for the skipped packets,
+                    // but stash and use this good packet on next callback.
+                    pullStat->plcOverruns += skipped;
+                    mSkipped += skipped;
+                    mStashedPacket = next;
+                    processPacket(true);
+                    return true;
+                }
                 // next is the best candidate
                 memcpy(mXfrBuffer, mSlots[next], mPeerBytes);
                 mLastSeqNumOut = next;
-                goto PACKETOK;
+                processPacket(false);
+                return false;
             }
-            ++mSkipped;
+            if (firstGoodSkipped == -1)
+                firstGoodSkipped = next;
         }
-
-        // no viable candidate
-        goto UNDERRUN;
     }
 
-PACKETOK : {
-    pullStat->plcOverruns += skipped;
-    if (skipped && !mLastWasGlitch) {
-        processPacket(true);
-        return true;
-    } else
-        processPacket(false);
-    goto OUTPUT;
-}
+    // no viable candidate
+    return underrun(now, lastSeqNumIn);
+};
 
-UNDERRUN : {
+//*******************************************************************************
+bool Regulator::underrun(const double now, const int lastSeqNumIn)
+{
     pullStat->plcUnderruns++;  // count late
     if ((mLastSeqNumOut == lastSeqNumIn)
         && ((now - mIncomingTiming[mLastSeqNumOut]) > gUdpWaitTimeout)) {
-        goto ZERO_OUTPUT;
+        memset(mXfrBuffer, 0, mPeerBytes);
+        return false;
     }
     // "good underrun", not a stuck client
     processPacket(true);
     return true;
 }
-
-ZERO_OUTPUT:
-    memset(mXfrBuffer, 0, mPeerBytes);
-
-OUTPUT:
-    return false;
-};
 
 //*******************************************************************************
 void Regulator::processPacket(bool glitch)
