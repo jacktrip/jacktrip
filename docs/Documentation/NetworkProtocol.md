@@ -11,7 +11,7 @@ This document describes JackTrip’s **on-the-wire protocol** as implemented in 
 
 - **UDP (audio)**: real-time audio is sent as UDP datagrams containing `PacketHeader` + raw audio payload.
 - **UDP (control)**: a small fixed-size “stop” datagram is used to signal shutdown.
-- **TCP (hub/ping-server handshake)**: a short-lived TCP connection is used to exchange UDP port information (and optionally do TLS + credentials).
+- **TCP (hub/ping-server handshake)**: a short-lived TCP connection is used to exchange ephemeral UDP port information (and optionally do TLS + credentials). The client sends 4 bytes representing the port number it is binding to, and the server responds by sending 4 bytes representing its own port number.
 
 ---
 
@@ -21,7 +21,7 @@ This document describes JackTrip’s **on-the-wire protocol** as implemented in 
 
 Each UDP datagram carries one of:
 
-- **Audio datagram**: one or more **full packets** (header + audio payload). When redundancy is disabled, there is exactly one full packet per UDP datagram. When redundancy is enabled, multiple full packets are concatenated into a single UDP datagram (see “UDP redundancy”).
+- **Audio datagram**: one or more **full packets** (header + audio payload). When redundancy is disabled, there is exactly one full packet per UDP datagram. When redundancy is enabled, multiple full packets are concatenated into a single UDP datagram to provide forward error correction (FEC) (see “UDP redundancy”).
 - **Stop/control datagram**: exactly 63 bytes of `0xFF` (see “UDP stop/control datagram”).
 
 ### Packet header types
@@ -56,12 +56,14 @@ Fields (in order):
   - both sides are using compatible ABI/layout for the struct, and
   - both sides are on the same endianness (typically **little-endian** on modern desktop platforms).
 - **Channel fields are asymmetric**: the implementation uses these fields to convey “incoming vs outgoing” channel counts, including a couple of sentinel behaviors:
-  - `NumIncomingChannelsFromNet` is populated from local *output* channel count.
-  - `NumOutgoingChannelsToNet` may be set to `0` when in/out channel counts match, or to `0xFF` when there are zero input channels.
+  - `NumIncomingChannelsFromNet` is populated from local *audio interface output* channel count.
+  - `NumOutgoingChannelsToNet` may be set to `0` when in/out channel counts match, or to `0xFF` when there are zero audio interface input channels.
 
 These behaviors come from `DefaultHeader::fillHeaderCommonFromAudio()` in `src/PacketHeader.cpp`.
 
 ### JamLink header (`JAMLINK`)
+
+Please note that JamLink is an obsolete device.
 
 JamLink uses a compact header:
 
@@ -85,9 +87,7 @@ No header; the UDP payload is raw audio data only.
 
 For a single full packet (no redundancy), the UDP payload length is:
 
-\[
-\text{headerBytes} + (N \times C \times \text{bytesPerSample})
-\]
+$$\text{headerBytes} + (N \times C \times \text{bytesPerSample})$$
 
 Where:
 
@@ -237,4 +237,10 @@ On supported platforms, JackTrip attempts to mark UDP packets as “voice” tra
 
 See `src/UdpDataProtocol.cpp`.
 
+---
 
+## References
+
+For additional context on JackTrip's network behavior and interpretation of debug output (`-V` flag):
+
+Chafe, C. (2018). I am Streaming in a Room. *Frontiers in Digital Humanities*, Volume 5. https://doi.org/10.3389/fdigh.2018.00027
