@@ -159,6 +159,9 @@ else
 endif
 deps += qt_core_deps
 
+# Get Qt installation prefix for cmake subprojects
+qt_prefix = run_command(qmake, '-query', 'QT_INSTALL_PREFIX', check : true).stdout().strip()
+
 if get_option('nogui') == true or (get_option('noclassic') == true and get_option('novs') == true)
 	# command line only
 	defines += '-DNO_GUI'
@@ -386,6 +389,7 @@ endif
 
 # WebRTC Data Channel Support (requires libdatachannel)
 found_libdatachannel = false
+libdatachannel_extra_deps = []
 if get_option('libdatachannel').allowed()
 	# First try to find libdatachannel as a system dependency
 	libdatachannel_dep = dependency('libdatachannel', required: false)
@@ -400,6 +404,8 @@ if get_option('libdatachannel').allowed()
 			opt_var.add_cmake_defines({'CMAKE_BUILD_TYPE': 'Debug'})
 		endif
 		opt_var.add_cmake_defines({'CMAKE_POSITION_INDEPENDENT_CODE': 'ON'})
+		# Build static library only
+		opt_var.add_cmake_defines({'BUILD_SHARED_LIBS': 'OFF'})
 		# Disable features we don't need to speed up build
 		opt_var.add_cmake_defines({'NO_WEBSOCKET': 'ON'})
 		opt_var.add_cmake_defines({'NO_MEDIA': 'ON'})
@@ -407,10 +413,17 @@ if get_option('libdatachannel').allowed()
 		opt_var.add_cmake_defines({'NO_TESTS': 'ON'})
 		opt_var.add_cmake_defines({'USE_GNUTLS': '0'})
 		opt_var.add_cmake_defines({'USE_NICE': '0'})
+		opt_var.add_cmake_defines({'CMAKE_PREFIX_PATH': qt_prefix})
 		libdatachannel_subproject = cmake.subproject('libdatachannel', options: opt_var, required: false)
 		if libdatachannel_subproject.found()
 			libdatachannel_dep = libdatachannel_subproject.dependency('datachannel')
 			found_libdatachannel = libdatachannel_dep.found()
+			# When building as a static library, we need to also link the private
+			# dependencies (libjuice and usrsctp) that libdatachannel uses internally
+			if found_libdatachannel
+				libdatachannel_extra_deps += libdatachannel_subproject.dependency('juice')
+				libdatachannel_extra_deps += libdatachannel_subproject.dependency('usrsctp')
+			endif
 		endif
 		if not found_libdatachannel and not get_option('libdatachannel').auto()
 			error('libdatachannel requested but could not be configured')
@@ -420,6 +433,7 @@ endif
 if found_libdatachannel
 	defines += '-DWEBRTC_SUPPORT'
 	deps += libdatachannel_dep
+	deps += libdatachannel_extra_deps
 	src += [
 		'src/webrtc/WebRtcDataProtocol.cpp',
 		'src/webrtc/WebRtcPeerConnection.cpp',
@@ -437,34 +451,16 @@ endif
 # WebTransport support (requires msquic)
 found_msquic = false
 if get_option('msquic').allowed()
-	# First try to find msquic as a system dependency
+	# Try to get msquic dependency (from system or subproject with native meson.build)
 	msquic_dep = dependency('msquic', required: false)
-	if msquic_dep.found()
-		found_msquic = true
-	else
-		# Try to build msquic as a subproject
-		opt_var = cmake.subproject_options()
-		if get_option('buildtype') == 'release'
-			opt_var.add_cmake_defines({'CMAKE_BUILD_TYPE': 'Release'})
-		else
-			opt_var.add_cmake_defines({'CMAKE_BUILD_TYPE': 'Debug'})
-		endif
-		opt_var.add_cmake_defines({'CMAKE_POSITION_INDEPENDENT_CODE': 'ON'})
-		# Configure msquic build options
-		opt_var.add_cmake_defines({'QUIC_BUILD_SHARED': 'OFF'})
-		opt_var.add_cmake_defines({'QUIC_BUILD_TEST': 'OFF'})
-		opt_var.add_cmake_defines({'QUIC_BUILD_TOOLS': 'OFF'})
-		opt_var.add_cmake_defines({'QUIC_BUILD_PERF': 'OFF'})
-		opt_var.add_cmake_defines({'QUIC_ENABLE_LOGGING': 'OFF'})
-		msquic_subproject = cmake.subproject('msquic', options: opt_var, required: false)
+	if not msquic_dep.found()
+		# Try the subproject with native meson.build overlay
+		msquic_subproject = subproject('msquic', required: get_option('msquic').enabled(), default_options: ['qt_prefix=' + qt_prefix])
 		if msquic_subproject.found()
-			msquic_dep = msquic_subproject.dependency('msquic')
-			found_msquic = msquic_dep.found()
-		endif
-		if not found_msquic and not get_option('msquic').auto()
-			error('msquic requested but could not be configured')
+			msquic_dep = msquic_subproject.get_variable('msquic_dep')
 		endif
 	endif
+	found_msquic = msquic_dep.found()
 endif
 if found_msquic
 	defines += '-DWEBTRANSPORT_SUPPORT'

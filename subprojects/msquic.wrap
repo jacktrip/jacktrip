@@ -1,8 +1,9 @@
 [wrap-file]
-directory = msquic-2.5.6
-source_url = https://files.jacktrip.org/contrib/msquic-2.5.6.tar.gz
-source_filename = msquic-2.5.6.tar.gz
-source_hash = b2af405697823f6f31df24e3eddc964e6c322dcd55c142d2aa60a890fc7d5bcf
+directory = msquic
+source_url = https://files.jacktrip.org/contrib/msquic-85d4a4a5a79a04dc3bf5252156a7a3acb6dfe322.tar.gz
+source_filename = msquic-85d4a4a5a79a04dc3bf5252156a7a3acb6dfe322.tar.gz
+source_hash = 585d79a38e1499a3a33142bbc4f243b7b82ae83eab7d16bbeac58e0db185b1ab
+patch_directory = msquic
 
 [provide]
 dependency_names = msquic

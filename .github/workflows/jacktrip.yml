@@ -142,6 +142,7 @@ jobs:
             docker-platform: linux/amd64
             meson-library-type: static
             qt-version: '6.8.3'
+            qt-download-commit: '344bf8c'
             qt-type: 'static'
             qt-arch: 'amd64'
 
@@ -161,6 +162,7 @@ jobs:
             docker-platform: linux/arm64
             meson-library-type: static
             qt-version: '6.8.3'
+            qt-download-commit: '344bf8c'
             qt-type: 'static'
             qt-arch: 'arm64'
 

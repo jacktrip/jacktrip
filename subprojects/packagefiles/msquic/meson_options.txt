@@ -1,0 +1,1 @@
+option('qt_prefix', type: 'string', value: '', description: 'Path to Qt installation prefix for OpenSSL discovery')

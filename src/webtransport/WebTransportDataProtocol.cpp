@@ -211,7 +211,7 @@ void WebTransportDataProtocol::releaseSendContext(SendContext* ctx)
 }
 
 //*******************************************************************************
-void WebTransportDataProtocol::sendPacketDirect(const int8_t* audioPacket, int audioPacketSize)
+void WebTransportDataProtocol::sendPacketDirect(const int8_t* audioPacket, [[maybe_unused]] int audioPacketSize)
 {
     // Called from audio thread - must be real-time safe!
     // Uses buffer pool to avoid heap allocations
