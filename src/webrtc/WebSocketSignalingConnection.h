@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2008-2024 Juan-Pablo Caceres, Chris Chafe.
+  Copyright (c) 2008-2026 Juan-Pablo Caceres, Chris Chafe.
   SoundWIRE group at CCRMA, Stanford University.
 
   Permission is hereby granted, free of charge, to any person
@@ -31,7 +31,7 @@
 
 /**
  * \file WebSocketSignalingConnection.h
- * \author JackTrip Contributors
+ * \author Mike Dickey + Claude AI
  * \date 2026
  */
 
@@ -41,6 +41,7 @@
 #include <QByteArray>
 #include <QObject>
 #include <QSslSocket>
+#include <QString>
 
 #include "WebRtcSignalingProtocol.h"
 
@@ -89,6 +90,11 @@ class WebSocketSignalingConnection : public QObject
      */
     bool isOpen() const;
 
+    /** \brief Get the client name from the WebSocket URL
+     * \return The client name if provided in URL query parameters, empty string otherwise
+     */
+    QString getClientName() const { return mClientName; }
+
     /** \brief Send a WebRTC signaling message
      * \param message The message to send (will be WebSocket-framed)
      */
@@ -106,7 +112,8 @@ class WebSocketSignalingConnection : public QObject
     /** \brief Emitted when a complete signaling message is received
      * \param message The decoded signaling message
      */
-    void signalingMessageReceived(const WebRtcSignalingProtocol::SignalingMessage& message);
+    void signalingMessageReceived(
+        const WebRtcSignalingProtocol::SignalingMessage& message);
 
     /** \brief Emitted when the connection is closed or fails
      */
@@ -146,10 +153,11 @@ class WebSocketSignalingConnection : public QObject
      */
     QByteArray encodeWebSocketFrame(const QByteArray& payload);
 
-    QSslSocket* mSocket;         ///< The SSL socket (owned by this object)
-    int mWorkerId;               ///< Associated worker ID (-1 if not assigned)
-    QByteArray mBuffer;          ///< Buffer for incomplete WebSocket frames
-    bool mUpgradeComplete;       ///< true after WebSocket upgrade handshake
+    QSslSocket* mSocket;    ///< The SSL socket (owned by this object)
+    int mWorkerId;          ///< Associated worker ID (-1 if not assigned)
+    QByteArray mBuffer;     ///< Buffer for incomplete WebSocket frames
+    bool mUpgradeComplete;  ///< true after WebSocket upgrade handshake
+    QString mClientName;    ///< Client name from URL query parameters
 };
 
 #endif  // __WEBSOCKETSIGNALINGCONNECTION_H__

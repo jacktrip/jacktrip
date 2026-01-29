@@ -61,12 +61,13 @@
 #endif
 
 #ifdef WEBTRANSPORT_SUPPORT
-#include "webtransport/WebTransportSession.h"
 #include <msquic.h>
+
+#include "webtransport/WebTransportSession.h"
 
 // Static callback handlers for msquic
 static QUIC_STATUS QUIC_API ListenerCallback(HQUIC listener, void* context,
-                                              QUIC_LISTENER_EVENT* event)
+                                             QUIC_LISTENER_EVENT* event)
 {
     UdpHubListener* hub = static_cast<UdpHubListener*>(context);
     if (hub) {
@@ -76,7 +77,7 @@ static QUIC_STATUS QUIC_API ListenerCallback(HQUIC listener, void* context,
 }
 
 static QUIC_STATUS QUIC_API ServerConnectionCallback(HQUIC connection, void* context,
-                                                      QUIC_CONNECTION_EVENT* event)
+                                                     QUIC_CONNECTION_EVENT* event)
 {
     UdpHubListener* hub = static_cast<UdpHubListener*>(context);
     if (hub) {
@@ -86,8 +87,8 @@ static QUIC_STATUS QUIC_API ServerConnectionCallback(HQUIC connection, void* con
 }
 #endif
 
-using std::cout;
 using std::cerr;
+using std::cout;
 using std::endl;
 
 bool UdpHubListener::sSigInt = false;
@@ -149,10 +150,10 @@ UdpHubListener::UdpHubListener(int server_port, int server_udp_port, QObject* pa
     mUseRtUdpPriority = false;
 
 #ifdef WEBTRANSPORT_SUPPORT
-    mQuicApi = nullptr;
-    mQuicRegistration = nullptr;
+    mQuicApi           = nullptr;
+    mQuicRegistration  = nullptr;
     mQuicConfiguration = nullptr;
-    mQuicListener = nullptr;
+    mQuicListener      = nullptr;
 #endif
 }
 
@@ -263,6 +264,10 @@ void UdpHubListener::start()
 
     startOscServer();
 
+#ifdef WEBRTC_SUPPORT
+    cout << "JackTrip HUB SERVER: WebRTC data channels enabled" << endl;
+#endif
+
 #ifdef WEBTRANSPORT_SUPPORT
     // Initialize msquic for WebTransport (QUIC) connections
     // Use the same certificate files as SSL authentication
@@ -279,8 +284,7 @@ void UdpHubListener::start()
         cerr << "JackTrip HUB SERVER: WebTransport disabled (using cert for auth only)"
              << endl;
     } else {
-        cout << "JackTrip HUB SERVER: WebTransport disabled (no TLS certificate)"
-             << endl;
+        cout << "JackTrip HUB SERVER: WebTransport disabled (no TLS certificate)" << endl;
     }
 #endif
 
@@ -324,9 +328,10 @@ void UdpHubListener::readyRead(QSslSocket* clientConnection)
             // Create a WebRTC worker - this will create a peer connection
             // that manages the signaling internally
             // Note: ownership of clientConnection is transferred to the peer connection
-            int workerId = createWebRtcWorker(clientConnection, QStringLiteral("webrtc"));
+            int workerId = createWebRtcWorker(clientConnection);
             if (workerId < 0) {
-                cerr << "JackTrip HUB SERVER: No available slots for WebRTC client" << endl;
+                cerr << "JackTrip HUB SERVER: No available slots for WebRTC client"
+                     << endl;
                 clientConnection->close();
                 clientConnection->deleteLater();
             }
@@ -424,10 +429,11 @@ void UdpHubListener::readyRead(QSslSocket* clientConnection)
 
     // Assign server port and send it to Client
     cout << "JackTrip HUB SERVER: Sending Final UDP Port to Client: "
-            << clientName.toStdString() << " = " << mJTWorkers->at(id)->getServerPort()
-            << endl;
+         << clientName.toStdString() << " = " << mJTWorkers->at(id)->getServerPort()
+         << endl;
 
-    int send_port_result = sendUdpPort(clientConnection, mJTWorkers->at(id)->getServerPort());
+    int send_port_result =
+        sendUdpPort(clientConnection, mJTWorkers->at(id)->getServerPort());
 
     // Close and mark socket for deletion
     // ----------------------------------
@@ -659,7 +665,7 @@ int UdpHubListener::createWorker(QString& clientName)
     }
     worker->setBufferStrategy(mBufferStrategy);
     worker->setNetIssuesSimulation(mSimulatedLossRate, mSimulatedJitterRate,
-                                    mSimulatedDelayRel);
+                                   mSimulatedDelayRel);
     worker->setBroadcast(mBroadcastQueue);
     worker->setUseRtUdpPriority(mUseRtUdpPriority);
 
@@ -714,15 +720,17 @@ void UdpHubListener::handleWorkerRemoval()
     // Get the worker that emitted the signal
     JackTripWorker* worker = qobject_cast<JackTripWorker*>(sender());
     if (!worker) {
-        cerr << "UdpHubListener::handleWorkerRemoval: ERROR - sender is not a JackTripWorker" << endl;
+        cerr << "UdpHubListener::handleWorkerRemoval: ERROR - sender is not a "
+                "JackTripWorker"
+             << endl;
         return;
     }
-    
+
     int id = worker->getID();
     if (gVerboseFlag) {
         cout << "UdpHubListener: Removing worker " << id << endl;
     }
-    
+
     releaseThread(id);
 }
 
@@ -822,12 +830,14 @@ void UdpHubListener::stopAllThreads()
     }
 }
 
-//*******************************************************************************
-int UdpHubListener::createWebRtcWorker(QSslSocket* signalingSocket, const QString& clientName)
-{
 #ifdef WEBRTC_SUPPORT
-    QString name = clientName;
-    int id = createWorker(name);
+//*******************************************************************************
+int UdpHubListener::createWebRtcWorker(QSslSocket* signalingSocket)
+{
+    // Create worker with a temporary placeholder name
+    // It will be updated with the actual client name after WebSocket upgrade
+    QString tempName = QStringLiteral("");
+    int id           = createWorker(tempName);
     if (id < 0) {
         return -1;  // No available slots
     }
@@ -847,22 +857,17 @@ int UdpHubListener::createWebRtcWorker(QSslSocket* signalingSocket, const QStrin
     // Note: We don't call setJackTrip yet because we don't have the data channel.
     // The worker will be started when the data channel opens (handled by worker).
     return id;
-#else
-    Q_UNUSED(signalingSocket);
-    Q_UNUSED(clientName);
-    return -1;
-#endif  // WEBRTC_SUPPORT
 }
+#endif  // WEBRTC_SUPPORT
 
-//*******************************************************************************
 #ifdef WEBTRANSPORT_SUPPORT
+//*******************************************************************************
 int UdpHubListener::createWebTransportWorker(HQUIC connection,
-                                              const QHostAddress& peerAddress,
-                                              quint16 peerPort,
-                                              const QString& clientName)
+                                             const QHostAddress& peerAddress,
+                                             quint16 peerPort)
 {
-    QString name = clientName;
-    int id = createWorker(name);
+    QString tempName = QStringLiteral("");
+    int id           = createWorker(tempName);
     if (id < 0) {
         cerr << "UdpHubListener: createWorker failed - no available slots" << endl;
         return -1;  // No available slots
@@ -899,16 +904,14 @@ bool UdpHubListener::initMsQuic()
     // Open the msquic library
     QUIC_STATUS status = MsQuicOpen2(&mQuicApi);
     if (QUIC_FAILED(status)) {
-        cerr << "UdpHubListener: Failed to open msquic, status: 0x" << std::hex
-             << status << std::dec << endl;
+        cerr << "UdpHubListener: Failed to open msquic, status: 0x" << std::hex << status
+             << std::dec << endl;
         return false;
     }
 
     // Create a registration for "JackTrip"
-    const QUIC_REGISTRATION_CONFIG regConfig = {
-        "JackTrip",
-        QUIC_EXECUTION_PROFILE_LOW_LATENCY
-    };
+    const QUIC_REGISTRATION_CONFIG regConfig = {"JackTrip",
+                                                QUIC_EXECUTION_PROFILE_LOW_LATENCY};
     status = mQuicApi->RegistrationOpen(&regConfig, &mQuicRegistration);
     if (QUIC_FAILED(status)) {
         cerr << "UdpHubListener: Failed to create msquic registration, status: 0x"
@@ -919,23 +922,22 @@ bool UdpHubListener::initMsQuic()
     }
 
     // Configure ALPN for HTTP/3 (WebTransport)
-    const char* alpn = "h3";
+    const char* alpn       = "h3";
     QUIC_BUFFER alpnBuffer = {
         static_cast<uint32_t>(strlen(alpn)),
-        const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(alpn))
-    };
+        const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(alpn))};
 
     // Create configuration with TLS settings
     QUIC_SETTINGS settings{};
     std::memset(&settings, 0, sizeof(settings));
-    settings.IdleTimeoutMs = 30000;  // 30 second idle timeout
-    settings.IsSet.IdleTimeoutMs = TRUE;
-    settings.DatagramReceiveEnabled = TRUE;
+    settings.IdleTimeoutMs                = 30000;  // 30 second idle timeout
+    settings.IsSet.IdleTimeoutMs          = TRUE;
+    settings.DatagramReceiveEnabled       = TRUE;
     settings.IsSet.DatagramReceiveEnabled = TRUE;
-    settings.PeerBidiStreamCount = 10;
-    settings.IsSet.PeerBidiStreamCount = TRUE;
-    settings.PeerUnidiStreamCount = 10;
-    settings.IsSet.PeerUnidiStreamCount = TRUE;
+    settings.PeerBidiStreamCount          = 10;
+    settings.IsSet.PeerBidiStreamCount    = TRUE;
+    settings.PeerUnidiStreamCount         = 10;
+    settings.IsSet.PeerUnidiStreamCount   = TRUE;
 
     status = mQuicApi->ConfigurationOpen(mQuicRegistration, &alpnBuffer, 1, &settings,
                                          sizeof(settings), nullptr, &mQuicConfiguration);
@@ -944,7 +946,7 @@ bool UdpHubListener::initMsQuic()
              << std::hex << status << std::dec << " (" << status << ")" << endl;
         mQuicApi->RegistrationClose(mQuicRegistration);
         MsQuicClose(mQuicApi);
-        mQuicApi = nullptr;
+        mQuicApi          = nullptr;
         mQuicRegistration = nullptr;
         return false;
     }
@@ -954,28 +956,29 @@ bool UdpHubListener::initMsQuic()
 
     QUIC_CREDENTIAL_CONFIG credConfig{};
     std::memset(&credConfig, 0, sizeof(credConfig));
-    credConfig.Type = QUIC_CREDENTIAL_TYPE_CERTIFICATE_FILE;
+    credConfig.Type  = QUIC_CREDENTIAL_TYPE_CERTIFICATE_FILE;
     credConfig.Flags = QUIC_CREDENTIAL_FLAG_NONE;
 
     QUIC_CERTIFICATE_FILE certFile{};
     std::memset(&certFile, 0, sizeof(certFile));
-    QByteArray certPath = mCertFile.toUtf8();
-    QByteArray keyPath = mKeyFile.toUtf8();
-    certFile.CertificateFile = certPath.constData();
-    certFile.PrivateKeyFile = keyPath.constData();
+    QByteArray certPath        = mCertFile.toUtf8();
+    QByteArray keyPath         = mKeyFile.toUtf8();
+    certFile.CertificateFile   = certPath.constData();
+    certFile.PrivateKeyFile    = keyPath.constData();
     credConfig.CertificateFile = &certFile;
 
     status = mQuicApi->ConfigurationLoadCredential(mQuicConfiguration, &credConfig);
     if (QUIC_FAILED(status)) {
         cerr << "UdpHubListener: Failed to load TLS certificate for WebTransport, "
-             << "status: 0x" << std::hex << status << std::dec << " (" << status << ")" << endl;
+             << "status: 0x" << std::hex << status << std::dec << " (" << status << ")"
+             << endl;
         cerr << "  Certificate: " << mCertFile.toStdString() << endl;
         cerr << "  Private key: " << mKeyFile.toStdString() << endl;
         mQuicApi->ConfigurationClose(mQuicConfiguration);
         mQuicApi->RegistrationClose(mQuicRegistration);
         MsQuicClose(mQuicApi);
-        mQuicApi = nullptr;
-        mQuicRegistration = nullptr;
+        mQuicApi           = nullptr;
+        mQuicRegistration  = nullptr;
         mQuicConfiguration = nullptr;
         return false;
     }
@@ -986,32 +989,32 @@ bool UdpHubListener::initMsQuic()
     QuicAddrSetFamily(&address, QUIC_ADDRESS_FAMILY_UNSPEC);
     QuicAddrSetPort(&address, static_cast<uint16_t>(mServerPort));
 
-    status = mQuicApi->ListenerOpen(mQuicRegistration, ListenerCallback, this,
-                                    &mQuicListener);
+    status =
+        mQuicApi->ListenerOpen(mQuicRegistration, ListenerCallback, this, &mQuicListener);
     if (QUIC_FAILED(status)) {
-        cerr << "UdpHubListener: Failed to create QUIC listener, status: 0x"
-             << std::hex << status << std::dec << endl;
+        cerr << "UdpHubListener: Failed to create QUIC listener, status: 0x" << std::hex
+             << status << std::dec << endl;
         mQuicApi->ConfigurationClose(mQuicConfiguration);
         mQuicApi->RegistrationClose(mQuicRegistration);
         MsQuicClose(mQuicApi);
-        mQuicApi = nullptr;
-        mQuicRegistration = nullptr;
+        mQuicApi           = nullptr;
+        mQuicRegistration  = nullptr;
         mQuicConfiguration = nullptr;
         return false;
     }
 
     status = mQuicApi->ListenerStart(mQuicListener, &alpnBuffer, 1, &address);
     if (QUIC_FAILED(status)) {
-        cerr << "UdpHubListener: Failed to start QUIC listener, status: 0x"
-             << std::hex << status << std::dec << endl;
+        cerr << "UdpHubListener: Failed to start QUIC listener, status: 0x" << std::hex
+             << status << std::dec << endl;
         mQuicApi->ListenerClose(mQuicListener);
         mQuicApi->ConfigurationClose(mQuicConfiguration);
         mQuicApi->RegistrationClose(mQuicRegistration);
         MsQuicClose(mQuicApi);
-        mQuicApi = nullptr;
-        mQuicRegistration = nullptr;
+        mQuicApi           = nullptr;
+        mQuicRegistration  = nullptr;
         mQuicConfiguration = nullptr;
-        mQuicListener = nullptr;
+        mQuicListener      = nullptr;
         return false;
     }
 
@@ -1046,58 +1049,55 @@ unsigned int UdpHubListener::handleListenerEvent(HQUIC listener, void* eventPtr)
     QUIC_LISTENER_EVENT* event = static_cast<QUIC_LISTENER_EVENT*>(eventPtr);
 
     switch (event->Type) {
-        case QUIC_LISTENER_EVENT_NEW_CONNECTION: {
-            // New QUIC connection received
-            HQUIC connection = event->NEW_CONNECTION.Connection;
+    case QUIC_LISTENER_EVENT_NEW_CONNECTION: {
+        // New QUIC connection received
+        HQUIC connection = event->NEW_CONNECTION.Connection;
 
-            // Get peer address
-            QUIC_ADDR peerAddr;
-            uint32_t addrLen = sizeof(peerAddr);
-            mQuicApi->GetParam(connection, QUIC_PARAM_CONN_REMOTE_ADDRESS,
-                               &addrLen, &peerAddr);
+        // Get peer address
+        QUIC_ADDR peerAddr;
+        uint32_t addrLen = sizeof(peerAddr);
+        mQuicApi->GetParam(connection, QUIC_PARAM_CONN_REMOTE_ADDRESS, &addrLen,
+                           &peerAddr);
 
-            QHostAddress peerAddress;
-            quint16 peerPort = 0;
+        QHostAddress peerAddress;
+        quint16 peerPort = 0;
 
-            if (QuicAddrGetFamily(&peerAddr) == QUIC_ADDRESS_FAMILY_INET) {
-                peerAddress.setAddress(ntohl(peerAddr.Ipv4.sin_addr.s_addr));
-                peerPort = ntohs(peerAddr.Ipv4.sin_port);
-            } else if (QuicAddrGetFamily(&peerAddr) == QUIC_ADDRESS_FAMILY_INET6) {
-                peerAddress.setAddress(
-                    reinterpret_cast<quint8*>(&peerAddr.Ipv6.sin6_addr));
-                peerPort = ntohs(peerAddr.Ipv6.sin6_port);
-            }
-
-            // Set the connection callback to handle this connection
-            mQuicApi->SetCallbackHandler(connection, (void*)ServerConnectionCallback,
-                                         this);
-
-            // Accept the connection with our configuration
-            QUIC_STATUS status =
-                mQuicApi->ConnectionSetConfiguration(connection, mQuicConfiguration);
-            if (QUIC_FAILED(status)) {
-                cerr << "UdpHubListener: Failed to set connection configuration, "
-                     << "status: 0x" << std::hex << status << std::dec << " (" << status << ")" << endl;
-                return QUIC_STATUS_CONNECTION_REFUSED;
-            }
-
-            // Create a WebTransport worker for this connection
-            int workerId = createWebTransportWorker(connection, peerAddress, peerPort,
-                                                    QStringLiteral("webtransport"));
-            if (workerId < 0) {
-                cerr << "UdpHubListener: No available slots for WebTransport client"
-                     << endl;
-                return QUIC_STATUS_CONNECTION_REFUSED;
-            }
-
-            return QUIC_STATUS_SUCCESS;
+        if (QuicAddrGetFamily(&peerAddr) == QUIC_ADDRESS_FAMILY_INET) {
+            peerAddress.setAddress(ntohl(peerAddr.Ipv4.sin_addr.s_addr));
+            peerPort = ntohs(peerAddr.Ipv4.sin_port);
+        } else if (QuicAddrGetFamily(&peerAddr) == QUIC_ADDRESS_FAMILY_INET6) {
+            peerAddress.setAddress(reinterpret_cast<quint8*>(&peerAddr.Ipv6.sin6_addr));
+            peerPort = ntohs(peerAddr.Ipv6.sin6_port);
         }
 
-        case QUIC_LISTENER_EVENT_STOP_COMPLETE:
-            break;
+        // Set the connection callback to handle this connection
+        mQuicApi->SetCallbackHandler(connection, (void*)ServerConnectionCallback, this);
 
-        default:
-            break;
+        // Accept the connection with our configuration
+        QUIC_STATUS status =
+            mQuicApi->ConnectionSetConfiguration(connection, mQuicConfiguration);
+        if (QUIC_FAILED(status)) {
+            cerr << "UdpHubListener: Failed to set connection configuration, "
+                 << "status: 0x" << std::hex << status << std::dec << " (" << status
+                 << ")" << endl;
+            return QUIC_STATUS_CONNECTION_REFUSED;
+        }
+
+        // Create a WebTransport worker for this connection
+        int workerId = createWebTransportWorker(connection, peerAddress, peerPort);
+        if (workerId < 0) {
+            cerr << "UdpHubListener: No available slots for WebTransport client" << endl;
+            return QUIC_STATUS_CONNECTION_REFUSED;
+        }
+
+        return QUIC_STATUS_SUCCESS;
+    }
+
+    case QUIC_LISTENER_EVENT_STOP_COMPLETE:
+        break;
+
+    default:
+        break;
     }
 
     return QUIC_STATUS_SUCCESS;
@@ -1111,24 +1111,27 @@ unsigned int UdpHubListener::handleQuicConnection(HQUIC /* connection */, void* 
     QUIC_CONNECTION_EVENT* event = static_cast<QUIC_CONNECTION_EVENT*>(eventPtr);
 
     switch (event->Type) {
-        case QUIC_CONNECTION_EVENT_SHUTDOWN_INITIATED_BY_TRANSPORT:
-            cerr << "UdpHubListener: Connection shutdown by transport (before session created)" << endl;
-            cerr << "  Status: 0x" << std::hex << event->SHUTDOWN_INITIATED_BY_TRANSPORT.Status
-                 << std::dec << " (" << event->SHUTDOWN_INITIATED_BY_TRANSPORT.Status << ")" << endl;
-            break;
+    case QUIC_CONNECTION_EVENT_SHUTDOWN_INITIATED_BY_TRANSPORT:
+        cerr
+            << "UdpHubListener: Connection shutdown by transport (before session created)"
+            << endl;
+        cerr << "  Status: 0x" << std::hex
+             << event->SHUTDOWN_INITIATED_BY_TRANSPORT.Status << std::dec << " ("
+             << event->SHUTDOWN_INITIATED_BY_TRANSPORT.Status << ")" << endl;
+        break;
 
-        case QUIC_CONNECTION_EVENT_SHUTDOWN_INITIATED_BY_PEER:
-            if (gVerboseFlag)
-                cout << "UdpHubListener: Connection shutdown by peer" << endl;
-            break;
+    case QUIC_CONNECTION_EVENT_SHUTDOWN_INITIATED_BY_PEER:
+        if (gVerboseFlag)
+            cout << "UdpHubListener: Connection shutdown by peer" << endl;
+        break;
 
-        case QUIC_CONNECTION_EVENT_SHUTDOWN_COMPLETE:
-            if (gVerboseFlag)
-                cout << "UdpHubListener: Connection shutdown complete" << endl;
-            break;
+    case QUIC_CONNECTION_EVENT_SHUTDOWN_COMPLETE:
+        if (gVerboseFlag)
+            cout << "UdpHubListener: Connection shutdown complete" << endl;
+        break;
 
-        default:
-            break;
+    default:
+        break;
     }
 
     return QUIC_STATUS_SUCCESS;

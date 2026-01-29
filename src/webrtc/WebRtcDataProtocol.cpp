@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2008-2024 Juan-Pablo Caceres, Chris Chafe.
+  Copyright (c) 2008-2026 Juan-Pablo Caceres, Chris Chafe.
   SoundWIRE group at CCRMA, Stanford University.
 
   Permission is hereby granted, free of charge, to any person
@@ -31,8 +31,8 @@
 
 /**
  * \file WebRtcDataProtocol.cpp
- * \author JackTrip Contributors
- * \date 2024
+ * \author Mike Dickey + Claude AI
+ * \date 2026
  */
 
 #include "WebRtcDataProtocol.h"
@@ -40,14 +40,13 @@
 #include <QThread>
 #include <cstring>
 #include <iostream>
+#include <rtc/rtc.hpp>
 
 #include "../JackTrip.h"
 #include "../jacktrip_globals.h"
 
-#include <rtc/rtc.hpp>
-
-using std::cout;
 using std::cerr;
+using std::cout;
 using std::endl;
 
 //*******************************************************************************
@@ -75,17 +74,22 @@ WebRtcDataProtocol::WebRtcDataProtocol(JackTrip* jacktrip, const runModeT runmod
                          &JackTrip::slotUdpWaitingTooLongClientGoneProbably,
                          Qt::QueuedConnection);
     }
-    
+
     // Setup data channel callbacks
     if (mDataChannel) {
         mChannelOpen = mDataChannel->isOpen();
 
-        mDataChannel->onOpen([this]() { onDataChannelOpen(); });
+        mDataChannel->onOpen([this]() {
+            onDataChannelOpen();
+        });
 
-        mDataChannel->onClosed([this]() { onDataChannelClosed(); });
+        mDataChannel->onClosed([this]() {
+            onDataChannelClosed();
+        });
 
-        mDataChannel->onError(
-            [this](std::string error) { onDataChannelError(error); });
+        mDataChannel->onError([this](std::string error) {
+            onDataChannelError(error);
+        });
 
         mDataChannel->onMessage([this](rtc::message_variant data) {
             if (std::holds_alternative<rtc::binary>(data)) {
@@ -110,7 +114,7 @@ void WebRtcDataProtocol::stop()
 {
     mChannelOpen = false;
     DataProtocol::stop();
-  }
+}
 
 //*******************************************************************************
 void WebRtcDataProtocol::setPeerAddress(const char* /*peerHostOrIP*/)
@@ -184,8 +188,9 @@ void WebRtcDataProtocol::onDataChannelMessage(const std::vector<std::byte>& data
     // received the first packet and configured all peer settings, so we can
     // process all packets immediately without special first-packet handling
     if (data.size() > 0 && mChans > 0) {
-        processReceivedPacket(const_cast<int8_t*>(reinterpret_cast<const int8_t*>(data.data())),
-                              data.size(), data.size());
+        processReceivedPacket(
+            const_cast<int8_t*>(reinterpret_cast<const int8_t*>(data.data())),
+            data.size(), data.size());
     }
 }
 
@@ -207,8 +212,6 @@ bool WebRtcDataProtocol::isChannelOpen() const
     return mChannelOpen.load();
 }
 
-
-
 //*******************************************************************************
 int WebRtcDataProtocol::sendPacket(const char* buf, const size_t n)
 {
@@ -217,9 +220,6 @@ int WebRtcDataProtocol::sendPacket(const char* buf, const size_t n)
     }
 
     try {
-        // Send directly using the pointer+size overload to avoid any vector allocation
-        // libdatachannel's send(const byte* data, size_t size) accepts raw pointers
-        // This completely eliminates allocations in the audio send hot path
         mDataChannel->send(reinterpret_cast<const std::byte*>(buf), n);
         return static_cast<int>(n);
 
@@ -259,7 +259,6 @@ void WebRtcDataProtocol::run()
     mAudioPacket.reset(new int8_t[audio_packet_size]);
     std::memset(mAudioPacket.get(), 0, audio_packet_size);
 
-    int full_packet_size;
     mSmplSize = mJackTrip->getAudioBitResolution() / 8;
 
     if (mRunMode == RECEIVER) {
@@ -269,18 +268,19 @@ void WebRtcDataProtocol::run()
     } else {
         mChans = mJackTrip->getNumInputChannels();
         if (mChans == 0) {
-            cerr << "WebRtcDataProtocol::run: ERROR - mChans is 0 for SENDER, exiting" 
+            cerr << "WebRtcDataProtocol::run: ERROR - mChans is 0 for SENDER, exiting"
                  << endl;
             return;
         }
     }
-    full_packet_size = mJackTrip->getReceivePacketSizeInBytes();
+    int full_packet_size = mJackTrip->getReceivePacketSizeInBytes();
     mFullPacket.reset(new int8_t[full_packet_size]);
     std::memset(mFullPacket.get(), 0, full_packet_size);
     mJackTrip->putHeaderInIncomingPacket(mFullPacket.get(), mAudioPacket.get());
 
     // Pre-allocate buffer to avoid allocations in the audio hot path
-    // Calculate maximum expected buffer size to handle any packet size without reallocation
+    // Calculate maximum expected buffer size to handle any packet size without
+    // reallocation
     int max_buffer_size = mJackTrip->getBufferSizeInSamples() * mChans * mSmplSize;
     mBuffer.resize(max_buffer_size, 0);
 
@@ -356,10 +356,10 @@ void WebRtcDataProtocol::runReceiver(int full_packet_size)
     // This thread just monitors for timeout conditions
     while (!mStopped && mChannelOpen) {
         QThread::msleep(10);
-        
+
         // Increment time since last packet
         int timeSinceLastPacket = mTimeSinceLastPacket.fetch_add(10) + 10;
-        
+
         // Emit signal every gUdpWaitTimeout ms if no packets have been received
         if (!(timeSinceLastPacket % gUdpWaitTimeout)) {
             emit signalWaitingTooLong(timeSinceLastPacket);
@@ -382,8 +382,7 @@ void WebRtcDataProtocol::runSender(int full_packet_size)
     }
 
     if (mStopped) {
-        cout << "WebRtcDataProtocol::runSender: Stopped before channel opened" 
-             << endl;
+        cout << "WebRtcDataProtocol::runSender: Stopped before channel opened" << endl;
         return;
     }
 
@@ -420,7 +419,8 @@ void WebRtcDataProtocol::runSender(int full_packet_size)
     // Send exit packet (reuse mFullPacket buffer to avoid allocation)
     std::memset(mFullPacket.get(), 0xff, mControlPacketSize);
     sendPacket(reinterpret_cast<char*>(mFullPacket.get()), mControlPacketSize);
-    sendPacket(reinterpret_cast<char*>(mFullPacket.get()), mControlPacketSize);  // Send twice for redundancy
+    sendPacket(reinterpret_cast<char*>(mFullPacket.get()),
+               mControlPacketSize);  // Send twice for redundancy
 
     emit signalCeaseTransmission();
 }
@@ -470,8 +470,8 @@ void WebRtcDataProtocol::processReceivedPacket(int8_t* packet, int packet_size,
         int C       = std::min(mChans, peer_chans);
         for (int n = 0; n < N; ++n) {
             for (int c = 0; c < C; ++c) {
-                memcpy(dst + (n * mChans + c) * mSmplSize,
-                       src + (n + c * N) * mSmplSize, mSmplSize);
+                memcpy(dst + (n * mChans + c) * mSmplSize, src + (n + c * N) * mSmplSize,
+                       mSmplSize);
             }
         }
         src = dst;
@@ -511,4 +511,3 @@ void WebRtcDataProtocol::printWaitedTooLong(int wait_msec)
         }
     }
 }
-

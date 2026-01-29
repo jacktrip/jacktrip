@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2008-2024 Juan-Pablo Caceres, Chris Chafe.
+  Copyright (c) 2008-2026 Juan-Pablo Caceres, Chris Chafe.
   SoundWIRE group at CCRMA, Stanford University.
 
   Permission is hereby granted, free of charge, to any person
@@ -31,8 +31,8 @@
 
 /**
  * \file WebRtcPeerConnection.cpp
- * \author JackTrip Contributors
- * \date 2024
+ * \author Mike Dickey + Claude AI
+ * \date 2026
  */
 
 #include "WebRtcPeerConnection.h"
@@ -49,8 +49,8 @@
 // https://github.com/paullouisageneau/libdatachannel
 #include <rtc/rtc.hpp>
 
-using std::cout;
 using std::cerr;
+using std::cout;
 using std::endl;
 
 //*******************************************************************************
@@ -66,8 +66,7 @@ WebRtcPeerConnection::WebRtcPeerConnection(const QStringList& iceServers, QObjec
 
 //*******************************************************************************
 WebRtcPeerConnection::WebRtcPeerConnection(QSslSocket* signalingSocket,
-                                           const QStringList& iceServers,
-                                           QObject* parent)
+                                           const QStringList& iceServers, QObject* parent)
     : QObject(parent)
     , mSignalingConnection(nullptr)
     , mIceServers(iceServers)
@@ -75,27 +74,32 @@ WebRtcPeerConnection::WebRtcPeerConnection(QSslSocket* signalingSocket,
     , mIsOfferer(false)
 {
     initPeerConnection();
-    
+
     // Create and configure the signaling connection
     if (signalingSocket) {
-        mSignalingConnection = new WebSocketSignalingConnection(signalingSocket, -1, this);
-        
+        // Capture peer address from the signaling socket
+        mPeerAddress = signalingSocket->peerAddress().toString();
+
+        mSignalingConnection =
+            new WebSocketSignalingConnection(signalingSocket, -1, this);
+
         // Connect signaling messages to our handler
-        connect(mSignalingConnection, &WebSocketSignalingConnection::signalingMessageReceived,
-                this, &WebRtcPeerConnection::onSignalingMessageReceived);
-        
+        connect(mSignalingConnection,
+                &WebSocketSignalingConnection::signalingMessageReceived, this,
+                &WebRtcPeerConnection::onSignalingMessageReceived);
+
         connect(mSignalingConnection, &WebSocketSignalingConnection::connectionClosed,
                 this, &WebRtcPeerConnection::onSignalingConnectionClosed);
-        
-        connect(mSignalingConnection, &WebSocketSignalingConnection::error,
-                this, [this](const QString& errorMsg) {
+
+        connect(mSignalingConnection, &WebSocketSignalingConnection::error, this,
+                [this](const QString& errorMsg) {
                     cerr << "WebRTC signaling error: " << errorMsg.toStdString() << endl;
                     emit connectionFailed(errorMsg);
                 });
-        
+
         // Connect our local description/candidate signals to send via signaling
-        connect(this, &WebRtcPeerConnection::localDescriptionReady,
-                this, [this](const QString& sdp, const QString& type) {
+        connect(this, &WebRtcPeerConnection::localDescriptionReady, this,
+                [this](const QString& sdp, const QString& type) {
                     if (!mSignalingConnection || !mSignalingConnection->isOpen()) {
                         return;
                     }
@@ -107,13 +111,14 @@ WebRtcPeerConnection::WebRtcPeerConnection(QSslSocket* signalingSocket,
                     }
                     mSignalingConnection->sendMessage(msg);
                 });
-        
-        connect(this, &WebRtcPeerConnection::localCandidateReady,
-                this, [this](const QString& candidate, const QString& sdpMid) {
+
+        connect(this, &WebRtcPeerConnection::localCandidateReady, this,
+                [this](const QString& candidate, const QString& sdpMid) {
                     if (!mSignalingConnection || !mSignalingConnection->isOpen()) {
                         return;
                     }
-                    auto msg = WebRtcSignalingProtocol::createIceCandidate(candidate, sdpMid, 0);
+                    auto msg =
+                        WebRtcSignalingProtocol::createIceCandidate(candidate, sdpMid, 0);
                     mSignalingConnection->sendMessage(msg);
                 });
     }
@@ -161,65 +166,57 @@ void WebRtcPeerConnection::setupPeerConnectionCallbacks()
         return;
     }
 
-    // Use QPointer to avoid use-after-free if callbacks are triggered after object deletion
-    QPointer<WebRtcPeerConnection> weakThis(this);
-    
     // Local description generated
-    mPeerConnection->onLocalDescription([weakThis](rtc::Description description) {
-        if (!weakThis) return;
-        weakThis->mLocalDescription = QString::fromStdString(std::string(description));
-        QString type      = (description.type() == rtc::Description::Type::Offer)
-                                ? QStringLiteral("offer")
-                                : QStringLiteral("answer");
-        emit weakThis->localDescriptionReady(weakThis->mLocalDescription, type);
+    mPeerConnection->onLocalDescription([this](rtc::Description description) {
+        this->mLocalDescription = QString::fromStdString(std::string(description));
+        QString type            = (description.type() == rtc::Description::Type::Offer)
+                                      ? QStringLiteral("offer")
+                                      : QStringLiteral("answer");
+        emit this->localDescriptionReady(this->mLocalDescription, type);
     });
 
     // Local ICE candidate generated
-    mPeerConnection->onLocalCandidate([weakThis](rtc::Candidate candidate) {
-        if (!weakThis) return;
+    mPeerConnection->onLocalCandidate([this](rtc::Candidate candidate) {
         QString candidateStr = QString::fromStdString(std::string(candidate));
         QString mid          = QString::fromStdString(candidate.mid());
-        emit weakThis->localCandidateReady(candidateStr, mid);
+        emit this->localCandidateReady(candidateStr, mid);
     });
 
     // ICE gathering state change
     mPeerConnection->onGatheringStateChange(
-        [weakThis](rtc::PeerConnection::GatheringState state) {
-            if (!weakThis) return;
+        [this](rtc::PeerConnection::GatheringState state) {
             if (state == rtc::PeerConnection::GatheringState::Complete) {
-                emit weakThis->gatheringComplete();
+                emit this->gatheringComplete();
             }
         });
 
     // Connection state change
-    mPeerConnection->onStateChange([weakThis](rtc::PeerConnection::State state) {
-        if (!weakThis) return;
+    mPeerConnection->onStateChange([this](rtc::PeerConnection::State state) {
         switch (state) {
         case rtc::PeerConnection::State::New:
-            weakThis->setState(STATE_NEW);
+            this->setState(STATE_NEW);
             break;
         case rtc::PeerConnection::State::Connecting:
-            weakThis->setState(STATE_CONNECTING);
+            this->setState(STATE_CONNECTING);
             break;
         case rtc::PeerConnection::State::Connected:
-            weakThis->setState(STATE_CONNECTED);
+            this->setState(STATE_CONNECTED);
             break;
         case rtc::PeerConnection::State::Disconnected:
         case rtc::PeerConnection::State::Closed:
-            weakThis->setState(STATE_DISCONNECTED);
+            this->setState(STATE_DISCONNECTED);
             break;
         case rtc::PeerConnection::State::Failed:
-            weakThis->setState(STATE_FAILED);
-            emit weakThis->connectionFailed(QStringLiteral("ICE connection failed"));
+            this->setState(STATE_FAILED);
+            emit this->connectionFailed(QStringLiteral("ICE connection failed"));
             break;
         }
     });
 
     // Data channel created by remote peer
-    mPeerConnection->onDataChannel([weakThis](std::shared_ptr<rtc::DataChannel> channel) {
-        if (!weakThis) return;
-        weakThis->mDataChannel = channel;
-        weakThis->setupDataChannelCallbacks(channel);
+    mPeerConnection->onDataChannel([this](std::shared_ptr<rtc::DataChannel> channel) {
+        this->mDataChannel = channel;
+        this->setupDataChannelCallbacks(channel);
     });
 }
 
@@ -231,31 +228,24 @@ void WebRtcPeerConnection::setupDataChannelCallbacks(
         return;
     }
 
-    // Use weak_ptr to avoid use-after-free if callbacks are triggered after object deletion
-    QPointer<WebRtcPeerConnection> weakThis(this);
-    
-    channel->onOpen([weakThis]() {
-        if (!weakThis) return;
-        emit weakThis->dataChannelOpen();
+    channel->onOpen([this]() {
+        emit this->dataChannelOpen();
     });
 
-    channel->onClosed([weakThis]() {
-        if (!weakThis) return;
-        emit weakThis->dataChannelClosed();
+    channel->onClosed([this]() {
+        emit this->dataChannelClosed();
     });
 
-    channel->onError([weakThis](std::string error) {
-        if (!weakThis) return;
+    channel->onError([this](std::string error) {
         cerr << "Data channel error: " << error << endl;
-        emit weakThis->connectionFailed(QString::fromStdString(error));
+        emit this->connectionFailed(QString::fromStdString(error));
     });
 
-    channel->onMessage([weakThis](rtc::message_variant data) {
-        if (!weakThis) return;
+    channel->onMessage([this](rtc::message_variant data) {
         // Handle binary data
         if (std::holds_alternative<rtc::binary>(data)) {
             const rtc::binary& binary = std::get<rtc::binary>(data);
-            emit weakThis->dataReceived(binary);
+            emit this->dataReceived(binary);
         }
     });
 }
@@ -280,8 +270,7 @@ std::shared_ptr<rtc::DataChannel> WebRtcPeerConnection::createAudioDataChannel(
         // Option 2: Max packet lifetime (alternative)
         // dcInit.reliability.maxPacketLifeTime = std::chrono::milliseconds(50);
 
-        auto channel =
-            mPeerConnection->createDataChannel(label.toStdString(), dcInit);
+        auto channel = mPeerConnection->createDataChannel(label.toStdString(), dcInit);
         setupDataChannelCallbacks(channel);
 
         return channel;
@@ -408,6 +397,15 @@ QString WebRtcPeerConnection::getPeerAddress() const
 }
 
 //*******************************************************************************
+QString WebRtcPeerConnection::getClientName() const
+{
+    if (mSignalingConnection) {
+        return mSignalingConnection->getClientName();
+    }
+    return QString();
+}
+
+//*******************************************************************************
 void WebRtcPeerConnection::close()
 {
     if (mSignalingConnection) {
@@ -415,7 +413,7 @@ void WebRtcPeerConnection::close()
         mSignalingConnection->deleteLater();
         mSignalingConnection = nullptr;
     }
-    
+
     if (mDataChannel) {
         mDataChannel->close();
         mDataChannel.reset();
@@ -440,8 +438,8 @@ void WebRtcPeerConnection::onSignalingMessageReceived(
     switch (msg.type) {
     case WebRtcSignalingProtocol::OFFER:
         if (!setRemoteOffer(msg.sdp)) {
-            auto errorMsg =
-                WebRtcSignalingProtocol::createError(QStringLiteral("Failed to process offer"));
+            auto errorMsg = WebRtcSignalingProtocol::createError(
+                QStringLiteral("Failed to process offer"));
             if (mSignalingConnection) {
                 mSignalingConnection->sendMessage(errorMsg);
             }
@@ -480,4 +478,3 @@ void WebRtcPeerConnection::setState(ConnectionState state)
         emit stateChanged(state);
     }
 }
-

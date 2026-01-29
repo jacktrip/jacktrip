@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2008-2024 Juan-Pablo Caceres, Chris Chafe.
+  Copyright (c) 2008-2026 Juan-Pablo Caceres, Chris Chafe.
   SoundWIRE group at CCRMA, Stanford University.
 
   Permission is hereby granted, free of charge, to any person
@@ -31,8 +31,8 @@
 
 /**
  * \file WebRtcSignalingProtocol.cpp
- * \author JackTrip Contributors
- * \date 2024
+ * \author Mike Dickey + Claude AI
+ * \date 2026
  */
 
 #include "WebRtcSignalingProtocol.h"
@@ -46,10 +46,7 @@
 #include <iostream>
 
 //*******************************************************************************
-WebRtcSignalingProtocol::WebRtcSignalingProtocol(QObject* parent)
-    : QObject(parent)
-{
-}
+WebRtcSignalingProtocol::WebRtcSignalingProtocol(QObject* parent) : QObject(parent) {}
 
 //*******************************************************************************
 WebRtcSignalingProtocol::~WebRtcSignalingProtocol() {}
@@ -112,7 +109,8 @@ QByteArray WebRtcSignalingProtocol::encodeMessage(const SignalingMessage& msg)
 }
 
 //*******************************************************************************
-WebRtcSignalingProtocol::SignalingMessage WebRtcSignalingProtocol::decodeMessage(const QByteArray& data)
+WebRtcSignalingProtocol::SignalingMessage WebRtcSignalingProtocol::decodeMessage(
+    const QByteArray& data)
 {
     SignalingMessage msg;
 
@@ -139,7 +137,7 @@ WebRtcSignalingProtocol::SignalingMessage WebRtcSignalingProtocol::decodeMessage
     QString typeStr = json.value(QStringLiteral("type")).toString();
 
     if (typeStr == QStringLiteral("protocol")) {
-        msg.type = PROTOCOL_DETECT;
+        msg.type            = PROTOCOL_DETECT;
         QString protocolStr = json.value(QStringLiteral("protocol")).toString();
         if (protocolStr == QStringLiteral("udp")) {
             msg.protocol = PROTOCOL_UDP;
@@ -302,7 +300,8 @@ QByteArray WebRtcSignalingProtocol::frameMessage(const QByteArray& message)
 }
 
 //*******************************************************************************
-bool WebRtcSignalingProtocol::extractFramedMessage(QByteArray& buffer, QByteArray& message)
+bool WebRtcSignalingProtocol::extractFramedMessage(QByteArray& buffer,
+                                                   QByteArray& message)
 {
     // Need at least 4 bytes for length prefix
     if (buffer.size() < 4) {
@@ -318,7 +317,8 @@ bool WebRtcSignalingProtocol::extractFramedMessage(QByteArray& buffer, QByteArra
 
     // Sanity check on length (max 1MB for signaling messages)
     if (length > 1024 * 1024) {
-        std::cerr << "WebRtcSignalingProtocol: Invalid message length: " << length << std::endl;
+        std::cerr << "WebRtcSignalingProtocol: Invalid message length: " << length
+                  << std::endl;
         // Clear buffer to recover
         buffer.clear();
         return false;
@@ -337,4 +337,3 @@ bool WebRtcSignalingProtocol::extractFramedMessage(QByteArray& buffer, QByteArra
 
     return true;
 }
-

@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2008-2024 Juan-Pablo Caceres, Chris Chafe.
+  Copyright (c) 2008-2026 Juan-Pablo Caceres, Chris Chafe.
   SoundWIRE group at CCRMA, Stanford University.
 
   Permission is hereby granted, free of charge, to any person
@@ -31,12 +31,14 @@
 
 /**
  * \file WebTransportDataProtocol.h
- * \author JackTrip Contributors
+ * \author Mike Dickey + Claude AI
  * \date 2026
  */
 
 #ifndef __WEBTRANSPORTDATAPROTOCOL_H__
 #define __WEBTRANSPORTDATAPROTOCOL_H__
+
+#include <msquic.h>  // For QUIC_BUFFER
 
 #include <QScopedPointer>
 #include <QThread>
@@ -47,8 +49,6 @@
 
 #include "../DataProtocol.h"
 #include "../jacktrip_globals.h"
-
-#include <msquic.h>  // For QUIC_BUFFER
 
 class JackTrip;
 class WebTransportSession;
@@ -102,7 +102,6 @@ class WebTransportDataProtocol : public DataProtocol
     virtual void setSocket(int& socket) override;
 #endif
 
-
     /** \brief Implements the Thread Loop
      *
      * This function runs the send or receive loop depending on the run mode.
@@ -125,13 +124,13 @@ class WebTransportDataProtocol : public DataProtocol
 
     /** \brief Context passed to MsQuic for buffer cleanup */
     struct SendContext {
-        uint8_t* buffer;                      ///< Buffer to release
-        WebTransportDataProtocol* owner;      ///< Protocol that owns the buffer
-        QUIC_BUFFER quicBuffer;               ///< MsQuic buffer struct (must stay alive!)
+        uint8_t* buffer;                  ///< Buffer to release
+        WebTransportDataProtocol* owner;  ///< Protocol that owns the buffer
+        QUIC_BUFFER quicBuffer;           ///< MsQuic buffer struct (must stay alive!)
     };
 
     /** \brief Static callback for MsQuic to release buffer
-     * 
+     *
      * Called from WebTransportSession's MsQuic callback when datagram send completes
      */
     static void releaseSendContext(SendContext* ctx);
@@ -167,19 +166,20 @@ class WebTransportDataProtocol : public DataProtocol
 
     // Buffer pool management (private)
     struct BufferPoolEntry {
-        uint8_t* buffer;       ///< Pre-allocated buffer
+        uint8_t* buffer;  ///< Pre-allocated buffer
         std::atomic<bool> inUse;
     };
-    
+
     static constexpr size_t BUFFER_POOL_SIZE = 16;  ///< Number of buffers in pool
     BufferPoolEntry mBufferPool[BUFFER_POOL_SIZE];
     SendContext mSendContextPool[BUFFER_POOL_SIZE];  ///< SendContext for each buffer
     std::atomic<size_t> mNextBufferIndex{0};
-    size_t mPoolBufferSize{0};  ///< Size of each buffer in pool (set during initialization)
-    
+    size_t mPoolBufferSize{
+        0};  ///< Size of each buffer in pool (set during initialization)
+
     // Acquire a buffer from the pool (lock-free), returns index or -1
     int acquirePoolBuffer();
-    
+
     // Release a buffer back to the pool by index
     void releasePoolBuffer(int index);
 
@@ -189,7 +189,7 @@ class WebTransportDataProtocol : public DataProtocol
     // Audio packet buffers
     QScopedPointer<int8_t> mAudioPacket;  ///< Raw audio data buffer (always used)
     QScopedPointer<int8_t> mFullPacket;   ///< Full packet with header (RECEIVER only)
-    std::vector<int8_t> mBuffer;          ///< Temp buffer for channel conversion (RECEIVER only)
+    std::vector<int8_t> mBuffer;  ///< Temp buffer for channel conversion (RECEIVER only)
     int mChans;
     int mSmplSize;
 

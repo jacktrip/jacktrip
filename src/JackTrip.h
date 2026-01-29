@@ -39,14 +39,13 @@
 #define __JACKTRIP_H__
 
 // #include <tr1/memory> //for shared_ptr
-#include <functional>
-
 #include <QObject>
 #include <QSharedPointer>
 #include <QSslSocket>
 #include <QString>
 #include <QTimer>
 #include <QUdpSocket>
+#include <functional>
 #include <stdexcept>
 
 #include "AudioInterface.h"
@@ -62,7 +61,8 @@
 
 #ifdef WEBRTC_SUPPORT
 #include <memory>
-namespace rtc {
+namespace rtc
+{
 class DataChannel;
 }
 #endif
@@ -90,7 +90,8 @@ class JackTrip : public QObject
     enum dataProtocolT {
         UDP,          ///< Use UDP (User Datagram Protocol)
         TCP,          ///< <B>NOT IMPLEMENTED</B>: Use TCP (Transmission Control Protocol)
-        SCTP,         ///< <B>NOT IMPLEMENTED</B>: Use SCTP (Stream Control Transmission Protocol)
+        SCTP,         ///< <B>NOT IMPLEMENTED</B>: Use SCTP (Stream Control Transmission
+                      ///< Protocol)
         WEBRTC,       ///< Use WebRTC Data Channels (requires libdatachannel)
         WEBTRANSPORT  ///< Use WebTransport (HTTP/3 based transport)
     };
@@ -821,7 +822,8 @@ class JackTrip : public QObject
 #endif
 
 #ifdef WEBTRANSPORT_SUPPORT
-    WebTransportSession* mWebTransportSession;  ///< WebTransport session (not owned)
+    WebTransportSession* mWebTransportSession =
+        nullptr;  ///< WebTransport session (not owned)
 #endif
 };
 

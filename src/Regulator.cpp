@@ -104,7 +104,7 @@ constexpr double AutoInitValFactor =
 // tweak
 constexpr int WindowDivisor = 8;  // for faster auto tracking
 constexpr double AutoHeadroomGlitchTolerance =
-    0.002;  // Acceptable rate of glitches before auto headroom is increased (0.2%)
+    0.006;  // Acceptable rate of glitches before auto headroom is increased (0.6%)
 constexpr double AutoHistoryWindow =
     60;  // rolling window of time (in seconds) over which auto tolerance roughly adjusts
 constexpr double AutoSmoothingFactor =

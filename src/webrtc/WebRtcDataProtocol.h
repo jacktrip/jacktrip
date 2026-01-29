@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2008-2024 Juan-Pablo Caceres, Chris Chafe.
+  Copyright (c) 2008-2026 Juan-Pablo Caceres, Chris Chafe.
   SoundWIRE group at CCRMA, Stanford University.
 
   Permission is hereby granted, free of charge, to any person
@@ -31,8 +31,8 @@
 
 /**
  * \file WebRtcDataProtocol.h
- * \author JackTrip Contributors
- * \date 2024
+ * \author Mike Dickey + Claude AI
+ * \date 2026
  */
 
 #ifndef __WEBRTCDATAPROTOCOL_H__
@@ -48,7 +48,8 @@
 #include "../jacktrip_globals.h"
 
 // Forward declarations for libdatachannel types
-namespace rtc {
+namespace rtc
+{
 class DataChannel;
 class PeerConnection;
 }  // namespace rtc
@@ -182,4 +183,3 @@ class WebRtcDataProtocol : public DataProtocol
 };
 
 #endif  // __WEBRTCDATAPROTOCOL_H__
-

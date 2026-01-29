@@ -100,7 +100,8 @@ enum JTLongOptIDS {
     OPT_AUDIOOUTPUTDEVICE,
     OPT_GUI,
     OPT_CLASSIC_GUI,
-    OPT_DEEPLINK
+    OPT_DEEPLINK,
+    OPT_ICESERVERS
 };
 
 //*******************************************************************************
@@ -212,6 +213,8 @@ void Settings::parseInput(int argc, char** argv)
         {"classic-gui", no_argument, NULL, OPT_CLASSIC_GUI},  // Force Classic Mode GUI
         {"deeplink", optional_argument, NULL,
          OPT_DEEPLINK},  // Deeplink URL (should be in the form jacktrip://...)
+        {"iceservers", required_argument, NULL,
+         OPT_ICESERVERS},  // ICE servers for WebRTC NAT traversal
         {NULL, 0, NULL, 0}};
 
     // Parse Command Line Arguments
@@ -695,6 +698,9 @@ void Settings::parseInput(int argc, char** argv)
             }
             mDeeplink = optarg;
             break;
+        case OPT_ICESERVERS:
+            mIceServers = optarg;
+            break;
         case ':': {
             printUsage();
             printf("*** Missing option argument *** see above for usage\n\n");
@@ -961,6 +967,7 @@ void Settings::printUsage()
     cout << " --credsfile                              The file containing the stored usernames and passwords" << endl;
     cout << " --username                               The username to use when connecting as a hub client (if not supplied here, this is read from standard input)" << endl;
     cout << " --password                               The password to use when connecting as a hub client (if not supplied here, this is read from standard input)" << endl;
+    cout << " --iceservers                             Comma-separated list of ICE servers for WebRTC NAT traversal (e.g., \"stun:stun.l.google.com:19302\")" << endl;
     cout << endl;
     cout << "ARGUMENTS FOR THE GUI:" << endl;
     cout << " --gui                                    Force JackTrip to run with the GUI. If not using VirtualStudio mode, command line switches in the required arguments, optional arguments (except -l, -j, -L, --appendthreadid), audio patching, and authentication sections will be honoured, and default settings will be used where arguments aren't supplied. Options from other sections will be ignored (and the last used settings will be loaded), except for -V, and the --version and --help switches which will override this." << endl;
@@ -1099,6 +1106,13 @@ UdpHubListener* Settings::getConfiguredHubServer()
     if (!mKeyFile.isEmpty()) {
         udpHub->setKeyFile(mKeyFile);
     }
+
+#ifdef WEBRTC_SUPPORT
+    if (!mIceServers.isEmpty()) {
+        QStringList iceServerList = mIceServers.split(',', Qt::SkipEmptyParts);
+        udpHub->setIceServers(iceServerList);
+    }
+#endif
 
     return udpHub;
 }

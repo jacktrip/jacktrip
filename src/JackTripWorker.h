@@ -150,12 +150,11 @@ class JackTripWorker : public QObject
 
 #ifdef WEBRTC_SUPPORT
     /// \brief Create and initialize WebRTC peer connection
-    /// \param signalingSocket The SSL socket for WebSocket signaling (ownership transferred to connection)
+    /// \param signalingSocket The SSL socket for WebSocket signaling (ownership
+    /// transferred to connection)
     /// \param iceServers List of STUN/TURN server URLs
-    void createWebRtcPeerConnection(QSslSocket* signalingSocket, const QStringList& iceServers);
-
-    /// \brief Start the worker with WebRTC transport (called when data channel opens)
-    void startWebRtc();
+    void createWebRtcPeerConnection(QSslSocket* signalingSocket,
+                                    const QStringList& iceServers);
 
     /// \brief Called when first packet is received on WebRTC data channel
     /// Similar to receivedDataUDP() for UDP mode
@@ -246,11 +245,13 @@ class JackTripWorker : public QObject
     JackTrip::dataProtocolT mDataProtocol = JackTrip::UDP;  ///< Data protocol type
 
 #ifdef WEBRTC_SUPPORT
-    WebRtcPeerConnection* mWebRtcPeerConnection = nullptr;  ///< WebRTC peer connection (owned)
+    WebRtcPeerConnection* mWebRtcPeerConnection =
+        nullptr;  ///< WebRTC peer connection (owned)
 #endif
 
 #ifdef WEBTRANSPORT_SUPPORT
-    WebTransportSession* mWebTransportSession = nullptr;    ///< WebTransport session (owned)
+    WebTransportSession* mWebTransportSession =
+        nullptr;  ///< WebTransport session (owned)
 #endif
 
     int mBufferStrategy         = 1;

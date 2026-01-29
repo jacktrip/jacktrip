@@ -53,6 +53,9 @@
 #include "jacktrip_globals.h"
 #include "jacktrip_types.h"
 
+#ifdef WEBRTC_SUPPORT
+class WebRtcPeerConnection;
+#endif
 #ifdef WEBTRANSPORT_SUPPORT
 // Forward declare msquic types
 struct QUIC_API_TABLE;
@@ -66,9 +69,7 @@ typedef QUIC_HANDLE* HQUIC;
 #include "OscServer.h"
 #include "SslServer.h"
 
-// forward declarations
-class JackTripWorker;
-class WebRtcPeerConnection;
+class JackTripWorker;  // forward declaration
 class Settings;
 
 /** \brief Hub UDP listener on the Server.
@@ -135,7 +136,6 @@ class UdpHubListener : public QObject
     void signalError(const QString& errorMessage);
 
    private:
-
     // new bytes are ready to read from the client connection
     void readyRead(QSslSocket* clientConnection);
 
@@ -173,13 +173,15 @@ class UdpHubListener : public QObject
     /// \return The slot id, or -1 if no slots available
     int createWorker(QString& clientName);
 
+#ifdef WEBRTC_SUPPORT
     /// \brief Create a WebRTC worker for a new connection
-    int createWebRtcWorker(QSslSocket* signalingSocket, const QString& clientName);
+    int createWebRtcWorker(QSslSocket* signalingSocket);
+#endif
 
 #ifdef WEBTRANSPORT_SUPPORT
     /// \brief Create a WebTransport worker for a new QUIC connection
     int createWebTransportWorker(HQUIC connection, const QHostAddress& peerAddress,
-                                 quint16 peerPort, const QString& clientName);
+                                 quint16 peerPort);
 #endif
 
     /** \brief Returns the ID of the client in the pool. If the client
@@ -237,8 +239,10 @@ class UdpHubListener : public QObject
     double mSimulatedDelayRel;
     bool mUseRtUdpPriority;
 
+#ifdef WEBRTC_SUPPORT
     /// \brief ICE servers for WebRTC connections
     QStringList mIceServers;
+#endif
 
 #ifdef WEBTRANSPORT_SUPPORT
     /// \brief msquic API table
@@ -333,8 +337,10 @@ class UdpHubListener : public QObject
     void setUseRtUdpPriority(bool use) { mUseRtUdpPriority = use; }
     bool mAppendThreadID = false;
 
+#ifdef WEBRTC_SUPPORT
     /// \brief Set ICE servers for WebRTC connections
     void setIceServers(const QStringList& servers) { mIceServers = servers; }
+#endif
 
 #ifdef WEBTRANSPORT_SUPPORT
    public:

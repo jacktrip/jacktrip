@@ -33,7 +33,7 @@ RUN cd /root \
 	&& export QT_PATH=/opt/qt-${QT_VERSION}-static \
 	&& export PATH=${QT_PATH}/bin:${PATH} \
 	&& export LDFLAGS="-L${QT_PATH}/lib -L${QT_PATH}/plugins/tls" \
-	&& meson setup -Dpkg_config_path=/opt/qt-${QT_VERSION}-static/lib/pkgconfig -Ddefault_library=static -Dnogui=true --buildtype release builddir \
+	&& meson setup -Dpkg_config_path=/opt/qt-${QT_VERSION}-static/lib/pkgconfig -Dlibdatachannel=enabled -Dmsquic=enabled -Ddefault_library=static -Dnogui=true --buildtype release builddir \
 	&& meson compile -C builddir
 
 # stage files in INSTALLDIR

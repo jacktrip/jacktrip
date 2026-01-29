@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2008-2024 Juan-Pablo Caceres, Chris Chafe.
+  Copyright (c) 2008-2026 Juan-Pablo Caceres, Chris Chafe.
   SoundWIRE group at CCRMA, Stanford University.
 
   Permission is hereby granted, free of charge, to any person
@@ -31,8 +31,8 @@
 
 /**
  * \file WebRtcSignalingProtocol.h
- * \author JackTrip Contributors
- * \date 2024
+ * \author Mike Dickey + Claude AI
+ * \date 2026
  */
 
 #ifndef __WEBRTCSIGNALINGPROTOCOL_H__
@@ -64,34 +64,34 @@ class WebRtcSignalingProtocol : public QObject
    public:
     /// \brief Message types for signaling protocol
     enum MessageType {
-        UNKNOWN = 0,
+        UNKNOWN         = 0,
         PROTOCOL_DETECT = 1,  ///< Initial protocol detection message
-        OFFER = 2,            ///< SDP offer
-        ANSWER = 3,           ///< SDP answer
-        ICE_CANDIDATE = 4,    ///< ICE candidate
-        HANGUP = 5,           ///< Connection termination
-        ERROR_MSG = 6         ///< Error message
+        OFFER           = 2,  ///< SDP offer
+        ANSWER          = 3,  ///< SDP answer
+        ICE_CANDIDATE   = 4,  ///< ICE candidate
+        HANGUP          = 5,  ///< Connection termination
+        ERROR_MSG       = 6   ///< Error message
     };
 
     /// \brief Client protocol types
     enum ProtocolType {
         PROTOCOL_UNKNOWN = 0,
-        PROTOCOL_UDP = 1,     ///< Traditional UDP client
-        PROTOCOL_WEBRTC = 2   ///< WebRTC data channel client
+        PROTOCOL_UDP     = 1,  ///< Traditional UDP client
+        PROTOCOL_WEBRTC  = 2   ///< WebRTC data channel client
     };
 
     /// \brief Signaling message structure
     struct SignalingMessage {
-        MessageType type = UNKNOWN;
+        MessageType type      = UNKNOWN;
         ProtocolType protocol = PROTOCOL_UNKNOWN;
-        QString sdp;              ///< SDP content for OFFER/ANSWER
-        QString candidate;        ///< ICE candidate string
-        QString sdpMid;           ///< SDP media ID for ICE
-        int sdpMLineIndex = -1;   ///< SDP media line index for ICE
-        QString clientName;       ///< Client name for PROTOCOL_DETECT
-        int version = 0;          ///< Protocol version
-        QString errorMessage;     ///< Error message for ERROR_MSG
-        int udpPort = 0;          ///< UDP port for legacy clients
+        QString sdp;             ///< SDP content for OFFER/ANSWER
+        QString candidate;       ///< ICE candidate string
+        QString sdpMid;          ///< SDP media ID for ICE
+        int sdpMLineIndex = -1;  ///< SDP media line index for ICE
+        QString clientName;      ///< Client name for PROTOCOL_DETECT
+        int version = 0;         ///< Protocol version
+        QString errorMessage;    ///< Error message for ERROR_MSG
+        int udpPort = 0;         ///< UDP port for legacy clients
     };
 
     WebRtcSignalingProtocol(QObject* parent = nullptr);
@@ -159,8 +159,7 @@ class WebRtcSignalingProtocol : public QObject
      * \param sdpMLineIndex The SDP media line index
      * \return Encoded message
      */
-    static QByteArray createIceCandidate(const QString& candidate,
-                                         const QString& sdpMid,
+    static QByteArray createIceCandidate(const QString& candidate, const QString& sdpMid,
                                          int sdpMLineIndex);
 
     /** \brief Create a hangup message
@@ -218,4 +217,3 @@ class WebRtcSignalingProtocol : public QObject
 };
 
 #endif  // __WEBRTCSIGNALINGPROTOCOL_H__
-

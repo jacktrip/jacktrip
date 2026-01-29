@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2008-2024 Juan-Pablo Caceres, Chris Chafe.
+  Copyright (c) 2008-2026 Juan-Pablo Caceres, Chris Chafe.
   SoundWIRE group at CCRMA, Stanford University.
 
   Permission is hereby granted, free of charge, to any person
@@ -31,7 +31,7 @@
 
 /**
  * \file WebTransportDataProtocol.cpp
- * \author JackTrip Contributors
+ * \author Mike Dickey + Claude AI
  * \date 2026
  */
 
@@ -84,10 +84,9 @@ WebTransportDataProtocol::WebTransportDataProtocol(JackTrip* jacktrip,
         // This bypasses Qt signals/slots for zero overhead in the audio hot path.
         // The callback is invoked directly from the msquic thread.
         if (mRunMode == RECEIVER) {
-            mSession->setDatagramCallback(
-                [this](const uint8_t* data, size_t len) {
-                    this->onDatagramReceived(data, len);
-                });
+            mSession->setDatagramCallback([this](const uint8_t* data, size_t len) {
+                this->onDatagramReceived(data, len);
+            });
         }
 
         // Connect to session closed signal (non-audio path, Qt signal is fine)
@@ -117,7 +116,8 @@ WebTransportDataProtocol::~WebTransportDataProtocol()
         if (mBufferPool[i].buffer) {
             // Wait for any in-use buffers to be released (should be quick)
             int retries = 0;
-            while (mBufferPool[i].inUse.load(std::memory_order_acquire) && retries < 100) {
+            while (mBufferPool[i].inUse.load(std::memory_order_acquire)
+                   && retries < 100) {
                 QThread::msleep(10);
                 ++retries;
             }
@@ -170,18 +170,18 @@ int WebTransportDataProtocol::acquirePoolBuffer()
 {
     // Try to acquire a buffer from the pool (lock-free)
     size_t startIndex = mNextBufferIndex.load(std::memory_order_relaxed);
-    
+
     for (size_t i = 0; i < BUFFER_POOL_SIZE; ++i) {
-        size_t index = (startIndex + i) % BUFFER_POOL_SIZE;
+        size_t index  = (startIndex + i) % BUFFER_POOL_SIZE;
         bool expected = false;
-        if (mBufferPool[index].inUse.compare_exchange_strong(expected, true, 
-                                                              std::memory_order_acquire,
-                                                              std::memory_order_relaxed)) {
-            mNextBufferIndex.store((index + 1) % BUFFER_POOL_SIZE, std::memory_order_relaxed);
+        if (mBufferPool[index].inUse.compare_exchange_strong(
+                expected, true, std::memory_order_acquire, std::memory_order_relaxed)) {
+            mNextBufferIndex.store((index + 1) % BUFFER_POOL_SIZE,
+                                   std::memory_order_relaxed);
             return static_cast<int>(index);
         }
     }
-    
+
     return -1;  // No buffers available
 }
 
@@ -200,7 +200,7 @@ void WebTransportDataProtocol::releaseSendContext(SendContext* ctx)
     if (!ctx || !ctx->owner) {
         return;
     }
-    
+
     // Find the index of this buffer
     for (size_t i = 0; i < BUFFER_POOL_SIZE; ++i) {
         if (ctx->owner->mBufferPool[i].buffer == ctx->buffer) {
@@ -211,33 +211,34 @@ void WebTransportDataProtocol::releaseSendContext(SendContext* ctx)
 }
 
 //*******************************************************************************
-void WebTransportDataProtocol::sendPacketDirect(const int8_t* audioPacket, [[maybe_unused]] int audioPacketSize)
+void WebTransportDataProtocol::sendPacketDirect(const int8_t* audioPacket,
+                                                [[maybe_unused]] int audioPacketSize)
 {
     // Called from audio thread - must be real-time safe!
     // Uses buffer pool to avoid heap allocations
     // Note: This callback is only registered after pool is initialized,
     // so we don't need to check if buffers are ready
-    
+
     if (!mSession || !mSession->isConnected() || !mJackTrip) {
         return;
     }
 
     int fullPacketSize = mJackTrip->getSendPacketSizeInBytes();
-    
+
     // Acquire buffer from pool (lock-free)
     int bufferIndex = acquirePoolBuffer();
     if (bufferIndex < 0) {
         // No buffers available - skip this packet
         return;
     }
-    
+
     uint8_t* buffer = mBufferPool[bufferIndex].buffer;
-    
+
     // Write packet directly into pool buffer
     int8_t* fullPacket = reinterpret_cast<int8_t*>(buffer);
-    int headerSize = mJackTrip->getHeaderSizeInBytes();
-    int8_t* audioDest = fullPacket + headerSize;
-    
+    int headerSize     = mJackTrip->getHeaderSizeInBytes();
+    int8_t* audioDest  = fullPacket + headerSize;
+
     // Convert interleaved to non-interleaved directly into the buffer
     if (mChans > 1) {
         int N = mJackTrip->getBufferSizeInSamples();
@@ -252,23 +253,23 @@ void WebTransportDataProtocol::sendPacketDirect(const int8_t* audioPacket, [[may
         int audioSize = mJackTrip->getTotalAudioInputPacketSizeInBytes();
         memcpy(audioDest, audioPacket, audioSize);
     }
-    
+
     // Add header - audio is already in place, just write header
     mJackTrip->putHeaderInOutgoingPacket(fullPacket, nullptr);
-    
+
     // Setup send context for cleanup
     mSendContextPool[bufferIndex].buffer = buffer;
-    mSendContextPool[bufferIndex].owner = this;
-    
+    mSendContextPool[bufferIndex].owner  = this;
+
     // Send the buffer - WebTransportSession will handle cleanup via callback
-    if (!mSession->sendDatagram(buffer, fullPacketSize, 
+    if (!mSession->sendDatagram(buffer, fullPacketSize,
                                 &mSendContextPool[bufferIndex].quicBuffer,
                                 &mSendContextPool[bufferIndex])) {
         // Send failed - release buffer
         releasePoolBuffer(bufferIndex);
         return;
     }
-    
+
     // Increment sequence number
     mJackTrip->increaseSequenceNumber();
 }
@@ -278,7 +279,7 @@ void WebTransportDataProtocol::run()
 {
     // Signal that the thread has started (unblocks waitForStart())
     threadHasStarted();
-    
+
     // Verify pointers
     if (!mJackTrip) {
         cerr << "WebTransportDataProtocol: ERROR - mJackTrip is null!" << endl;
@@ -326,36 +327,36 @@ void WebTransportDataProtocol::run()
         // in the pool buffer
         // NOTE: Add 8 bytes for maximum QUIC varint prefix (stream ID)
         mPoolBufferSize = static_cast<size_t>(full_packet_size) + 8;
-        
+
         for (size_t i = 0; i < BUFFER_POOL_SIZE; ++i) {
             mBufferPool[i].buffer = new uint8_t[mPoolBufferSize];
             mBufferPool[i].inUse.store(false, std::memory_order_relaxed);
         }
-        
+
         // Register direct send callback AFTER pool is initialized
         // This prevents race condition where audio callback fires before pool is ready
         if (mJackTrip) {
-            mJackTrip->setDirectSendCallback(
-                [this](const int8_t* packet, int size) {
-                    this->sendPacketDirect(packet, size);
-                });
+            mJackTrip->setDirectSendCallback([this](const int8_t* packet, int size) {
+                this->sendPacketDirect(packet, size);
+            });
         }
     } else {
         // For RECEIVER mode: Allocate full packet buffer (with header)
         mFullPacket.reset(new int8_t[full_packet_size]);
         std::memset(mFullPacket.data(), 0, full_packet_size);
-        
+
         // Initialize header in the first packet
         mJackTrip->putHeaderInIncomingPacket(mFullPacket.data(), mAudioPacket.data());
-        
+
         // Pre-allocate buffer for channel conversion if needed
         if (mChans > 1) {
-            int max_buffer_size = mJackTrip->getBufferSizeInSamples() * mChans * mSmplSize;
+            int max_buffer_size =
+                mJackTrip->getBufferSizeInSamples() * mChans * mSmplSize;
             mBuffer.resize(max_buffer_size, 0);
         }
     }
 
-    // Wait for session to be connected    
+    // Wait for session to be connected
     while (!mStopped && mSession && !mSession->isConnected()) {
         QThread::msleep(10);
     }
@@ -381,18 +382,18 @@ void WebTransportDataProtocol::run()
 void WebTransportDataProtocol::runReceiver(int full_packet_size)
 {
     Q_UNUSED(full_packet_size);
-    
+
     if (gVerboseFlag)
         cout << "WebTransportDataProtocol::runReceiver starting" << endl;
-    
+
     // Main receive loop - packets are processed in onDatagramReceived callback
     // This thread just monitors for timeout conditions (like WebRTC)
     while (!mStopped && mSessionConnected) {
         QThread::msleep(10);
-        
+
         // Increment time since last packet atomically
         int timeSinceLastPacket = mTimeSinceLastPacket.fetch_add(10) + 10;
-        
+
         // Emit signal every gUdpWaitTimeout ms if no packets have been received
         if (!(timeSinceLastPacket % gUdpWaitTimeout)) {
             emit signalWaitingTooLong(timeSinceLastPacket);
@@ -404,37 +405,37 @@ void WebTransportDataProtocol::runReceiver(int full_packet_size)
 void WebTransportDataProtocol::runSender(int full_packet_size)
 {
     Q_UNUSED(full_packet_size);
-    
+
     if (gVerboseFlag)
         cout << "WebTransportDataProtocol::runSender starting (direct send mode)" << endl;
-    
+
     // Packets are sent directly from audio thread via sendPacketDirect()
     // This thread just monitors for stop condition
     while (!mStopped && mSessionConnected) {
         QThread::msleep(100);
     }
-    
+
     if (gVerboseFlag)
         cout << "WebTransportDataProtocol::runSender: Exiting" << endl;
-    
+
     // Send exit packets using pool buffer
     int bufferIndex = acquirePoolBuffer();
     if (bufferIndex >= 0) {
         uint8_t* buffer = mBufferPool[bufferIndex].buffer;
         std::memset(buffer, 0xFF, mControlPacketSize);
-        
+
         // Send twice for redundancy
         mSendContextPool[bufferIndex].buffer = buffer;
-        mSendContextPool[bufferIndex].owner = this;
-        mSession->sendDatagram(buffer, mControlPacketSize, 
+        mSendContextPool[bufferIndex].owner  = this;
+        mSession->sendDatagram(buffer, mControlPacketSize,
                                &mSendContextPool[bufferIndex].quicBuffer,
                                &mSendContextPool[bufferIndex]);
-        
+
         // Note: MsQuic will release the buffer via callback
         // For the second packet, we'd need another buffer or wait, but exit packets
         // are best-effort anyway
     }
-    
+
     emit signalCeaseTransmission();
 }
 
@@ -462,7 +463,7 @@ void WebTransportDataProtocol::processReceivedPacket(int8_t* packet, int packet_
         mTotCount += 1 + lost;
     }
     mInitialState = false;
-    mLastSeqNum = current_seq;
+    mLastSeqNum   = current_seq;
 
     // Check peer settings on first packet
     if (mTotCount == 1) {
@@ -492,8 +493,8 @@ void WebTransportDataProtocol::processReceivedPacket(int8_t* packet, int packet_
         int C       = std::min(mChans, peer_chans);
         for (int n = 0; n < N; ++n) {
             for (int c = 0; c < C; ++c) {
-                memcpy(dst + (n * mChans + c) * mSmplSize,
-                       src + (n + c * N) * mSmplSize, mSmplSize);
+                memcpy(dst + (n * mChans + c) * mSmplSize, src + (n + c * N) * mSmplSize,
+                       mSmplSize);
             }
         }
         src = dst;
@@ -539,11 +540,11 @@ bool WebTransportDataProtocol::getStats(PktStat* stat)
         return false;
     }
 
-    stat->tot = mTotCount.load();
-    stat->lost = mLostCount.load();
+    stat->tot        = mTotCount.load();
+    stat->lost       = mLostCount.load();
     stat->outOfOrder = mOutOfOrderCount.load();
-    stat->revived = mRevivedCount.load();
-    stat->statCount = mStatCount++;
+    stat->revived    = mRevivedCount.load();
+    stat->statCount  = mStatCount++;
 
     return true;
 }
@@ -552,8 +553,8 @@ bool WebTransportDataProtocol::getStats(PktStat* stat)
 void WebTransportDataProtocol::printWaitedTooLong(int wait_msec)
 {
     if (gVerboseFlag) {
-        cerr << "WebTransportDataProtocol: Waited " << wait_msec
-             << " ms for packet" << endl;
+        cerr << "WebTransportDataProtocol: Waited " << wait_msec << " ms for packet"
+             << endl;
     }
 }
 
@@ -563,7 +564,7 @@ void WebTransportDataProtocol::onDatagramReceived(const uint8_t* data, size_t le
     // LOCK-FREE & ZERO-COPY: Process datagrams directly in callback (like WebRTC)
     // This is called from the msquic callback thread
     // No heap allocations - works directly with the provided buffer pointer
-    
+
     // Check if we're already stopped to prevent use-after-free
     if (mStopped) {
         return;
@@ -587,11 +588,10 @@ void WebTransportDataProtocol::onDatagramReceived(const uint8_t* data, size_t le
     if (len > 0 && mChans > 0) {
         // Get full packet size (for RECEIVER, use getReceivePacketSizeInBytes)
         int full_packet_size = mJackTrip->getReceivePacketSizeInBytes();
-        
+
         // Process directly from the provided buffer pointer (no copy needed)
-        processReceivedPacket(
-            const_cast<int8_t*>(reinterpret_cast<const int8_t*>(data)),
-            static_cast<int>(len), full_packet_size);
+        processReceivedPacket(const_cast<int8_t*>(reinterpret_cast<const int8_t*>(data)),
+                              static_cast<int>(len), full_packet_size);
     }
 }
 

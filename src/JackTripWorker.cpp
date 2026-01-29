@@ -54,16 +54,17 @@
 #endif  // endwhere
 
 #ifdef WEBRTC_SUPPORT
-#include "webrtc/WebRtcDataProtocol.h"
 #include <rtc/rtc.hpp>
+
+#include "webrtc/WebRtcDataProtocol.h"
 #endif
 
 #ifdef WEBTRANSPORT_SUPPORT
 #include "webtransport/WebTransportDataProtocol.h"
 #endif
 
-using std::cout;
 using std::cerr;
+using std::cout;
 using std::endl;
 
 //*******************************************************************************
@@ -218,9 +219,8 @@ void JackTripWorker::start()
         cout << "---> JackTripWorker: setJackTripFromClientHeader..." << endl;
     if (!mUdpSockTemp.bind(QHostAddress::Any, mServerPort,
                            QUdpSocket::DefaultForPlatform)) {
-        cerr
-            << "in JackTripWorker: Could not bind UDP socket. It may already be bound."
-            << endl;
+        cerr << "in JackTripWorker: Could not bind UDP socket. It may already be bound."
+             << endl;
         throw std::runtime_error("Could not bind UDP socket. It may already be bound.");
     }
 }
@@ -275,10 +275,10 @@ void JackTripWorker::receivedFirstPacketUDP()
 
     // Set our jacktrip parameters from the received header data.
     quint16 port;
-    int packet_size     = mUdpSockTemp.pendingDatagramSize();
+    int packet_size = mUdpSockTemp.pendingDatagramSize();
     QScopedArrayPointer<int8_t> full_packet(new int8_t[packet_size]);
-    mUdpSockTemp.readDatagram(reinterpret_cast<char*>(full_packet.get()), packet_size, nullptr,
-                              &port);
+    mUdpSockTemp.readDatagram(reinterpret_cast<char*>(full_packet.get()), packet_size,
+                              nullptr, &port);
     mUdpSockTemp.close();  // close the socket
 
     // Alert the hub listener of the actual client port for incoming packets.
@@ -418,64 +418,6 @@ void JackTripWorker::alertPatcher()
 
 #ifdef WEBRTC_SUPPORT
 //*******************************************************************************
-void JackTripWorker::startWebRtc()
-{
-    QMutexLocker lock(&mMutex);
-
-    auto dataChannel = mWebRtcPeerConnection ? mWebRtcPeerConnection->getDataChannel() : nullptr;
-
-    if (!mSpawning || !dataChannel) {
-        cerr << "JackTripWorker::startWebRtc: ERROR - Cannot start WebRTC - not ready"
-             << " (mSpawning=" << mSpawning
-             << ", dataChannel=" << (dataChannel ? "valid" : "null")
-             << ")" << endl;
-        return;
-    }
-
-    mJackTrip->setConnectDefaultAudioPorts(m_connectDefaultAudioPorts);
-    mJackTrip->setUnderRunMode(mUnderRunMode);
-    mJackTrip->setAudioBitResolution(mAudioBitResolution);
-
-    if (mIOStatTimeout > 0) {
-        mJackTrip->setIOStatTimeout(mIOStatTimeout);
-        mJackTrip->setIOStatStream(mIOStatStream);
-    }
-
-    if (!mClientName.isEmpty()) {
-        mJackTrip->setClientName(mClientName);
-    }
-
-    if (mAppendThreadID) {
-        mJackTrip->setID(mID + 1);
-    }
-
-    mJackTrip->setPeerAddress(mClientAddress);
-    mJackTrip->setBindPorts(mServerPort);
-    mJackTrip->setBufferStrategy(mBufferStrategy);
-    mJackTrip->setNetIssuesSimulation(mSimulatedLossRate, mSimulatedJitterRate,
-                                      mSimulatedDelayRel);
-    mJackTrip->setBroadcast(mBroadcastQueue);
-    mJackTrip->setUseRtUdpPriority(mUseRtUdpPriority);
-
-    // Set the data protocol to WebRTC and provide the data channel
-    mJackTrip->setDataProtocoType(JackTrip::WEBRTC);
-    mJackTrip->setWebRtcDataChannel(dataChannel);
-
-    // Set up a lambda to capture the first message and forward to our handler
-    dataChannel->onMessage([this](rtc::message_variant data) {
-        if (std::holds_alternative<rtc::binary>(data)) {
-            auto& binary = std::get<rtc::binary>(data);
-
-            // Forward to our handler (needs to be thread-safe)
-            // Use QMetaObject::invokeMethod to call in the worker's thread
-            QMetaObject::invokeMethod(this, [this, binary]() {
-                receivedFirstPacketWebRtc(binary);
-            }, Qt::QueuedConnection);
-        }
-    });
-}
-
-//*******************************************************************************
 void JackTripWorker::receivedFirstPacketWebRtc(const std::vector<std::byte>& packet)
 {
     QMutexLocker lock(&mMutex);
@@ -529,24 +471,69 @@ void JackTripWorker::onWebRtcDataChannelOpen()
         return;
     }
 
-    // Get peer address
+    // Get peer address & client name
     QString peerAddress = mWebRtcPeerConnection->getPeerAddress();
-    if (peerAddress.isEmpty()) {
-        peerAddress = QStringLiteral("webrtc-peer");
-    }
+    mClientName         = mWebRtcPeerConnection->getClientName();
 
     // Get the base port from the hub listener and calculate the server port
-    int basePort = mUdpHubListener->getBasePort();
-    uint16_t serverPort = static_cast<uint16_t>(basePort + mID);
+    int basePort             = mUdpHubListener->getBasePort();
+    uint16_t serverPort      = static_cast<uint16_t>(basePort + mID);
     bool connectDefaultPorts = mUdpHubListener->getConnectDefaultAudioPorts();
-    
+
     setJackTrip(mID, peerAddress, serverPort, 0, connectDefaultPorts);
-    
+
     // Set protocol to WebRTC
     setDataProtocol(JackTrip::WEBRTC);
 
     // Start the worker with WebRTC transport
-    startWebRtc();
+    if (!mSpawning || !dataChannel) {
+        cerr << "JackTripWorker:: ERROR - Cannot start WebRTC - not ready"
+             << " (mSpawning=" << mSpawning
+             << ", dataChannel=" << (dataChannel ? "valid" : "null") << ")" << endl;
+        return;
+    }
+
+    mJackTrip->setConnectDefaultAudioPorts(m_connectDefaultAudioPorts);
+    mJackTrip->setUnderRunMode(mUnderRunMode);
+    mJackTrip->setAudioBitResolution(mAudioBitResolution);
+
+    if (mIOStatTimeout > 0) {
+        mJackTrip->setIOStatTimeout(mIOStatTimeout);
+        mJackTrip->setIOStatStream(mIOStatStream);
+    }
+
+    if (mAppendThreadID) {
+        mJackTrip->setID(mID + 1);
+    }
+
+    mJackTrip->setClientName(mClientName);
+    mJackTrip->setPeerAddress(mClientAddress);
+    mJackTrip->setBindPorts(mServerPort);
+    mJackTrip->setBufferStrategy(mBufferStrategy);
+    mJackTrip->setNetIssuesSimulation(mSimulatedLossRate, mSimulatedJitterRate,
+                                      mSimulatedDelayRel);
+    mJackTrip->setBroadcast(mBroadcastQueue);
+    mJackTrip->setUseRtUdpPriority(mUseRtUdpPriority);
+
+    // Set the data protocol to WebRTC and provide the data channel
+    mJackTrip->setDataProtocoType(JackTrip::WEBRTC);
+    mJackTrip->setWebRtcDataChannel(dataChannel);
+
+    // Set up a lambda to capture the first message and forward to our handler
+    dataChannel->onMessage([this](rtc::message_variant data) {
+        if (std::holds_alternative<rtc::binary>(data)) {
+            auto& binary = std::get<rtc::binary>(data);
+
+            // Forward to our handler (needs to be thread-safe)
+            // Use QMetaObject::invokeMethod to call in the worker's thread
+            QMetaObject::invokeMethod(
+                this,
+                [this, binary]() {
+                    receivedFirstPacketWebRtc(binary);
+                },
+                Qt::QueuedConnection);
+        }
+    });
 }
 
 //*******************************************************************************
@@ -562,8 +549,8 @@ void JackTripWorker::onWebRtcDataChannelClosed()
 //*******************************************************************************
 void JackTripWorker::onWebRtcConnectionFailed(const QString& reason)
 {
-    cerr << "JackTripWorker: WebRTC connection failed for worker " << mID
-         << ": " << reason.toStdString() << endl;
+    cerr << "JackTripWorker: WebRTC connection failed for worker " << mID << ": "
+         << reason.toStdString() << endl;
 
     // Stop the thread and signal removal
     stopThread();
@@ -579,7 +566,8 @@ void JackTripWorker::createWebTransportSession(WebTransportSession* session)
 {
     // Clean up old session if exists
     if (mWebTransportSession) {
-        cout << "JackTripWorker: Warning - replacing existing WebTransport session" << endl;
+        cout << "JackTripWorker: Warning - replacing existing WebTransport session"
+             << endl;
         mWebTransportSession->close();
         mWebTransportSession->deleteLater();
     }
@@ -598,16 +586,18 @@ void JackTripWorker::createWebTransportSession(WebTransportSession* session)
 
     // Set up handler for first datagram (to extract peer settings)
     // Use QMetaObject::invokeMethod to call in the worker's thread
-    mWebTransportSession->setDatagramCallback(
-        [this](const uint8_t* data, size_t len) {
-            // Copy the data since the callback may be from another thread
-            std::vector<uint8_t> dataCopy(data, data + len);
+    mWebTransportSession->setDatagramCallback([this](const uint8_t* data, size_t len) {
+        // Copy the data since the callback may be from another thread
+        std::vector<uint8_t> dataCopy(data, data + len);
 
-            // Forward to our handler (needs to be thread-safe)
-            QMetaObject::invokeMethod(this, [this, dataCopy]() {
+        // Forward to our handler (needs to be thread-safe)
+        QMetaObject::invokeMethod(
+            this,
+            [this, dataCopy]() {
                 this->receivedFirstPacketWebTransport(dataCopy.data(), dataCopy.size());
-            }, Qt::QueuedConnection);
-        });
+            },
+            Qt::QueuedConnection);
+    });
 
     // If session is already connected (msquic handles handshake), start immediately
     if (mWebTransportSession->isConnected()) {
@@ -628,7 +618,7 @@ void JackTripWorker::receivedFirstPacketWebTransport(const uint8_t* data, size_t
     // Unregister callback so we only process the first packet here
     // The DataProtocol will register its own callback after spawning
     mWebTransportSession->setDatagramCallback(nullptr);
-    
+
     cout << "JackTripWorker: Received first WebTransport packet, size=" << len << endl;
 
     // Extract peer settings from the packet and configure channels (zero-copy)
@@ -644,21 +634,13 @@ void JackTripWorker::onWebTransportSessionEstablished()
         return;
     }
 
-    // Get peer address
+    // Get peer address & client name
     QString peerAddress = mWebTransportSession->getPeerAddress();
-    if (peerAddress.isEmpty()) {
-        peerAddress = QStringLiteral("webtransport-peer");
-    }
-
-    // Get client name from session if available
-    QString clientName = mWebTransportSession->getClientName();
-    if (!clientName.isEmpty()) {
-        mAssignedClientName = clientName;
-    }
+    mClientName         = mWebTransportSession->getClientName();
 
     // Get the base port from the hub listener and calculate the server port
-    int basePort = mUdpHubListener->getBasePort();
-    uint16_t serverPort = static_cast<uint16_t>(basePort + mID);
+    int basePort             = mUdpHubListener->getBasePort();
+    uint16_t serverPort      = static_cast<uint16_t>(basePort + mID);
     bool connectDefaultPorts = mUdpHubListener->getConnectDefaultAudioPorts();
 
     setJackTrip(mID, peerAddress, serverPort, 0, connectDefaultPorts);
@@ -673,14 +655,11 @@ void JackTripWorker::onWebTransportSessionEstablished()
         mJackTrip->setIOStatStream(mIOStatStream);
     }
 
-    if (!mClientName.isEmpty()) {
-        mJackTrip->setClientName(mClientName);
-    }
-
     if (mAppendThreadID) {
         mJackTrip->setID(mID + 1);
     }
 
+    mJackTrip->setClientName(mClientName);
     mJackTrip->setPeerAddress(peerAddress);
     mJackTrip->setBindPorts(serverPort);
     mJackTrip->setBufferStrategy(mBufferStrategy);
@@ -712,8 +691,8 @@ void JackTripWorker::onWebTransportSessionClosed()
 //*******************************************************************************
 void JackTripWorker::onWebTransportSessionFailed(const QString& reason)
 {
-    cerr << "JackTripWorker: WebTransport session failed for worker " << mID
-         << ": " << reason.toStdString() << endl;
+    cerr << "JackTripWorker: WebTransport session failed for worker " << mID << ": "
+         << reason.toStdString() << endl;
 
     // Stop the thread and signal removal
     stopThread();

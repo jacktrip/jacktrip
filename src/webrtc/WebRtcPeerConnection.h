@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2008-2024 Juan-Pablo Caceres, Chris Chafe.
+  Copyright (c) 2008-2026 Juan-Pablo Caceres, Chris Chafe.
   SoundWIRE group at CCRMA, Stanford University.
 
   Permission is hereby granted, free of charge, to any person
@@ -31,8 +31,8 @@
 
 /**
  * \file WebRtcPeerConnection.h
- * \author JackTrip Contributors
- * \date 2024
+ * \author Mike Dickey + Claude AI
+ * \date 2026
  */
 
 #ifndef __WEBRTCPEERCONNECTION_H__
@@ -50,7 +50,8 @@ class QSslSocket;
 class WebSocketSignalingConnection;
 
 // Forward declarations for libdatachannel types
-namespace rtc {
+namespace rtc
+{
 class PeerConnection;
 class DataChannel;
 struct Configuration;
@@ -86,16 +87,17 @@ class WebRtcPeerConnection : public QObject
      * \param parent QObject parent
      */
     explicit WebRtcPeerConnection(const QStringList& iceServers = QStringList(),
-                                  QObject* parent = nullptr);
-    
+                                  QObject* parent               = nullptr);
+
     /** \brief Constructor with signaling socket
-     * \param signalingSocket The SSL socket for WebSocket signaling (ownership transferred)
+     * \param signalingSocket The SSL socket for WebSocket signaling (ownership
+     * transferred)
      * \param iceServers List of STUN/TURN server URLs
      * \param parent QObject parent
      */
     explicit WebRtcPeerConnection(QSslSocket* signalingSocket,
                                   const QStringList& iceServers = QStringList(),
-                                  QObject* parent = nullptr);
+                                  QObject* parent               = nullptr);
 
     /** \brief Destructor
      */
@@ -185,10 +187,15 @@ class WebRtcPeerConnection : public QObject
      */
     QString getPeerAddress() const;
 
+    /** \brief Get client name from WebSocket URL
+     * \return Client name from URL query parameter, or empty if not provided
+     */
+    QString getClientName() const;
+
     /** \brief Close the connection
      */
     void close();
-    
+
    signals:
     /// \brief Emitted when local SDP description is ready (offer or answer)
     void localDescriptionReady(const QString& sdp, const QString& type);
@@ -217,7 +224,7 @@ class WebRtcPeerConnection : public QObject
    private slots:
     /// \brief Handle incoming signaling messages from WebSocket connection
     void onSignalingMessageReceived(const WebRtcSignalingProtocol::SignalingMessage& msg);
-    
+
     /// \brief Handle signaling connection closed
     void onSignalingConnectionClosed();
 
@@ -256,4 +263,3 @@ class WebRtcPeerConnection : public QObject
 };
 
 #endif  // __WEBRTCPEERCONNECTION_H__
-

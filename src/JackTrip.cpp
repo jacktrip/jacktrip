@@ -70,8 +70,8 @@
 #include <stdexcept>
 using std::setw;
 
-using std::cout;
 using std::cerr;
+using std::cout;
 using std::endl;
 
 // the following function has to remain outside the Jacktrip class definition
@@ -158,9 +158,6 @@ JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
     , mSimulatedJitterRate(0.0)
     , mSimulatedDelayRel(0.0)
     , mUseRtUdpPriority(false)
-#ifdef WEBTRANSPORT_SUPPORT
-    , mWebTransportSession(nullptr)
-#endif
 {
     createHeader(mPacketHeaderType);
     sAudioStopped = false;
@@ -393,13 +390,12 @@ void JackTrip::setupDataProtocol()
         break;
     case WEBRTC:
 #ifdef WEBRTC_SUPPORT
-        cout << "JackTrip::setupDataProtocol: Using WebRTC Data Channel Protocol" 
-             << endl;
+        cout << "JackTrip::setupDataProtocol: Using WebRTC Data Channel Protocol" << endl;
         QThread::usleep(100);
         // Note: WebRTC data protocol requires a data channel to be set externally
         // via setWebRtcDataChannel before calling setupDataProtocol
         if (!mWebRtcDataChannel) {
-            cerr << "JackTrip::setupDataProtocol: ERROR - WebRTC data channel not set!" 
+            cerr << "JackTrip::setupDataProtocol: ERROR - WebRTC data channel not set!"
                  << endl;
             throw std::invalid_argument(
                 "WebRTC Protocol requires data channel to be set first");
@@ -418,21 +414,21 @@ void JackTrip::setupDataProtocol()
 #endif
     case WEBTRANSPORT:
 #ifdef WEBTRANSPORT_SUPPORT
-        std::cout << "JackTrip::setupDataProtocol: Using WebTransport Protocol" 
+        std::cout << "JackTrip::setupDataProtocol: Using WebTransport Protocol"
                   << std::endl;
         QThread::usleep(100);
         // Note: WebTransport protocol requires a session to be set externally
         // via setWebTransportSession before calling setupDataProtocol
         if (!mWebTransportSession) {
-            cerr << "JackTrip::setupDataProtocol: ERROR - WebTransport session not set!" 
+            cerr << "JackTrip::setupDataProtocol: ERROR - WebTransport session not set!"
                  << endl;
             throw std::invalid_argument(
                 "WebTransport Protocol requires session to be set first");
         }
-        mDataProtocolSender =
-            new WebTransportDataProtocol(this, DataProtocol::SENDER, mWebTransportSession);
-        mDataProtocolReceiver =
-            new WebTransportDataProtocol(this, DataProtocol::RECEIVER, mWebTransportSession);
+        mDataProtocolSender   = new WebTransportDataProtocol(this, DataProtocol::SENDER,
+                                                             mWebTransportSession);
+        mDataProtocolReceiver = new WebTransportDataProtocol(this, DataProtocol::RECEIVER,
+                                                             mWebTransportSession);
         mDataProtocolSender->setUseRtPriority(mUseRtUdpPriority);
         mDataProtocolReceiver->setUseRtPriority(mUseRtUdpPriority);
         std::cout << gPrintSeparator << std::endl;
@@ -571,19 +567,22 @@ void JackTrip::startProcess(
                 << "  JackTrip:startProcess before checkIfPortIsBinded(mReceiverBindPort)"
                 << std::endl;
         if (checkIfPortIsBinded(mReceiverBindPort)) {
-            stop(QStringLiteral("Could not bind %1 UDP socket. It may already be binded by "
-                                "another process on "
-                                "your machine. Try using a different port number")
+            stop(QStringLiteral(
+                     "Could not bind %1 UDP socket. It may already be binded by "
+                     "another process on "
+                     "your machine. Try using a different port number")
                      .arg(mReceiverBindPort));
             return;
         }
         if (gVerboseFlag)
-            std::cout << "  JackTrip:startProcess before checkIfPortIsBinded(mSenderBindPort)"
-                      << std::endl;
+            std::cout
+                << "  JackTrip:startProcess before checkIfPortIsBinded(mSenderBindPort)"
+                << std::endl;
         if (checkIfPortIsBinded(mSenderBindPort)) {
-            stop(QStringLiteral("Could not bind %1 UDP socket. It may already be binded by "
-                                "another process on "
-                                "your machine. Try using a different port number")
+            stop(QStringLiteral(
+                     "Could not bind %1 UDP socket. It may already be binded by "
+                     "another process on "
+                     "your machine. Try using a different port number")
                      .arg(mSenderBindPort));
             return;
         }
@@ -698,13 +697,13 @@ void JackTrip::startProcess(
     case SERVERPINGSERVER:
         if (gVerboseFlag)
             std::cout << "step 2S server only (same as 2s)" << std::endl;
-        // For WebRTC and WebTransport, skip UDP server start and go directly to connection completion
+        // For WebRTC and WebTransport, skip UDP server start and go directly to
+        // connection completion
         if (mDataProtocol == WEBRTC || mDataProtocol == WEBTRANSPORT) {
             if (gVerboseFlag)
                 std::cout << "  JackTrip:startProcess "
                           << (mDataProtocol == WEBRTC ? "WebRTC" : "WebTransport")
-                          << " mode, skipping serverStart"
-                          << std::endl;
+                          << " mode, skipping serverStart" << std::endl;
             // Data channel/session is already open, proceed directly to start threads
             completeConnection();
         } else {
@@ -738,14 +737,16 @@ void JackTrip::completeConnection()
 
     // Start Threads
     if (gVerboseFlag)
-        std::cout << "  JackTrip::completeConnection: Starting data protocol receiver thread..."
-                  << std::endl;
+        std::cout
+            << "  JackTrip::completeConnection: Starting data protocol receiver thread..."
+            << std::endl;
     mDataProtocolReceiver->start();
     mDataProtocolReceiver->waitForStart();
 
     if (gVerboseFlag)
-        std::cout << "  JackTrip::completeConnection: Starting data protocol sender thread..."
-                  << std::endl;
+        std::cout
+            << "  JackTrip::completeConnection: Starting data protocol sender thread..."
+            << std::endl;
     mDataProtocolSender->start();
     mDataProtocolSender->waitForStart();
     /*
@@ -780,7 +781,8 @@ void JackTrip::completeConnection()
 
     // Start our IO stat timer
     if (mIOStatTimeout > 0) {
-        cout << "Starting stat timer with interval " << mIOStatTimeout << " seconds" << endl;
+        cout << "Starting stat timer with interval " << mIOStatTimeout << " seconds"
+             << endl;
         if (!mIOStatStream.isNull()) {
             mIOStatLogStream.rdbuf((mIOStatStream.data()->rdbuf()));
         }
@@ -1380,7 +1382,8 @@ int JackTrip::serverStart(bool timeout, int udpTimeout)  // udpTimeout unused
              << endl;
         throw std::runtime_error("Could not bind UDP socket. It may be already binded.");
     }
-    connect(&mUdpSockTemp, &QUdpSocket::readyRead, this, &JackTrip::receivedFirstPacketUDP);
+    connect(&mUdpSockTemp, &QUdpSocket::readyRead, this,
+            &JackTrip::receivedFirstPacketUDP);
 
     if (gVerboseFlag)
         std::cout << "JackTrip:serverStart before !UdpSockTemp.hasPendingDatagrams()"

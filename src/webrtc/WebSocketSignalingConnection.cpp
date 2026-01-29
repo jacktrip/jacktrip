@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2008-2024 Juan-Pablo Caceres, Chris Chafe.
+  Copyright (c) 2008-2026 Juan-Pablo Caceres, Chris Chafe.
   SoundWIRE group at CCRMA, Stanford University.
 
   Permission is hereby granted, free of charge, to any person
@@ -31,27 +31,26 @@
 
 /**
  * \file WebSocketSignalingConnection.cpp
- * \author JackTrip Contributors
+ * \author Mike Dickey + Claude AI
  * \date 2026
  */
 
 #include "WebSocketSignalingConnection.h"
 
 #include <QCryptographicHash>
+#include <QUrl>
+#include <QUrlQuery>
 #include <QtEndian>
 #include <iostream>
 
-using std::cout;
 using std::cerr;
+using std::cout;
 using std::endl;
 
 //*******************************************************************************
 WebSocketSignalingConnection::WebSocketSignalingConnection(QSslSocket* socket,
                                                            int workerId, QObject* parent)
-    : QObject(parent)
-    , mSocket(socket)
-    , mWorkerId(workerId)
-    , mUpgradeComplete(false)
+    : QObject(parent), mSocket(socket), mWorkerId(workerId), mUpgradeComplete(false)
 {
     if (mSocket) {
         mSocket->setParent(this);
@@ -145,11 +144,29 @@ void WebSocketSignalingConnection::onDisconnected()
 //*******************************************************************************
 bool WebSocketSignalingConnection::handleWebSocketUpgrade(const QByteArray& data)
 {
-    // Parse HTTP headers to find Sec-WebSocket-Key
-    QString request = QString::fromUtf8(data);
+    // Parse HTTP headers to find Sec-WebSocket-Key and extract client name from URL
+    QString request   = QString::fromUtf8(data);
     QStringList lines = request.split(QStringLiteral("\r\n"));
 
     QString wsKey;
+    QString requestPath;
+
+    // Parse request line (e.g., "GET /path?name=ClientName HTTP/1.1")
+    if (!lines.isEmpty()) {
+        QStringList requestLineParts = lines[0].split(QStringLiteral(" "));
+        if (requestLineParts.size() >= 2) {
+            requestPath = requestLineParts[1];
+        }
+    }
+
+    // Extract client name from "name" query parameter in the path
+    // e.g., "/path?name=ClientName" -> extract "ClientName"
+    QUrl url(QStringLiteral("http://localhost") + requestPath);
+    QUrlQuery query(url);
+    if (query.hasQueryItem(QStringLiteral("name"))) {
+        mClientName = query.queryItemValue(QStringLiteral("name"));
+    }
+
     for (const QString& line : lines) {
         if (line.startsWith(QStringLiteral("Sec-WebSocket-Key:"), Qt::CaseInsensitive)) {
             wsKey = line.mid(18).trimmed();
@@ -167,15 +184,15 @@ bool WebSocketSignalingConnection::handleWebSocketUpgrade(const QByteArray& data
     const QString magicString = QStringLiteral("258EAFA5-E914-47DA-95CA-C5AB0DC85B11");
     QByteArray acceptData     = (wsKey + magicString).toUtf8();
     QByteArray sha1Hash = QCryptographicHash::hash(acceptData, QCryptographicHash::Sha1);
-    QString acceptKey         = QString::fromLatin1(sha1Hash.toBase64());
+    QString acceptKey   = QString::fromLatin1(sha1Hash.toBase64());
 
     // Send WebSocket upgrade response
     QString response = QStringLiteral(
-        "HTTP/1.1 101 Switching Protocols\r\n"
-        "Upgrade: websocket\r\n"
-        "Connection: Upgrade\r\n"
-        "Sec-WebSocket-Accept: %1\r\n"
-        "\r\n")
+                           "HTTP/1.1 101 Switching Protocols\r\n"
+                           "Upgrade: websocket\r\n"
+                           "Connection: Upgrade\r\n"
+                           "Sec-WebSocket-Accept: %1\r\n"
+                           "\r\n")
                            .arg(acceptKey);
 
     mSocket->write(response.toUtf8());
@@ -200,13 +217,13 @@ bool WebSocketSignalingConnection::decodeWebSocketFrame(QByteArray& buffer,
         return false;  // Need at least 2 bytes
     }
 
-    int pos      = 0;
-    quint8 byte0 = static_cast<quint8>(buffer[pos++]);
-    quint8 byte1 = static_cast<quint8>(buffer[pos++]);
-    bool fin     = (byte0 & 0x80) != 0;
-    quint8 opcode   = byte0 & 0x0F;
-    bool masked     = (byte1 & 0x80) != 0;
-    quint64 length  = byte1 & 0x7F;
+    int pos        = 0;
+    quint8 byte0   = static_cast<quint8>(buffer[pos++]);
+    quint8 byte1   = static_cast<quint8>(buffer[pos++]);
+    bool fin       = (byte0 & 0x80) != 0;
+    quint8 opcode  = byte0 & 0x0F;
+    bool masked    = (byte1 & 0x80) != 0;
+    quint64 length = byte1 & 0x7F;
 
     Q_UNUSED(fin)
 

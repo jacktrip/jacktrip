@@ -3,7 +3,7 @@
   JackTrip: A System for High-Quality Audio Network Performance
   over the Internet
 
-  Copyright (c) 2008-2024 Juan-Pablo Caceres, Chris Chafe.
+  Copyright (c) 2008-2026 Juan-Pablo Caceres, Chris Chafe.
   SoundWIRE group at CCRMA, Stanford University.
 
   Permission is hereby granted, free of charge, to any person
@@ -31,7 +31,7 @@
 
 /**
  * \file WebTransportSession.h
- * \author JackTrip Contributors
+ * \author Mike Dickey + Claude AI
  * \date 2026
  */
 
@@ -76,12 +76,12 @@ class WebTransportSession : public QObject
    public:
     /// \brief Session state enumeration
     enum SessionState {
-        STATE_NEW,           ///< Initial state
-        STATE_CONNECTING,    ///< QUIC handshake in progress
-        STATE_CONNECTED,     ///< Session established, ready for datagrams
-        STATE_SHUTTING_DOWN, ///< Shutdown initiated, waiting for SHUTDOWN_COMPLETE
-        STATE_DISCONNECTED,  ///< Session closed
-        STATE_FAILED         ///< Session failed
+        STATE_NEW,            ///< Initial state
+        STATE_CONNECTING,     ///< QUIC handshake in progress
+        STATE_CONNECTED,      ///< Session established, ready for datagrams
+        STATE_SHUTTING_DOWN,  ///< Shutdown initiated, waiting for SHUTDOWN_COMPLETE
+        STATE_DISCONNECTED,   ///< Session closed
+        STATE_FAILED          ///< Session failed
     };
     Q_ENUM(SessionState)
 
@@ -203,7 +203,8 @@ class WebTransportSession : public QObject
      * This bypasses Qt signals for maximum performance in the audio path.
      * Only one callback can be registered at a time.
      *
-     * \param callback Function to call when datagram is received (or nullptr to unregister)
+     * \param callback Function to call when datagram is received (or nullptr to
+     * unregister)
      */
     void setDatagramCallback(DatagramCallback callback) { mDatagramCallback = callback; }
 
@@ -242,8 +243,8 @@ class WebTransportSession : public QObject
    private:
     // HTTP/3 stream types
     enum H3StreamType {
-        H3_STREAM_CONTROL = 0x00,
-        H3_STREAM_PUSH = 0x01,
+        H3_STREAM_CONTROL       = 0x00,
+        H3_STREAM_PUSH          = 0x01,
         H3_STREAM_QPACK_ENCODER = 0x02,
         H3_STREAM_QPACK_DECODER = 0x03
     };
@@ -281,8 +282,8 @@ class WebTransportSession : public QObject
     HQUIC mControlStream;        ///< HTTP/3 control stream (server-initiated)
     HQUIC mQpackEncoderStream;   ///< QPACK encoder stream
     HQUIC mQpackDecoderStream;   ///< QPACK decoder stream
-    HQUIC mConnectStream;        ///< Client's CONNECT request stream (for sending response)
-    uint64_t mConnectStreamId;   ///< Stream ID of CONNECT stream (for quarter stream ID)
+    HQUIC mConnectStream;  ///< Client's CONNECT request stream (for sending response)
+    uint64_t mConnectStreamId;  ///< Stream ID of CONNECT stream (for quarter stream ID)
 
     // Session state
     SessionState mState;
@@ -292,11 +293,11 @@ class WebTransportSession : public QObject
     bool mSessionAccepted;
 
     // HTTP/3 settings exchange state
-    bool mControlStreamReady;        ///< Control stream START_COMPLETE received
-    bool mQpackEncoderStreamReady;   ///< QPACK encoder stream ready
-    bool mQpackDecoderStreamReady;   ///< QPACK decoder stream ready
-    bool mClientSettingsReceived;    ///< Client's SETTINGS frame received
-    bool mServerSettingsSent;        ///< Our SETTINGS frame sent
+    bool mControlStreamReady;       ///< Control stream START_COMPLETE received
+    bool mQpackEncoderStreamReady;  ///< QPACK encoder stream ready
+    bool mQpackDecoderStreamReady;  ///< QPACK decoder stream ready
+    bool mClientSettingsReceived;   ///< Client's SETTINGS frame received
+    bool mServerSettingsSent;       ///< Our SETTINGS frame sent
 
     // Datagram configuration
     size_t mMaxDatagramSize;
@@ -307,7 +308,7 @@ class WebTransportSession : public QObject
     // Thread safety
     mutable std::mutex mMutex;
     std::condition_variable mShutdownCv;  ///< Signaled when SHUTDOWN_COMPLETE fires
-    bool mShutdownComplete{false};  ///< Protected by mMutex
+    bool mShutdownComplete{false};        ///< Protected by mMutex
 };
 
 #endif  // __WEBTRANSPORTSESSION_H__
