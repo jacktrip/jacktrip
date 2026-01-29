@@ -385,7 +385,7 @@ jobs:
             rm -f /usr/bin/link.exe C:/msys64/usr/bin/link.EXE
           fi
           choco install jack --version=1.9.17 --no-progress
-          choco install pkgconfiglite --no-progress
+          choco install pkgconfiglite --no-progress --allow-empty-checksums
           choco install pandoc --no-progress
       - name: setup MSVC
         uses: ilammy/msvc-dev-cmd@v1

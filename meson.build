@@ -370,6 +370,7 @@ if get_option('libsamplerate').allowed()
 			opt_var.add_cmake_defines({'CMAKE_BUILD_TYPE': 'Debug'})
 		endif
 		opt_var.add_cmake_defines({'CMAKE_POSITION_INDEPENDENT_CODE': 'ON'})
+		opt_var.add_cmake_defines({'CMAKE_POLICY_VERSION_MINIMUM': '3.5'})
 		libsamplerate_subproject = cmake.subproject('libsamplerate', options: opt_var)
 		libsamplerate_dep = libsamplerate_subproject.dependency('samplerate')
 		found_libsamplerate = libsamplerate_dep.found()
