@@ -41,6 +41,7 @@
 #include <QHostAddress>
 #include <QMutex>
 #include <QObject>
+#include <QScopedPointer>
 #include <QUdpSocket>
 #include <iostream>
 
@@ -48,6 +49,14 @@
 #include "jacktrip_globals.h"
 #ifdef __JAMTEST__
 #include "JamTest.h"
+#endif
+
+#ifdef WEBRTC_SUPPORT
+#include "webrtc/WebRtcPeerConnection.h"
+#endif
+
+#ifdef WEBTRANSPORT_SUPPORT
+#include "webtransport/WebTransportSession.h"
 #endif
 
 // class JackTrip; // forward declaration
@@ -136,6 +145,34 @@ class JackTripWorker : public QObject
     uint16_t getClientPort() { return mClientPort; }
     QString getClientAddress() { return mClientAddress; }
 
+    /// \brief Set the data protocol type (UDP or WEBRTC)
+    void setDataProtocol(JackTrip::dataProtocolT protocol) { mDataProtocol = protocol; }
+
+#ifdef WEBRTC_SUPPORT
+    /// \brief Create and initialize WebRTC peer connection
+    /// \param signalingSocket The SSL socket for WebSocket signaling (ownership
+    /// transferred to connection)
+    /// \param iceServers List of STUN/TURN server URLs
+    void createWebRtcPeerConnection(QSslSocket* signalingSocket,
+                                    const QStringList& iceServers);
+
+    /// \brief Called when first packet is received on WebRTC data channel
+    /// Similar to receivedDataUDP() for UDP mode
+    void receivedFirstPacketWebRtc(const std::vector<std::byte>& packet);
+#endif
+
+#ifdef WEBTRANSPORT_SUPPORT
+    /// \brief Set the WebTransport session for this worker
+    /// \param session The WebTransport session (ownership transferred to this worker)
+    void createWebTransportSession(WebTransportSession* session);
+
+    /// \brief Called when first packet is received on WebTransport
+    /// Similar to receivedFirstPacketWebRtc() for WebRTC mode
+    /// \param data Pointer to packet data (zero-copy)
+    /// \param len Length of packet in bytes
+    void receivedFirstPacketWebTransport(const uint8_t* data, size_t len);
+#endif
+
     double getLatency()
     {
         QMutexLocker lock(&mMutex);
@@ -144,16 +181,31 @@ class JackTripWorker : public QObject
 
    private slots:
     void slotTest() { std::cout << "--- JackTripWorker TEST SLOT ---" << std::endl; }
-    void receivedDataUDP();
+    void receivedFirstPacketUDP();
     void udpTimerTick();
     void jacktripStopped();
     void alertPatcher();
+
+#ifdef WEBRTC_SUPPORT
+    void onWebRtcDataChannelOpen();
+    void onWebRtcDataChannelClosed();
+    void onWebRtcConnectionFailed(const QString& reason);
+#endif
+
+#ifdef WEBTRANSPORT_SUPPORT
+    void onWebTransportSessionEstablished();
+    void onWebTransportSessionClosed();
+    void onWebTransportSessionFailed(const QString& reason);
+#endif
 
    signals:
     void signalRemoveThread();
 
    private:
     JackTrip::connectionModeT getConnectionModeFromHeader();
+
+    /// \brief Process peer settings from packet header and configure channels
+    void processPeerSettings(int8_t* packet);
 
     QUdpSocket mUdpSockTemp;
     QTimer mTimeoutTimer;
@@ -189,6 +241,18 @@ class JackTripWorker : public QObject
     QMutex mMutex;  ///< Mutex to protect mSpawning
 
     int mID = 0;  ///< ID thread number
+
+    JackTrip::dataProtocolT mDataProtocol = JackTrip::UDP;  ///< Data protocol type
+
+#ifdef WEBRTC_SUPPORT
+    WebRtcPeerConnection* mWebRtcPeerConnection =
+        nullptr;  ///< WebRTC peer connection (owned)
+#endif
+
+#ifdef WEBTRANSPORT_SUPPORT
+    WebTransportSession* mWebTransportSession =
+        nullptr;  ///< WebTransport session (owned)
+#endif
 
     int mBufferStrategy         = 1;
     int mBroadcastQueue         = 0;

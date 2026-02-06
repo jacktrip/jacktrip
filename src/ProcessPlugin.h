@@ -54,10 +54,10 @@ class ProcessPlugin : public QObject
 
    public:
     /// \brief The Class Constructor
-    ProcessPlugin(){};
+    ProcessPlugin() {};
 
     /// \brief The Class Destructor
-    virtual ~ProcessPlugin(){};
+    virtual ~ProcessPlugin() {};
 
     /// \brief Return Number of Input Channels
     virtual int getNumInputs() = 0;

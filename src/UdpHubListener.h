@@ -52,6 +52,16 @@
 #include "JackTrip.h"
 #include "jacktrip_globals.h"
 #include "jacktrip_types.h"
+
+#ifdef WEBRTC_SUPPORT
+class WebRtcPeerConnection;
+#endif
+#ifdef WEBTRANSPORT_SUPPORT
+// Forward declare msquic types
+struct QUIC_API_TABLE;
+struct QUIC_HANDLE;
+typedef QUIC_HANDLE* HQUIC;
+#endif
 #ifndef NO_JACK
 #include "Patcher.h"
 #endif
@@ -89,6 +99,8 @@ class UdpHubListener : public QObject
     int releaseThread(int id);
     void releaseDuplicateThreads(JackTripWorker* worker, uint16_t actual_peer_port);
     void getClientLatencies(QVector<QString>& clientNames, QVector<double>& latencies);
+    int getBasePort() const { return mBasePort; }
+    bool getConnectDefaultAudioPorts() const { return m_connectDefaultAudioPorts; }
 
     void setConnectDefaultAudioPorts(bool connectDefaultAudioPorts)
     {
@@ -115,6 +127,7 @@ class UdpHubListener : public QObject
     void stopCheck();
     void queueBufferChanged(int queueBufferSize);
     void handleLatencyRequest(const QHostAddress& sender, quint16 senderPort);
+    void handleWorkerRemoval();
 
    signals:
     void signalStarted();
@@ -123,12 +136,13 @@ class UdpHubListener : public QObject
     void signalError(const QString& errorMessage);
 
    private:
+    // new bytes are ready to read from the client connection
+    void readyRead(QSslSocket* clientConnection);
+
     /** \brief Binds a QUdpSocket. It chooses the available (active) interface.
      * \param udpsocket a QUdpSocket
      * \param port Port number
      */
-    void receivedClientInfo(QSslSocket* clientConnection);
-
     static void bindUdpSocket(QUdpSocket& udpsocket, int port);
 
     int readClientUdpPort(QSslSocket* clientConnection, QString& clientName);
@@ -138,7 +152,7 @@ class UdpHubListener : public QObject
     void startOscServer()
     {
         // start osc server to listen to config updates
-        mOscServer = new OscServer(mServerPort, this);
+        mOscServer = new OscServer(mServerPort + 1, this);
         mOscServer->start();
 
         QObject::connect(mOscServer, &OscServer::signalQueueBufferChanged, this,
@@ -154,13 +168,21 @@ class UdpHubListener : public QObject
      */
     // void sendToPoolPrototype(int id);
 
-    /**
-     * \brief Check if address is already handled and reuse or create
-     * a JackTripWorker as appropriate
-     * \param address as string (IPv4 or IPv6)
-     * \return id number of JackTripWorker
-     */
-    int getJackTripWorker(const QString& address, uint16_t port, QString& clientName);
+    /// \brief Create a new JackTripWorker and allocate it a slot
+    /// \param clientName The client name (will be modified if mAppendThreadID is set)
+    /// \return The slot id, or -1 if no slots available
+    int createWorker(QString& clientName);
+
+#ifdef WEBRTC_SUPPORT
+    /// \brief Create a WebRTC worker for a new connection
+    int createWebRtcWorker(QSslSocket* signalingSocket);
+#endif
+
+#ifdef WEBTRANSPORT_SUPPORT
+    /// \brief Create a WebTransport worker for a new QUIC connection
+    int createWebTransportWorker(HQUIC connection, const QHostAddress& peerAddress,
+                                 quint16 peerPort);
+#endif
 
     /** \brief Returns the ID of the client in the pool. If the client
      * is not in the pool yet, returns -1.
@@ -216,6 +238,31 @@ class UdpHubListener : public QObject
     double mSimulatedJitterRate;
     double mSimulatedDelayRel;
     bool mUseRtUdpPriority;
+
+#ifdef WEBRTC_SUPPORT
+    /// \brief ICE servers for WebRTC connections
+    QStringList mIceServers;
+#endif
+
+#ifdef WEBTRANSPORT_SUPPORT
+    /// \brief msquic API table
+    const QUIC_API_TABLE* mQuicApi;
+
+    /// \brief msquic registration handle
+    HQUIC mQuicRegistration;
+
+    /// \brief msquic configuration handle
+    HQUIC mQuicConfiguration;
+
+    /// \brief msquic listener handle (for QUIC connections on UDP)
+    HQUIC mQuicListener;
+
+    /// \brief Initialize msquic library
+    bool initMsQuic();
+
+    /// \brief Cleanup msquic resources
+    void cleanupMsQuic();
+#endif
 
 #ifdef WAIR  // wair
     bool mWAIR;
@@ -289,6 +336,20 @@ class UdpHubListener : public QObject
     void setBroadcast(int broadcast_queue) { mBroadcastQueue = broadcast_queue; }
     void setUseRtUdpPriority(bool use) { mUseRtUdpPriority = use; }
     bool mAppendThreadID = false;
+
+#ifdef WEBRTC_SUPPORT
+    /// \brief Set ICE servers for WebRTC connections
+    void setIceServers(const QStringList& servers) { mIceServers = servers; }
+#endif
+
+#ifdef WEBTRANSPORT_SUPPORT
+   public:
+    /// \brief Handle incoming QUIC connection (must be public for static callback)
+    unsigned int handleQuicConnection(HQUIC connection, void* event);
+
+    /// \brief Handle listener events (must be public for static callback)
+    unsigned int handleListenerEvent(HQUIC listener, void* event);
+#endif
 };
 
 #endif  //__UDPHUBLISTENER_H__

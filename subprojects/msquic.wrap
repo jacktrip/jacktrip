@@ -1,0 +1,10 @@
+[wrap-file]
+directory = msquic
+source_url = https://files.jacktrip.org/contrib/msquic-85d4a4a5a79a04dc3bf5252156a7a3acb6dfe322.tar.gz
+source_filename = msquic-85d4a4a5a79a04dc3bf5252156a7a3acb6dfe322.tar.gz
+source_hash = 585d79a38e1499a3a33142bbc4f243b7b82ae83eab7d16bbeac58e0db185b1ab
+patch_directory = msquic
+
+[provide]
+dependency_names = msquic
+

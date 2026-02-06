@@ -159,6 +159,9 @@ else
 endif
 deps += qt_core_deps
 
+# Get Qt installation prefix for cmake subprojects
+qt_prefix = run_command(qmake, '-query', 'QT_INSTALL_PREFIX', check : true).stdout().strip()
+
 if get_option('nogui') == true or (get_option('noclassic') == true and get_option('novs') == true)
 	# command line only
 	defines += '-DNO_GUI'
@@ -384,6 +387,94 @@ if found_libsamplerate
 	deps += libsamplerate_dep
 endif
 
+# WebRTC Data Channel Support (requires libdatachannel)
+found_libdatachannel = false
+libdatachannel_extra_deps = []
+if get_option('libdatachannel').allowed()
+	# First try to find libdatachannel as a system dependency
+	libdatachannel_dep = dependency('libdatachannel', required: false)
+	if libdatachannel_dep.found()
+		found_libdatachannel = true
+	else
+		# Try to build libdatachannel as a subproject
+		opt_var = cmake.subproject_options()
+		if get_option('buildtype') == 'release'
+			opt_var.add_cmake_defines({'CMAKE_BUILD_TYPE': 'Release'})
+		else
+			opt_var.add_cmake_defines({'CMAKE_BUILD_TYPE': 'Debug'})
+		endif
+		opt_var.add_cmake_defines({'CMAKE_POSITION_INDEPENDENT_CODE': 'ON'})
+		# Build static library only
+		opt_var.add_cmake_defines({'BUILD_SHARED_LIBS': 'OFF'})
+		# Disable features we don't need to speed up build
+		opt_var.add_cmake_defines({'NO_WEBSOCKET': 'ON'})
+		opt_var.add_cmake_defines({'NO_MEDIA': 'ON'})
+		opt_var.add_cmake_defines({'NO_EXAMPLES': 'ON'})
+		opt_var.add_cmake_defines({'NO_TESTS': 'ON'})
+		opt_var.add_cmake_defines({'USE_GNUTLS': '0'})
+		opt_var.add_cmake_defines({'USE_NICE': '0'})
+		opt_var.add_cmake_defines({'CMAKE_PREFIX_PATH': qt_prefix})
+		libdatachannel_subproject = cmake.subproject('libdatachannel', options: opt_var, required: false)
+		if libdatachannel_subproject.found()
+			libdatachannel_dep = libdatachannel_subproject.dependency('datachannel')
+			found_libdatachannel = libdatachannel_dep.found()
+			# When building as a static library, we need to also link the private
+			# dependencies (libjuice and usrsctp) that libdatachannel uses internally
+			if found_libdatachannel
+				libdatachannel_extra_deps += libdatachannel_subproject.dependency('juice')
+				libdatachannel_extra_deps += libdatachannel_subproject.dependency('usrsctp')
+			endif
+		endif
+		if not found_libdatachannel and not get_option('libdatachannel').auto()
+			error('libdatachannel requested but could not be configured')
+		endif
+	endif
+endif
+if found_libdatachannel
+	defines += '-DWEBRTC_SUPPORT'
+	deps += libdatachannel_dep
+	deps += libdatachannel_extra_deps
+	src += [
+		'src/webrtc/WebRtcDataProtocol.cpp',
+		'src/webrtc/WebRtcPeerConnection.cpp',
+		'src/webrtc/WebRtcSignalingProtocol.cpp',
+		'src/webrtc/WebSocketSignalingConnection.cpp'
+	]
+	moc_h += [
+		'src/webrtc/WebRtcDataProtocol.h',
+		'src/webrtc/WebRtcPeerConnection.h',
+		'src/webrtc/WebRtcSignalingProtocol.h',
+		'src/webrtc/WebSocketSignalingConnection.h'
+	]
+endif
+
+# WebTransport support (requires msquic)
+found_msquic = false
+if get_option('msquic').allowed()
+	# Try to get msquic dependency (from system or subproject with native meson.build)
+	msquic_dep = dependency('msquic', required: false)
+	if not msquic_dep.found()
+		# Try the subproject with native meson.build overlay
+		msquic_subproject = subproject('msquic', required: get_option('msquic').enabled(), default_options: ['qt_prefix=' + qt_prefix])
+		if msquic_subproject.found()
+			msquic_dep = msquic_subproject.get_variable('msquic_dep')
+		endif
+	endif
+	found_msquic = msquic_dep.found()
+endif
+if found_msquic
+	defines += '-DWEBTRANSPORT_SUPPORT'
+	deps += msquic_dep
+	src += [
+		'src/webtransport/WebTransportSession.cpp',
+		'src/webtransport/WebTransportDataProtocol.cpp'
+	]
+	moc_h += [
+		'src/webtransport/WebTransportSession.h',
+		'src/webtransport/WebTransportDataProtocol.h'
+	]
+endif
+
 if host_machine.system() == 'darwin'
 	src += ['src/NoNap.mm']
 	# Adding CoreAudio here is a workaround and should be removed
@@ -463,4 +554,6 @@ summary({'Application ID': application_id,
 	'GUI': not get_option('nogui'),
 	'WAIR': get_option('wair'),
 	'Sample rate conversions': found_libsamplerate,
+	'WebRTC Data Channels': found_libdatachannel,
+	'WebTransport API': found_msquic,
 	'Manpage': help2man.found()}, bool_yn: true, section: 'Configuration')

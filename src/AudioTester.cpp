@@ -165,10 +165,10 @@ void AudioTester::lookForReturnPulse(QVarLengthArray<sample_t*>& out_buffer,
                 }  // found our impulse
                 // remain pending until timeout, hoping to find our return pulse
             }  // got something
-        }      // loop over samples
+        }  // loop over samples
         sampleCountSinceImpulse +=
             n_frames;  // gets reset to 1 when impulse is found, counts freely until then
-    }                  // ImpulsePending
+    }  // ImpulsePending
 }
 
 // Called 2nd in Audiointerface.cpp

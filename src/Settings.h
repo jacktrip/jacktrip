@@ -118,6 +118,7 @@ class Settings : public QObject
     QString getUsername() { return mUsername; }
     QString getPassword() { return mPassword; }
     const QString& getDeeplink() const { return mDeeplink; }
+    QString getIceServers() { return mIceServers; }
 
    private:
     void disableEcho(bool disabled);
@@ -193,6 +194,7 @@ class Settings : public QObject
     QString mUsername;
     QString mPassword;
     QString mDeeplink;
+    QString mIceServers;
 
     QSharedPointer<AudioTester> mAudioTester;
 };

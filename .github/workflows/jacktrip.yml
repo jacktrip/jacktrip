@@ -66,6 +66,8 @@ jobs:
             novs: true
             weakjack: false
             libsamplerate: true
+            webrtc: false
+            webtransport: false
             # jacktrip-path: jacktrip # needed for binary upload
             # binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
             # bundle-path: bundle # directory relative to build path; triggers application bundle creation and upload (macOS)
@@ -86,6 +88,8 @@ jobs:
             novs: true
             weakjack: false
             libsamplerate: true
+            webrtc: false
+            webtransport: false
             # jacktrip-path: jacktrip
             # binary-path: binary
             build-system: meson
@@ -100,6 +104,8 @@ jobs:
             nogui: false
             weakjack: false
             libsamplerate: true
+            webrtc: false
+            webtransport: false
             jacktrip-path: jacktrip # needed for binary upload
             binary-path: binary # directory relative to build path; triggers artifact upload for jacktrip binary
             build-system: docker
@@ -117,6 +123,8 @@ jobs:
             nogui: false
             weakjack: false
             libsamplerate: true
+            webrtc: false
+            webtransport: false
             jacktrip-path: jacktrip
             binary-path: binary
             build-system: docker
@@ -135,6 +143,8 @@ jobs:
             novs: true
             weakjack: false
             libsamplerate: true
+            webrtc: true
+            webtransport: true
             jacktrip-path: jacktrip
             binary-path: binary
             build-system: docker
@@ -142,6 +152,7 @@ jobs:
             docker-platform: linux/amd64
             meson-library-type: static
             qt-version: '6.8.3'
+            qt-download-commit: '344bf8c'
             qt-type: 'static'
             qt-arch: 'amd64'
 
@@ -154,6 +165,8 @@ jobs:
             novs: true
             weakjack: false
             libsamplerate: true
+            webrtc: true
+            webtransport: true
             jacktrip-path: jacktrip
             binary-path: binary
             build-system: docker
@@ -161,6 +174,7 @@ jobs:
             docker-platform: linux/arm64
             meson-library-type: static
             qt-version: '6.8.3'
+            qt-download-commit: '344bf8c'
             qt-type: 'static'
             qt-arch: 'arm64'
 
@@ -173,6 +187,8 @@ jobs:
             novs: true
             weakjack: false
             libsamplerate: true
+            webrtc: false
+            webtransport: false
             jacktrip-path: jacktrip
             binary-path: binary
             build-system: docker
@@ -193,6 +209,8 @@ jobs:
             novs: true
             weakjack: true
             libsamplerate: true
+            webrtc: false
+            webtransport: false
             jacktrip-path: jacktrip
             binary-path: binary
             build-system: meson
@@ -212,6 +230,8 @@ jobs:
             novs: false
             weakjack: true
             libsamplerate: true
+            webrtc: false
+            webtransport: false
             jacktrip-path: jacktrip
             # binary-path: binary # don't upload the binary itself since we upload the bundle
             bundle-path: bundle
@@ -234,6 +254,8 @@ jobs:
             novs: true
             weakjack: true
             libsamplerate: true
+            webrtc: false
+            webtransport: false
             qt-version: '6.8.3'
             qt-type: 'static'
             jacktrip-path: jacktrip.exe
@@ -250,6 +272,8 @@ jobs:
             novs: false
             weakjack: true
             libsamplerate: true
+            webrtc: false
+            webtransport: false
             qt-version: '6.8.3'
             qt-type: 'dynamic'
             jacktrip-path: jacktrip.exe
@@ -603,6 +627,16 @@ jobs:
             MESON_CONFIG="-Dlibsamplerate=enabled $MESON_CONFIG"
           else
             MESON_CONFIG="-Dlibsamplerate=disabled $MESON_CONFIG"
+          fi
+          if [[ "${{ matrix.webrtc }}" == true ]]; then
+            MESON_CONFIG="-Dlibsamplerate=enabled $MESON_CONFIG"
+          else
+            MESON_CONFIG="-Dlibsamplerate=disabled $MESON_CONFIG"
+          fi
+          if [[ "${{ matrix.webtransport }}" == true ]]; then
+            MESON_CONFIG="-Dmsquic=enabled $MESON_CONFIG"
+          else
+            MESON_CONFIG="-Dmsquic=disabled $MESON_CONFIG"
           fi
           if [[ -n "${{ matrix.macosx-architectures }}" ]]; then
             # TODO: for now, just assume that we want universal if it is not empty
@@ -1085,7 +1119,7 @@ jobs:
     name: 'deploy container'
     env:
       REGISTRY_IMAGE: jacktrip/jacktrip
-      JACK_VERSION: 1.9.22-20240505
+      JACK_VERSION: 1.9.22-20260129
     steps:
       - uses: actions/checkout@v3
         with:
