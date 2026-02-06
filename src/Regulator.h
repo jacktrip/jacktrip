@@ -236,7 +236,8 @@ class Regulator : public RingBuffer
    private:
     void pushPacket(const int8_t* buf, int seq_num);
     void updatePushStats(int seq_num);
-    bool pullPacket();    // returns true if PLC prediction
+    bool pullPacket();  // returns true if PLC prediction
+    bool underrun(const double now, const int lastSeqNumIn);
     bool enableWorker();  // returns true if worker was enabled
     void updateTolerance(int glitches, int skipped);
     void setFPPratio(int len);
@@ -288,6 +289,7 @@ class Regulator : public RingBuffer
     StdDev* pullStat          = nullptr;
     double mMsecTolerance     = 64;
     int mLastSeqNumOut        = -1;
+    int mStashedPacket        = -1;
     std::atomic<int> mLastSeqNumIn;
     QElapsedTimer mIncomingTimer;
     std::vector<double> mIncomingTiming;
