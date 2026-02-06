@@ -134,7 +134,7 @@ void OscServer::handlePacket(const OSCPP::Server::Packet& packet,
                 }
             } else if (msg == "/get") {
                 const char* key = args.string();
-                cout << "OSC: Get request received - key (" << key << ")" << endl;
+                // cout << "OSC: Get request received - key (" << key << ")" << endl;
                 if (strcmp("latency", key) == 0) {
                     emit signalLatencyRequested(sender, senderPort);
                 }
