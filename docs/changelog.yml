@@ -1,3 +1,14 @@
+- Version: "2.7.2"
+  Date: 2026-02-06
+  Description:
+  - (added) Documentation for the JackTrip network protocol
+  - (added) Hub server - log client name with UDP port
+  - (fixed) Fixed crash when JACK ran out of available ports
+  - (fixed) Refuse to run if DYLD_INSERT_LIBRARIES is set on OSX
+  - (fixed) Various PLC quality improvements and bug fixes
+  - (fixed) Improved error message when studio connection is lost
+  - (fixed) Suppressed verbose logging of OSC get requests
+  - (fixed) Added some missing Qt dependencies to Linux docs
 - Version: "2.7.1"
   Date: 2025-06-30
   Description:
