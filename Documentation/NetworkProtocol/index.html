@@ -1,0 +1,1787 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../../DevTools/StaticAnalysis/">
+      
+      
+        <link rel="next" href="../MkDocs/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.17">
+    
+    
+      
+        <title>Network Protocol - JackTrip</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.bcfcd587.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#jacktrip-network-protocol-as-implemented" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="JackTrip" class="md-header__button md-logo" aria-label="JackTrip" data-md-component="logo">
+      
+  <img src="../../assets/jacktrip.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            JackTrip
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Network Protocol
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/jacktrip/jacktrip" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../Install/" class="md-tabs__link">
+          
+  
+  User Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+    
+  
+  
+    
+    
+      
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../Build/Linux/" class="md-tabs__link">
+          
+  
+  Developer Guide
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../About/Contributors/" class="md-tabs__link">
+          
+  
+  About
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="JackTrip" class="md-nav__button md-logo" aria-label="JackTrip" data-md-component="logo">
+      
+  <img src="../../assets/jacktrip.svg" alt="logo">
+
+    </a>
+    JackTrip
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/jacktrip/jacktrip" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    User Guide
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            User Guide
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Install/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Installation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../VirtualStudio/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Virtual Studio
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../CustomJackServerName/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Using custom JACK server name
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Developer Guide
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Developer Guide
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_1" id="__nav_3_1_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    QMake Build
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1">
+            <span class="md-nav__icon md-icon"></span>
+            QMake Build
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Build/Linux/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Linux
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Build/Mac/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Mac OS
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Build/Windows/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Windows
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Build/Meson_build/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Meson Build
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_3" id="__nav_3_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Development Tools
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_3">
+            <span class="md-nav__icon md-icon"></span>
+            Development Tools
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../DevTools/Formatting/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Formatting
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../DevTools/StaticAnalysis/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Static Analysis
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Network Protocol
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Network Protocol
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#jacktrip-network-protocol-as-implemented" class="md-nav__link">
+    <span class="md-ellipsis">
+      JackTrip network protocol (as implemented)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="JackTrip network protocol (as implemented)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scope-and-non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scope and non-goals
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#transports-at-a-glance" class="md-nav__link">
+    <span class="md-ellipsis">
+      Transports at a glance
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#udp-audio-datagrams" class="md-nav__link">
+    <span class="md-ellipsis">
+      UDP audio datagrams
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="UDP audio datagrams">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#high-level-framing" class="md-nav__link">
+    <span class="md-ellipsis">
+      High-level framing
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#packet-header-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Packet header types
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#default-header-default" class="md-nav__link">
+    <span class="md-ellipsis">
+      Default header (DEFAULT)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Default header (DEFAULT)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#important-interoperability-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Important interoperability notes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jamlink-header-jamlink" class="md-nav__link">
+    <span class="md-ellipsis">
+      JamLink header (JAMLINK)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#empty-header-empty" class="md-nav__link">
+    <span class="md-ellipsis">
+      Empty header (EMPTY)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#udp-audio-payload" class="md-nav__link">
+    <span class="md-ellipsis">
+      UDP audio payload
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="UDP audio payload">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#size" class="md-nav__link">
+    <span class="md-ellipsis">
+      Size
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#channelsample-ordering-planar-non-interleaved" class="md-nav__link">
+    <span class="md-ellipsis">
+      Channel/sample ordering (planar / non-interleaved)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sample-encoding-bit-resolution" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sample encoding (bit resolution)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#udp-redundancy-optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      UDP redundancy (optional)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="UDP redundancy (optional)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#framing" class="md-nav__link">
+    <span class="md-ellipsis">
+      Framing
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#receiver-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      Receiver behavior
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#udp-stopcontrol-datagram" class="md-nav__link">
+    <span class="md-ellipsis">
+      UDP stop/control datagram
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#connection-setup-and-handshake" class="md-nav__link">
+    <span class="md-ellipsis">
+      Connection setup and “handshake”
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Connection setup and “handshake”">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#p2p-server-mode-udp-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      P2P server mode (UDP-only)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hub-ping-server-mode-tcp-handshake-udp-audio" class="md-nav__link">
+    <span class="md-ellipsis">
+      Hub / ping-server mode (TCP handshake + UDP audio)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Hub / ping-server mode (TCP handshake + UDP audio)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#unauthenticated-handshake-no-tls" class="md-nav__link">
+    <span class="md-ellipsis">
+      Unauthenticated handshake (no TLS)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#authentication-tls-handshake-optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      Authentication / TLS handshake (optional)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qos-marking-best-effort" class="md-nav__link">
+    <span class="md-ellipsis">
+      QoS marking (best-effort)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../MkDocs/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Write Documentation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    About
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            About
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../About/Contributors/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Contributors
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../About/Resources/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Resources
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../About/CHANGELOG/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Changelog
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../About/License/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    License
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#jacktrip-network-protocol-as-implemented" class="md-nav__link">
+    <span class="md-ellipsis">
+      JackTrip network protocol (as implemented)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="JackTrip network protocol (as implemented)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scope-and-non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scope and non-goals
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#transports-at-a-glance" class="md-nav__link">
+    <span class="md-ellipsis">
+      Transports at a glance
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#udp-audio-datagrams" class="md-nav__link">
+    <span class="md-ellipsis">
+      UDP audio datagrams
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="UDP audio datagrams">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#high-level-framing" class="md-nav__link">
+    <span class="md-ellipsis">
+      High-level framing
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#packet-header-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Packet header types
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#default-header-default" class="md-nav__link">
+    <span class="md-ellipsis">
+      Default header (DEFAULT)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Default header (DEFAULT)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#important-interoperability-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Important interoperability notes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jamlink-header-jamlink" class="md-nav__link">
+    <span class="md-ellipsis">
+      JamLink header (JAMLINK)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#empty-header-empty" class="md-nav__link">
+    <span class="md-ellipsis">
+      Empty header (EMPTY)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#udp-audio-payload" class="md-nav__link">
+    <span class="md-ellipsis">
+      UDP audio payload
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="UDP audio payload">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#size" class="md-nav__link">
+    <span class="md-ellipsis">
+      Size
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#channelsample-ordering-planar-non-interleaved" class="md-nav__link">
+    <span class="md-ellipsis">
+      Channel/sample ordering (planar / non-interleaved)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sample-encoding-bit-resolution" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sample encoding (bit resolution)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#udp-redundancy-optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      UDP redundancy (optional)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="UDP redundancy (optional)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#framing" class="md-nav__link">
+    <span class="md-ellipsis">
+      Framing
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#receiver-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      Receiver behavior
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#udp-stopcontrol-datagram" class="md-nav__link">
+    <span class="md-ellipsis">
+      UDP stop/control datagram
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#connection-setup-and-handshake" class="md-nav__link">
+    <span class="md-ellipsis">
+      Connection setup and “handshake”
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Connection setup and “handshake”">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#p2p-server-mode-udp-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      P2P server mode (UDP-only)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hub-ping-server-mode-tcp-handshake-udp-audio" class="md-nav__link">
+    <span class="md-ellipsis">
+      Hub / ping-server mode (TCP handshake + UDP audio)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Hub / ping-server mode (TCP handshake + UDP audio)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#unauthenticated-handshake-no-tls" class="md-nav__link">
+    <span class="md-ellipsis">
+      Unauthenticated handshake (no TLS)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#authentication-tls-handshake-optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      Authentication / TLS handshake (optional)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qos-marking-best-effort" class="md-nav__link">
+    <span class="md-ellipsis">
+      QoS marking (best-effort)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+  <h1>Network Protocol</h1>
+
+<h2 id="jacktrip-network-protocol-as-implemented">JackTrip network protocol (as implemented)</h2>
+<p>This document describes JackTrip’s <strong>on-the-wire protocol</strong> as implemented in the current source tree. It is intended for developers debugging or interoperating with JackTrip at the packet level.</p>
+<h3 id="scope-and-non-goals">Scope and non-goals</h3>
+<ul>
+<li><strong>In scope</strong>: the real-time <strong>UDP audio stream</strong>, its headers and payload layout, the optional <strong>UDP redundancy</strong> framing, the small <strong>UDP “stop” control packet</strong>, and the <strong>TCP handshake</strong> used by hub/ping-server style deployments (including the authentication variant).</li>
+<li><strong>Out of scope</strong>: local-only IPC (e.g. <code>QLocalSocket</code> “AudioSocket”), OSC control, and any higher-level application semantics outside packet exchange.</li>
+</ul>
+<h3 id="transports-at-a-glance">Transports at a glance</h3>
+<ul>
+<li><strong>UDP (audio)</strong>: real-time audio is sent as UDP datagrams containing <code>PacketHeader</code> + raw audio payload.</li>
+<li><strong>UDP (control)</strong>: a small fixed-size “stop” datagram is used to signal shutdown.</li>
+<li><strong>TCP (hub/ping-server handshake)</strong>: a short-lived TCP connection is used to exchange ephemeral UDP port information (and optionally do TLS + credentials). The client sends 4 bytes representing the port number it is binding to, and the server responds by sending 4 bytes representing its own port number.</li>
+</ul>
+<hr />
+<h2 id="udp-audio-datagrams">UDP audio datagrams</h2>
+<h3 id="high-level-framing">High-level framing</h3>
+<p>Each UDP datagram carries one of:</p>
+<ul>
+<li><strong>Audio datagram</strong>: one or more <strong>full packets</strong> (header + audio payload). When redundancy is disabled, there is exactly one full packet per UDP datagram. When redundancy is enabled, multiple full packets are concatenated into a single UDP datagram to provide forward error correction (FEC) (see “UDP redundancy”).</li>
+<li><strong>Stop/control datagram</strong>: exactly 63 bytes of <code>0xFF</code> (see “UDP stop/control datagram”).</li>
+</ul>
+<h3 id="packet-header-types">Packet header types</h3>
+<p>The header is selected by <code>DataProtocol::packetHeaderTypeT</code>:</p>
+<ul>
+<li><strong>DEFAULT</strong>: <code>DefaultHeaderStruct</code> (the standard JackTrip header).</li>
+<li><strong>JAMLINK</strong>: <code>JamLinkHeaderStuct</code> (JamLink compatibility).</li>
+<li><strong>EMPTY</strong>: no header (payload only).</li>
+</ul>
+<p>See <code>src/PacketHeader.h</code> and <code>src/PacketHeader.cpp</code>.</p>
+<h3 id="default-header-default">Default header (<code>DEFAULT</code>)</h3>
+<p>On-wire layout is the in-memory <code>DefaultHeaderStruct</code> copied with <code>memcpy()</code> (no explicit endian conversions).</p>
+<p>Fields (in order):</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">Field</th>
+<th>Type</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;"><code>TimeStamp</code></td>
+<td><code>uint64_t</code></td>
+<td>Timestamp in microseconds since Unix epoch (see <code>PacketHeader::usecTime()</code>).</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>SeqNumber</code></td>
+<td><code>uint16_t</code></td>
+<td>Sequence number; increments once per audio period and wraps at 16 bits.</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>BufferSize</code></td>
+<td><code>uint16_t</code></td>
+<td>Audio period size (N) in <strong>samples per channel</strong>.</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>SamplingRate</code></td>
+<td><code>uint8_t</code></td>
+<td>Encoded sample-rate enum value (<code>AudioInterface::samplingRateT</code>), <strong>not</strong> Hz.</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>BitResolution</code></td>
+<td><code>uint8_t</code></td>
+<td>Bits per sample (8/16/24/32).</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>NumIncomingChannelsFromNet</code></td>
+<td><code>uint8_t</code></td>
+<td>Channel count expected from the peer “from network” direction (see notes below).</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>NumOutgoingChannelsToNet</code></td>
+<td><code>uint8_t</code></td>
+<td>Channel count the sender is placing into the payload (see notes below).</td>
+</tr>
+</tbody>
+</table>
+<h4 id="important-interoperability-notes">Important interoperability notes</h4>
+<ul>
+<li><strong>Endianness / ABI</strong>: this header is serialized by raw <code>memcpy()</code> of a C struct. In practice this assumes:</li>
+<li>both sides are using compatible ABI/layout for the struct, and</li>
+<li>both sides are on the same endianness (typically <strong>little-endian</strong> on modern desktop platforms).</li>
+<li><strong>Channel fields are asymmetric</strong>: the implementation uses these fields to convey “incoming vs outgoing” channel counts, including a couple of sentinel behaviors:</li>
+<li><code>NumIncomingChannelsFromNet</code> is populated from local <em>audio interface output</em> channel count.</li>
+<li><code>NumOutgoingChannelsToNet</code> may be set to <code>0</code> when in/out channel counts match, or to <code>0xFF</code> when there are zero audio interface input channels.</li>
+</ul>
+<p>These behaviors come from <code>DefaultHeader::fillHeaderCommonFromAudio()</code> in <code>src/PacketHeader.cpp</code>.</p>
+<h3 id="jamlink-header-jamlink">JamLink header (<code>JAMLINK</code>)</h3>
+<p>Please note that JamLink is an obsolete device.</p>
+<p>JamLink uses a compact header:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">Field</th>
+<th>Type</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;"><code>Common</code></td>
+<td><code>uint16_t</code></td>
+<td>Bitfield describing mono/stereo, bit depth, sample rate, and samples-per-packet (JamLink “streamType”).</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>SeqNumber</code></td>
+<td><code>uint16_t</code></td>
+<td>Sequence number.</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>TimeStamp</code></td>
+<td><code>uint32_t</code></td>
+<td>Timestamp.</td>
+</tr>
+</tbody>
+</table>
+<p>The current implementation primarily fills this for JamLink constraints (mono, 48kHz, 64-sample buffers). See <code>JamLinkHeader::fillHeaderCommonFromAudio()</code> in <code>src/PacketHeader.cpp</code>.</p>
+<h3 id="empty-header-empty">Empty header (<code>EMPTY</code>)</h3>
+<p>No header; the UDP payload is raw audio data only.</p>
+<hr />
+<h2 id="udp-audio-payload">UDP audio payload</h2>
+<h3 id="size">Size</h3>
+<p>For a single full packet (no redundancy), the UDP payload length is:</p>
+<p>$$\text{headerBytes} + (N \times C \times \text{bytesPerSample})$$</p>
+<p>Where:</p>
+<ul>
+<li>(N) is <code>BufferSize</code> (samples per channel)</li>
+<li>(C) is the number of channels present in the payload</li>
+<li><code>bytesPerSample</code> is <code>BitResolution / 8</code></li>
+</ul>
+<h3 id="channelsample-ordering-planar-non-interleaved">Channel/sample ordering (planar / non-interleaved)</h3>
+<p>On the wire, the payload is <strong>planar</strong> (non-interleaved) by channel:</p>
+<ul>
+<li>First (N) samples for channel 0</li>
+<li>Then (N) samples for channel 1</li>
+<li>…</li>
+</ul>
+<p>This is explicit in <code>UdpDataProtocol</code> which converts between:</p>
+<ul>
+<li><strong>Internal</strong>: interleaved layout ([n][c])</li>
+<li><strong>Network</strong>: planar layout ([c][n])</li>
+</ul>
+<p>See <code>UdpDataProtocol::sendPacketRedundancy()</code> and <code>UdpDataProtocol::receivePacketRedundancy()</code> in <code>src/UdpDataProtocol.cpp</code>.</p>
+<h3 id="sample-encoding-bit-resolution">Sample encoding (bit resolution)</h3>
+<p>JackTrip processes audio internally as <code>float</code> (<code>sample_t</code>), but the network payload uses the selected bit resolution via <code>AudioInterface::fromSampleToBitConversion()</code> / <code>fromBitToSampleConversion()</code>.</p>
+<p>Behavior by bit resolution (<code>AudioInterface::audioBitResolutionT</code>):</p>
+<ul>
+<li><strong>8-bit (<code>BIT8</code>)</strong>: signed 8-bit integer, scaled from float in ([-1, 1]).</li>
+<li><strong>16-bit (<code>BIT16</code>)</strong>: signed 16-bit integer, written <strong>little-endian</strong>.</li>
+<li><strong>24-bit (<code>BIT24</code>)</strong>: a <strong>non-standard 3-byte format</strong>: a 16-bit signed integer plus an 8-bit unsigned “remainder” byte.</li>
+<li><strong>32-bit (<code>BIT32</code>)</strong>: raw 32-bit float bytes (<code>memcpy</code> of <code>float</code>), which implicitly assumes IEEE-754 and matching endianness.</li>
+</ul>
+<p>See <code>src/AudioInterface.cpp</code>.</p>
+<hr />
+<h2 id="udp-redundancy-optional">UDP redundancy (optional)</h2>
+<p>JackTrip can send redundant audio packets to reduce audible artifacts from packet loss.</p>
+<h3 id="framing">Framing</h3>
+<p>With redundancy factor (R), each UDP datagram contains <strong>R full packets</strong> concatenated:</p>
+<ul>
+<li>The newest packet is first (<code>UDP[n]</code>), followed by older packets (<code>UDP[n-1]</code>, …).</li>
+<li>Total UDP payload length becomes <code>R * full_packet_size</code>.</li>
+</ul>
+<p>The sender implements this by shifting a buffer and prepending the newest full packet each period.</p>
+<p>See <code>UdpDataProtocol::sendPacketRedundancy()</code> and the explanatory comment block in <code>src/UdpDataProtocol.cpp</code>.</p>
+<h3 id="receiver-behavior">Receiver behavior</h3>
+<p>Upon receiving a redundant datagram, the receiver:</p>
+<ul>
+<li>Reads the first packet’s <code>SeqNumber</code>.</li>
+<li>If it is not the next expected sequence, scans forward through the concatenated packets looking for the expected next one.</li>
+<li>May “revive” and deliver multiple packets from the redundant datagram in order.</li>
+<li>Treats large negative or implausibly large sequence jumps as <strong>out-of-order</strong> and ignores them.</li>
+</ul>
+<p>See <code>UdpDataProtocol::receivePacketRedundancy()</code> in <code>src/UdpDataProtocol.cpp</code>.</p>
+<hr />
+<h2 id="udp-stopcontrol-datagram">UDP stop/control datagram</h2>
+<p>JackTrip uses a special fixed-size UDP datagram to signal shutdown:</p>
+<ul>
+<li><strong>Length</strong>: 63 bytes</li>
+<li><strong>Contents</strong>: every byte is <code>0xFF</code></li>
+</ul>
+<p>The receiver checks for this exact pattern and treats it as “Peer Stopped”.</p>
+<p>See <code>UdpDataProtocol::processControlPacket()</code> and the shutdown path in <code>UdpDataProtocol::run()</code> in <code>src/UdpDataProtocol.cpp</code>.</p>
+<hr />
+<h2 id="connection-setup-and-handshake">Connection setup and “handshake”</h2>
+<p>JackTrip supports multiple deployment styles. The relevant “protocol” differs depending on mode.</p>
+<h3 id="p2p-server-mode-udp-only">P2P server mode (UDP-only)</h3>
+<p>In P2P server mode, there is <strong>no TCP handshake</strong>. Instead:</p>
+<ul>
+<li>The server binds a UDP socket on its configured receive port.</li>
+<li>It waits for the first UDP datagram.</li>
+<li>It uses the datagram’s source address/port as the peer endpoint for subsequent UDP send/receive.</li>
+</ul>
+<p>This supports basic NAT traversal by responding to the client’s observed source port.</p>
+<p>See <code>JackTrip::serverStart()</code> and <code>JackTrip::receivedDataUDP()</code> in <code>src/JackTrip.cpp</code>.</p>
+<h3 id="hub-ping-server-mode-tcp-handshake-udp-audio">Hub / ping-server mode (TCP handshake + UDP audio)</h3>
+<p>When connecting to a hub/ping-server style endpoint, JackTrip uses a short-lived TCP connection to exchange UDP port information.</p>
+<h4 id="unauthenticated-handshake-no-tls">Unauthenticated handshake (no TLS)</h4>
+<p>Client → server (TCP):</p>
+<ul>
+<li><code>int32</code> little-endian: the client’s UDP receive/bind port</li>
+<li><code>gMaxRemoteNameLength</code> bytes: optional UTF-8 “remote client name” (null-terminated, padded with zeros)</li>
+</ul>
+<p>Server → client (TCP):</p>
+<ul>
+<li><code>int32</code> little-endian: the server-assigned UDP port the client should use as its peer port</li>
+</ul>
+<p>The TCP connection is then closed.</p>
+<p>Client-side send/receive logic: <code>JackTrip::receivedConnectionTCP()</code> and <code>JackTrip::receivedDataTCP()</code> in <code>src/JackTrip.cpp</code><br />
+Server-side receive/send logic: <code>UdpHubListener::readClientUdpPort()</code> and <code>UdpHubListener::sendUdpPort()</code> in <code>src/UdpHubListener.cpp</code></p>
+<h4 id="authentication-tls-handshake-optional">Authentication / TLS handshake (optional)</h4>
+<p>This is an extension of the same TCP handshake using values above 65535 as “auth response” codes.</p>
+<p>High-level flow:</p>
+<ol>
+<li>Client connects TCP and sends an <code>int32</code> little-endian value of <code>Auth::OK</code> to request authentication.</li>
+<li>Server replies with an <code>int32</code> auth response (e.g. <code>Auth::OK</code>, <code>Auth::NOTREQUIRED</code>, <code>Auth::REQUIRED</code>, …).</li>
+<li>If both sides proceed, TLS is established on the same TCP socket.</li>
+<li>Client then sends:</li>
+<li><code>int32</code> LE: UDP receive/bind port</li>
+<li><code>gMaxRemoteNameLength</code> bytes: client name</li>
+<li><code>int32</code> LE: username length (excluding null terminator)</li>
+<li><code>int32</code> LE: password length (excluding null terminator)</li>
+<li><code>username</code> bytes + <code>\0</code></li>
+<li><code>password</code> bytes + <code>\0</code></li>
+<li>Server validates credentials and replies with either:</li>
+<li><code>int32</code> LE UDP port (&lt;= 65535) on success, or</li>
+<li><code>int32</code> LE auth error code (&gt; 65535) on failure</li>
+</ol>
+<p>Client-side: <code>JackTrip::receivedConnectionTCP()</code>, <code>JackTrip::connectionSecured()</code>, and <code>JackTrip::receivedDataTCP()</code> in <code>src/JackTrip.cpp</code><br />
+Server-side: <code>UdpHubListener::receivedClientInfo()</code>, <code>UdpHubListener::checkAuthAndReadPort()</code>, and <code>UdpHubListener::sendUdpPort()</code> in <code>src/UdpHubListener.cpp</code></p>
+<hr />
+<h2 id="qos-marking-best-effort">QoS marking (best-effort)</h2>
+<p>On supported platforms, JackTrip attempts to mark UDP packets as “voice” traffic:</p>
+<ul>
+<li>Linux/Unix: sets DSCP to 56 (<code>IP_TOS</code> / <code>IPV6_TCLASS</code> set to <code>0xE0</code>), and sets <code>SO_PRIORITY</code> to 6.</li>
+<li>Windows: uses QOS APIs with <code>QOSTrafficTypeVoice</code>.</li>
+<li>macOS: uses <code>SO_NET_SERVICE_TYPE</code> with <code>NET_SERVICE_TYPE_VO</code> (best-effort).</li>
+</ul>
+<p>See <code>src/UdpDataProtocol.cpp</code>.</p>
+<hr />
+<h2 id="references">References</h2>
+<p>For additional context on JackTrip's network behavior and interpretation of debug output (<code>-V</code> flag):</p>
+<p>Chafe, C. (2018). I am Streaming in a Room. <em>Frontiers in Digital Humanities</em>, Volume 5. https://doi.org/10.3389/fdigh.2018.00027</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs"], "search": "../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.1e8ae164.min.js"></script>
+      
+    
+  </body>
+</html>

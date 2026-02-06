@@ -1,0 +1,3536 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../Resources/">
+      
+      
+        <link rel="next" href="../License/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.17">
+    
+    
+      
+        <title>Changelog - JackTrip</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.bcfcd587.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#changelog" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="JackTrip" class="md-header__button md-logo" aria-label="JackTrip" data-md-component="logo">
+      
+  <img src="../../assets/jacktrip.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            JackTrip
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Changelog
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/jacktrip/jacktrip" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../Install/" class="md-tabs__link">
+          
+  
+  User Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../Build/Linux/" class="md-tabs__link">
+          
+  
+  Developer Guide
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../Contributors/" class="md-tabs__link">
+          
+  
+  About
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="JackTrip" class="md-nav__button md-logo" aria-label="JackTrip" data-md-component="logo">
+      
+  <img src="../../assets/jacktrip.svg" alt="logo">
+
+    </a>
+    JackTrip
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/jacktrip/jacktrip" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    User Guide
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            User Guide
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Install/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Installation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../VirtualStudio/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Virtual Studio
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../CustomJackServerName/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Using custom JACK server name
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Developer Guide
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Developer Guide
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_1" id="__nav_3_1_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    QMake Build
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1">
+            <span class="md-nav__icon md-icon"></span>
+            QMake Build
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Build/Linux/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Linux
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Build/Mac/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Mac OS
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Build/Windows/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Windows
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Build/Meson_build/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Meson Build
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_3" id="__nav_3_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Development Tools
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_3">
+            <span class="md-nav__icon md-icon"></span>
+            Development Tools
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../DevTools/Formatting/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Formatting
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../DevTools/StaticAnalysis/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Static Analysis
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Documentation/NetworkProtocol/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Network Protocol
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Documentation/MkDocs/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Write Documentation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    About
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            About
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Contributors/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Contributors
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Resources/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Resources
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Changelog
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Changelog
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#272" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.7.2
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#271" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.7.1
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#270" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.7.0
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#260" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.6.0
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#251" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.5.1
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#250" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.5.0
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#241" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.4.1
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#240" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.4.0
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#231" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.3.1
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#230" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.3.0
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#225" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2.5
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#224" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2.4
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#223" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2.3
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#222" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2.2
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#221" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2.1
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#220" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2.0
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#210" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.1.0
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#202" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.0.2
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#201" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.0.1
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#200" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.0.0
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1101" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.10.1
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1100" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.10.0
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#190" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.9.0
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#181" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.8.1
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#180" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.8.0
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#171" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.7.1
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#170" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.7.0
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#168" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.6.8
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#167" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.6.7
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#166" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.6.6
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#165" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.6.5
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#164" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.6.4
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#163" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.6.3
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#162" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.6.2
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#161" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.6.1
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#160" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.6.0
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#153" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.5.3
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#152" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.5.2
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#151" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.5.1
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#150" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.5.0
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#143" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.4.3
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#142" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.4.2
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#141" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.4.1
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#140" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.4.0
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#130" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.3.0
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#122" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.2.2
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#121" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.2.1
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.2
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.1
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#105" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.5
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#104" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.4
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#103" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.3
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#102-development" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.2 (Development)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#101-development" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.1 (Development)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-development" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0 (Development)
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../License/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    License
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#272" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.7.2
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#271" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.7.1
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#270" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.7.0
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#260" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.6.0
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#251" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.5.1
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#250" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.5.0
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#241" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.4.1
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#240" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.4.0
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#231" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.3.1
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#230" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.3.0
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#225" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2.5
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#224" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2.4
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#223" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2.3
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#222" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2.2
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#221" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2.1
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#220" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2.0
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#210" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.1.0
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#202" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.0.2
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#201" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.0.1
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#200" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.0.0
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1101" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.10.1
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1100" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.10.0
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#190" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.9.0
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#181" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.8.1
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#180" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.8.0
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#171" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.7.1
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#170" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.7.0
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#168" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.6.8
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#167" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.6.7
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#166" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.6.6
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#165" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.6.5
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#164" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.6.4
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#163" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.6.3
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#162" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.6.2
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#161" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.6.1
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#160" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.6.0
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#153" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.5.3
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#152" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.5.2
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#151" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.5.1
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#150" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.5.0
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#143" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.4.3
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#142" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.4.2
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#141" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.4.1
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#140" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.4.0
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#130" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.3.0
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#122" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.2.2
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#121" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.2.1
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.2
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.1
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#105" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.5
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#104" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.4
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#103" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.3
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#102-development" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.2 (Development)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#101-development" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0.1 (Development)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-development" class="md-nav__link">
+    <span class="md-ellipsis">
+      1.0 (Development)
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="changelog">Changelog</h1>
+<h2 id="272">2.7.2</h2>
+<ul>
+<li>
+<p>(added) Documentation for the JackTrip network protocol</p>
+</li>
+<li>
+<p>(added) Hub server - log client name with UDP port</p>
+</li>
+<li>
+<p>(fixed) Fixed crash when JACK ran out of available ports</p>
+</li>
+<li>
+<p>(fixed) Refuse to run if DYLD_INSERT_LIBRARIES is set on OSX</p>
+</li>
+<li>
+<p>(fixed) Various PLC quality improvements and bug fixes</p>
+</li>
+<li>
+<p>(fixed) Improved error message when studio connection is lost</p>
+</li>
+<li>
+<p>(fixed) Suppressed verbose logging of OSC get requests</p>
+</li>
+<li>
+<p>(fixed) Added some missing Qt dependencies to Linux docs</p>
+</li>
+</ul>
+<h2 id="271">2.7.1</h2>
+<ul>
+<li>
+<p>(added) Including Visual C++ Redistributable for Windows</p>
+</li>
+<li>
+<p>(fixed) Windows updater sometimes fails to open the download</p>
+</li>
+</ul>
+<h2 id="270">2.7.0</h2>
+<ul>
+<li>
+<p>(added) Audio Bridge Audio Unit for macOS</p>
+</li>
+<li>
+<p>(added) VS Mode ability to share specific screens or windows</p>
+</li>
+<li>
+<p>(updated) VS Mode reduced bandwidth for small video windows</p>
+</li>
+<li>
+<p>(updated) VS Mode enabled disk storage for WebEngine</p>
+</li>
+<li>
+<p>(updated) PLC auto headroom adjustments and bug fixes</p>
+</li>
+<li>
+<p>(updated) Upgraded all builds to use Qt 6.8.3</p>
+</li>
+<li>
+<p>(updated) Audio Bridge VST3 SDK updated to 3.7.13</p>
+</li>
+<li>
+<p>(updated) Use static Qt build when creating VST3 plugin on OSX</p>
+</li>
+<li>
+<p>(updated) Improved filters to blocklist iPhone microphones</p>
+</li>
+<li>
+<p>(fixed) VS Mode potential crash when shutting down</p>
+</li>
+<li>
+<p>(fixed) VS Mode shows too many options for stereo devices</p>
+</li>
+<li>
+<p>(fixed) Potential Audio Bridge deadlocks on Windows</p>
+</li>
+<li>
+<p>(fixed) Potential double delete in volume meters</p>
+</li>
+<li>
+<p>(fixed) Include man page in Linux shared binary zip file</p>
+</li>
+</ul>
+<h2 id="260">2.6.0</h2>
+<ul>
+<li>
+<p>(added) OSC endpoint to get latencies for connected clients</p>
+</li>
+<li>
+<p>(updated) PLC auto headroom allows higher latency when necessary</p>
+</li>
+<li>
+<p>(updated) VS Mode allow any two consecutive channels for input</p>
+</li>
+<li>
+<p>(updated) VS Mode easier audio switching between stereo and mono</p>
+</li>
+<li>
+<p>(updated) VS Mode latency statistics now include jitter buffer</p>
+</li>
+<li>
+<p>(updated) VS Mode improvements to audio quality override settings</p>
+</li>
+<li>
+<p>(updated) VS Mode temporarily disabling feedback detection</p>
+</li>
+<li>
+<p>(fixed) VS Mode kicked out of sessions due to studio change</p>
+</li>
+<li>
+<p>(fixed) VS Mode recognizes changes to server host and port</p>
+</li>
+<li>
+<p>(fixed) VS Mode bugs with reconnecting due to audio changes</p>
+</li>
+<li>
+<p>(fixed) VS Mode strange error message during startup on Linux</p>
+</li>
+<li>
+<p>(fixed) VS Mode empty studio list when starting up</p>
+</li>
+<li>
+<p>(fixed) Ability to build VS Mode using CMake</p>
+</li>
+<li>
+<p>(fixed) Ability to build aarch64 or armv7 on Alpine Linux</p>
+</li>
+<li>
+<p>(fixed) Ability to build using Qt 6.9 release candidates</p>
+</li>
+<li>
+<p>(fixed) Ability to disable the use of libsamplerate</p>
+</li>
+<li>
+<p>(fixed) Ignore timestamps when generating jacktrip.1.gz</p>
+</li>
+</ul>
+<h2 id="251">2.5.1</h2>
+<ul>
+<li>
+<p>(fixed) Updating Qt in Mac builds from 6.2.6 to 6.2.11</p>
+</li>
+<li>
+<p>(fixed) Strange error message during startup on Linux</p>
+</li>
+<li>
+<p>(fixed) VS Mode studio padding when browsing on Linux</p>
+</li>
+<li>
+<p>(fixed) VS Mode ensure studio data is fresh before connecting</p>
+</li>
+</ul>
+<h2 id="250">2.5.0</h2>
+<ul>
+<li>
+<p>(added) New JackTrip Audio Bridge VST3 Plugin</p>
+</li>
+<li>
+<p>(added) Sample rate conversion for audio interfaces</p>
+</li>
+<li>
+<p>(added) Automated arm64 and arm32 builds for Linux</p>
+</li>
+<li>
+<p>(added) Dynamic adjustment of PLC queues using OSC messages</p>
+</li>
+<li>
+<p>(updated) VS Mode remote control for audio quality slider</p>
+</li>
+<li>
+<p>(updated) VS Mode switch to using cookies for authentication</p>
+</li>
+<li>
+<p>(updated) PLC mode improvements in auto headroom calculations</p>
+</li>
+<li>
+<p>(fixed) PLC audio corruption when buffer sizes differ</p>
+</li>
+<li>
+<p>(fixed) PLC broadcast queue length when buffer sizes differ</p>
+</li>
+<li>
+<p>(fixed) Support for multiple commas in --audiodevice parameter</p>
+</li>
+<li>
+<p>(fixed) VS Mode access token expires after running for a day</p>
+</li>
+<li>
+<p>(fixed) VS Mode session feedback dialog closes on navigation</p>
+</li>
+<li>
+<p>(fixed) VS Mode deeplinks broken for first run after install</p>
+</li>
+</ul>
+<h2 id="241">2.4.1</h2>
+<ul>
+<li>
+<p>(fixed) Disabling qWave Quality of Service for Windows users</p>
+</li>
+<li>
+<p>(fixed) PLC occasional popping sound when you first connect</p>
+</li>
+<li>
+<p>(fixed) PLC auto headroom optimization for very low jitter</p>
+</li>
+</ul>
+<h2 id="240">2.4.0</h2>
+<ul>
+<li>
+<p>(addded) qWave Quality of Service for Windows users</p>
+</li>
+<li>
+<p>(addded) VS Mode warning when speakers selected for output</p>
+</li>
+<li>
+<p>(addded) VS Mode dialog when connecting with audio warning</p>
+</li>
+<li>
+<p>(updated) PLC auto headroom tweaks to improve audio quality</p>
+</li>
+<li>
+<p>(updated) Increased UDP timeout from 30 to 50 milliseconds</p>
+</li>
+<li>
+<p>(updated) MIT license for VS mode interface and integration</p>
+</li>
+<li>
+<p>(updated) Removed classic mode from JackTrip Labs builds</p>
+</li>
+<li>
+<p>(updated) ASIO is now only enabled for JackTrip Labs builds</p>
+</li>
+<li>
+<p>(updated) VS Mode now only supports buffer strategy 3 (PLC)</p>
+</li>
+<li>
+<p>(updated) VS Mode removed button click to create first studio</p>
+</li>
+<li>
+<p>(updated) VS Mode updated to use new studio creation interface</p>
+</li>
+<li>
+<p>(updated) VS Mode updated to use new user profile interface</p>
+</li>
+<li>
+<p>(updated) VS Mode changed red text color for buttons to black</p>
+</li>
+<li>
+<p>(updated) VS Mode improved error handling for login screen</p>
+</li>
+<li>
+<p>(updated) VS Mode improved messaging while loading studios</p>
+</li>
+<li>
+<p>(fixed) VS Mode possible failures when loading studios</p>
+</li>
+<li>
+<p>(fixed) VS Mode studio refresh updated to avoid jumpiness</p>
+</li>
+<li>
+<p>(fixed) VS Mode blocklisted iPhone microphone device</p>
+</li>
+<li>
+<p>(fixed) Race condition in automatic patching for JACK</p>
+</li>
+<li>
+<p>(fixed) Missing files in Linux binary zip file</p>
+</li>
+</ul>
+<h2 id="231">2.3.1</h2>
+<ul>
+<li>
+<p>(updated) VS Mode stronger recommendations for audio devices</p>
+</li>
+<li>
+<p>(updated) Reverting OSX builds from Qt 6.2.8 back to 6.2.6</p>
+</li>
+<li>
+<p>(fixed) Crash when JackTrip fails to connect using PLC</p>
+</li>
+<li>
+<p>(fixed) Screen sharing on OSX freezes when window is hidden</p>
+</li>
+<li>
+<p>(fixed) Sanity check for maximum UDP packet size</p>
+</li>
+</ul>
+<h2 id="230">2.3.0</h2>
+<ul>
+<li>
+<p>(added) Static Qt 5.15.13 nogui (CLI) builds for all platforms</p>
+</li>
+<li>
+<p>(added) VS Mode learn more buttons and warning links</p>
+</li>
+<li>
+<p>(updated) Significant PLC performance and quality improvements</p>
+</li>
+<li>
+<p>(updated) Reduced amount of latency added for PLC strategy</p>
+</li>
+<li>
+<p>(updated) Merged PLC buffer strategies (3 is now identical to 4)</p>
+</li>
+<li>
+<p>(updated) Automatically start PLC worker for slower predictions</p>
+</li>
+<li>
+<p>(updated) Builds now use Qt 6.2.8 for OSX and 5.15.13 for Linux</p>
+</li>
+<li>
+<p>(updated) Linux containers now use static builds with Qt 6.5.3</p>
+</li>
+<li>
+<p>(updated) VS Mode help links go to support.jacktrip.com</p>
+</li>
+<li>
+<p>(updated) VS Mode manage button goes to new studio dashboard</p>
+</li>
+<li>
+<p>(fixed) PLC degradation when peer != local buffer sizes</p>
+</li>
+<li>
+<p>(fixed) Port binding on machines that don't support IPv6</p>
+</li>
+<li>
+<p>(fixed) Command line interface debug logging improvements</p>
+</li>
+<li>
+<p>(fixed) VS Mode truncation of invite copied tooltip message</p>
+</li>
+</ul>
+<h2 id="225">2.2.5</h2>
+<ul>
+<li>
+<p>(fixed) VS Mode only admins could join new sessions starting up</p>
+</li>
+<li>
+<p>(fixed) VS Mode only ask for feedback if you've joined a session</p>
+</li>
+<li>
+<p>(updated) VS Mode updates to support self hosted virtual studios</p>
+</li>
+</ul>
+<h2 id="224">2.2.4</h2>
+<ul>
+<li>
+<p>(fixed) Allow software opengl for older windows video drivers</p>
+</li>
+<li>
+<p>(fixed) VS Mode avoid unnecessary JACK library checks at startup</p>
+</li>
+</ul>
+<h2 id="223">2.2.3</h2>
+<ul>
+<li>
+<p>(added) New container images for JackTrip hub server</p>
+</li>
+<li>
+<p>(fixed) Support for audio interfaces on OSX with multiple channels</p>
+</li>
+<li>
+<p>(fixed) Hub server crashes when trying to rebind ports</p>
+</li>
+<li>
+<p>(fixed) VS Mode blocklisted Generic Low Latency ASIO Driver</p>
+</li>
+<li>
+<p>(fixed) VS Mode inconsistent initial connection state</p>
+</li>
+</ul>
+<h2 id="222">2.2.2</h2>
+<ul>
+<li>
+<p>(updated) VS Mode updated network connection thresholds</p>
+</li>
+<li>
+<p>(updated) VS Mode improved sample rate flexibility for Windows</p>
+</li>
+<li>
+<p>(fixed) VS Mode inconsistent deep link handling on Windows</p>
+</li>
+<li>
+<p>(fixed) Throttle console errors for UDP waiting too long</p>
+</li>
+</ul>
+<h2 id="221">2.2.1</h2>
+<ul>
+<li>(fixed) Sample rate issues with certain Windows ASIO drivers</li>
+</ul>
+<h2 id="220">2.2.0</h2>
+<ul>
+<li>
+<p>(updated) Improved support for different input and output devices</p>
+</li>
+<li>
+<p>(updated) Various latency improvements for packet loss concealment</p>
+</li>
+<li>
+<p>(updated) VS Mode make it easier to dismiss the user feedback dialog</p>
+</li>
+<li>
+<p>(updated) VS Mode error message for disconnected audio interfaces</p>
+</li>
+<li>
+<p>(fixed) VS Mode broken deeplinks when studio doesn't match filters</p>
+</li>
+<li>
+<p>(fixed) VS Mode refused to connect to studios not 48khz</p>
+</li>
+<li>
+<p>(fixed) VS Mode showed wrong devices selected when connected</p>
+</li>
+</ul>
+<h2 id="210">2.1.0</h2>
+<ul>
+<li>
+<p>(added) VS Mode ability to create studios without a web browser</p>
+</li>
+<li>
+<p>(added) VS Mode improved network stability notifications</p>
+</li>
+<li>
+<p>(added) VS Mode dialog when QML plugins are missing</p>
+</li>
+<li>
+<p>(updated) VS Mode video improvements on Windows</p>
+</li>
+<li>
+<p>(updated) Packet loss concealment latency and quality improvements</p>
+</li>
+<li>
+<p>(fixed) Packet loss concealment glitches when buffer sizes don't match</p>
+</li>
+<li>
+<p>(fixed) VS Mode ensure that the app is disconnected at startup</p>
+</li>
+<li>
+<p>(fixed) Invalid escape sequence in Linux desktop file</p>
+</li>
+<li>
+<p>(fixed) VS Mode unable to change update channel</p>
+</li>
+</ul>
+<h2 id="202">2.0.2</h2>
+<ul>
+<li>
+<p>(added) VS Mode latency categories for Linux audio devices</p>
+</li>
+<li>
+<p>(added) VS Mode audio warnings for high latency Linux devices</p>
+</li>
+<li>
+<p>(updated) Improved support for Pipewire latency on Linux</p>
+</li>
+<li>
+<p>(fixed) Crash on Windows when using the JACK audio backend</p>
+</li>
+<li>
+<p>(fixed) Include ALSA support for Linux builds using meson</p>
+</li>
+<li>
+<p>(fixed) VS Mode overlapping UI elements with max scaling</p>
+</li>
+<li>
+<p>(fixed) Don't require git to be present for meson builds</p>
+</li>
+<li>
+<p>(fixed) Linux man page description and meson build errors</p>
+</li>
+</ul>
+<h2 id="201">2.0.1</h2>
+<ul>
+<li>
+<p>(fixed) VS Mode Mix to Mono setting was sending a buzzing noise</p>
+</li>
+<li>
+<p>(fixed) VS Mode Logout followed by Login was breaking network stats</p>
+</li>
+<li>
+<p>(fixed) Device names with special characters work again</p>
+</li>
+</ul>
+<h2 id="200">2.0.0</h2>
+<ul>
+<li>
+<p>(added) VS Mode integrated video and other UI updates</p>
+</li>
+<li>
+<p>(added) VS support for refreshing devices while connected to studio</p>
+</li>
+<li>
+<p>(added) VS feedback survey request after leaving studios</p>
+</li>
+<li>
+<p>(added) VS Mode improved warnings for high latency audio devices</p>
+</li>
+<li>
+<p>(added) VS Mode improved getting started recommendations</p>
+</li>
+<li>
+<p>(updated) official builds now use Qt 6 and RtAudio 6</p>
+</li>
+<li>
+<p>(updated) official Windows builds now use schannel and MSVC</p>
+</li>
+<li>
+<p>(updated) Simple-FFT dependency copied into source tree</p>
+</li>
+<li>
+<p>(updated) Improved user experience when using the RtAudio backend</p>
+</li>
+<li>
+<p>(fixed) Crashes when audio interfaces don't support buffer size</p>
+</li>
+<li>
+<p>(fixed) Crashes when audio interfaces are unplugged while active</p>
+</li>
+<li>
+<p>(fixed) Blocklisting Steinberg Generic ASIO driver due to crashes</p>
+</li>
+<li>
+<p>(fixed) Bugs with Virtual Studio deep links and connections stats</p>
+</li>
+<li>
+<p>(fixed) VS Settings will now revert back when Cancel is selected</p>
+</li>
+<li>
+<p>(fixed) VS Mode device levels no longer reset on first registration</p>
+</li>
+</ul>
+<h2 id="1101">1.10.1</h2>
+<ul>
+<li>(fixed) VS Mode crashes involving ASIO device selection</li>
+</ul>
+<h2 id="1100">1.10.0</h2>
+<ul>
+<li>
+<p>(added) VS Mode automatically mute when feedback is detected</p>
+</li>
+<li>
+<p>(added) VS Mode - notify people of network outages</p>
+</li>
+<li>
+<p>(updated) PLC optimizations for slower hardware devices</p>
+</li>
+<li>
+<p>(updated) VS Mode volume meter performance improvements</p>
+</li>
+<li>
+<p>(updated) VS Mode login no longer listens on a local port</p>
+</li>
+<li>
+<p>(updated) VS Mode improved clarity of startup messages</p>
+</li>
+<li>
+<p>(fixed) Windows crash caused by Realtek ASIO driver</p>
+</li>
+<li>
+<p>(fixed) More friendly message for Windows Terminal bug</p>
+</li>
+<li>
+<p>(fixed) Faster startup by reducing and deferring audio interface scans</p>
+</li>
+<li>
+<p>(fixed) Switching from VS to Classic mode leaves audio open</p>
+</li>
+</ul>
+<h2 id="190">1.9.0</h2>
+<ul>
+<li>
+<p>(added) buffer strategy 4 to run PLC in audio callback</p>
+</li>
+<li>
+<p>(added) VS Mode - change audio devices while connected</p>
+</li>
+<li>
+<p>(added) universal binary for macOS</p>
+</li>
+<li>
+<p>(added) tooltips, sliders, and positioning of connected interface</p>
+</li>
+<li>
+<p>(added) emails for vulnerability reporting</p>
+</li>
+<li>
+<p>(added) local monitoring</p>
+</li>
+<li>
+<p>(added) VS mode - Error message when single studio limit reached</p>
+</li>
+<li>
+<p>(updated) regulator thread uses real-time priority</p>
+</li>
+<li>
+<p>(updated) VS mode - use buffer strategy 4</p>
+</li>
+<li>
+<p>(updated) VS mode - Default to PLC</p>
+</li>
+<li>
+<p>(updated) VS Mode - PLC auto queue has 5ms headroom</p>
+</li>
+<li>
+<p>(updated) Enforcing using the same ASIO device on Windows</p>
+</li>
+<li>
+<p>(updated) VS Mode - JTL builds hide the yes/no screen on first launch</p>
+</li>
+<li>
+<p>(updated) GHA - wait for static Qt builds rather than failing</p>
+</li>
+<li>
+<p>(updated) VS Mode - "all devices" is now "high latency"</p>
+</li>
+<li>
+<p>(updated) VS Mode - Warning text for non-ASIO Windows devices</p>
+</li>
+<li>
+<p>(updated) Faust-generate code moved out of headers</p>
+</li>
+<li>
+<p>(fixed) PLC bugs</p>
+</li>
+<li>
+<p>(fixed) VS Mode - changing devices while connected refreshes device lists</p>
+</li>
+<li>
+<p>(fixed) play test tone on Linux</p>
+</li>
+<li>
+<p>(fixed) static openssl on Linux</p>
+</li>
+</ul>
+<h2 id="181">1.8.1</h2>
+<ul>
+<li>
+<p>(added) VS mode - tooltips to explain input and output device</p>
+</li>
+<li>
+<p>(added) buffer size and sample rate now settable with Pipewire</p>
+</li>
+<li>
+<p>(added) VS mode - link to create a studio on the login complete page</p>
+</li>
+<li>
+<p>(fixed) Device names with special characters work again</p>
+</li>
+<li>
+<p>(fixed) undefine boolean error</p>
+</li>
+<li>
+<p>(fixed) VS Mode - Audio settings correctly show the selected device</p>
+</li>
+<li>
+<p>(fixed) VS Mode - Refresh button doesn't crash Windows any more</p>
+</li>
+<li>
+<p>(fixed) VS Mode - Output channel selections save correctly</p>
+</li>
+<li>
+<p>(updated) documentation styling</p>
+</li>
+<li>
+<p>(updated) removed ipify from VS mode</p>
+</li>
+<li>
+<p>(updated) ip check can now function with only IPv6</p>
+</li>
+<li>
+<p>(updated) cleaned up vsinit class</p>
+</li>
+</ul>
+<h2 id="180">1.8.0</h2>
+<ul>
+<li>
+<p>(added) Qt version option for Meson builds</p>
+</li>
+<li>
+<p>(added) GHA builds now include static preview docs</p>
+</li>
+<li>
+<p>(added) when using the classic GUI, command line options are now parsed</p>
+</li>
+<li>
+<p>(added) VS mode - Selecting and configuring device channels</p>
+</li>
+<li>
+<p>(added) Classic mode - Warning for machines without JACK installed</p>
+</li>
+<li>
+<p>(added) VS mode - high latency warning for non-ASIO devices</p>
+</li>
+<li>
+<p>(added) Meson build without rtaudio in GHA</p>
+</li>
+<li>
+<p>(updated) icons in VS mode</p>
+</li>
+<li>
+<p>(updated) Linux builds now use Qt 5.15.8</p>
+</li>
+<li>
+<p>(updated) Replaced QVector in meter code</p>
+</li>
+<li>
+<p>(updated) Removed set-output from GHA scripts for deprecation</p>
+</li>
+<li>
+<p>(updated) Automated the auto-updater release process</p>
+</li>
+<li>
+<p>(updated) RtAudio is included in Linux binary releases</p>
+</li>
+<li>
+<p>(updated) text on audio setup confirm button when using deeplink</p>
+</li>
+<li>
+<p>(updated) VS Mode - improved first-time signin</p>
+</li>
+<li>
+<p>(updated) Flathub - improve latency by defaulting to 256 samples buffer size</p>
+</li>
+<li>
+<p>(fixed) ambiguous call to overloaded function in Qt6</p>
+</li>
+<li>
+<p>(fixed) issue where selected devices were not the devices used for output</p>
+</li>
+<li>
+<p>(fixed) crash when using Classic mode and CLI w/ JACK</p>
+</li>
+<li>
+<p>(fixed) ipify issue with Norton</p>
+</li>
+<li>
+<p>(fixed) compiler warnings when building without RtAudio</p>
+</li>
+<li>
+<p>(fixed) VS Mode - refresh button behavior on settings page</p>
+</li>
+</ul>
+<h2 id="171">1.7.1</h2>
+<ul>
+<li>
+<p>(added) missing QuickControl2 dependency</p>
+</li>
+<li>
+<p>(added) documentation preview in build steps</p>
+</li>
+<li>
+<p>(added) README text about PPA and Debian backports</p>
+</li>
+<li>
+<p>(updated) upgraded to Qt 5.15.3</p>
+</li>
+<li>
+<p>(updated) linux package dependencies</p>
+</li>
+<li>
+<p>(updated) JackTrip now uses a random available port when connecting</p>
+</li>
+<li>
+<p>(updated) VS mode - Audio settings screen layouts</p>
+</li>
+<li>
+<p>(fixed) VS mode - video button is now available to all users of a Studio</p>
+</li>
+<li>
+<p>(fixed) A few memory leaks</p>
+</li>
+<li>
+<p>(fixed) linux static builds</p>
+</li>
+</ul>
+<h2 id="170">1.7.0</h2>
+<ul>
+<li>
+<p>(added) VS Mode - Start and join inactive studios</p>
+</li>
+<li>
+<p>(added) JackTrip now prints build info on running from console</p>
+</li>
+<li>
+<p>(added) VS Mode - supports changing output volume from the server</p>
+</li>
+<li>
+<p>(added) VS Mode - Link to video on VS web when connected</p>
+</li>
+<li>
+<p>(updated) signing now happens in the main build workflow</p>
+</li>
+<li>
+<p>(updated) VS mode sorts active studios above inactive studios</p>
+</li>
+<li>
+<p>(updated) cmake build</p>
+</li>
+<li>
+<p>(updated) meson builds will fail if no backend is enabled</p>
+</li>
+<li>
+<p>(updated) replaced many ifdefs with if constexpr</p>
+</li>
+<li>
+<p>(updated) After signing out of VS mode, you will be asked to sign back in on the web</p>
+</li>
+<li>
+<p>(fixed) network stats failing after studio start</p>
+</li>
+<li>
+<p>(fixed) occasional immediate disconnects</p>
+</li>
+<li>
+<p>(fixed) segfault issue due to ifdefs</p>
+</li>
+<li>
+<p>(fixed) Hanging UI on Windows</p>
+</li>
+<li>
+<p>(fixed) turned a comment warning into an appropriate error</p>
+</li>
+<li>
+<p>(fixed) VS Mode - Join issue withs studios started in app</p>
+</li>
+<li>
+<p>(fixed) hanging app after refreshing studios</p>
+</li>
+<li>
+<p>(fixed) VS Mode - TCP 19 error after starting a studio</p>
+</li>
+</ul>
+<h2 id="168">1.6.8</h2>
+<ul>
+<li>
+<p>(fixed) broken "Yes" button on launch</p>
+</li>
+<li>
+<p>(fixed) window resizing issues</p>
+</li>
+<li>
+<p>(fixed) subscribed studios showing up under Public in VS mode</p>
+</li>
+</ul>
+<h2 id="167">1.6.7</h2>
+<ul>
+<li>
+<p>(added) volume meters in classic mode</p>
+</li>
+<li>
+<p>(added) release-acquire ordering for Regular</p>
+</li>
+<li>
+<p>(added) audio driver support article in VS mode</p>
+</li>
+<li>
+<p>(added) regulatorthread</p>
+</li>
+<li>
+<p>(added) studios page first time UI</p>
+</li>
+<li>
+<p>(added) non-asio audio devices can be used on windows</p>
+</li>
+<li>
+<p>(updated) dependency list in documentation</p>
+</li>
+<li>
+<p>(updated) windows opens jacktrip after install</p>
+</li>
+<li>
+<p>(updated) Move to overlapped I/O for Windows Networking</p>
+</li>
+<li>
+<p>(updated) New default device behavior in Virtual Studio mode</p>
+</li>
+<li>
+<p>(fixed) opening links from Virtual Studio</p>
+</li>
+<li>
+<p>(fixed) send capture volume as int</p>
+</li>
+<li>
+<p>(fixed) connection issues for servers without reverse dns</p>
+</li>
+<li>
+<p>(fixed) flatpak build errors</p>
+</li>
+<li>
+<p>(fixed) ventura updater crash</p>
+</li>
+<li>
+<p>(fixed) uninitialized delete issue</p>
+</li>
+<li>
+<p>(remvoed) extraneous call to readSlotNonBlocking</p>
+</li>
+</ul>
+<h2 id="166">1.6.6</h2>
+<ul>
+<li>
+<p>(fixed) Notarization scripts for macOS</p>
+</li>
+<li>
+<p>Note - this version replaces 1.6.5, as that release was mistakenly deleted</p>
+</li>
+</ul>
+<h2 id="165">1.6.5</h2>
+<ul>
+<li>
+<p>(added) Input/output volume control and input mute in VS</p>
+</li>
+<li>
+<p>(added) Volume plugin</p>
+</li>
+<li>
+<p>(added) Linux manifests used for download links</p>
+</li>
+<li>
+<p>(added) VS Test mode for jacktrip.org users</p>
+</li>
+<li>
+<p>(added) Qt6 support for NO_VS builds</p>
+</li>
+<li>
+<p>(added) Show Qt version in About dialog</p>
+</li>
+<li>
+<p>(updated) VS - makes inactive, admin'd studios visible by default</p>
+</li>
+<li>
+<p>(updated) using -q auto3 for buffer length with plc</p>
+</li>
+<li>
+<p>(updated) updated notarization process to use notarytool</p>
+</li>
+<li>
+<p>(updated) link to Qt source as it has changed</p>
+</li>
+<li>
+<p>(updated) Classic GUI reverts some pre-VS changes</p>
+</li>
+<li>
+<p>(updated) QMake build scripts more in line with documentation</p>
+</li>
+<li>
+<p>(fixed) new user screen in VS mode</p>
+</li>
+<li>
+<p>(fixed) logout freezing jacktrip</p>
+</li>
+<li>
+<p>(fixed) NO_VS builds work without setting NO_UPDATER</p>
+</li>
+<li>
+<p>(fixed) volume meter-related crash</p>
+</li>
+</ul>
+<h2 id="164">1.6.4</h2>
+<ul>
+<li>
+<p>(added) Volume meters when connected to a Studio in VS mode</p>
+</li>
+<li>
+<p>(added) Validation of Linux desktop file in build steps</p>
+</li>
+<li>
+<p>(added) a copy invite link button to VS mode Studios</p>
+</li>
+<li>
+<p>(added) an advanced setting for buffer strategy in VS mode</p>
+</li>
+<li>
+<p>(updated) PLC workers now zero out the last good packet from stalled clients</p>
+</li>
+<li>
+<p>(updated) PLC distinguish stuck clients</p>
+</li>
+<li>
+<p>(updated) Fedora meson dependencies</p>
+</li>
+<li>
+<p>(fixed) UI is usable when Studio list in empty in VS mode</p>
+</li>
+<li>
+<p>(fixed) Crashing when unplugging a device while connected and using JACK</p>
+</li>
+<li>
+<p>(fixed) Launching from URL skipped setup</p>
+</li>
+<li>
+<p>(fixed) UI hanging when connecting to Studios in VS mode</p>
+</li>
+<li>
+<p>(fixed) "Refresh list" button disabling ui interaction in VS mode</p>
+</li>
+<li>
+<p>(fixed) Network stats not displaying on first connect after login (VS mode)</p>
+</li>
+<li>
+<p>(fixed) VS mode won't join studios when on warning or device setup screens</p>
+</li>
+</ul>
+<h2 id="163">1.6.3</h2>
+<ul>
+<li>
+<p>(fixed) Segfault when creating a hub server via cmd line</p>
+</li>
+<li>
+<p>(fixed) Linux desktop file is no longer invalid</p>
+</li>
+<li>
+<p>(fixed) Command line arguments no longer print to console</p>
+</li>
+</ul>
+<h2 id="162">1.6.2</h2>
+<ul>
+<li>
+<p>(updated) Static Qt version for Linux builds</p>
+</li>
+<li>
+<p>(updated) cleaner, easier to read VS settings</p>
+</li>
+<li>
+<p>(updated) icons for 'Manage' and 'Settings' in VS mode</p>
+</li>
+<li>
+<p>(added) human-readable locations in VS mode</p>
+</li>
+<li>
+<p>(added) warning that cmake is not officially supported</p>
+</li>
+<li>
+<p>(added) VS mode is treated as a device by VS web</p>
+</li>
+<li>
+<p>(added) Network statistics in Virtual Studio mode</p>
+</li>
+<li>
+<p>(added) URL scheme support to join a Studio from the VS web join button</p>
+</li>
+<li>
+<p>(added) banner images on Studios in VS mode</p>
+</li>
+<li>
+<p>(added) VS mode sets remote client name to app ID</p>
+</li>
+<li>
+<p>(fixed) WebSocket connection behavior in Virtual Studio (VS) mode</p>
+</li>
+<li>
+<p>(fixed) dblsqd errors in Linux builds</p>
+</li>
+<li>
+<p>(fixed) Windows datagramAvailable error</p>
+</li>
+<li>
+<p>(fixed) High Sierra compatibility in static builds</p>
+</li>
+<li>
+<p>(fixed) Doesn't crash if RtAudio sample rate isn't supported</p>
+</li>
+<li>
+<p>(fixed) Fractional UI scaling on Windows</p>
+</li>
+</ul>
+<h2 id="161">1.6.1</h2>
+<ul>
+<li>
+<p>(added) ToS IP header to use DSCP Expedited Forwarding</p>
+</li>
+<li>
+<p>(fixed) Ubuntu deoendencies</p>
+</li>
+<li>
+<p>(fixed) timeout of client restored</p>
+</li>
+<li>
+<p>(fixed) bufstrategy 3 history minimum</p>
+</li>
+<li>
+<p>(fixed) perpetual logging in screen</p>
+</li>
+</ul>
+<h2 id="160">1.6.0</h2>
+<ul>
+<li>
+<p>(added) Virtual Studio integration; previous GUI is now called "Classic Mode"</p>
+</li>
+<li>
+<p>(added) dblsqd for auto-updates</p>
+</li>
+<li>
+<p>(updated) buffer strategy 3 - multiple updates and fixes, still experimental</p>
+</li>
+<li>
+<p>(added) JackTrip Labs signing scripts</p>
+</li>
+<li>
+<p>(fixed) OpenSSL in the build script</p>
+</li>
+<li>
+<p>(updated) code cleanup and maintenance</p>
+</li>
+</ul>
+<h2 id="153">1.5.3</h2>
+<ul>
+<li>
+<p>(added) linux instructions for parallel versions</p>
+</li>
+<li>
+<p>(added) docs on running JackTrip with a named JACK server</p>
+</li>
+<li>
+<p>(added) nogui linux release build</p>
+</li>
+<li>
+<p>(update) Auto mode for buffer strategy 3</p>
+</li>
+<li>
+<p>(update) remove extra macOS binary release artifact</p>
+</li>
+<li>
+<p>(fixed) Don't link nogui qmake build with gui libraries</p>
+</li>
+</ul>
+<h2 id="152">1.5.2</h2>
+<ul>
+<li>
+<p>(update) RingBuffer replaced by Regulator for experimental buffer strategy 3</p>
+</li>
+<li>
+<p>(update) call out old jacktrip versions in package repos on Debian and others</p>
+</li>
+<li>
+<p>(update) first attempt to support BSDs (especially FreeBSD)</p>
+</li>
+<li>
+<p>(update) add signing to macOS packaging script</p>
+</li>
+<li>
+<p>(update) Rename <strong>MANUAL_POLL</strong> TO MANUAL_POLL</p>
+</li>
+<li>
+<p>(update) RtAudio warning changes</p>
+</li>
+<li>
+<p>(update) Use bundled rtaudio for Windows release builds</p>
+</li>
+<li>
+<p>(update) Incorporate meson build in the main GHA file</p>
+</li>
+<li>
+<p>(fixed) build script doesn't exit if build fails</p>
+</li>
+<li>
+<p>(fixed) false error message for JACK 1.9.20 on M1 builds</p>
+</li>
+<li>
+<p>(fixed) Don't connect our UDP socket</p>
+</li>
+<li>
+<p>(fixed) Fix GUI command line warning</p>
+</li>
+<li>
+<p>(fixed) Limiter allocation in GUI</p>
+</li>
+</ul>
+<h2 id="151">1.5.1</h2>
+<ul>
+<li>
+<p>(added) option to include the server in the patching for client fan out/in and full mix modes</p>
+</li>
+<li>
+<p>(added) clang-tidy and clang-format CI checks</p>
+</li>
+<li>
+<p>(update) [Meson] only add weakjack include directory when enabled</p>
+</li>
+<li>
+<p>(update) remove reserved macro identifiers // use predefined macros</p>
+</li>
+<li>
+<p>(update) remove 'using namespace std' and add clang-tidy check</p>
+</li>
+<li>
+<p>(fixed) nearly all clazy warnings level 2 fixed</p>
+</li>
+<li>
+<p>(fixed) missing Windows startmenu icon</p>
+</li>
+<li>
+<p>(fixed) missing initializer for PROCESSENTRY32 type (Windows)</p>
+</li>
+</ul>
+<h2 id="150">1.5.0</h2>
+<ul>
+<li>(added) option to upmix mono clients to stereo in hub server mode patching</li>
+</ul>
+<h2 id="143">1.4.3</h2>
+<ul>
+<li>
+<p>Generating changelog from YAML file for MkDocs and Flatpaks by @ntonnaett in #442</p>
+</li>
+<li>
+<p>Update jacktrip_globals.h by @cchafe in #443</p>
+</li>
+</ul>
+<h2 id="142">1.4.2</h2>
+<ul>
+<li>
+<p>[Meson] Set RtAudio subproject to version 5.2.0 by @ntonnaett in #436</p>
+</li>
+<li>
+<p>Verbose mode in GUI by @psiborg112 in #434</p>
+</li>
+<li>
+<p>Help screen for app bundle script by @psiborg112 in #439</p>
+</li>
+<li>
+<p>[GHA] Fix weekly cron job entry by @ntonnaett in #441</p>
+</li>
+</ul>
+<h2 id="141">1.4.1</h2>
+<ul>
+<li>Fix for OSX installer failures by @mikedickey in #431</li>
+</ul>
+<h2 id="140">1.4.0</h2>
+<ul>
+<li>
+<p>(added) optional GUI from QJackTrip</p>
+</li>
+<li>
+<p>(added) authentication in hub server mode</p>
+</li>
+<li>
+<p>(added) different number of sending and receiving channels</p>
+</li>
+<li>
+<p>(added) append thread IDs to jack client names</p>
+</li>
+<li>
+<p>(added) new patcher mechanism that doesn't delete existing connections</p>
+</li>
+<li>
+<p>(added) MkDocs based documentation</p>
+</li>
+<li>
+<p>(added) weak jack linking</p>
+</li>
+<li>
+<p>(added) manpage</p>
+</li>
+<li>
+<p>(added) MSVC build</p>
+</li>
+<li>
+<p>(added) RtAudio Meson subproject</p>
+</li>
+<li>
+<p>(added) formatting with clang-format</p>
+</li>
+<li>
+<p>(added) static analysis with clang-tidy</p>
+</li>
+<li>
+<p>(added) cross compilation for Windows</p>
+</li>
+<li>
+<p>(added) flatpaks</p>
+</li>
+<li>
+<p>(added) appstream</p>
+</li>
+<li>
+<p>(added) automated builds and deployment for Linux, macOS and Windows</p>
+</li>
+<li>
+<p>(added) macOS and Windows Installers</p>
+</li>
+<li>
+<p>(fixed) regression in remote client name handling</p>
+</li>
+<li>
+<p>(fixed) long jack client names (&gt; 27 characters) in 1.9.11</p>
+</li>
+<li>
+<p>(fixed) Hardcode Derived Class Names of ProcessPlugins to prevent undefined behavior</p>
+</li>
+<li>
+<p>(update) QJackTrip and JackTrip are now identical</p>
+</li>
+<li>
+<p>(update) Change helpscreen wording for --broadcast argument</p>
+</li>
+<li>
+<p>(update) jitter buffer alternatives</p>
+</li>
+<li>
+<p>(update) RtAudio revive</p>
+</li>
+<li>
+<p>(update) RtAudio device selection</p>
+</li>
+<li>
+<p>(update) build script moved to root directory</p>
+</li>
+</ul>
+<h2 id="130">1.3.0</h2>
+<ul>
+<li>
+<p>(added) async networking in hub listener</p>
+</li>
+<li>
+<p>(added) limiter, compressor, reverb</p>
+</li>
+<li>
+<p>(added) examine audio delay</p>
+</li>
+<li>
+<p>(added) jitter buffer alternatives</p>
+</li>
+<li>
+<p>(added) broadcast output ports</p>
+</li>
+<li>
+<p>(added) PREFIX variable for installation path</p>
+</li>
+<li>
+<p>(added) disconnect on timeout</p>
+</li>
+<li>
+<p>(added) SIGTERM</p>
+</li>
+<li>
+<p>(added) simulate packet loss, jitter</p>
+</li>
+<li>
+<p>(added) hubpatch 5, no auto patching</p>
+</li>
+<li>
+<p>(added) jack client name length check</p>
+</li>
+<li>
+<p>(added) scripts/hubMode/test_hub_mode_server_and_client.sh</p>
+</li>
+<li>
+<p>(added) Meson build</p>
+</li>
+<li>
+<p>(fixed) misc. typos, indentation</p>
+</li>
+<li>
+<p>(fixed) short form IO stat options</p>
+</li>
+<li>
+<p>(fixed) nullptr jack server name when creating jack client</p>
+</li>
+<li>
+<p>(fixed) stop ring buffer blocking when jack has been stopped</p>
+</li>
+<li>
+<p>(fixed) JMess handling of non-western characters</p>
+</li>
+<li>
+<p>(fixed) closing curly brace on mJackTrip client creation</p>
+</li>
+<li>
+<p>(fixed) Warnings</p>
+</li>
+<li>
+<p>(fixed) remove rtaudio device and mpeeraddress msgs.</p>
+</li>
+<li>
+<p>(fixed) signal and slot connections</p>
+</li>
+<li>
+<p>(fixed) incorrect dependency from jacktrip_main</p>
+</li>
+<li>
+<p>(update) RT thread priority for network I/O</p>
+</li>
+<li>
+<p>(update) clipping to saturation</p>
+</li>
+<li>
+<p>(update) build instructions</p>
+</li>
+</ul>
+<h2 id="122">1.2.2</h2>
+<ul>
+<li>
+<p>(added) bindPort range to reject oddball connections</p>
+</li>
+<li>
+<p>(fixed) jack client name strings</p>
+</li>
+</ul>
+<h2 id="121">1.2.1</h2>
+<ul>
+<li>
+<p>(added) src/build script builds in ../builddir</p>
+</li>
+<li>
+<p>(fixed) refactor "Master" to be "Hub"</p>
+</li>
+<li>
+<p>(fixed) 1.2.1 correctly Versioned and tagged</p>
+</li>
+</ul>
+<h2 id="12">1.2</h2>
+<ul>
+<li>
+<p>(added) jack patching modes (-p) for Hub Mode server (-S)</p>
+</li>
+<li>
+<p>(fixed) Compilation under ubuntu</p>
+</li>
+<li>
+<p>(removed) setRealtimeProcessPriority()</p>
+</li>
+<li>
+<p>(removed) Rtaudio mode (but still has dependencies)</p>
+</li>
+<li>
+<p>(fixed) IPv4-mapped IPv6 addressing bug</p>
+</li>
+<li>
+<p>...</p>
+</li>
+<li>
+<p>(fixed) Fixed compilation for  MacOSX10.11.sdk.</p>
+</li>
+<li>
+<p>(update) Updated to RtAudio 4.1.1, and using shared lib in linux.</p>
+</li>
+</ul>
+<h2 id="11">1.1</h2>
+<ul>
+<li>
+<p>(added) Support for RtAudio. Jacktrip can now be used without Jack</p>
+</li>
+<li>
+<p>(added) DNS Look-up support, now one machine can have a private IP (but still needs to have UDP ports open)</p>
+</li>
+<li>
+<p>(added) New port to Windows XP and Windows Vista (experimental and not tested for a long time, only when using jacktrip as a library)</p>
+</li>
+<li>
+<p>(added) Multiclient Server (experimental and not exposed in the executable)</p>
+</li>
+</ul>
+<h2 id="105">1.0.5</h2>
+<ul>
+<li>
+<p>(added) Compatibility with JamLink boxes (restricted at the moment to 48KHz, 64 buffer size and 1 channel)</p>
+</li>
+<li>
+<p>(added) New port structure that allows the communication between a public server and a local client</p>
+</li>
+<li>
+<p>(added) Option for packets without header</p>
+</li>
+<li>
+<p>(added) Option to change default client name</p>
+</li>
+<li>
+<p>(fixed) General optimizations and code cleanup</p>
+</li>
+<li>
+<p>(added) Improved, now cross-platform build script</p>
+</li>
+</ul>
+<h2 id="104">1.0.4</h2>
+<ul>
+<li>(fixed) Buss error caused when no physical inputs or outputs ports are available</li>
+</ul>
+<h2 id="103">1.0.3</h2>
+<ul>
+<li>
+<p>(added) Redundancy Algorithm for UDP Packets to avoid glitches with packet losses</p>
+</li>
+<li>
+<p>(fixed) Now compiles on 64bits machines</p>
+</li>
+<li>
+<p>(fixed) Improved exceptions handling</p>
+</li>
+<li>
+<p>(added) Basic Karplus-Strong model added as Plug-in</p>
+</li>
+<li>
+<p>(added) Some functionality reimplemented using signals and slots for more flexibility</p>
+</li>
+<li>
+<p>(added) Multiple-Client-Server in alpha testing, expect it working in the next release</p>
+</li>
+</ul>
+<h2 id="102-development">1.0.2 (Development)</h2>
+<ul>
+<li>
+<p>(added) Port offset mode, to use a different UDP port than the default one.</p>
+</li>
+<li>
+<p>(fixed) Improved thread behavior</p>
+</li>
+</ul>
+<h2 id="101-development">1.0.1 (Development)</h2>
+<ul>
+<li>
+<p>(added) jamlink mode to connect with jamlink boxes</p>
+</li>
+<li>
+<p>(fixed) thread priority in both Linux and Mac OS X (still need some work on the Mac OS X Version)</p>
+</li>
+<li>
+<p>(fixed) Bug that was causing plug-ins not to behave correctly</p>
+</li>
+<li>
+<p>(added) Loopback mode</p>
+</li>
+<li>
+<p>(added) Underrun Modes: Wavetable (default) and set to zeros</p>
+</li>
+<li>
+<p>(added) Check for peer audio settings, program exists if they don't match</p>
+</li>
+<li>
+<p>(added) Automatically connect ports to available physical audio interface.</p>
+</li>
+</ul>
+<h2 id="10-development">1.0 (Development)</h2>
+<ul>
+<li>initial release</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs"], "search": "../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.1e8ae164.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,628 @@
+- Version: "2.7.2"
+  Date: 2026-02-06
+  Description:
+  - (added) Documentation for the JackTrip network protocol
+  - (added) Hub server - log client name with UDP port
+  - (fixed) Fixed crash when JACK ran out of available ports
+  - (fixed) Refuse to run if DYLD_INSERT_LIBRARIES is set on OSX
+  - (fixed) Various PLC quality improvements and bug fixes
+  - (fixed) Improved error message when studio connection is lost
+  - (fixed) Suppressed verbose logging of OSC get requests
+  - (fixed) Added some missing Qt dependencies to Linux docs
+- Version: "2.7.1"
+  Date: 2025-06-30
+  Description:
+  - (added) Including Visual C++ Redistributable for Windows
+  - (fixed) Windows updater sometimes fails to open the download
+- Version: "2.7.0"
+  Date: 2025-06-29
+  Description:
+  - (added) Audio Bridge Audio Unit for macOS
+  - (added) VS Mode ability to share specific screens or windows
+  - (updated) VS Mode reduced bandwidth for small video windows
+  - (updated) VS Mode enabled disk storage for WebEngine
+  - (updated) PLC auto headroom adjustments and bug fixes
+  - (updated) Upgraded all builds to use Qt 6.8.3
+  - (updated) Audio Bridge VST3 SDK updated to 3.7.13
+  - (updated) Use static Qt build when creating VST3 plugin on OSX
+  - (updated) Improved filters to blocklist iPhone microphones
+  - (fixed) VS Mode potential crash when shutting down
+  - (fixed) VS Mode shows too many options for stereo devices
+  - (fixed) Potential Audio Bridge deadlocks on Windows
+  - (fixed) Potential double delete in volume meters
+  - (fixed) Include man page in Linux shared binary zip file
+- Version: "2.6.0"
+  Date: 2025-04-22
+  Description:
+  - (added) OSC endpoint to get latencies for connected clients
+  - (updated) PLC auto headroom allows higher latency when necessary
+  - (updated) VS Mode allow any two consecutive channels for input
+  - (updated) VS Mode easier audio switching between stereo and mono
+  - (updated) VS Mode latency statistics now include jitter buffer
+  - (updated) VS Mode improvements to audio quality override settings
+  - (updated) VS Mode temporarily disabling feedback detection
+  - (fixed) VS Mode kicked out of sessions due to studio change
+  - (fixed) VS Mode recognizes changes to server host and port
+  - (fixed) VS Mode bugs with reconnecting due to audio changes
+  - (fixed) VS Mode strange error message during startup on Linux
+  - (fixed) VS Mode empty studio list when starting up
+  - (fixed) Ability to build VS Mode using CMake
+  - (fixed) Ability to build aarch64 or armv7 on Alpine Linux
+  - (fixed) Ability to build using Qt 6.9 release candidates
+  - (fixed) Ability to disable the use of libsamplerate
+  - (fixed) Ignore timestamps when generating jacktrip.1.gz
+- Version: "2.5.1"
+  Date: 2025-01-30
+  Description:
+  - (fixed) Updating Qt in Mac builds from 6.2.6 to 6.2.11
+  - (fixed) Strange error message during startup on Linux
+  - (fixed) VS Mode studio padding when browsing on Linux
+  - (fixed) VS Mode ensure studio data is fresh before connecting
+- Version: "2.5.0"
+  Date: 2025-01-21
+  Description:
+  - (added) New JackTrip Audio Bridge VST3 Plugin
+  - (added) Sample rate conversion for audio interfaces
+  - (added) Automated arm64 and arm32 builds for Linux
+  - (added) Dynamic adjustment of PLC queues using OSC messages
+  - (updated) VS Mode remote control for audio quality slider
+  - (updated) VS Mode switch to using cookies for authentication
+  - (updated) PLC mode improvements in auto headroom calculations
+  - (fixed) PLC audio corruption when buffer sizes differ
+  - (fixed) PLC broadcast queue length when buffer sizes differ
+  - (fixed) Support for multiple commas in --audiodevice parameter
+  - (fixed) VS Mode access token expires after running for a day
+  - (fixed) VS Mode session feedback dialog closes on navigation
+  - (fixed) VS Mode deeplinks broken for first run after install
+- Version: "2.4.1"
+  Date: 2024-09-27
+  Description:
+  - (fixed) Disabling qWave Quality of Service for Windows users
+  - (fixed) PLC occasional popping sound when you first connect
+  - (fixed) PLC auto headroom optimization for very low jitter
+- Version: "2.4.0"
+  Date: 2024-09-13
+  Description:
+  - (addded) qWave Quality of Service for Windows users
+  - (addded) VS Mode warning when speakers selected for output
+  - (addded) VS Mode dialog when connecting with audio warning
+  - (updated) PLC auto headroom tweaks to improve audio quality
+  - (updated) Increased UDP timeout from 30 to 50 milliseconds
+  - (updated) MIT license for VS mode interface and integration
+  - (updated) Removed classic mode from JackTrip Labs builds
+  - (updated) ASIO is now only enabled for JackTrip Labs builds
+  - (updated) VS Mode now only supports buffer strategy 3 (PLC)
+  - (updated) VS Mode removed button click to create first studio
+  - (updated) VS Mode updated to use new studio creation interface
+  - (updated) VS Mode updated to use new user profile interface
+  - (updated) VS Mode changed red text color for buttons to black
+  - (updated) VS Mode improved error handling for login screen
+  - (updated) VS Mode improved messaging while loading studios
+  - (fixed) VS Mode possible failures when loading studios
+  - (fixed) VS Mode studio refresh updated to avoid jumpiness
+  - (fixed) VS Mode blocklisted iPhone microphone device
+  - (fixed) Race condition in automatic patching for JACK
+  - (fixed) Missing files in Linux binary zip file
+- Version: "2.3.1"
+  Date: 2024-07-26
+  Description:
+  - (updated) VS Mode stronger recommendations for audio devices
+  - (updated) Reverting OSX builds from Qt 6.2.8 back to 6.2.6
+  - (fixed) Crash when JackTrip fails to connect using PLC
+  - (fixed) Screen sharing on OSX freezes when window is hidden
+  - (fixed) Sanity check for maximum UDP packet size
+- Version: "2.3.0"
+  Date: 2024-05-15
+  Description:
+  - (added) Static Qt 5.15.13 nogui (CLI) builds for all platforms
+  - (added) VS Mode learn more buttons and warning links
+  - (updated) Significant PLC performance and quality improvements
+  - (updated) Reduced amount of latency added for PLC strategy
+  - (updated) Merged PLC buffer strategies (3 is now identical to 4)
+  - (updated) Automatically start PLC worker for slower predictions
+  - (updated) Builds now use Qt 6.2.8 for OSX and 5.15.13 for Linux
+  - (updated) Linux containers now use static builds with Qt 6.5.3
+  - (updated) VS Mode help links go to support.jacktrip.com
+  - (updated) VS Mode manage button goes to new studio dashboard
+  - (fixed) PLC degradation when peer != local buffer sizes
+  - (fixed) Port binding on machines that don't support IPv6
+  - (fixed) Command line interface debug logging improvements
+  - (fixed) VS Mode truncation of invite copied tooltip message
+- Version: "2.2.5"
+  Date: 2024-03-28
+  Description:
+  - (fixed) VS Mode only admins could join new sessions starting up
+  - (fixed) VS Mode only ask for feedback if you've joined a session
+  - (updated) VS Mode updates to support self hosted virtual studios
+- Version: "2.2.4"
+  Date: 2024-03-13
+  Description:
+  - (fixed) Allow software opengl for older windows video drivers
+  - (fixed) VS Mode avoid unnecessary JACK library checks at startup
+- Version: "2.2.3"
+  Date: 2024-03-04
+  Description:
+  - (added) New container images for JackTrip hub server
+  - (fixed) Support for audio interfaces on OSX with multiple channels
+  - (fixed) Hub server crashes when trying to rebind ports
+  - (fixed) VS Mode blocklisted Generic Low Latency ASIO Driver
+  - (fixed) VS Mode inconsistent initial connection state 
+- Version: "2.2.2"
+  Date: 2024-02-09
+  Description:
+  - (updated) VS Mode updated network connection thresholds
+  - (updated) VS Mode improved sample rate flexibility for Windows
+  - (fixed) VS Mode inconsistent deep link handling on Windows
+  - (fixed) Throttle console errors for UDP waiting too long
+- Version: "2.2.1"
+  Date: 2024-01-29
+  Description:
+  - (fixed) Sample rate issues with certain Windows ASIO drivers
+- Version: "2.2.0"
+  Date: 2024-01-22
+  Description:
+  - (updated) Improved support for different input and output devices
+  - (updated) Various latency improvements for packet loss concealment
+  - (updated) VS Mode make it easier to dismiss the user feedback dialog
+  - (updated) VS Mode error message for disconnected audio interfaces
+  - (fixed) VS Mode broken deeplinks when studio doesn't match filters
+  - (fixed) VS Mode refused to connect to studios not 48khz
+  - (fixed) VS Mode showed wrong devices selected when connected
+- Version: "2.1.0"
+  Date: 2023-11-06
+  Description:
+  - (added) VS Mode ability to create studios without a web browser
+  - (added) VS Mode improved network stability notifications
+  - (added) VS Mode dialog when QML plugins are missing
+  - (updated) VS Mode video improvements on Windows
+  - (updated) Packet loss concealment latency and quality improvements
+  - (fixed) Packet loss concealment glitches when buffer sizes don't match
+  - (fixed) VS Mode ensure that the app is disconnected at startup
+  - (fixed) Invalid escape sequence in Linux desktop file
+  - (fixed) VS Mode unable to change update channel
+- Version: "2.0.2"
+  Date: 2023-09-01
+  Description:
+  - (added) VS Mode latency categories for Linux audio devices
+  - (added) VS Mode audio warnings for high latency Linux devices
+  - (updated) Improved support for Pipewire latency on Linux
+  - (fixed) Crash on Windows when using the JACK audio backend
+  - (fixed) Include ALSA support for Linux builds using meson
+  - (fixed) VS Mode overlapping UI elements with max scaling
+  - (fixed) Don't require git to be present for meson builds
+  - (fixed) Linux man page description and meson build errors
+- Version: "2.0.1"
+  Date: 2023-08-29
+  Description:
+  - (fixed) VS Mode Mix to Mono setting was sending a buzzing noise
+  - (fixed) VS Mode Logout followed by Login was breaking network stats
+  - (fixed) Device names with special characters work again
+- Version: "2.0.0"
+  Date: 2023-08-28
+  Description:
+  - (added) VS Mode integrated video and other UI updates
+  - (added) VS support for refreshing devices while connected to studio
+  - (added) VS feedback survey request after leaving studios
+  - (added) VS Mode improved warnings for high latency audio devices
+  - (added) VS Mode improved getting started recommendations
+  - (updated) official builds now use Qt 6 and RtAudio 6
+  - (updated) official Windows builds now use schannel and MSVC
+  - (updated) Simple-FFT dependency copied into source tree
+  - (updated) Improved user experience when using the RtAudio backend
+  - (fixed) Crashes when audio interfaces don't support buffer size
+  - (fixed) Crashes when audio interfaces are unplugged while active
+  - (fixed) Blocklisting Steinberg Generic ASIO driver due to crashes
+  - (fixed) Bugs with Virtual Studio deep links and connections stats
+  - (fixed) VS Settings will now revert back when Cancel is selected
+  - (fixed) VS Mode device levels no longer reset on first registration
+- Version: "1.10.1"
+  Date: 2023-08-03
+  Description:
+  - (fixed) VS Mode crashes involving ASIO device selection
+- Version: "1.10.0"
+  Date: 2023-06-16
+  Description:
+  - (added) VS Mode automatically mute when feedback is detected
+  - (added) VS Mode - notify people of network outages
+  - (updated) PLC optimizations for slower hardware devices
+  - (updated) VS Mode volume meter performance improvements
+  - (updated) VS Mode login no longer listens on a local port
+  - (updated) VS Mode improved clarity of startup messages
+  - (fixed) Windows crash caused by Realtek ASIO driver
+  - (fixed) More friendly message for Windows Terminal bug
+  - (fixed) Faster startup by reducing and deferring audio interface scans
+  - (fixed) Switching from VS to Classic mode leaves audio open
+- Version: "1.9.0"
+  Date: 2023-05-05
+  Description:
+  - (added) buffer strategy 4 to run PLC in audio callback
+  - (added) VS Mode - change audio devices while connected
+  - (added) universal binary for macOS
+  - (added) tooltips, sliders, and positioning of connected interface
+  - (added) emails for vulnerability reporting
+  - (added) local monitoring
+  - (added) VS mode - Error message when single studio limit reached
+  - (updated) regulator thread uses real-time priority
+  - (updated) VS mode - use buffer strategy 4
+  - (updated) VS mode - Default to PLC
+  - (updated) VS Mode - PLC auto queue has 5ms headroom
+  - (updated) Enforcing using the same ASIO device on Windows
+  - (updated) VS Mode - JTL builds hide the yes/no screen on first launch
+  - (updated) GHA - wait for static Qt builds rather than failing
+  - (updated) VS Mode - "all devices" is now "high latency"
+  - (updated) VS Mode - Warning text for non-ASIO Windows devices
+  - (updated) Faust-generate code moved out of headers
+  - (fixed) PLC bugs
+  - (fixed) VS Mode - changing devices while connected refreshes device lists
+  - (fixed) play test tone on Linux
+  - (fixed) static openssl on Linux
+- Version: "1.8.1"
+  Date: 2023-03-29
+  Description:
+  - (added) VS mode - tooltips to explain input and output device
+  - (added) buffer size and sample rate now settable with Pipewire
+  - (added) VS mode - link to create a studio on the login complete page
+  - (fixed) Device names with special characters work again
+  - (fixed) undefine boolean error
+  - (fixed) VS Mode - Audio settings correctly show the selected device
+  - (fixed) VS Mode - Refresh button doesn't crash Windows any more
+  - (fixed) VS Mode - Output channel selections save correctly
+  - (updated) documentation styling
+  - (updated) removed ipify from VS mode
+  - (updated) ip check can now function with only IPv6
+  - (updated) cleaned up vsinit class
+- Version: "1.8.0"
+  Date: 2023-03-01
+  Description:
+  - (added) Qt version option for Meson builds
+  - (added) GHA builds now include static preview docs
+  - (added) when using the classic GUI, command line options are now parsed
+  - (added) VS mode - Selecting and configuring device channels
+  - (added) Classic mode - Warning for machines without JACK installed
+  - (added) VS mode - high latency warning for non-ASIO devices
+  - (added) Meson build without rtaudio in GHA
+  - (updated) icons in VS mode 
+  - (updated) Linux builds now use Qt 5.15.8
+  - (updated) Replaced QVector in meter code
+  - (updated) Removed set-output from GHA scripts for deprecation
+  - (updated) Automated the auto-updater release process
+  - (updated) RtAudio is included in Linux binary releases
+  - (updated) text on audio setup confirm button when using deeplink
+  - (updated) VS Mode - improved first-time signin
+  - (updated) Flathub - improve latency by defaulting to 256 samples buffer size
+  - (fixed) ambiguous call to overloaded function in Qt6
+  - (fixed) issue where selected devices were not the devices used for output
+  - (fixed) crash when using Classic mode and CLI w/ JACK
+  - (fixed) ipify issue with Norton
+  - (fixed) compiler warnings when building without RtAudio
+  - (fixed) VS Mode - refresh button behavior on settings page
+- Version: "1.7.1"
+  Date: 2023-02-03
+  Description:
+  - (added) missing QuickControl2 dependency
+  - (added) documentation preview in build steps
+  - (added) README text about PPA and Debian backports
+  - (updated) upgraded to Qt 5.15.3
+  - (updated) linux package dependencies
+  - (updated) JackTrip now uses a random available port when connecting
+  - (updated) VS mode - Audio settings screen layouts
+  - (fixed) VS mode - video button is now available to all users of a Studio
+  - (fixed) A few memory leaks
+  - (fixed) linux static builds
+- Version: "1.7.0"
+  Date: 2023-01-20
+  Description:
+  - (added) VS Mode - Start and join inactive studios
+  - (added) JackTrip now prints build info on running from console
+  - (added) VS Mode - supports changing output volume from the server
+  - (added) VS Mode - Link to video on VS web when connected
+  - (updated) signing now happens in the main build workflow
+  - (updated) VS mode sorts active studios above inactive studios
+  - (updated) cmake build
+  - (updated) meson builds will fail if no backend is enabled
+  - (updated) replaced many ifdefs with if constexpr
+  - (updated) After signing out of VS mode, you will be asked to sign back in on the web
+  - (fixed) network stats failing after studio start
+  - (fixed) occasional immediate disconnects
+  - (fixed) segfault issue due to ifdefs
+  - (fixed) Hanging UI on Windows
+  - (fixed) turned a comment warning into an appropriate error
+  - (fixed) VS Mode - Join issue withs studios started in app
+  - (fixed) hanging app after refreshing studios
+  - (fixed) VS Mode - TCP 19 error after starting a studio
+- Version: "1.6.8"
+  Date: 2022-12-05
+  Description:
+  - (fixed) broken "Yes" button on launch
+  - (fixed) window resizing issues
+  - (fixed) subscribed studios showing up under Public in VS mode
+- Version: "1.6.7"
+  Date: 2022-11-03
+  Description:
+  - (added) volume meters in classic mode
+  - (added) release-acquire ordering for Regular
+  - (added) audio driver support article in VS mode
+  - (added) regulatorthread
+  - (added) studios page first time UI
+  - (added) non-asio audio devices can be used on windows
+  - (updated) dependency list in documentation
+  - (updated) windows opens jacktrip after install
+  - (updated) Move to overlapped I/O for Windows Networking
+  - (updated) New default device behavior in Virtual Studio mode
+  - (fixed) opening links from Virtual Studio
+  - (fixed) send capture volume as int
+  - (fixed) connection issues for servers without reverse dns
+  - (fixed) flatpak build errors
+  - (fixed) ventura updater crash
+  - (fixed) uninitialized delete issue
+  - (remvoed) extraneous call to readSlotNonBlocking
+- Version: "1.6.6"
+  Date: 2022-11-01
+  Description:
+  - (fixed) Notarization scripts for macOS
+  - Note - this version replaces 1.6.5, as that release was mistakenly deleted
+- Version: "1.6.5"
+  Date: 2022-10-28
+  Description:
+  - (added) Input/output volume control and input mute in VS
+  - (added) Volume plugin
+  - (added) Linux manifests used for download links
+  - (added) VS Test mode for jacktrip.org users
+  - (added) Qt6 support for NO_VS builds
+  - (added) Show Qt version in About dialog
+  - (updated) VS - makes inactive, admin'd studios visible by default
+  - (updated) using -q auto3 for buffer length with plc
+  - (updated) updated notarization process to use notarytool
+  - (updated) link to Qt source as it has changed
+  - (updated) Classic GUI reverts some pre-VS changes
+  - (updated) QMake build scripts more in line with documentation
+  - (fixed) new user screen in VS mode
+  - (fixed) logout freezing jacktrip
+  - (fixed) NO_VS builds work without setting NO_UPDATER
+  - (fixed) volume meter-related crash
+- Version: "1.6.4"
+  Date: 2022-09-16
+  Description:
+  - (added) Volume meters when connected to a Studio in VS mode
+  - (added) Validation of Linux desktop file in build steps
+  - (added) a copy invite link button to VS mode Studios
+  - (added) an advanced setting for buffer strategy in VS mode
+  - (updated) PLC workers now zero out the last good packet from stalled clients
+  - (updated) PLC distinguish stuck clients
+  - (updated) Fedora meson dependencies
+  - (fixed) UI is usable when Studio list in empty in VS mode
+  - (fixed) Crashing when unplugging a device while connected and using JACK
+  - (fixed) Launching from URL skipped setup
+  - (fixed) UI hanging when connecting to Studios in VS mode
+  - (fixed) "Refresh list" button disabling ui interaction in VS mode
+  - (fixed) Network stats not displaying on first connect after login (VS mode)
+  - (fixed) VS mode won't join studios when on warning or device setup screens
+- Version: "1.6.3"
+  Date: 2022-08-23
+  Description:
+  - (fixed) Segfault when creating a hub server via cmd line
+  - (fixed) Linux desktop file is no longer invalid
+  - (fixed) Command line arguments no longer print to console
+- Version: "1.6.2"
+  Date: 2022-08-05
+  Description:
+  - (updated) Static Qt version for Linux builds
+  - (updated) cleaner, easier to read VS settings
+  - (updated) icons for 'Manage' and 'Settings' in VS mode
+  - (added) human-readable locations in VS mode
+  - (added) warning that cmake is not officially supported
+  - (added) VS mode is treated as a device by VS web
+  - (added) Network statistics in Virtual Studio mode
+  - (added) URL scheme support to join a Studio from the VS web join button
+  - (added) banner images on Studios in VS mode
+  - (added) VS mode sets remote client name to app ID
+  - (fixed) WebSocket connection behavior in Virtual Studio (VS) mode
+  - (fixed) dblsqd errors in Linux builds
+  - (fixed) Windows datagramAvailable error
+  - (fixed) High Sierra compatibility in static builds
+  - (fixed) Doesn't crash if RtAudio sample rate isn't supported
+  - (fixed) Fractional UI scaling on Windows
+- Version: "1.6.1"
+  Date: 2022-06-20
+  Description:
+  - (added) ToS IP header to use DSCP Expedited Forwarding
+  - (fixed) Ubuntu deoendencies
+  - (fixed) timeout of client restored
+  - (fixed) bufstrategy 3 history minimum
+  - (fixed) perpetual logging in screen
+- Version: "1.6.0"
+  Date: 2022-05-30
+  Description:
+  - (added) Virtual Studio integration; previous GUI is now called "Classic Mode"
+  - (added) dblsqd for auto-updates
+  - (updated) buffer strategy 3 - multiple updates and fixes, still experimental
+  - (added) JackTrip Labs signing scripts
+  - (fixed) OpenSSL in the build script
+  - (updated) code cleanup and maintenance
+- Version: "1.5.3"
+  Date: 2022-03-28
+  Description:
+  - (added) linux instructions for parallel versions
+  - (added) docs on running JackTrip with a named JACK server
+  - (added) nogui linux release build
+  - (update) Auto mode for buffer strategy 3
+  - (update) remove extra macOS binary release artifact
+  - (fixed) Don't link nogui qmake build with gui libraries
+- Version: "1.5.2"
+  Date: 2022-03-02
+  Description:
+  - (update) RingBuffer replaced by Regulator for experimental buffer strategy 3
+  - (update) call out old jacktrip versions in package repos on Debian and others
+  - (update) first attempt to support BSDs (especially FreeBSD)
+  - (update) add signing to macOS packaging script
+  - (update) Rename __MANUAL_POLL__ TO MANUAL_POLL
+  - (update) RtAudio warning changes
+  - (update) Use bundled rtaudio for Windows release builds
+  - (update) Incorporate meson build in the main GHA file
+  - (fixed) build script doesn't exit if build fails
+  - (fixed) false error message for JACK 1.9.20 on M1 builds
+  - (fixed) Don't connect our UDP socket
+  - (fixed) Fix GUI command line warning
+  - (fixed) Limiter allocation in GUI
+- Version: "1.5.1"
+  Date: 2022-01-07
+  Description:
+  - (added) option to include the server in the patching for client fan out/in and full mix modes
+  - (added) clang-tidy and clang-format CI checks
+  - (update) [Meson] only add weakjack include directory when enabled
+  - (update) remove reserved macro identifiers // use predefined macros
+  - (update) remove 'using namespace std' and add clang-tidy check
+  - (fixed) nearly all clazy warnings level 2 fixed
+  - (fixed) missing Windows startmenu icon
+  - (fixed) missing initializer for PROCESSENTRY32 type (Windows)
+- Version: "1.5.0"
+  Date: 2022-01-03
+  Description:
+  - (added) option to upmix mono clients to stereo in hub server mode patching
+- Version: "1.4.3"
+  Date: 2021-12-18
+  Description:
+  - "Generating changelog from YAML file for MkDocs and Flatpaks by @ntonnaett in #442"
+  - "Update jacktrip_globals.h by @cchafe in #443"
+- Version: "1.4.2"
+  Date: 2021-12-06
+  Description:
+  - "[Meson] Set RtAudio subproject to version 5.2.0 by @ntonnaett in #436"
+  - "Verbose mode in GUI by @psiborg112 in #434"
+  - "Help screen for app bundle script by @psiborg112 in #439"
+  - "[GHA] Fix weekly cron job entry by @ntonnaett in #441"
+- Version: "1.4.1"
+  Date: 2021-11-11
+  Description:
+  - "Fix for OSX installer failures by @mikedickey in #431"
+- Version: "1.4.0"
+  Date: 2021-11-03
+  Description:
+  - (added) optional GUI from QJackTrip
+  - (added) authentication in hub server mode
+  - (added) different number of sending and receiving channels
+  - (added) append thread IDs to jack client names
+  - (added) new patcher mechanism that doesn't delete existing connections
+  - (added) MkDocs based documentation
+  - (added) weak jack linking
+  - (added) manpage
+  - (added) MSVC build
+  - (added) RtAudio Meson subproject
+  - (added) formatting with clang-format
+  - (added) static analysis with clang-tidy
+  - (added) cross compilation for Windows
+  - (added) flatpaks
+  - (added) appstream
+  - (added) automated builds and deployment for Linux, macOS and Windows
+  - (added) macOS and Windows Installers
+  - (fixed) regression in remote client name handling
+  - (fixed) long jack client names (> 27 characters) in 1.9.11
+  - (fixed) Hardcode Derived Class Names of ProcessPlugins to prevent undefined behavior
+  - (update) QJackTrip and JackTrip are now identical
+  - (update) Change helpscreen wording for --broadcast argument
+  - (update) jitter buffer alternatives
+  - (update) RtAudio revive
+  - (update) RtAudio device selection
+  - (update) build script moved to root directory
+- Version: "1.3.0"
+  Date: 2021-01-14
+  Description:
+  - (added) async networking in hub listener
+  - (added) limiter, compressor, reverb
+  - (added) examine audio delay
+  - (added) jitter buffer alternatives
+  - (added) broadcast output ports
+  - (added) PREFIX variable for installation path
+  - (added) disconnect on timeout
+  - (added) SIGTERM
+  - (added) simulate packet loss, jitter
+  - (added) hubpatch 5, no auto patching
+  - (added) jack client name length check
+  - (added) scripts/hubMode/test_hub_mode_server_and_client.sh
+  - (added) Meson build
+  - (fixed) misc. typos, indentation
+  - (fixed) short form IO stat options
+  - (fixed) nullptr jack server name when creating jack client
+  - (fixed) stop ring buffer blocking when jack has been stopped
+  - (fixed) JMess handling of non-western characters
+  - (fixed) closing curly brace on mJackTrip client creation
+  - (fixed) Warnings
+  - (fixed) remove rtaudio device and mpeeraddress msgs.
+  - (fixed) signal and slot connections
+  - (fixed) incorrect dependency from jacktrip_main
+  - (update) RT thread priority for network I/O
+  - (update) clipping to saturation
+  - (update) build instructions
+- Version: "1.2.2"
+  Date: 2020-12-27
+  Description:
+  - (added) bindPort range to reject oddball connections
+  - (fixed) jack client name strings
+- Version: "1.2.1"
+  Date: 2020-08-05
+  Description:
+  - (added) src/build script builds in ../builddir
+  - (fixed) refactor "Master" to be "Hub"
+  - (fixed) 1.2.1 correctly Versioned and tagged
+- Version: "1.2"
+  Date: 2020-06-07
+  Description:
+  - (added) jack patching modes (-p) for Hub Mode server (-S)
+  - (fixed) Compilation under ubuntu
+  - (removed) setRealtimeProcessPriority()
+  - (removed) Rtaudio mode (but still has dependencies)
+  - (fixed) IPv4-mapped IPv6 addressing bug
+  - ...
+  - (fixed) Fixed compilation for  MacOSX10.11.sdk.
+  - (update) Updated to RtAudio 4.1.1, and using shared lib in linux.
+- Version: "1.1"
+  Date: 2015-05-27
+  Description:
+  - (added) Support for RtAudio. Jacktrip can now be used without Jack
+  - (added) DNS Look-up support, now one machine can have a private IP (but still needs to have UDP ports open)
+  - (added) New port to Windows XP and Windows Vista (experimental and not tested for a long time, only when using jacktrip as a library)
+  - (added) Multiclient Server (experimental and not exposed in the executable)
+- Version: "1.0.5"
+  Date: 2010-11-25
+  Description:
+  - (added) Compatibility with JamLink boxes (restricted at the moment to 48KHz, 64 buffer size and 1 channel)
+  - (added) New port structure that allows the communication between a public server and a local client
+  - (added) Option for packets without header
+  - (added) Option to change default client name
+  - (fixed) General optimizations and code cleanup
+  - (added) Improved, now cross-platform build script
+- Version: "1.0.4"
+  Date: 2009-02-05
+  Description:
+  - (fixed) Buss error caused when no physical inputs or outputs ports are available
+- Version: "1.0.3"
+  Date: 2008-12-29
+  Description:
+  - (added) Redundancy Algorithm for UDP Packets to avoid glitches with packet losses
+  - (fixed) Now compiles on 64bits machines
+  - (fixed) Improved exceptions handling
+  - (added) Basic Karplus-Strong model added as Plug-in
+  - (added) Some functionality reimplemented using signals and slots for more flexibility
+  - (added) Multiple-Client-Server in alpha testing, expect it working in the next release
+- Version: "1.0.2"
+  Date: 2008-09-30
+  Type: development
+  Description:
+  - (added) Port offset mode, to use a different UDP port than the default one.
+  - (fixed) Improved thread behavior
+- Version: "1.0.1"
+  Date: 2008-09-23
+  Type: development
+  Description:
+  - (added) jamlink mode to connect with jamlink boxes
+  - (fixed) thread priority in both Linux and Mac OS X (still need some work on the Mac OS X Version)
+  - (fixed) Bug that was causing plug-ins not to behave correctly
+  - (added) Loopback mode
+  - "(added) Underrun Modes: Wavetable (default) and set to zeros"
+  - (added) Check for peer audio settings, program exists if they don't match
+  - (added) Automatically connect ports to available physical audio interface.
+- Version: "1.0"
+  Date: 2008-09-23
+  Type: "development"
+  Description:
+  - initial release
