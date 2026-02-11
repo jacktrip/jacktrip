@@ -59,7 +59,7 @@ class VsDeviceCodeFlow : public QObject
     virtual ~VsDeviceCodeFlow() { stopPolling(); }
 
     void grant();
-    void refreshAccessToken(){};
+    void refreshAccessToken() {};
     void initDeviceAuthorizationCodeFlow();
 
     bool processDeviceCodeNetworkReply(QNetworkReply* reply);

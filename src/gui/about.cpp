@@ -38,7 +38,7 @@ const QString About::s_buildID = QStringLiteral(BUILD_ID);
 #elif defined(JACKTRIP_BUILD_INFO)
 #define STR(s)       #s
 #define TO_STRING(s) STR(s)
-const QString About::s_buildID   = QLatin1String(TO_STRING(JACKTRIP_BUILD_INFO));
+const QString About::s_buildID = QLatin1String(TO_STRING(JACKTRIP_BUILD_INFO));
 #else
 const QString About::s_buildID = QLatin1String("");
 #endif

@@ -37,4 +37,6 @@ subprojects/rtaudio-5.*/
 subprojects/rtaudio-6.*/
 subprojects/wingetopt/
 subprojects/libsamplerate-0.*/
+subprojects/libdatachannel-0.*/
 subprojects/AudioUnitSDK-1.3.0/
+subprojects/msquic/

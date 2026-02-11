@@ -17,7 +17,7 @@ ARG JACK_VERSION=latest
 FROM registry.fedoraproject.org/fedora:${FEDORA_VERSION} AS builder
 
 # install tools require to build jacktrip
-RUN dnf install -y --nodocs cmake gcc gcc-c++ meson git python3-pyyaml python3-jinja2 glib2-devel jack-audio-connection-kit-devel dbus-devel
+RUN dnf install -y --nodocs cmake gcc gcc-c++ meson git perl python3-pyyaml python3-jinja2 glib2-devel jack-audio-connection-kit-devel dbus-devel libatomic-static
 
 ENV QT_VERSION=6.8.3
 RUN if [ "$(uname -m)" = "x86_64" ]; then export ARCH=amd64; else export ARCH=arm64; fi \
@@ -33,7 +33,7 @@ RUN cd /root \
 	&& export QT_PATH=/opt/qt-${QT_VERSION}-static \
 	&& export PATH=${QT_PATH}/bin:${PATH} \
 	&& export LDFLAGS="-L${QT_PATH}/lib -L${QT_PATH}/plugins/tls" \
-	&& meson setup -Ddefault_library=static -Dnogui=true --buildtype release builddir \
+	&& meson setup -Dpkg_config_path=/opt/qt-${QT_VERSION}-static/lib/pkgconfig -Dlibdatachannel=enabled -Dmsquic=enabled -Ddefault_library=static -Dnogui=true --buildtype release builddir \
 	&& meson compile -C builddir
 
 # stage files in INSTALLDIR
@@ -65,4 +65,5 @@ COPY --from=builder /artifacts /
 
 # jacktrip hub server listens on 4464 and uses 61000+ for clients
 EXPOSE 4464/tcp
+EXPOSE 4464/udp
 EXPOSE 61000-61100/udp
