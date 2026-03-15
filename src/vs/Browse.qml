@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtWebEngine
+import Qt5Compat.GraphicalEffects
 
 Item {
     width: parent.width; height: parent.height
@@ -22,6 +23,8 @@ Item {
 
     property string backgroundColour: virtualstudio.darkMode ? "#272525" : "#FAFBFB"
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
+    property string toolTipBackgroundColour: virtualstudio.darkMode ? "#323232" : "#F3F3F3"
+    property int fontTiny: 8
 
     property string browseDiscoverUrl: `https://${virtualstudio.apiHost === "test.jacktrip.com" ? "next-test.jacktrip.com" : "www.jacktrip.com"}/discover`
     property string browseStudiosUrl: `https://${virtualstudio.apiHost === "test.jacktrip.com" ? "next-test.jacktrip.com" : "www.jacktrip.com"}/studios`
@@ -123,6 +126,100 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             x: (16 + buttonWidth + extraSettingsButtonWidth + 8) * virtualstudio.uiScale
             width: (buttonWidth + extraSettingsButtonWidth) * virtualstudio.uiScale; height: buttonHeight * virtualstudio.uiScale
+        }
+
+        StyledButton {
+            id: goBackButton
+            icon { source: "arrow-left.svg"; color: resolvedTextColor }
+            onClicked: { if (webLoader.item) webLoader.item.goBack() }
+            enabled: webLoader.item && webLoader.item.canGoBack
+            display: AbstractButton.IconOnly
+            showBorder: false
+            anchors.verticalCenter: parent.verticalCenter
+            x: (16 + (buttonWidth + extraSettingsButtonWidth) * 2 + 8 * 2) * virtualstudio.uiScale
+            width: buttonHeight * virtualstudio.uiScale; height: buttonHeight * virtualstudio.uiScale
+
+            ToolTip {
+                visible: goBackButton.hovered
+                delay: 500
+                contentItem: Text {
+                    text: qsTr("Go Back")
+                    font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
+                    color: textColour
+                }
+                background: Rectangle {
+                    color: toolTipBackgroundColour
+                    radius: 4
+                    layer.enabled: true
+                    layer.effect: Glow {
+                        radius: 8
+                        color: "#66000000"
+                        transparentBorder: true
+                    }
+                }
+            }
+        }
+
+        StyledButton {
+            id: refreshButton
+            icon { source: "refresh.svg"; color: resolvedTextColor }
+            onClicked: { if (webLoader.item) webLoader.item.reload() }
+            display: AbstractButton.IconOnly
+            showBorder: false
+            anchors.verticalCenter: parent.verticalCenter
+            x: (16 + (buttonWidth + extraSettingsButtonWidth) * 2 + 8 * 2 + buttonHeight + 8) * virtualstudio.uiScale
+            width: buttonHeight * virtualstudio.uiScale; height: buttonHeight * virtualstudio.uiScale
+
+            ToolTip {
+                visible: refreshButton.hovered
+                delay: 500
+                contentItem: Text {
+                    text: qsTr("Refresh")
+                    font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
+                    color: textColour
+                }
+                background: Rectangle {
+                    color: toolTipBackgroundColour
+                    radius: 4
+                    layer.enabled: true
+                    layer.effect: Glow {
+                        radius: 8
+                        color: "#66000000"
+                        transparentBorder: true
+                    }
+                }
+            }
+        }
+
+        StyledButton {
+            id: openInBrowserButton
+            icon { source: "arrow-top-right-on-square.svg"; color: resolvedTextColor }
+            onClicked: { if (webLoader.item) Qt.openUrlExternally(webLoader.item.url) }
+            display: AbstractButton.IconOnly
+            showBorder: false
+            anchors.verticalCenter: parent.verticalCenter
+            x: (16 + (buttonWidth + extraSettingsButtonWidth) * 2 + 8 * 2 + (buttonHeight + 8) * 2) * virtualstudio.uiScale
+            width: buttonHeight * virtualstudio.uiScale; height: buttonHeight * virtualstudio.uiScale
+
+            ToolTip {
+                visible: openInBrowserButton.hovered
+                delay: 500
+                contentItem: Text {
+                    text: qsTr("Open in Browser")
+                    font { family: "Poppins"; pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale }
+                    color: textColour
+                }
+                background: Rectangle {
+                    color: toolTipBackgroundColour
+                    radius: 4
+                    layer.enabled: true
+                    layer.effect: Glow {
+                        radius: 8
+                        color: "#66000000"
+                        transparentBorder: true
+                    }
+                }
+            }
         }
 
         StyledButton {

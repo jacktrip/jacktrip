@@ -60,6 +60,8 @@
     <file>quiet.svg</file>
     <file>loud.svg</file>
     <file>refresh.svg</file>
+    <file>arrow-left.svg</file>
+    <file>arrow-top-right-on-square.svg</file>
     <file>ethernet.svg</file>
     <file>networkCheck.svg</file>
     <file>externalMic.svg</file>
