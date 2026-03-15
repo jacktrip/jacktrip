@@ -9,10 +9,6 @@ Item {
     clip: true
 
     property int fontMedium: 12
-    property string browserButtonColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
-    property string browserButtonHoverColour: virtualstudio.darkMode ? "#5B5858" : "#D3D4D4"
-    property string browserButtonPressedColour: virtualstudio.darkMode ? "#524F4F" : "#DEE0E0"
-    property string buttonStroke: virtualstudio.darkMode ? "#80827D7D" : "#34979797"
 
     Loader {
         id: webLoader
@@ -91,23 +87,17 @@ Item {
                 Layout.fillHeight: true
                 Layout.fillWidth: true
 
-                Button {
+                StyledButton {
                     id: backButton
+                    text: "Back to Studios"
+                    primary: true
+                    buttonRadius: 8
+                    showBorder: false
+                    fontSize: 13
                     anchors.centerIn: parent
                     width: 180 * virtualstudio.uiScale
                     height: 36 * virtualstudio.uiScale
-                    background: Rectangle {
-                        radius: 8 * virtualstudio.uiScale
-                        color: backButton.down ? browserButtonPressedColour : (backButton.hovered ? browserButtonHoverColour : browserButtonColour)
-                    }
                     onClicked: virtualstudio.windowState = "browse"
-
-                    Text {
-                        text: "Back to Studios"
-                        font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale}
-                        anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-                        color: textColour
-                    }
                 }
             }
         }
@@ -117,7 +107,7 @@ Item {
             width: parent.width
             height: 1
             y: parent.height - footer.height
-            color: buttonStroke
+            color: virtualstudio.darkMode ? "#80827D7D" : "#34979797"
         }
     }
 }

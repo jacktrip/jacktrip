@@ -18,20 +18,8 @@ Item {
 
     property string backgroundColour: virtualstudio.darkMode ? "#272525" : "#FAFBFB"
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
-    property string buttonColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
-    property string buttonHoverColour: virtualstudio.darkMode ? "#5B5858" : "#D3D4D4"
-    property string buttonPressedColour: virtualstudio.darkMode ? "#524F4F" : "#DEE0E0"
-    property string buttonStroke: virtualstudio.darkMode ? "#80827D7D" : "#34979797"
-    property string buttonHoverStroke: virtualstudio.darkMode ? "#7B7777" : "#BABCBC"
-    property string buttonPressedStroke: virtualstudio.darkMode ? "#827D7D" : "#BABCBC"
-    property string saveButtonBackgroundColour: "#F2F3F3"
-    property string saveButtonPressedColour: "#E7E8E8"
-    property string saveButtonStroke: "#EAEBEB"
-    property string saveButtonPressedStroke: "#B0B5B5"
-    property string saveButtonText: "#000000"
     property string checkboxStroke: "#0062cc"
     property string checkboxPressedStroke: "#007AFF"
-    property string disabledButtonText: "#D3D4D4"
     property string linkText: virtualstudio.darkMode ? "#8B8D8D" : "#272525"
 
     property bool currShowRecommendations: virtualstudio.showWarnings
@@ -159,30 +147,16 @@ Item {
             url: "https://support.jacktrip.com/wired-internet-versus-wi-fi"
         }
 
-        Button {
+        StyledButton {
             id: okButtonEthernet
-            background: Rectangle {
-                radius: 6 * virtualstudio.uiScale
-                color: okButtonEthernet.down ? saveButtonPressedColour : saveButtonBackgroundColour
-                border.width: 1
-                border.color: okButtonEthernet.down || okButtonEthernet.hovered ? saveButtonPressedStroke : saveButtonStroke
-                layer.enabled: okButtonEthernet.hovered && !okButtonEthernet.down
-            }
+            text: "Continue"
+            primary: true
             onClicked: { recommendationScreen = "fiber" }
             anchors.right: parent.right
             anchors.rightMargin: 16 * virtualstudio.uiScale
             anchors.bottomMargin: 16 * virtualstudio.uiScale
             anchors.bottom: parent.bottom
             width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
-            Text {
-                text: "Continue"
-                font.family: "Poppins"
-                font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
-                font.weight: Font.Bold
-                color: saveButtonText
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.verticalCenter: parent.verticalCenter
-            }
         }
     }
 
@@ -232,30 +206,16 @@ Item {
             url: "https://support.jacktrip.com/how-to-optimize-latency-when-using-jacktrip"
         }
 
-        Button {
+        StyledButton {
             id: okButtonFiber
-            background: Rectangle {
-                radius: 6 * virtualstudio.uiScale
-                color: okButtonFiber.down ? saveButtonPressedColour : saveButtonBackgroundColour
-                border.width: 1
-                border.color: okButtonFiber.down || okButtonFiber.hovered ? saveButtonPressedStroke : saveButtonStroke
-                layer.enabled: okButtonFiber.hovered && !okButtonFiber.down
-            }
+            text: "Continue"
+            primary: true
             onClicked: { recommendationScreen = "audiointerface" }
             anchors.right: parent.right
             anchors.rightMargin: 16 * virtualstudio.uiScale
             anchors.bottomMargin: 16 * virtualstudio.uiScale
             anchors.bottom: parent.bottom
             width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
-            Text {
-                text: "Continue"
-                font.family: "Poppins"
-                font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
-                font.weight: Font.Bold
-                color: saveButtonText
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.verticalCenter: parent.verticalCenter
-            }
         }
     }
 
@@ -300,15 +260,10 @@ Item {
             anchors.topMargin: 32 * virtualstudio.uiScale
         }
 
-        Button {
+        StyledButton {
             id: okButtonHeadphones
-            background: Rectangle {
-                radius: 6 * virtualstudio.uiScale
-                color: okButtonHeadphones.down ? saveButtonPressedColour : saveButtonBackgroundColour
-                border.width: 1
-                border.color: okButtonHeadphones.down || okButtonHeadphones.hovered ? saveButtonPressedStroke : saveButtonStroke
-                layer.enabled: okButtonHeadphones.hovered && !okButtonHeadphones.down
-            }
+            text: "Continue"
+            primary: true
             onClicked: {
                 recommendationScreen = "acknowledged";
             }
@@ -317,15 +272,6 @@ Item {
             anchors.bottomMargin: 16 * virtualstudio.uiScale
             anchors.bottom: parent.bottom
             width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
-            Text {
-                text: "Continue"
-                font.family: "Poppins"
-                font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
-                font.weight: Font.Bold
-                color: saveButtonText
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.verticalCenter: parent.verticalCenter
-            }
         }
     }
 
@@ -410,15 +356,10 @@ Item {
             url: "https://support.jacktrip.com/recommended-audio-interfaces"
         }
 
-        Button {
+        StyledButton {
             id: okButtonAudioInterface
-            background: Rectangle {
-                radius: 6 * virtualstudio.uiScale
-                color: okButtonAudioInterface.down ? saveButtonPressedColour : saveButtonBackgroundColour
-                border.width: 1
-                border.color: okButtonAudioInterface.down || okButtonAudioInterface.hovered ? saveButtonPressedStroke : saveButtonStroke
-                layer.enabled: okButtonAudioInterface.hovered && !okButtonAudioInterface.down
-            }
+            text: "Continue"
+            primary: true
             onClicked: {
                 recommendationScreen = "headphones";
             }
@@ -427,15 +368,6 @@ Item {
             anchors.bottomMargin: 16 * virtualstudio.uiScale
             anchors.bottom: parent.bottom
             width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
-            Text {
-                text: "Continue"
-                font.family: "Poppins"
-                font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
-                font.weight: Font.Bold
-                color: saveButtonText
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.verticalCenter: parent.verticalCenter
-            }
         }
     }
 
@@ -475,17 +407,11 @@ Item {
             anchors.topMargin: 64 * virtualstudio.uiScale
             anchors.horizontalCenter: parent.horizontalCenter
 
-            Button {
+            StyledButton {
                 id: acknowledgedYesButton
+                text: "Yes"
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
-                background: Rectangle {
-                    radius: 6 * virtualstudio.uiScale
-                    color: acknowledgedYesButton.down ? saveButtonPressedColour : saveButtonBackgroundColour
-                    border.width: 1
-                    border.color: acknowledgedYesButton.down || acknowledgedYesButton.hovered ? saveButtonPressedStroke : saveButtonStroke
-                    layer.enabled: acknowledgedYesButton.hovered && !acknowledgedYesButton.down
-                }
                 onClicked: {
                     virtualstudio.showWarnings = true;
                     virtualstudio.saveSettings();
@@ -499,28 +425,14 @@ Item {
                     }
                 }
                 width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
-                Text {
-                    text: "Yes"
-                    font.family: "Poppins"
-                    font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
-                    font.weight: Font.Bold
-                    color: saveButtonText
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.verticalCenter: parent.verticalCenter
-                }
             }
 
-            Button {
+            StyledButton {
                 id: acknowledgedNoButton
+                text: "No"
+                primary: true
                 anchors.right: parent.right
                 anchors.verticalCenter: parent.verticalCenter
-                background: Rectangle {
-                    radius: 6 * virtualstudio.uiScale
-                    color: acknowledgedNoButton.down ? saveButtonPressedColour : saveButtonBackgroundColour
-                    border.width: 1
-                    border.color: acknowledgedNoButton.down || acknowledgedNoButton.hovered ? saveButtonPressedStroke : saveButtonStroke
-                    layer.enabled: acknowledgedNoButton.hovered && !acknowledgedNoButton.down
-                }
                 onClicked: {
                     virtualstudio.showWarnings = false;
                     virtualstudio.saveSettings();
@@ -534,15 +446,6 @@ Item {
                     }
                 }
                 width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
-                Text {
-                    text: "No"
-                    font.family: "Poppins"
-                    font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
-                    font.weight: Font.Bold
-                    color: saveButtonText
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.verticalCenter: parent.verticalCenter
-                }
             }
         }
 

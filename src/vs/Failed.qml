@@ -67,7 +67,7 @@ Item {
         anchors.top: ohnoMessage.bottom
         anchors.topMargin: 60 * virtualstudio.uiScale
         Text {
-            text: "Back"
+            text: "Go Back"
             font.family: "Poppins"
             font.pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale
             anchors.horizontalCenter: parent.horizontalCenter

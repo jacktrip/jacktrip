@@ -15,7 +15,6 @@ Rectangle {
     property int bottomToolTipMargin: 8
     property int rightToolTipMargin: 4
 
-    property string saveButtonText: "#000000"
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
     property string meterColor: virtualstudio.darkMode ? "gray" : "#E0E0E0"
     property real muteButtonLightnessValue: virtualstudio.darkMode ? 1.0 : 0.0
@@ -31,13 +30,7 @@ Rectangle {
     property string sliderActiveTrackColour: virtualstudio.darkMode ? "light gray" : "black"
     property string checkboxStroke: "#0062cc"
     property string checkboxPressedStroke: "#007AFF"
-
     property string browserButtonColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
-    property string browserButtonHoverColour: virtualstudio.darkMode ? "#5B5858" : "#D3D4D4"
-    property string browserButtonPressedColour: virtualstudio.darkMode ? "#524F4F" : "#DEE0E0"
-    property string browserButtonStroke: virtualstudio.darkMode ? "#80827D7D" : "#40979797"
-    property string browserButtonHoverStroke: virtualstudio.darkMode ? "#7B7777" : "#BABCBC"
-    property string browserButtonPressedStroke: virtualstudio.darkMode ? "#827D7D" : "#BABCBC"
 
     property string linkText: virtualstudio.darkMode ? "#8B8D8D" : "#272525"
 
@@ -290,28 +283,21 @@ Rectangle {
         }
     }
 
-    Button {
+    StyledButton {
         id: backButton
-        background: Rectangle {
-            radius: 6 * virtualstudio.uiScale
-            color: backButton.down ? browserButtonPressedColour : (backButton.hovered ? browserButtonHoverColour : browserButtonColour)
-        }
+        text: "Go Back"
+        primary: true
+        showBorder: false
+        fontSize: fontMedium
         onClicked: {
             virtualstudio.saveSettings();
             virtualstudio.windowState = "connected";
         }
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: 16 * virtualstudio.uiScale;
+        anchors.bottomMargin: 16 * virtualstudio.uiScale
         anchors.left: parent.left
-        anchors.leftMargin: 16 * virtualstudio.uiScale;
+        anchors.leftMargin: 16 * virtualstudio.uiScale
         width: 150 * virtualstudio.uiScale; height: 36 * virtualstudio.uiScale
-
-        Text {
-            text: "Back"
-            font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale}
-            anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-            color: textColour
-        }
     }
 
     DeviceWarning {

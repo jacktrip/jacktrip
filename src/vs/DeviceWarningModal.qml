@@ -9,12 +9,6 @@ Item {
     property int fontSmall: 10
 
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
-    property string buttonColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
-    property string buttonPressedStroke: virtualstudio.darkMode ? "#827D7D" : "#BABCBC"
-    property string buttonPressedColour: virtualstudio.darkMode ? "#524F4F" : "#DEE0E0"
-    property string buttonStroke: virtualstudio.darkMode ? "#80827D7D" : "#34979797"
-    property string buttonHoverStroke: virtualstudio.darkMode ? "#7B7777" : "#BABCBC"
-    property string buttonHoverColour: virtualstudio.darkMode ? "#5B5858" : "#D3D4D4"
     property string devicesWarningColour: "#F21B1B"
 
     Popup {
@@ -31,7 +25,7 @@ Item {
             color: "transparent"
             radius: 6 * virtualstudio.uiScale
             border.width: 1
-            border.color: buttonStroke
+            border.color: virtualstudio.darkMode ? "#80827D7D" : "#34979797"
             clip: true
         }
 
@@ -94,8 +88,9 @@ Item {
                     visible: Boolean(audio.devicesErrorHelpUrl) || Boolean(audio.devicesWarningHelpUrl)
                 }
 
-                Button {
+                StyledButton {
                     id: backButton
+                    text: "Back to Settings"
                     anchors.left: parent.left
                     anchors.leftMargin: 24 * virtualstudio.uiScale
                     anchors.bottom: parent.bottom
@@ -104,26 +99,12 @@ Item {
                     onClicked: () => {
                         deviceWarningPopup.close();
                     }
-
-                    background: Rectangle {
-                        radius: 6 * virtualstudio.uiScale
-                        color: backButton.down ? buttonPressedColour : (backButton.hovered ? buttonHoverColour : buttonColour)
-                        border.width: 1
-                        border.color: backButton.down ? buttonPressedStroke : (backButton.hovered ? buttonHoverStroke : buttonStroke)
-                    }
-
-                    Text {
-                        text: "Back to Settings"
-                        font.family: "Poppins"
-                        font.pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale
-                        color: textColour
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
                 }
 
-                Button {
+                StyledButton {
                     id: connectButton
+                    text: "Connect to Session"
+                    primary: true
                     anchors.right: parent.right
                     anchors.rightMargin: 24 * virtualstudio.uiScale
                     anchors.bottom: parent.bottom
@@ -135,22 +116,6 @@ Item {
                         virtualstudio.windowState = "connected";
                         virtualstudio.saveSettings();
                         virtualstudio.joinStudio();
-                    }
-
-                    background: Rectangle {
-                        radius: 6 * virtualstudio.uiScale
-                        color: connectButton.down ? buttonPressedColour : (connectButton.hovered ? buttonHoverColour : buttonColour)
-                        border.width: 1
-                        border.color: connectButton.down ? buttonPressedStroke : (connectButton.hovered ? buttonHoverStroke : buttonStroke)
-                    }
-
-                    Text {
-                        text: "Connect to Session"
-                        font.family: "Poppins"
-                        font.pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale
-                        color: textColour
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        anchors.verticalCenter: parent.verticalCenter
                     }
                 }
             }

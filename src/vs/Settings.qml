@@ -25,9 +25,6 @@ Item {
     property string buttonColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
     property string buttonHoverColour: virtualstudio.darkMode ? "#5B5858" : "#D3D4D4"
     property string buttonPressedColour: virtualstudio.darkMode ? "#524F4F" : "#DEE0E0"
-    property string buttonStroke: virtualstudio.darkMode ? "#80827D7D" : "#40979797"
-    property string buttonHoverStroke: virtualstudio.darkMode ? "#7B7777" : "#BABCBC"
-    property string buttonPressedStroke: virtualstudio.darkMode ? "#827D7D" : "#BABCBC"
     property string sliderColour: virtualstudio.darkMode ? "#BABCBC" :  "#EAECEC"
     property string sliderPressedColour: virtualstudio.darkMode ? "#ACAFAF" : "#DEE0E0"
     property string sliderTrackColour: virtualstudio.darkMode ? "#5B5858" : "light gray"
@@ -38,7 +35,6 @@ Item {
     property string linkText: virtualstudio.darkMode ? "#8B8D8D" : "#272525"
 
     property string errorFlagColour: "#DB0A0A"
-    property string disabledButtonTextColour: virtualstudio.darkMode ? "#827D7D" : "#BABCBC"
 
     property string settingsGroupView: "Audio"
 
@@ -319,7 +315,7 @@ Item {
                 implicitHeight: 26 * virtualstudio.uiScale
                 radius: 13 * virtualstudio.uiScale
                 color: scaleSlider.pressed ? sliderPressedColour : sliderColour
-                border.color: buttonStroke
+                border.color: virtualstudio.darkMode ? "#80827D7D" : "#40979797"
             }
         }
 
@@ -331,25 +327,14 @@ Item {
             color: textColour
         }
 
-        Button {
+        StyledButton {
             id: darkButton
-            background: Rectangle {
-                radius: 6 * virtualstudio.uiScale
-                color: darkButton.down ? buttonPressedColour : (darkButton.hovered ? buttonHoverColour : buttonColour)
-                border.width: 1
-                border.color: darkButton.down ? buttonPressedStroke : (darkButton.hovered ? buttonHoverStroke : buttonStroke)
-            }
+            text: virtualstudio.darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"
             onClicked: { virtualstudio.darkMode = !virtualstudio.darkMode; }
-            x: parent.width - (232 * virtualstudio.uiScale);
+            x: parent.width - (232 * virtualstudio.uiScale)
             y: scaleSlider.y + (48 * virtualstudio.uiScale)
-            width: 216 * virtualstudio.uiScale;
+            width: 216 * virtualstudio.uiScale
             height: 30 * virtualstudio.uiScale
-            Text {
-                text: virtualstudio.darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"
-                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-                anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-                color: textColour
-            }
         }
 
         Text {
@@ -370,35 +355,21 @@ Item {
         color: backgroundColour
         visible: settingsGroupView == "Advanced"
 
-        Button {
+        StyledButton {
             id: modeButton
+            text: virtualstudio.psiBuild ? "Switch to Standard Mode" : "Switch to Classic Mode"
             visible: virtualstudio.hasClassicMode
-            background: Rectangle {
-                radius: 6 * virtualstudio.uiScale
-                color: modeButton.down ? buttonPressedColour : (modeButton.hovered ? buttonHoverColour : buttonColour)
-                border.width: 1
-                border.color: modeButton.down ? buttonPressedStroke : (modeButton.hovered ? buttonHoverStroke : buttonStroke)
-            }
             onClicked: {
-                // essentially the same here as clicking the cancel button
                 audio.stopAudio();
                 virtualstudio.windowState = "browse";
                 virtualstudio.loadSettings();
                 audio.validateDevices();
-
-                // switch mode
                 virtualstudio.toClassicMode();
             }
-            x: 220 * virtualstudio.uiScale;
+            x: 220 * virtualstudio.uiScale
             y: 48 * virtualstudio.uiScale
-            width: 216 * virtualstudio.uiScale;
+            width: 216 * virtualstudio.uiScale
             height: 30 * virtualstudio.uiScale
-            Text {
-                text: virtualstudio.psiBuild ? "Switch to Standard Mode" : "Switch to Classic Mode"
-                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-                anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-                color: textColour
-            }
         }
 
         Text {
@@ -640,58 +611,29 @@ Item {
             color: textColour
         }
 
-        Button {
+        StyledButton {
             id: editButton
-            background: Rectangle {
-                radius: 6 * virtualstudio.uiScale
-                color: editButton.down ? buttonPressedColour : (editButton.hovered ? buttonHoverColour : buttonColour)
-                border.width: 1
-                border.color: editButton.down ? buttonPressedStroke : (editButton.hovered ? buttonHoverStroke : buttonStroke)
-            }
+            text: "Edit Profile"
             onClicked: { virtualstudio.editProfile(); }
             anchors.horizontalCenter: parent.horizontalCenter
             y: email.y + (56 * virtualstudio.uiScale)
             width: 260 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
-            Text {
-                text: "Edit Profile"
-                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-                anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-                color: textColour
-            }
         }
 
-        Button {
+        StyledButton {
             id: logoutButton
-            background: Rectangle {
-                radius: 6 * virtualstudio.uiScale
-                color: logoutButton.down ? buttonPressedColour : (logoutButton.hovered ? buttonHoverColour : buttonColour)
-                border.width: 1
-                border.color: logoutButton.down ? buttonPressedStroke : (logoutButton.hovered ? buttonHoverStroke : buttonStroke)
-            }
+            text: "Log Out"
             onClicked: { virtualstudio.logout(); }
             anchors.horizontalCenter: parent.horizontalCenter
             y: editButton.y + (48 * virtualstudio.uiScale)
             width: 260 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
-            Text {
-                text: "Log Out"
-                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-                anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-                color: textColour
-            }
         }
 
-        Button {
+        StyledButton {
             id: testModeButton
-            background: Rectangle {
-                radius: 6 * virtualstudio.uiScale
-                color: testModeButton.down ? buttonPressedColour : (testModeButton.hovered ? buttonHoverColour : buttonColour)
-                border.width: 1
-                border.color: testModeButton.down ? buttonPressedStroke : (testModeButton.hovered ? buttonHoverStroke : buttonStroke)
-            }
+            text: virtualstudio.testMode ? "Switch to Prod Mode" : "Switch to Test Mode"
             onClicked: {
                 virtualstudio.testMode = !virtualstudio.testMode;
-
-                // behave like "Cancel" and switch back to browse mode
                 audio.stopAudio();
                 virtualstudio.windowState = "browse";
                 virtualstudio.loadSettings();
@@ -701,12 +643,6 @@ Item {
             y: logoutButton.y + (48 * virtualstudio.uiScale)
             width: 260 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
             visible: virtualstudio.userMetadata.email ? ( virtualstudio.userMetadata.email.endsWith("@jacktrip.org") ? true : false ) : false
-            Text {
-                text: virtualstudio.testMode ? "Switch to Prod Mode" : "Switch to Test Mode"
-                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-                anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-                color: textColour
-            }
         }
     }
 
@@ -716,14 +652,9 @@ Item {
         border.color: "#33979797"
         color: backgroundColour
 
-        Button {
+        StyledButton {
             id: cancelButton
-            background: Rectangle {
-                radius: 6 * virtualstudio.uiScale
-                color: cancelButton.down ? buttonPressedColour : (cancelButton.hovered ? buttonHoverColour : buttonColour)
-                border.width: 1
-                border.color: cancelButton.down ? buttonPressedStroke : (cancelButton.hovered ? buttonHoverStroke : buttonStroke)
-            }
+            text: "Cancel"
             onClicked: {
                 audio.stopAudio();
                 virtualstudio.windowState = "browse";
@@ -733,23 +664,13 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             x: parent.width - (230 * virtualstudio.uiScale)
             width: buttonWidth * virtualstudio.uiScale; height: buttonHeight * virtualstudio.uiScale
-            Text {
-                text: "Cancel"
-                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-                anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-                color: textColour
-            }
         }
 
-        Button {
+        StyledButton {
             id: saveButton
+            text: "Save"
+            primary: true
             enabled: !Boolean(audio.devicesError)
-            background: Rectangle {
-                radius: 6 * virtualstudio.uiScale
-                color: saveButton.down ? buttonPressedColour : (saveButton.hovered ? buttonHoverColour : buttonColour)
-                border.width: 1
-                border.color: saveButton.down ? buttonPressedStroke : (saveButton.hovered ? buttonHoverStroke : buttonStroke)
-            }
             onClicked: {
                 audio.stopAudio();
                 virtualstudio.windowState = "browse";
@@ -758,12 +679,6 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             x: parent.width - (119 * virtualstudio.uiScale)
             width: buttonWidth * virtualstudio.uiScale; height: buttonHeight * virtualstudio.uiScale
-            Text {
-                text: "Save"
-                font { family: "Poppins"; pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale }
-                anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-                color: Boolean(audio.devicesError) ? disabledButtonTextColour : textColour
-            }
         }
 
         DeviceWarning {

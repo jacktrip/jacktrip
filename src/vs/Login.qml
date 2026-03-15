@@ -265,7 +265,7 @@ Item {
                 x: (parent.x + parent.width / 2) - backButton.width - 8 * virtualstudio.uiScale
                 width: 144 * virtualstudio.uiScale; height: 32 * virtualstudio.uiScale
                 Text {
-                    text: "Back"
+                    text: "Go Back"
                     font.family: "Poppins"
                     font.underline: true
                     font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale

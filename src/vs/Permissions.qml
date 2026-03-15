@@ -10,12 +10,6 @@ Item {
     property int fontSmall: 11
     property int fontExtraSmall: 8
 
-    property string saveButtonPressedColour: "#E7E8E8"
-    property string saveButtonPressedStroke: "#B0B5B5"
-    property string saveButtonBackgroundColour: "#F2F3F3"
-    property string saveButtonStroke: "#EAEBEB"
-    property string saveButtonText: "#000000"
-
     Item {
         id: requestMicPermissionsItem
         width: parent.width; height: parent.height
@@ -42,17 +36,12 @@ Item {
             smooth: true
         }
 
-        Button {
+        StyledButton {
             id: showPromptButton
+            text: "OK"
+            primary: true
             width: 112 * virtualstudio.uiScale
             height: 30 * virtualstudio.uiScale
-            background: Rectangle {
-                radius: 6 * virtualstudio.uiScale
-                color: showPromptButton.down ? saveButtonPressedColour : saveButtonBackgroundColour
-                border.width: 2
-                border.color: showPromptButton.down || showPromptButton.hovered ? saveButtonPressedStroke : saveButtonStroke
-                layer.enabled: showPromptButton.hovered && !showPromptButton.down
-            }
             onClicked: {
                 permissions.getMicPermission();
             }
@@ -60,14 +49,6 @@ Item {
             anchors.rightMargin: 13.5 * virtualstudio.uiScale
             anchors.bottomMargin: 17 * virtualstudio.uiScale
             anchors.bottom: microphonePrompt.bottom
-            Text {
-                text: "OK"
-                font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
-                font.weight: Font.Bold
-                color: saveButtonText
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.verticalCenter: parent.verticalCenter
-            }
         }
 
         Text {
@@ -121,15 +102,10 @@ Item {
             icon.source: "micoff.svg"
         }
 
-        Button {
+        StyledButton {
             id: openSettingsButton
-            background: Rectangle {
-                radius: 6 * virtualstudio.uiScale
-                color: openSettingsButton.down ? saveButtonPressedColour : saveButtonBackgroundColour
-                border.width: 1
-                border.color: openSettingsButton.down || openSettingsButton.hovered ? saveButtonPressedStroke : saveButtonStroke
-                layer.enabled: openSettingsButton.hovered && !openSettingsButton.down
-            }
+            text: "Open Privacy Settings"
+            primary: true
             onClicked: {
                 permissions.openSystemPrivacy();
             }
@@ -138,15 +114,6 @@ Item {
             anchors.bottomMargin: 16 * virtualstudio.uiScale
             anchors.bottom: parent.bottom
             width: 200 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
-            Text {
-                text: "Open Privacy Settings"
-                font.family: "Poppins"
-                font.pixelSize: 11 * virtualstudio.fontScale * virtualstudio.uiScale
-                font.weight: Font.Bold
-                color: saveButtonText
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.verticalCenter: parent.verticalCenter
-            }
         }
 
         Text {

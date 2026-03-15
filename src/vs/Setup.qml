@@ -15,20 +15,8 @@ Item {
 
     property string strokeColor: virtualstudio.darkMode ? "#80827D7D" : "#34979797"
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
-    property string buttonColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
-    property string buttonHoverColour: virtualstudio.darkMode ? "#5B5858" : "#D3D4D4"	
-    property string buttonPressedColour: virtualstudio.darkMode ? "#524F4F" : "#DEE0E0"
-    property string buttonStroke: virtualstudio.darkMode ? "#80827D7D" : "#34979797"
-    property string buttonHoverStroke: virtualstudio.darkMode ? "#7B7777" : "#BABCBC"	
-    property string buttonPressedStroke: virtualstudio.darkMode ? "#827D7D" : "#BABCBC"
-    property string saveButtonBackgroundColour: "#F2F3F3"
-    property string saveButtonPressedColour: "#E7E8E8"	
-    property string saveButtonStroke: "#EAEBEB"
-    property string saveButtonPressedStroke: "#B0B5B5"
-    property string saveButtonText: "#000000"
     property string checkboxStroke: "#0062cc"
     property string checkboxPressedStroke: "#007AFF"
-    property string disabledButtonText: virtualstudio.darkMode ? "#827D7D" : "#BABCBC"
 
     Item {
         id: setupItem
@@ -94,28 +82,15 @@ Item {
             border.color: "#33979797"
             color: backgroundColour
 
-            Button {
+            StyledButton {
                 id: backButton
-                background: Rectangle {
-                    radius: 6 * virtualstudio.uiScale
-                    color: backButton.down ? buttonPressedColour : buttonColour
-                    border.width: 1
-                    border.color: backButton.down || backButton.hovered ? buttonPressedStroke : buttonStroke
-                }
+                text: "Go Back"
                 onClicked: { virtualstudio.windowState = "browse"; virtualstudio.studioToJoin = ""; audio.stopAudio(); }
                 anchors.left: parent.left
                 anchors.leftMargin: 16 * virtualstudio.uiScale
                 anchors.bottomMargin: rightMargin * virtualstudio.uiScale
                 anchors.bottom: parent.bottom
                 width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
-                Text {
-                    text: "Back"
-                    font.family: "Poppins"
-                    font.pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale
-                    color: textColour
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.verticalCenter: parent.verticalCenter
-                }
             }
 
             DeviceWarning {
@@ -126,14 +101,10 @@ Item {
                 visible: Boolean(audio.devicesError) || Boolean(audio.devicesWarning)
             }
 
-            Button {
+            StyledButton {
                 id: saveButton
-                background: Rectangle {
-                    radius: 6 * virtualstudio.uiScale
-                    color: saveButton.down ? saveButtonPressedColour : saveButtonBackgroundColour
-                    border.width: 1
-                    border.color: saveButton.down || saveButton.hovered ? saveButtonPressedStroke : saveButtonStroke
-                }
+                text: "Connect to Session"
+                primary: true
                 enabled: !Boolean(audio.devicesError) && audio.backendAvailable && audio.audioReady
                 onClicked: {
                     if (Boolean(audio.devicesWarning)) {
@@ -150,15 +121,6 @@ Item {
                 anchors.bottomMargin: rightMargin * virtualstudio.uiScale
                 anchors.bottom: parent.bottom
                 width: 160 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
-                Text {
-                    text: "Connect to Session"
-                    font.family: "Poppins"
-                    font.pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale
-                    font.weight: Font.Bold
-                    color: !Boolean(audio.devicesError) && audio.backendAvailable && audio.audioReady ? saveButtonText : disabledButtonText
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.verticalCenter: parent.verticalCenter
-                }
             }
 
             CheckBox {

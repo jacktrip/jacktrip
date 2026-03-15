@@ -18,13 +18,6 @@ Item {
     property int bottomToolTipMargin: 8
     property int rightToolTipMargin: 4
 
-    property string buttonColour: "#F2F3F3"
-    property string buttonHoverColour: "#E7E8E8"
-    property string buttonPressedColour: "#E7E8E8"
-    property string buttonStroke: "#EAEBEB"
-    property string buttonHoverStroke: "#B0B5B5"
-    property string buttonPressedStroke: "#B0B5B5"
-
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
     property string textAreaTextColour: virtualstudio.darkMode ? "#A6A6A6" : "#757575"
     property string textAreaColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
@@ -53,7 +46,7 @@ Item {
             color: "transparent"
             radius: 6 * virtualstudio.uiScale
             border.width: 1
-            border.color: buttonStroke
+            border.color: "#EAEBEB"
             clip: true
         }
 
@@ -278,7 +271,7 @@ Item {
                         color: textAreaColour
                         radius: 6 * virtualstudio.uiScale
                         border.width: 1
-                        border.color: buttonStroke
+                        border.color: "#EAEBEB"
                         }
                     }
                 }
@@ -291,8 +284,10 @@ Item {
                     anchors.top: messageBoxScrollArea.bottom
                     anchors.topMargin: 24 * virtualstudio.uiScale
 
-                    Button {
+                    StyledButton {
                         id: userFeedbackButton
+                        text: (rating === 0 && messageBox.text === "") ? "Dismiss" : "Submit"
+                        primary: true
                         anchors.right: buttonsArea.right
                         anchors.horizontalCenter: buttonsArea.horizontalCenter
                         anchors.verticalCenter: parent.buttonsArea
@@ -311,23 +306,6 @@ Item {
                             messageBox.clear();
                             userFeedbackModal.height = 150 * virtualstudio.uiScale
                             submittedFeedbackTimer.start();
-                        }
-
-                        background: Rectangle {
-                            radius: 6 * virtualstudio.uiScale
-                            color: userFeedbackButton.down ? buttonPressedColour : (userFeedbackButton.hovered ? buttonHoverColour : buttonColour)
-                            border.width: 1
-                            border.color: userFeedbackButton.down ? buttonPressedStroke : (userFeedbackButton.hovered ? buttonHoverStroke : buttonStroke)
-                        }
-
-                        Text {
-                            text: (rating === 0 && messageBox.text === "") ? "Dismiss" : "Submit"
-                            font.family: "Poppins"
-                            font.pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale
-                            font.weight: Font.Bold
-                            color: "#000000"
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            anchors.verticalCenter: parent.verticalCenter
                         }
                     }
 
@@ -379,8 +357,11 @@ Item {
                     wrapMode: Text.WordWrap
                 }
 
-                Button {
+                StyledButton {
                     id: closeButtonFeedback
+                    text: "Close"
+                    primary: true
+                    fontSize: 10
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.top: submittedFeedbackText.bottom
                     anchors.topMargin: 16 * virtualstudio.uiScale
@@ -389,21 +370,6 @@ Item {
                         submitted = false;
                         userFeedbackModal.height = 300 * virtualstudio.uiScale
                         userFeedbackModal.close();
-                    }
-
-                    background: Rectangle {
-                        radius: 6 * virtualstudio.uiScale
-                        color: closeButtonFeedback.down ? buttonPressedColour : (closeButtonFeedback.hovered ? buttonHoverColour : buttonColour)
-                        border.width: 1
-                        border.color: closeButtonFeedback.down ? buttonPressedStroke : (closeButtonFeedback.hovered ? buttonHoverStroke : buttonStroke)
-                    }
-
-                    Text {
-                        text: "Close"
-                        font.family: "Poppins"
-                        font.pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        anchors.verticalCenter: parent.verticalCenter
                     }
                 }
             }

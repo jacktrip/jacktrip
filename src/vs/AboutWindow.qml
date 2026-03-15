@@ -14,13 +14,6 @@ Window {
     property int fontSmall: 10
     property int fontTiny: 8
 
-    property string buttonColour: "#F2F3F3"
-    property string buttonHoverColour: "#E7E8E8"
-    property string buttonPressedColour: "#E7E8E8"
-    property string buttonStroke: "#EAEBEB"
-    property string buttonHoverStroke: "#B0B5B5"
-    property string buttonPressedStroke: "#B0B5B5"
-
     property string textColour: virtualstudio.darkMode ? "#FAFBFB" : "#0F0D0D"
     property string textAreaTextColour: virtualstudio.darkMode ? "#A6A6A6" : "#757575"
     property string textAreaColour: virtualstudio.darkMode ? "#494646" : "#EAECEC"
@@ -107,29 +100,17 @@ Window {
                 wrapMode: Text.WordWrap
             }
 
-            Button {
+            StyledButton {
                 id: aboutCloseButton
+                text: "Close"
+                primary: true
+                fontSize: 10
                 anchors.top: aboutCopyright.bottom
                 anchors.topMargin: 16 * virtualstudio.uiScale
                 anchors.left: parent.left
                 width: 150 * virtualstudio.uiScale; height: 30 * virtualstudio.uiScale
                 onClicked: () => {
                     aboutWindow.visible = false;
-                }
-
-                background: Rectangle {
-                    radius: 6 * virtualstudio.uiScale
-                    color: aboutCloseButton.down ? buttonPressedColour : (aboutCloseButton.hovered ? buttonHoverColour : buttonColour)
-                    border.width: 1
-                    border.color: aboutCloseButton.down ? buttonPressedStroke : (aboutCloseButton.hovered ? buttonHoverStroke : buttonStroke)
-                }
-
-                Text {
-                    text: "Close"
-                    font.family: "Poppins"
-                    font.pixelSize: fontSmall * virtualstudio.fontScale * virtualstudio.uiScale
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.verticalCenter: parent.verticalCenter
                 }
             }
         }

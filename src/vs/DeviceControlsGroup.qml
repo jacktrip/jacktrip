@@ -3,8 +3,6 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 Rectangle {
-    property string disabledButtonText: "#D3D4D4"
-    property string saveButtonText: "#000000"
     property int fullHeight: 88 * virtualstudio.uiScale
     property int minimumHeight: 48 * virtualstudio.uiScale
 
@@ -38,23 +36,17 @@ Rectangle {
             Layout.fillWidth: true
             visible: !isReady
 
-            Button {
+            StyledButton {
                 id: backButton
+                text: "Back to Studios"
+                primary: true
+                buttonRadius: 8
+                showBorder: false
+                fontSize: 13
                 anchors.centerIn: parent
                 width: 180 * virtualstudio.uiScale
                 height: 36 * virtualstudio.uiScale
-                background: Rectangle {
-                    radius: 8 * virtualstudio.uiScale
-                    color: backButton.down ? browserButtonPressedColour : (backButton.hovered ? browserButtonHoverColour : browserButtonColour)
-                }
                 onClicked: virtualstudio.disconnect()
-
-                Text {
-                    text: "Back to Studios"
-                    font { family: "Poppins"; pixelSize: fontMedium * virtualstudio.fontScale * virtualstudio.uiScale}
-                    anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
-                    color: textColour
-                }
             }
         }
 
@@ -131,16 +123,14 @@ Rectangle {
                     Layout.rightMargin: 2 * virtualstudio.uiScale
                     Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
 
-                    Button {
+                    StyledButton {
                         id: changeDevicesButton
+                        buttonRadius: 8
+                        showBorder: false
                         width: 36 * virtualstudio.uiScale
                         height: 36 * virtualstudio.uiScale
                         anchors.top: parent.top
                         anchors.horizontalCenter: parent.horizontalCenter
-                        background: Rectangle {
-                            radius: 8 * virtualstudio.uiScale
-                            color: changeDevicesButton.down ? browserButtonPressedColour : (changeDevicesButton.hovered ? browserButtonHoverColour : browserButtonColour)
-                        }
                         onClicked: {
                             virtualstudio.windowState = "change_devices"
                             if (!audio.deviceModelsInitialized) {
@@ -298,60 +288,16 @@ Rectangle {
                     visible: showDeviceControls
                 }
 
-                Button {
+                StyledButton {
                     id: closeFeedbackDetectedModalButton
+                    text: "Ok"
+                    fontSize: showDeviceControls ? 11 : 8
                     anchors.right: parent.right
                     anchors.rightMargin: rightMargin * virtualstudio.uiScale
                     anchors.verticalCenter: parent.verticalCenter
-                    width: 128 * virtualstudio.uiScale;
-                    height: 30 * virtualstudio.uiScale
+                    width: showDeviceControls ? 128 * virtualstudio.uiScale : 80 * virtualstudio.uiScale
+                    height: showDeviceControls ? 30 * virtualstudio.uiScale : 24 * virtualstudio.uiScale
                     onClicked: feedbackDetectedModal.close()
-
-                    background: Rectangle {
-                        radius: 6 * virtualstudio.uiScale
-                        color: closeFeedbackDetectedModalButton.down ? browserButtonPressedColour : (closeFeedbackDetectedModalButton.hovered ? browserButtonHoverColour : browserButtonColour)
-                        border.width: 1
-                        border.color: closeFeedbackDetectedModalButton.down ? browserButtonPressedStroke : (closeFeedbackDetectedModalButton.hovered ? browserButtonHoverStroke : browserButtonStroke)
-                    }
-
-                    Text {
-                        text: "Ok"
-                        font.family: "Poppins"
-                        font.pixelSize: showDeviceControls ? fontSmall * virtualstudio.fontScale * virtualstudio.uiScale : fontTiny * virtualstudio.fontScale * virtualstudio.uiScale
-                        font.weight: Font.Bold
-                        color: !Boolean(audio.devicesError) && audio.backendAvailable ? saveButtonText : disabledButtonText
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
-                    visible: showDeviceControls
-                }
-
-                Button {
-                    id: closeFeedbackDetectedModalButtonMinified
-                    anchors.right: parent.right
-                    anchors.rightMargin: rightMargin * virtualstudio.uiScale
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: 80 * virtualstudio.uiScale
-                    height: 24 * virtualstudio.uiScale
-                    onClicked: feedbackDetectedModal.close()
-
-                    background: Rectangle {
-                        radius: 6 * virtualstudio.uiScale
-                        color: closeFeedbackDetectedModalButton.down ? browserButtonPressedColour : (closeFeedbackDetectedModalButton.hovered ? browserButtonHoverColour : browserButtonColour)
-                        border.width: 1
-                        border.color: closeFeedbackDetectedModalButton.down ? browserButtonPressedStroke : (closeFeedbackDetectedModalButton.hovered ? browserButtonHoverStroke : browserButtonStroke)
-                    }
-
-                    Text {
-                        text: "Ok"
-                        font.family: "Poppins"
-                        font.pixelSize: fontTiny * virtualstudio.fontScale * virtualstudio.uiScale
-                        font.weight: Font.Bold
-                        color: !Boolean(audio.devicesError) && audio.backendAvailable ? saveButtonText : disabledButtonText
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
-                    visible: !showDeviceControls
                 }
             }
         }
