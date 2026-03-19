@@ -27,8 +27,10 @@ Item {
     property string toolTipBackgroundColour: virtualstudio.darkMode ? "#323232" : "#F3F3F3"
     property int fontTiny: 8
 
-    property string browseDiscoverUrl: `https://${virtualstudio.apiHost === "test.jacktrip.com" ? "next-test.jacktrip.com" : "www.jacktrip.com"}/discover`
-    property string browseStudiosUrl: `https://${virtualstudio.apiHost === "test.jacktrip.com" ? "next-test.jacktrip.com" : "www.jacktrip.com"}/studios`
+    //property string browseBaseUrl: "http://localhost:3000"
+    property string browseBaseUrl: virtualstudio.apiHost === "test.jacktrip.com" ? "https://next-test.jacktrip.com" : "https://www.jacktrip.com"
+    property string browseDiscoverUrl: `${browseBaseUrl}/discover`
+    property string browseStudiosUrl: `${browseBaseUrl}/studios`
 
     Loader {
         id: webLoader
@@ -104,7 +106,7 @@ Item {
             text: "My Studios"
             icon { source: "squares-2x2.svg"; color: resolvedTextColor }
             onClicked: { if (webLoader.item) webLoader.item.url = browseStudiosUrl }
-            enabled: !(webLoader.item && webLoader.item.url.toString().startsWith(browseStudiosUrl))
+            enabled: !(webLoader.item && webLoader.item.url && webLoader.item.url.toString().startsWith(browseStudiosUrl))
             display: AbstractButton.TextBesideIcon
             fontSize: fontMedium
             leftPadding: 0
@@ -120,7 +122,7 @@ Item {
             text: "Discover"
             icon { source: "public.svg"; color: resolvedTextColor }
             onClicked: { if (webLoader.item) webLoader.item.url = browseDiscoverUrl }
-            enabled: !(webLoader.item && webLoader.item.url.toString().startsWith(browseDiscoverUrl))
+            enabled: !(webLoader.item && webLoader.item.url && webLoader.item.url.toString().startsWith(browseDiscoverUrl))
             display: AbstractButton.TextBesideIcon
             fontSize: fontMedium
             leftPadding: 0
@@ -135,7 +137,7 @@ Item {
             id: goBackButton
             icon { source: "arrow-left.svg"; color: resolvedTextColor; width: iconButtonSize * virtualstudio.uiScale; height: iconButtonSize * virtualstudio.uiScale }
             onClicked: { if (webLoader.item) webLoader.item.goBack() }
-            enabled: webLoader.item && webLoader.item.canGoBack
+            enabled: !!(webLoader.item && webLoader.item.canGoBack)
             display: AbstractButton.IconOnly
             showBorder: false
             anchors.verticalCenter: parent.verticalCenter
@@ -167,7 +169,7 @@ Item {
             id: goForwardButton
             icon { source: "arrow-right.svg"; color: resolvedTextColor; width: iconButtonSize * virtualstudio.uiScale; height: iconButtonSize * virtualstudio.uiScale }
             onClicked: { if (webLoader.item) webLoader.item.goForward() }
-            enabled: webLoader.item && webLoader.item.canGoForward
+            enabled: !!(webLoader.item && webLoader.item.canGoForward)
             display: AbstractButton.IconOnly
             showBorder: false
             anchors.verticalCenter: parent.verticalCenter
