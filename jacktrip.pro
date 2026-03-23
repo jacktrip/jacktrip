@@ -245,7 +245,8 @@ HEADERS += src/DataProtocol.h \
            src/volumedsp.h \
            src/tonedsp.h \
            src/SslServer.h \
-           src/Auth.h
+           src/Auth.h \
+           src/vs/WebSocketTransport.h
 #(Removed JackTripThread.h JackTripWorkerMessages.h NetKS.h TestRingBuffer.h ThreadPoolTest.h)
 
 !nojack {
@@ -318,7 +319,8 @@ SOURCES += src/DataProtocol.cpp \
            src/AudioSocket.cpp \
            src/main.cpp \
            src/SslServer.cpp \
-           src/Auth.cpp
+           src/Auth.cpp \
+           src/vs/WebSocketTransport.cpp
 #(Removed jacktrip_main.cpp jacktrip_tests.cpp JackTripThread.cpp ProcessPlugin.cpp)
 
 !nojack {
