@@ -148,6 +148,15 @@ else
 	endif
 endif
 
+# PipeWire support
+pipewire_dep = dependency('libpipewire-0.3', required: get_option('pipewire'))
+if pipewire_dep.found()
+	src += ['src/PWPatcher.cpp']
+	moc_h += ['src/PWPatcher.h']
+	defines += '-DUSE_PIPEWIRE'
+	deps += pipewire_dep
+endif
+
 qmake = ''
 qt_core_deps = []
 if qt_version == '5'
@@ -548,8 +557,9 @@ endif
 
 summary({'JACK': jack_dep.found(),
 	'Weak JACK Linking': get_option('weakjack'),
+	'PipeWire': pipewire_dep.found(),
 	'RtAudio': rtaudio_dep.found()}, bool_yn: true, section: 'Audio Backends')
-
+	
 summary({'Application ID': application_id,
 	'GUI': not get_option('nogui'),
 	'WAIR': get_option('wair'),

@@ -22,3 +22,5 @@ option('libdatachannel', type : 'feature', value : 'disabled',
   description : 'Build with WebRTC data channel support (requires libdatachannel)')
 option('msquic', type : 'feature', value : 'disabled',
   description : 'Build with WebTransport support (requires msquic)')
+option('pipewire', type : 'feature', value : 'auto', 
+  description: 'Build with PipeWire support')

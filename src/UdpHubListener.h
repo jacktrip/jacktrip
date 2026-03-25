@@ -64,6 +64,7 @@ typedef QUIC_HANDLE* HQUIC;
 #endif
 #ifndef NO_JACK
 #include "Patcher.h"
+#include "PWPatcher.h"
 #endif
 #include "Auth.h"
 #include "OscServer.h"
@@ -225,7 +226,8 @@ class UdpHubListener : public QObject
     QStringList mHubPatchDescriptions;
     bool m_connectDefaultAudioPorts;
 #ifndef NO_JACK
-    Patcher mPatcher;
+    // Patcher mPatcher;
+    PWPatcher mPatcher;
 #endif
     bool mStereoUpmix;
 

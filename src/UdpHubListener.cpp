@@ -137,6 +137,7 @@ UdpHubListener::UdpHubListener(int server_port, int server_udp_port, QObject* pa
     }
 
     cout << "JackTrip HUB SERVER: UDP Base Port set to " << mBasePort << endl;
+    cout << "instantiating PWPatcher as mPatcher\n" << endl;
 
     mUnderRunMode      = JackTrip::WAVETABLE;
     mBufferQueueLength = gDefaultQueueLength;

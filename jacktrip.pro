@@ -80,6 +80,7 @@ nojack {
     } else {
       CONFIG += link_pkgconfig
       PKGCONFIG += jack
+      PKGCONFIG += libpipewire-0.3
     }
   }
 }
@@ -212,6 +213,7 @@ HEADERS += src/DataProtocol.h \
            src/Compressor.h \
            src/CompressorPresets.h \
            src/Limiter.h \
+           src/PWPatcher.h \
            src/Regulator.h \
            src/WaitFreeRingBuffer.h \
            src/WaitFreeFrameBuffer.h \
@@ -253,6 +255,7 @@ HEADERS += src/DataProtocol.h \
   HEADERS += src/JackAudioInterface.h \
              src/JMess.h \
              src/Patcher.h
+             src/PWPatcher.h
 }
 
 !nogui {
@@ -295,6 +298,7 @@ SOURCES += src/DataProtocol.cpp \
            src/Analyzer.cpp \
            src/Compressor.cpp \
            src/Limiter.cpp \
+           src/PWPatcher.cpp \
            src/Regulator.cpp \
            src/Reverb.cpp \
            src/Meter.cpp \
@@ -327,6 +331,7 @@ SOURCES += src/DataProtocol.cpp \
   SOURCES += src/JackAudioInterface.cpp \
              src/JMess.cpp \
              src/Patcher.cpp
+             src/PWPatcher.cpp
 }
 
 !nogui {
