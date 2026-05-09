@@ -43,6 +43,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include <spa/param/props.h>
 #include <QMutex>
 #include <QStringList>
+#include <QMap>
+#include <QSet>
 #include <QThread>
 #include <map>
 #include <vector>
@@ -83,6 +85,9 @@ class PWPatcher : public QObject
 
     QStringList m_clients;
     QStringList m_monoClients;
+    QMap<QString, QString> m_clientNameMap;      // Maps JackTrip name to PipeWire node name
+    QMap<QString, QSet<uint32_t>> m_clientNodeIds;  // Maps JackTrip name to node IDs
+    QSet<QPair<uint32_t, uint32_t>> m_activeConnections;  // Track active connections to avoid duplicates
 
     bool m_fan           = false;
     bool m_loop          = false;
@@ -95,7 +100,7 @@ class PWPatcher : public QObject
     QThread* m_workerThread = nullptr;
 
     void createConnection(uint32_t outPort, uint32_t inPort);
-    void patchClient(const QString& clientName);
+    void patchClient(const QString& clientName, const QSet<uint32_t>& clientNodeIds);
 };
 
 // Worker class to run PipeWire event loop in separate thread
@@ -108,6 +113,7 @@ class PWPatcherWorker : public QObject
     ~PWPatcherWorker();
 
     bool initialize();
+    void refreshPorts();
     void createLink(uint32_t outPort, uint32_t inPort);
     std::vector<PWPortInfo> getPortsForClient(const QString& clientName);
 

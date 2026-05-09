@@ -151,7 +151,8 @@ endif
 # PipeWire support
 pipewire_dep = dependency('libpipewire-0.3', required: get_option('pipewire'))
 if pipewire_dep.found()
-	src += ['src/PWPatcher.cpp']
+        src += ['src/PipewireAudioInterface.cpp',
+        'src/PWPatcher.cpp']
 	moc_h += ['src/PWPatcher.h']
 	defines += '-DUSE_PIPEWIRE'
 	deps += pipewire_dep
@@ -362,7 +363,7 @@ if rtaudio_dep.found() == true
 	deps += rtaudio_dep
 endif
 
-if rtaudio_dep.found() == false and jack_dep.found() == false
+if rtaudio_dep.found() == false and jack_dep.found() == false and pipewire_dep.found() == false
 	error('''
 	JackTrip requires at least one available audio backend. Install the
 	appropriate library or enable the appropriate backends using meson

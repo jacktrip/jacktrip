@@ -346,7 +346,7 @@ void JackTripWorker::processPeerSettings(int8_t* full_packet)
             &JackTripWorker::jacktripStopped, Qt::QueuedConnection);
     connect(mJackTrip.data(), &JackTrip::signalError, this,
             &JackTripWorker::jacktripStopped, Qt::QueuedConnection);
-#ifndef NO_JACK
+#if !defined(NO_JACK) || defined(USE_PIPEWIRE)
     connect(mJackTrip.data(), &JackTrip::signalAudioStarted, this,
             &JackTripWorker::alertPatcher, Qt::QueuedConnection);
 #endif
@@ -406,7 +406,7 @@ void JackTripWorker::jacktripStopped()
 
 void JackTripWorker::alertPatcher()
 {
-#ifndef NO_JACK
+#if !defined(NO_JACK) || defined(USE_PIPEWIRE)
     QMutexLocker lock(&mMutex);
     if (mRunning) {
         mAssignedClientName = mJackTrip->getAssignedClientName();

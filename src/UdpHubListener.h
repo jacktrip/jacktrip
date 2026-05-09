@@ -62,10 +62,13 @@ struct QUIC_API_TABLE;
 struct QUIC_HANDLE;
 typedef QUIC_HANDLE* HQUIC;
 #endif
+
 #ifndef NO_JACK
 #include "Patcher.h"
+#elif USE_PIPEWIRE  // Use PWPatcher with Pipewire
 #include "PWPatcher.h"
 #endif
+
 #include "Auth.h"
 #include "OscServer.h"
 #include "SslServer.h"
@@ -93,7 +96,7 @@ class UdpHubListener : public QObject
     /// \brief Stops the execution of the Thread
     void stop() { mStopped = true; }
 
-#ifndef NO_JACK
+#if !defined(NO_JACK) || defined(USE_PIPEWIRE)
     void registerClientWithPatcher(QString& clientName);
     void unregisterClientWithPatcher(QString& clientName);
 #endif
@@ -226,9 +229,11 @@ class UdpHubListener : public QObject
     QStringList mHubPatchDescriptions;
     bool m_connectDefaultAudioPorts;
 #ifndef NO_JACK
-    // Patcher mPatcher;
+    Patcher mPatcher;  // Use JACK Patcher when using JACK
+#elif USE_PIPEWIRE  // Use PWPatcher with Pipewire
     PWPatcher mPatcher;
 #endif
+
     bool mStereoUpmix;
 
     int mIOStatTimeout;
@@ -275,7 +280,7 @@ class UdpHubListener : public QObject
     void setWAIR(int b) { mWAIR = b; }
     bool isWAIR() { return mWAIR; }
 #endif  // endwhere
-#ifndef NO_JACK
+#if !defined(NO_JACK) || defined(USE_PIPEWIRE)
     void connectPatch(bool spawn, const QString& clientName);
 #endif
 

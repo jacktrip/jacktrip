@@ -49,7 +49,7 @@
 #include <iostream>
 #include <stdexcept>
 
-#ifndef NO_JACK
+#if !defined(NO_JACK) || defined(USE_PIPEWIRE)
 #include "JMess.h"
 #endif
 
@@ -690,7 +690,7 @@ int UdpHubListener::getPoolID(const QString& address, uint16_t port)
     return -1;
 }
 
-#ifndef NO_JACK
+#if !defined(NO_JACK) || defined(USE_PIPEWIRE)
 void UdpHubListener::registerClientWithPatcher(QString& clientName)
 {
     cout << "JackTrip HUB SERVER: Total Running Threads:  " << mTotalRunningThreads
@@ -767,7 +767,7 @@ void UdpHubListener::releaseDuplicateThreads(JackTripWorker* worker,
     worker->setClientPort(actual_peer_port);
 }
 
-#ifndef NO_JACK
+#if !defined(NO_JACK) || defined(USE_PIPEWIRE)
 #ifdef WAIR  // wair
 //*******************************************************************************
 void UdpHubListener::connectMesh(bool spawn)
@@ -806,8 +806,10 @@ void UdpHubListener::connectPatch(bool spawn, const QString& clientName)
     if (getHubPatch() == JackTrip::RESERVEDMATRIX) {
         // This is a special patch for the TU Berlin ensemble.
         // Use the old JMess mechanism.
+#ifndef USE_PIPEWIRE
         JMess tmp;
         tmp.connectTUB(gDefaultNumInChannels);
+#endif
         // FIXME: need change to gDefaultNumInChannels if more than stereo
     } else {
         if (spawn) {

@@ -55,6 +55,9 @@
 #ifdef WEBTRANSPORT_SUPPORT
 #include "webtransport/WebTransportDataProtocol.h"
 #endif
+#ifdef USE_PIPEWIRE
+#include "PipewireAudioInterface.h"
+#endif
 
 #include <QDateTime>
 #include <QHostAddress>
@@ -104,7 +107,11 @@ JackTrip::JackTrip(jacktripModeT JacktripMode, dataProtocolT DataProtocolType,
     , mJackTripMode(JacktripMode)
     , mDataProtocol(DataProtocolType)
     , mPacketHeaderType(PacketHeaderType)
-    , mAudiointerfaceMode(JackTrip::JACK)
+#ifndef NO_JACK  // NO_JACK
+    // , mAudiointerfaceMode(JackTrip::JACK)
+#elif USE_PIPEWIRE
+    , mAudiointerfaceMode(JackTrip::PIPEWIRE)
+#endif  // USE_PIPEWIRE
     , mBaseAudioChanIn(BaseChanIn)
     , mNumAudioChansIn(NumChansIn)
     , mBaseAudioChanOut(BaseChanOut)
@@ -313,6 +320,47 @@ void JackTrip::setupAudio(
         // Setup might have changed buffer size
         mAudioBufferSize = mAudioInterface->getBufferSizeInSamples();
 #endif
+    } else if (mAudiointerfaceMode == JackTrip::PIPEWIRE) {
+
+        if (gVerboseFlag)
+            std::cout << "  JackTrip:setupAudio before new PipewireAudioInterface"
+                      << std::endl;
+        QVarLengthArray<int> inputChannels;
+        QVarLengthArray<int> outputChannels;
+        inputChannels.resize(mNumAudioChansIn);
+        outputChannels.resize(mNumAudioChansOut);
+        for (int i = 0; i < mNumAudioChansIn; i++) {
+            inputChannels[i] = 1 + i;
+        }
+        for (int i = 0; i < mNumAudioChansOut; i++) {
+            outputChannels[i] = 1 + i;
+        }
+        mAudioInterface = new PipewireAudioInterface(inputChannels, outputChannels,
+                                                 mAudioBitResolution, true, this);
+
+        mAudioInterface->setClientName(mJackClientName);
+        if (0 < mBroadcastQueueLength) {
+            mAudioInterface->enableBroadcastOutput();
+        }
+
+        if (gVerboseFlag)
+            std::cout << "  JackTrip:setupAudio before mAudioInterface->setup"
+                      << std::endl;
+        mAudioInterface->setup(true);
+        if (gVerboseFlag)
+            std::cout << "  JackTrip:setupAudio before mAudioInterface->getSampleRate"
+                      << std::endl;
+        mSampleRate = mAudioInterface->getSampleRate();
+        if (gVerboseFlag)
+            std::cout << "  JackTrip:setupAudio before mAudioInterface->getDeviceID"
+                      << std::endl;
+        mDeviceID = mAudioInterface->getDeviceID();
+        if (gVerboseFlag)
+            std::cout
+                << "  JackTrip:setupAudio before mAudioInterface->getBufferSizeInSamples"
+                << std::endl;
+        mAudioBufferSize = mAudioInterface->getBufferSizeInSamples();
+
     }
 
     mAudioInterface->setLoopBack(mLoopBack);

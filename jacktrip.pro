@@ -5,6 +5,9 @@
 CONFIG += c++17 console
 CONFIG -= app_bundle
 
+CONFIG += pipewire
+CONFIG += nojack
+
 CONFIG += qt thread debug_and_release build_all qtquickcompiler
 CONFIG(debug, debug|release) {
     TARGET = jacktrip_debug
@@ -61,6 +64,10 @@ rtaudio|bundled_rtaudio {
 # Configuration without Jack
 nojack {
   DEFINES += NO_JACK
+}
+# Configuration without Jack
+pipewire {
+  DEFINES += USE_PIPEWIRE
 }
 
 !win32 {
@@ -213,7 +220,6 @@ HEADERS += src/DataProtocol.h \
            src/Compressor.h \
            src/CompressorPresets.h \
            src/Limiter.h \
-           src/PWPatcher.h \
            src/Regulator.h \
            src/WaitFreeRingBuffer.h \
            src/WaitFreeFrameBuffer.h \
@@ -255,6 +261,10 @@ HEADERS += src/DataProtocol.h \
   HEADERS += src/JackAudioInterface.h \
              src/JMess.h \
              src/Patcher.h
+}
+
+pipewire {
+  HEADERS += src/PipewireAudioInterface.h \
              src/PWPatcher.h
 }
 
@@ -298,7 +308,6 @@ SOURCES += src/DataProtocol.cpp \
            src/Analyzer.cpp \
            src/Compressor.cpp \
            src/Limiter.cpp \
-           src/PWPatcher.cpp \
            src/Regulator.cpp \
            src/Reverb.cpp \
            src/Meter.cpp \
@@ -331,6 +340,10 @@ SOURCES += src/DataProtocol.cpp \
   SOURCES += src/JackAudioInterface.cpp \
              src/JMess.cpp \
              src/Patcher.cpp
+}
+
+pipewire {
+  SOURCES += src/PipewireAudioInterface.cpp \
              src/PWPatcher.cpp
 }
 

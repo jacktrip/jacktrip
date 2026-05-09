@@ -113,8 +113,9 @@ class JackTrip : public QObject
     /// \brief Enum for Audio Interface Mode
     enum audiointerfaceModeT {
         JACK,    ///< Jack Mode
-        RTAUDIO  ///< RtAudio Mode
-    };
+        RTAUDIO,  ///< RtAudio Mode
+        PIPEWIRE  ///< Pipewire Mode
+   };
 
     /// \brief Enum for Connection Mode (in packet header)
     enum connectionModeT {
