@@ -287,7 +287,12 @@ void WebTransportSession::close()
 {
     std::lock_guard<std::mutex> lock(mMutex);
 
-    if (mState == STATE_SHUTTING_DOWN || mState == STATE_DISCONNECTED) {
+    if (mState == STATE_SHUTTING_DOWN || mState == STATE_DISCONNECTED
+        || mState == STATE_FAILED) {
+        // STATE_FAILED means the transport already initiated shutdown; MsQuic will fire
+        // SHUTDOWN_COMPLETE on its own — no need to call ConnectionShutdown again, and
+        // transitioning to STATE_SHUTTING_DOWN here would cause SHUTDOWN_COMPLETE to
+        // emit sessionClosed in addition to the already-emitted sessionFailed.
         return;
     }
 

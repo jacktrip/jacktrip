@@ -139,11 +139,21 @@ WebTransportDataProtocol::~WebTransportDataProtocol()
 //*******************************************************************************
 void WebTransportDataProtocol::stop()
 {
+    if (gVerboseFlag) {
+        cout << "WebTransportDataProtocol::stop: mode="
+             << (mRunMode == SENDER ? "SENDER" : "RECEIVER")
+             << " isRunning=" << isRunning() << endl;
+    }
     mStopped = true;
 
     // Wait for thread to finish
     if (isRunning()) {
-        wait(1000);
+        if (!wait(1000)) {
+            // The monitor thread should exit promptly once mStopped is set; a timeout
+            // here means it is wedged, so surface it even outside verbose mode.
+            cerr << "WebTransportDataProtocol::stop: thread did not finish within 1s (mode="
+                 << (mRunMode == SENDER ? "SENDER" : "RECEIVER") << ")" << endl;
+        }
     }
 }
 
@@ -409,6 +419,12 @@ void WebTransportDataProtocol::runReceiver(int full_packet_size)
         }
     }
 
+    if (gVerboseFlag) {
+        cout << "WebTransportDataProtocol::runReceiver: loop exited"
+             << " mStopped=" << mStopped << " mSessionConnected=" << mSessionConnected
+             << endl;
+    }
+
     // If the loop exited because mStopped was set (e.g., exit control packet) but the
     // session is still open, close it explicitly. This fires sessionClosed on both the
     // RECEIVER and SENDER instances, stopping the sender and triggering full cleanup.
@@ -432,8 +448,11 @@ void WebTransportDataProtocol::runSender(int full_packet_size)
         QThread::msleep(100);
     }
 
-    if (gVerboseFlag)
-        cout << "WebTransportDataProtocol::runSender: Exiting" << endl;
+    if (gVerboseFlag) {
+        cout << "WebTransportDataProtocol::runSender: loop exited"
+             << " mStopped=" << mStopped << " mSessionConnected=" << mSessionConnected
+             << endl;
+    }
 
     // Send exit packets using pool buffer
     int bufferIndex = acquirePoolBuffer();

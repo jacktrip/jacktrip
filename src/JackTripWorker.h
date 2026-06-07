@@ -111,6 +111,11 @@ class JackTripWorker : public QObject
     /// Stop thread
     void stopThread();
     int getID() { return mID; }
+    /// \brief Assign this worker's slot id. Must be called right after construction so
+    /// releaseThread()/getServerPort() operate on the correct slot. The UDP path sets this
+    /// via setJackTrip(); WebRTC/WebTransport rely on this setter since they call
+    /// setJackTrip() only later (and with their own mID).
+    void setID(int id) { mID = id; }
 
     void setBufferStrategy(int BufferStrategy) { mBufferStrategy = BufferStrategy; }
     void setNetIssuesSimulation(double loss, double jitter, double delay_rel)

@@ -1269,6 +1269,10 @@ void JackTrip::stop(const QString& errorMessage)
     mStopped          = true;
     // Make sure we're only run once
     if (mHasShutdown) {
+        if (gVerboseFlag) {
+            std::cout << "JackTrip::stop: already shut down, ignoring duplicate call"
+                      << std::endl;
+        }
         return;
     }
     mHasShutdown = true;
