@@ -151,7 +151,8 @@ void WebTransportDataProtocol::stop()
         if (!wait(1000)) {
             // The monitor thread should exit promptly once mStopped is set; a timeout
             // here means it is wedged, so surface it even outside verbose mode.
-            cerr << "WebTransportDataProtocol::stop: thread did not finish within 1s (mode="
+            cerr << "WebTransportDataProtocol::stop: thread did not finish within 1s "
+                    "(mode="
                  << (mRunMode == SENDER ? "SENDER" : "RECEIVER") << ")" << endl;
         }
     }

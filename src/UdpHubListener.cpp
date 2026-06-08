@@ -40,6 +40,7 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QMutexLocker>
+#include <QSslError>
 #include <QSslKey>
 #include <QSslSocket>
 #include <QStringList>
@@ -326,6 +327,31 @@ void UdpHubListener::receivedNewConnection()
     connect(clientSocket, &QAbstractSocket::readyRead, this, [this, clientSocket] {
         readyRead(clientSocket);
     });
+
+    // Surface TLS handshake and socket failures when running verbose. Without these
+    // handlers a failed handshake produces no output, making the connection appear to
+    // hang after "TLS ClientHello detected" (see the OpenSSL symbol-interposition bug
+    // fixed via -Wl,--exclude-libs,ALL in meson.build).
+    if (gVerboseFlag) {
+        connect(clientSocket,
+                QOverload<const QList<QSslError>&>::of(&QSslSocket::sslErrors), this,
+                [clientSocket](const QList<QSslError>& errors) {
+                    cerr << "JackTrip HUB SERVER: TLS handshake error(s) for "
+                         << clientSocket->peerAddress().toString().toStdString() << ":"
+                         << endl;
+                    for (const QSslError& e : errors) {
+                        cerr << "JackTrip HUB SERVER:   - "
+                             << e.errorString().toStdString() << endl;
+                    }
+                });
+        connect(clientSocket, &QAbstractSocket::errorOccurred, this,
+                [clientSocket](QAbstractSocket::SocketError) {
+                    cerr << "JackTrip HUB SERVER: Socket error for "
+                         << clientSocket->peerAddress().toString().toStdString() << ": "
+                         << clientSocket->errorString().toStdString() << endl;
+                });
+    }
+
     cout << "JackTrip HUB SERVER: Client Connection Received!" << endl;
 }
 
@@ -772,10 +798,11 @@ int UdpHubListener::createWorker(QString& clientName)
     JackTripWorker* worker = new JackTripWorker(this, mBufferQueueLength, mUnderRunMode,
                                                 mAudioBitResolution, clientName);
 
-    // Assign the slot id immediately. The UDP path also sets this later via setJackTrip(),
-    // but WebRTC/WebTransport never pass a real id to setJackTrip() (they pass their own
-    // mID), so without this every WebRTC/WebTransport worker would keep the default id 0 —
-    // causing releaseThread()/getServerPort() to operate on the wrong slot.
+    // Assign the slot id immediately. The UDP path also sets this later via
+    // setJackTrip(), but WebRTC/WebTransport never pass a real id to setJackTrip() (they
+    // pass their own mID), so without this every WebRTC/WebTransport worker would keep
+    // the default id 0 — causing releaseThread()/getServerPort() to operate on the wrong
+    // slot.
     worker->setID(id);
 
     if (mIOStatTimeout > 0) {

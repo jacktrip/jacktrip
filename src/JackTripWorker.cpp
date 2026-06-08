@@ -754,8 +754,8 @@ void JackTripWorker::onWebTransportSessionFailed(const QString& reason)
         cout << "JackTripWorker: worker=" << mID << " failure state mRunning=" << mRunning
              << " mSpawning=" << mSpawning;
         if (mWebTransportSession) {
-            cout << " peer=" << mWebTransportSession->getPeerAddress().toStdString() << ":"
-                 << mWebTransportSession->getPeerPort();
+            cout << " peer=" << mWebTransportSession->getPeerAddress().toStdString()
+                 << ":" << mWebTransportSession->getPeerPort();
         }
         cout << endl;
     }
