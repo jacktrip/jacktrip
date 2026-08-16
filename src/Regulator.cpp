@@ -112,6 +112,20 @@ constexpr double AutoSmoothingFactor =
     1.0
     / (WindowDivisor * AutoHistoryWindow);  // EWMA smoothing factor for auto tolerance
 
+// signed distance from b to a, accounting for wrap around the end of the ring.
+// result is in [-NumSlots/2, NumSlots/2); positive means a is newer than b.
+// distances at or beyond half the ring are ambiguous and treated as older,
+// which rejects implausible jumps from corrupt or stale sequence numbers.
+static inline int seqNumDistance(int a, int b)
+{
+    int delta = a - b;
+    if (delta >= NumSlots / 2)
+        delta -= NumSlots;
+    else if (delta < -NumSlots / 2)
+        delta += NumSlots;
+    return delta;
+}
+
 BurgAlgorithm::BurgAlgorithm(int size)  // mUpToNow = mPacketsInThePast * fpp
 {
     // GET SIZE FROM INPUT VECTORS
@@ -615,13 +629,17 @@ void Regulator::pushPacket(const int8_t* buf, int seq_num)
         m_b_BroadcastRingBuffer->insertSlotNonBlocking(buf, mPeerBytes, 0, seq_num);
     seq_num %= NumSlots;
     // if (seq_num==0) return;   // impose regular loss
-    mIncomingTiming[seq_num] = (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
+    const double now         = (double)mIncomingTimer.nsecsElapsed() / 1000000.0;
+    mIncomingTiming[seq_num] = now;
     memcpy(mSlots[seq_num], buf, mPeerBytes);
-    // ensure that last sequnce number is "greater than" the current one
-    // otherwise, we can create a condition where last out gets ahead of last in
+    // only advance to sequence numbers that are newer than the last one seen,
+    // otherwise we can create a condition where last out gets ahead of last in
     const int lastSeqNumIn = mLastSeqNumIn.load(std::memory_order_relaxed);
-    if (lastSeqNumIn == -1 || seq_num > lastSeqNumIn
-        || (seq_num < lastSeqNumIn && (lastSeqNumIn - seq_num) > (NumSlots / 2))) {
+    if (lastSeqNumIn == -1
+        || seqNumDistance(seq_num, lastSeqNumIn) > 0
+        // escape hatch: if nothing has advanced the sequence number for longer
+        // than the udp wait timeout, accept whatever the peer is sending now
+        || (now - mIncomingTiming[lastSeqNumIn]) > gUdpWaitTimeout) {
         mLastSeqNumIn.store(seq_num, std::memory_order_release);
     }
 };
