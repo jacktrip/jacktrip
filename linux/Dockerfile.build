@@ -72,6 +72,10 @@ RUN if [ -n "$VST3SDK_DOWNLOAD_URL" ]; then \
 COPY . ./
 ARG MESON_ARGS=""
 ENV MESON_ARGS=$MESON_ARGS
+# when set, keep debug symbols in the binary instead of stripping it. Optimisation
+# level and defines are unchanged, so the generated code matches the release build.
+ARG DEBUG_SYMBOLS=""
+ENV DEBUG_SYMBOLS=$DEBUG_SYMBOLS
 ENV BUILD_PATH="/opt/jacktrip/builddir"
 RUN if [ -n "$QT_DOWNLOAD_URL" ]; then \
   export QT_PATH="/opt/$(echo $QT_DOWNLOAD_URL | sed -e 's,.*/qt/\(qt-[.0-9]*\-[a-z]*\).*,\1,')"; \
@@ -80,13 +84,17 @@ RUN if [ -n "$QT_DOWNLOAD_URL" ]; then \
   export CMAKE_PREFIX_PATH="$QT_PATH"; fi \
   && if [ -n "$VST3SDK_DOWNLOAD_URL" ]; then \
   export MESON_ARGS="-Dvst-sdkdir=${VST3SDK_INSTALL_PATH}/vst3sdk $MESON_ARGS"; fi \
+  && if [ -n "$DEBUG_SYMBOLS" ]; then \
+  export CFLAGS="-g3 -fno-omit-frame-pointer $CFLAGS"; \
+  export CXXFLAGS="-g3 -fno-omit-frame-pointer $CXXFLAGS"; fi \
   && export SSL_CERT_FILE=$(python3 -m certifi) \
   && meson setup --buildtype release $MESON_ARGS $BUILD_PATH \
   && meson compile -C $BUILD_PATH -v \
   && mkdir -p $BUILD_PATH/src/vst3 \
-  && strip $BUILD_PATH/jacktrip \
-  && if [ -n "$VST3SDK_DOWNLOAD_URL" ]; then \
-  strip $BUILD_PATH/src/vst3/JackTrip.vst3; fi
+  && if [ -z "$DEBUG_SYMBOLS" ]; then \
+  strip $BUILD_PATH/jacktrip; \
+  if [ -n "$VST3SDK_DOWNLOAD_URL" ]; then \
+  strip $BUILD_PATH/src/vst3/JackTrip.vst3; fi; fi
 
 FROM scratch AS artifact
 
