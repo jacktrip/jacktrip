@@ -31,8 +31,10 @@ sudo apt install gdb        # or: sudo dnf install gdb
 ./run-under-gdb.sh
 ```
 
-Then reproduce the problem, repeating it until the crash happens — intermittent
-crashes can take several tries.
+This opens the normal JackTrip window, exactly as if you had started JackTrip by
+hand — gdb just watches it from the outside. Reproduce the problem the way you
+normally hit it, repeating until the crash happens; intermittent crashes can take
+several tries.
 
 When it crashes, the script leaves these files in the current directory:
 
@@ -42,7 +44,8 @@ When it crashes, the script leaves these files in the current directory:
 Send us the `.log` file. If a core file is there too, compress it first
 (`gzip core.*`) — it is large, and it compresses down a lot.
 
-If JackTrip exits normally without crashing, the log will say so; run it again.
+If JackTrip exits normally, or you stop it with Ctrl-C, the log says so instead of
+reporting a crash. Just run the script again.
 
 ---
 
@@ -83,9 +86,9 @@ In rough order of usefulness:
 5. What you were doing, whether it had ever worked before, which audio device and
    backend you were using, and roughly how often it happens.
 
-Both scripts run JackTrip in verbose mode, so the logs include your audio device names
-and the studio you connected to. Have a look through them before posting them
-anywhere public.
+The logs contain JackTrip's normal console output, which names your audio devices and
+the studio you connected to. Have a look through them before posting them anywhere
+public.
 
 ## Notes
 

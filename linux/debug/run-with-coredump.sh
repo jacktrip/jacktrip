@@ -23,6 +23,12 @@ esac
 
 ulimit -c unlimited
 
+# JackTrip only starts its normal window when it is given no options at all, so
+# --gui is added explicitly. Extra arguments are still honoured.
+if [ "$#" -eq 0 ]; then
+    set -- --gui
+fi
+
 TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 LOG="jacktrip-run-$TIMESTAMP.log"
 
@@ -31,7 +37,7 @@ echo "Logging to $LOG"
 echo "Reproduce the crash now (connect to a studio)."
 echo
 
-./jacktrip -V "$@" 2>&1 | tee "$LOG"
+./jacktrip "$@" 2>&1 | tee "$LOG"
 STATUS=${PIPESTATUS[0]}
 
 echo

@@ -18,17 +18,27 @@ LOG="jacktrip-gdb-$TIMESTAMP.log"
 # Allow gdb to write a core file of unlimited size.
 ulimit -c unlimited
 
+# With no arguments JackTrip starts its normal window, which is where the crashes
+# we are chasing happen. Passing any option at all puts it into command line mode
+# instead, so --gui is added explicitly here. Extra arguments are still honoured
+# for anyone who needs them.
+if [ "$#" -eq 0 ]; then
+    set -- --gui
+fi
+
 echo "Logging to $LOG"
 echo "Reproduce the problem now: connect to a studio as you normally would."
 echo "If it does not crash, quit JackTrip and run this script again."
 echo
 
-gdb -q -batch -x crash.gdb --args ./jacktrip -V "$@" 2>&1 | tee "$LOG"
+gdb -q -batch -x crash.gdb --args ./jacktrip "$@" 2>&1 | tee "$LOG"
 
 echo
 echo "==================================================================="
 if grep -q "CRASH DETAILS BELOW" "$LOG"; then
     echo "A crash was captured."
+elif grep -q "was interrupted, not a crash" "$LOG"; then
+    echo "No crash this time — JackTrip was interrupted from the keyboard."
 else
     echo "No crash this time — JackTrip exited on its own."
 fi
