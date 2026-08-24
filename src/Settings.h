@@ -119,6 +119,7 @@ class Settings : public QObject
     QString getPassword() { return mPassword; }
     const QString& getDeeplink() const { return mDeeplink; }
     QString getIceServers() { return mIceServers; }
+    bool getLogToFile() const { return mLogToFile; }
 
    private:
     void disableEcho(bool disabled);
@@ -127,6 +128,7 @@ class Settings : public QObject
     bool mGuiEnabled          = false;
     bool mGuiIgnoresArguments = false;
     bool mGuiForceClassicMode = false;
+    bool mLogToFile           = false;
 
     JackTrip::jacktripModeT mJackTripMode =
         JackTrip::SERVER;  ///< JackTrip::jacktripModeT

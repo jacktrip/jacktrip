@@ -101,7 +101,8 @@ enum JTLongOptIDS {
     OPT_GUI,
     OPT_CLASSIC_GUI,
     OPT_DEEPLINK,
-    OPT_ICESERVERS
+    OPT_ICESERVERS,
+    OPT_LOGTOFILE
 };
 
 //*******************************************************************************
@@ -215,6 +216,7 @@ void Settings::parseInput(int argc, char** argv)
          OPT_DEEPLINK},  // Deeplink URL (should be in the form jacktrip://...)
         {"iceservers", required_argument, NULL,
          OPT_ICESERVERS},  // ICE servers for WebRTC NAT traversal
+        {"logtofile", no_argument, NULL, OPT_LOGTOFILE},  // Write log messages to a file
         {NULL, 0, NULL, 0}};
 
     // Parse Command Line Arguments
@@ -701,6 +703,9 @@ void Settings::parseInput(int argc, char** argv)
         case OPT_ICESERVERS:
             mIceServers = optarg;
             break;
+        case OPT_LOGTOFILE:
+            mLogToFile = true;
+            break;
         case ':': {
             printUsage();
             printf("*** Missing option argument *** see above for usage\n\n");
@@ -973,6 +978,7 @@ void Settings::printUsage()
     cout << " --gui                                    Force JackTrip to run with the GUI. If not using VirtualStudio mode, command line switches in the required arguments, optional arguments (except -l, -j, -L, --appendthreadid), audio patching, and authentication sections will be honoured, and default settings will be used where arguments aren't supplied. Options from other sections will be ignored (and the last used settings will be loaded), except for -V, and the --version and --help switches which will override this." << endl;
     cout << " --classic-gui                            Force JackTrip to run with the Classic Mode GUI." << endl;
     cout << " --deeplink                               Handle a deeplink URL in the format jacktrip://join/<studio_id> by connecting as a hub client" << endl;
+    cout << " --logtofile                              Also write log messages to log.txt in the application data directory. Disabled by default; log messages are always written to the console." << endl;
     cout << endl;
     cout << "HELP ARGUMENTS: " << endl;
     cout << " -v, --version                            Prints Version Number" << endl;

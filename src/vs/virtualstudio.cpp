@@ -44,6 +44,7 @@
 #include <QFile>
 #include <QFontDatabase>
 #include <QMessageBox>
+#include <QMutex>
 #include <QNetworkCookie>
 #include <QQmlContext>
 #include <QQmlEngine>
@@ -93,16 +94,43 @@ const QString jackTripBuildInfo = QLatin1String(TO_STRING(JACKTRIP_BUILD_INFO));
 const QString jackTripBuildInfo = QLatin1String("");
 #endif
 
-static QTextStream* ts;
+// Only used when file logging is enabled with --logtofile. logMutex guards the
+// stream and file below, as well as the std::cerr write in qtMessageHandler().
+static QMutex logMutex;
+static QTextStream* ts = nullptr;
 static QFile outFile;
 
 void qtMessageHandler([[maybe_unused]] QtMsgType type,
                       [[maybe_unused]] const QMessageLogContext& context,
                       const QString& msg)
 {
+    // This is called from any thread that logs, including the audio worker.
+    // QTextStream is reentrant but not thread safe: without this lock,
+    // concurrent writes race on its internal buffer, and the flush performed by
+    // Qt::endl frees the buffer that another thread is still appending to.
+    // (Qt guards against a handler recursing into itself on the same thread, so
+    // a non-recursive mutex is enough here.)
+    QMutexLocker lock(&logMutex);
+
     std::cerr << msg.toStdString() << std::endl;
+
     // Writes to file in order to debug bundles and executables
-    *ts << msg << Qt::endl;
+    if (ts != nullptr) {
+        *ts << msg << Qt::endl;
+    }
+}
+
+static void stopLoggingToFile()
+{
+    // Stop new messages from reaching the handler before tearing anything down.
+    // A thread that has already read the handler pointer will block on the
+    // mutex, then find a null stream and skip the file write.
+    qInstallMessageHandler(nullptr);
+
+    QMutexLocker lock(&logMutex);
+    delete ts;
+    ts = nullptr;
+    outFile.close();
 }
 
 VirtualStudio::VirtualStudio(UserInterface& parent)
@@ -238,20 +266,26 @@ VirtualStudio::VirtualStudio(UserInterface& parent)
     connect(m_view.get(), &VsQuickView::windowClose, this, &VirtualStudio::exit,
             Qt::QueuedConnection);
 
-    // Log to file
-    QString logPath(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
-    QDir logDir;
-    if (!logDir.exists(logPath)) {
-        logDir.mkpath(logPath);
+    // Log to file, but only if it was asked for with --logtofile. Installing a
+    // message handler is global to the process, so we leave Qt's default one in
+    // place (which still writes to the console) unless it is actually wanted.
+    if (m_interface.getSettings().getLogToFile()) {
+        QString logPath(
+            QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
+        QDir logDir;
+        if (!logDir.exists(logPath)) {
+            logDir.mkpath(logPath);
+        }
+        QString fileLoc(logPath.append("/log.txt"));
+        qDebug() << "Log file location:" << fileLoc;
+        outFile.setFileName(fileLoc);
+        if (!outFile.open(QIODevice::WriteOnly | QIODevice::Append)) {
+            qDebug() << "Log file open failed:" << outFile.errorString();
+        } else {
+            ts = new QTextStream(&outFile);
+            qInstallMessageHandler(qtMessageHandler);
+        }
     }
-    QString fileLoc(logPath.append("/log.txt"));
-    qDebug() << "Log file location:" << fileLoc;
-    outFile.setFileName(fileLoc);
-    if (!outFile.open(QIODevice::WriteOnly | QIODevice::Append)) {
-        qDebug() << "Log file open failed:" << outFile.errorString();
-    }
-    ts = new QTextStream(&outFile);
-    qInstallMessageHandler(qtMessageHandler);
 
     // prepare handler for deep link requests
     m_deepLinkPtr.reset(new VsDeeplink());
@@ -1896,6 +1930,11 @@ void VirtualStudio::detectedFeedbackLoop()
 
 VirtualStudio::~VirtualStudio()
 {
+    // Do this first: the message handler is installed for the life of the
+    // process otherwise, and would keep writing through outFile after it has
+    // been destroyed during static teardown.
+    stopLoggingToFile();
+
     QDesktopServices::unsetUrlHandler("jacktrip");
 
     // close the window
