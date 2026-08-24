@@ -73,9 +73,10 @@ QJackTrip::QJackTrip(UserInterface& interface, QWidget* parent)
 {
     m_ui->setupUi(this);
 
-    // Set up our debug window, and relay everything to our real cout.
-    std::cout.rdbuf(m_debugDialog->getOutputStream()->rdbuf());
-    std::cerr.rdbuf(m_debugDialog->getOutputStream(1)->rdbuf());
+    // Set up our debug window so that it relays everything to our real cout.
+    // Note that std::cout and std::cerr are not redirected to it here: that is
+    // global to the application, so it only happens once classic mode is
+    // actually entered. See attachDebugOutput().
     m_debugDialog->setRelayStream(&m_realCout);
     m_debugDialog->setRelayStream(&m_realCerr, 1);
 
@@ -2052,11 +2053,37 @@ JackTrip::hubConnectionModeT QJackTrip::hubModeFromPatchType(
     }
 }
 
+void QJackTrip::attachDebugOutput()
+{
+    if (m_debugOutputAttached) {
+        return;
+    }
+
+    std::cout.rdbuf(m_debugDialog->getOutputStream()->rdbuf());
+    std::cerr.rdbuf(m_debugDialog->getOutputStream(1)->rdbuf());
+    m_debugOutputAttached = true;
+}
+
+void QJackTrip::detachDebugOutput()
+{
+    if (!m_debugOutputAttached) {
+        return;
+    }
+
+    // Push out anything the debug window is still holding on to, so that a
+    // partial line doesn't sit there until classic mode is next used.
+    std::cout.flush();
+    std::cerr.flush();
+
+    std::cout.rdbuf(m_realCout.rdbuf());
+    std::cerr.rdbuf(m_realCerr.rdbuf());
+    m_debugOutputAttached = false;
+}
+
 QJackTrip::~QJackTrip()
 {
     // Restore cout. (Stops a crash on exit.)
-    std::cout.rdbuf(m_realCout.rdbuf());
-    std::cerr.rdbuf(m_realCerr.rdbuf());
+    detachDebugOutput();
 }
 
 QCoreApplication* QJackTrip::createApplication(int& argc, char* argv[])

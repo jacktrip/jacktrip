@@ -179,7 +179,8 @@ void UserInterface::start(QApplication* app)
     QObject::connect(m_classic_ui.data(), &QJackTrip::signalExit, app,
                      &QCoreApplication::quit, Qt::QueuedConnection);
 #ifdef NO_VS
-    m_classic_ui->show();
+    // classic mode is the only mode this build has
+    setMode(MODE_CLASSIC);
 #endif  // NO_VS
 #endif  // NO_CLASSIC
 
@@ -259,6 +260,9 @@ void UserInterface::setMode(uiModeT m)
         if (m_vs_ui->windowState() == "login")
             m_vs_ui->login();
 #ifndef NO_CLASSIC
+        // classic mode's debug window captures std::cout and std::cerr for the
+        // whole application, so give them back while it isn't being used
+        m_classic_ui->detachDebugOutput();
         if (m_uiMode == MODE_CLASSIC)
             m_classic_ui->hide();
 #endif  // NO_CLASSIC
@@ -267,6 +271,7 @@ void UserInterface::setMode(uiModeT m)
         break;
     case MODE_CLASSIC:
 #ifndef NO_CLASSIC
+        m_classic_ui->attachDebugOutput();
         m_classic_ui->show();
 #ifndef NO_VS
         m_vs_ui->hide();
