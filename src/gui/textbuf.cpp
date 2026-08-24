@@ -25,6 +25,8 @@
 
 #include "textbuf.h"
 
+#include <cstring>
+
 void textbuf::setOutStream(std::ostream* output)
 {
     m_outStream = output;
@@ -32,38 +34,71 @@ void textbuf::setOutStream(std::ostream* output)
 
 int textbuf::overflow(int c)
 {
-    // Output our buffer.
-    putChars(pbase(), pptr());
-
+    // We run unbuffered, so every single character written to the stream
+    // arrives here rather than in a put area shared between threads.
     if (c != traits_t::eof()) {
-        char out = c;
-        putChars(&out, &out + 1);
+        const char out = traits_t::to_char_type(c);
+        appendChars(&out, 1);
     }
-
-    // Set buffer to empty again
-    setp(m_buf, m_buf + BUF_SIZE);
 
     return c;
 }
 
+std::streamsize textbuf::xsputn(const char* s, std::streamsize n)
+{
+    // The base class implementation of this copies into the put area, which
+    // isn't safe to share between threads, so accumulate the characters
+    // ourselves instead.
+    if (n <= 0) {
+        return 0;
+    }
+
+    appendChars(s, static_cast<size_t>(n));
+    return n;
+}
+
 int textbuf::sync()
 {
-    // Flush our buffer.
-    putChars(pbase(), pptr());
-    setp(m_buf, m_buf + BUF_SIZE);
+    QMutexLocker lock(&m_mutex);
+    flushLocked();
     return 0;
+}
+
+void textbuf::appendChars(const char* s, size_t n)
+{
+    QMutexLocker lock(&m_mutex);
+    m_pending.append(s, n);
+
+    // Flush complete lines as they arrive so that output still shows up
+    // promptly for callers that end a line with "\n" rather than std::endl.
+    if (m_pending.size() >= MAX_PENDING || memchr(s, '\n', n) != nullptr) {
+        flushLocked();
+    }
+}
+
+void textbuf::flushLocked()
+{
+    if (m_pending.empty()) {
+        return;
+    }
+
+    putChars(m_pending.data(), m_pending.data() + m_pending.size());
+    m_pending.clear();
 }
 
 void textbuf::putChars(const char* begin, const char* end)
 {
+    const qsizetype length = end - begin;
+
     if (m_outStream) {
-        for (const char* c = begin; c < end; c++) {
-            *m_outStream << *c;
-        }
+        // Write the whole block in one call. Relaying character by character
+        // lets output from different threads interleave mid-line, which makes
+        // the console logs users send us hard to read.
+        m_outStream->write(begin, length);
         m_outStream->flush();
     }
 
     // Send a signal here rather than writing directly to our
     // QTextEdit to avoid any issues with threading.
-    emit outputString(QString(QByteArray(begin, end - begin)));
+    emit outputString(QString(QByteArray(begin, length)));
 }
