@@ -162,6 +162,21 @@ void JackAudioInterface::setupClient()
     // Set function to call if Jack shuts down
     jack_on_info_shutdown(mClient, this->jackShutdown, this);
 
+    // Record the server's period size, the same way RtAudioInterface records what
+    // openStream() actually gave it, and ask to be told if it ever changes.
+    // Everything AudioInterface::setup() allocates is sized from this value, and
+    // the audio callbacks index into those buffers using the period the server
+    // hands them, so we cannot let the two drift apart. JACK requires the
+    // callback to be registered before the client is activated.
+    setBufferSize(jack_get_buffer_size(mClient));
+    if (jack_set_buffer_size_callback(
+            mClient, JackAudioInterface::wrapperBufferSizeCallback, this)
+        != 0) {
+        std::cerr << "WARNING: Could not set the Jack buffer size callback; "
+                     "buffer size changes will not be detected"
+                  << std::endl;
+    }
+
     // Create input and output channels
     createChannels();
 
@@ -228,18 +243,6 @@ void JackAudioInterface::createChannels()
 uint32_t JackAudioInterface::getSampleRate() const
 {
     return jack_get_sample_rate(mClient);
-}
-
-//*******************************************************************************
-uint32_t JackAudioInterface::getBufferSizeInSamples() const
-{
-    return jack_get_buffer_size(mClient);
-}
-
-//*******************************************************************************
-size_t JackAudioInterface::getSizeInBytesPerChannel() const
-{
-    return (getBufferSizeInSamples() * getAudioBitResolution() / 8);
 }
 
 //*******************************************************************************
@@ -367,6 +370,40 @@ int JackAudioInterface::processCallback(jack_nframes_t nframes)
 int JackAudioInterface::wrapperProcessCallback(jack_nframes_t nframes, void* arg)
 {
     return static_cast<JackAudioInterface*>(arg)->processCallback(nframes);
+}
+
+//*******************************************************************************
+int JackAudioInterface::bufferSizeCallback(jack_nframes_t nframes)
+{
+    const uint32_t configured = getBufferSizeInSamples();
+    if (configured == nframes) {
+        // the notification JACK sends when the callback is first registered
+        return 0;
+    }
+
+    // The audio buffers, the network packet size and the ring buffers were all
+    // sized for a period of `configured` frames, and the peer was told that size
+    // when the connection was negotiated, so there is no way to keep processing
+    // with a different one. Stop the way we would for a server shutdown; the
+    // session can then be started again at the new period size. The recorded
+    // buffer size is deliberately left alone so that nothing downstream shifts
+    // under us while we are tearing down.
+    std::string errorMsg = "The Jack server changed its buffer size from "
+                           + std::to_string(configured) + " to " + std::to_string(nframes)
+                           + " frames";
+    mErrorMsg            = errorMsg;
+    if (mErrorCallback) {
+        mErrorCallback(errorMsg);
+    }
+    std::cerr << errorMsg << "; stopping audio." << std::endl;
+    JackTrip::sAudioStopped = true;
+    return 0;
+}
+
+//*******************************************************************************
+int JackAudioInterface::wrapperBufferSizeCallback(jack_nframes_t nframes, void* arg)
+{
+    return static_cast<JackAudioInterface*>(arg)->bufferSizeCallback(nframes);
 }
 
 //*******************************************************************************

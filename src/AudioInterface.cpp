@@ -74,6 +74,9 @@ AudioInterface::AudioInterface(QVarLengthArray<int> InputChans,
     , mBitResolutionMode(AudioBitResolution)
     , mSampleRate(gDefaultSampleRate)
     , mBufferSizeInSamples(gDefaultBufferSizeInSamples)
+    , mAllocatedFrames(0)
+    , mBufferSizeMismatchReported(false)
+    , mSizeInBytesPerChannel(0)
     , mMonitorQueuePtr(NULL)
     , mAudioInputPacket(NULL)
     , mAudioOutputPacket(NULL)
@@ -115,8 +118,13 @@ AudioInterface::~AudioInterface()
 void AudioInterface::setup(bool /*verbose*/)
 {
     // Allocate buffer memory to read and write
-    mSizeInBytesPerChannel = getSizeInBytesPerChannel();
+    // Take a single snapshot of the period size and derive every allocation below
+    // from it. Backends such as JACK report the server's *current* period size,
+    // which can change while we are running, so remember what we allocated for and
+    // never size or index these buffers from a fresh query afterwards.
     int nframes            = getBufferSizeInSamples();
+    mAllocatedFrames       = nframes;
+    mSizeInBytesPerChannel = size_t(nframes) * getAudioBitResolution() / 8;
     int size_audio_input   = int(mSizeInBytesPerChannel * mInputChans.size());
     int size_audio_output  = int(mSizeInBytesPerChannel * mOutputChans.size());
 #ifdef WAIR               // WAIR
@@ -173,6 +181,14 @@ void AudioInterface::setup(bool /*verbose*/)
 //*******************************************************************************
 size_t AudioInterface::getSizeInBytesPerChannel() const
 {
+    if (mAllocatedFrames > 0) {
+        // Once setup() has run this must stay fixed: the network packet size and
+        // the ring buffer slot sizes are derived from it, and packets are copied
+        // in and out of buffers that were allocated for this many bytes. Deriving
+        // it from the current period size instead would overrun them if the audio
+        // server changed its period after we were set up.
+        return mSizeInBytesPerChannel;
+    }
     return (getBufferSizeInSamples() * getAudioBitResolution() / 8);
 }
 
@@ -186,14 +202,32 @@ void AudioInterface::callback(QVarLengthArray<sample_t*>& in_buffer,
 }
 
 //*******************************************************************************
+bool AudioInterface::framesFitAllocatedBuffers(unsigned int n_frames)
+{
+    if (n_frames <= mAllocatedFrames) {
+        return true;
+    }
+    // The backend handed us a larger period than setup() allocated for. The packet
+    // and process buffers are all indexed by n_frames, so carrying on would write
+    // several kilobytes past the end of them and corrupt the heap. Drop the period
+    // instead. The backend is expected to notice the change and stop the stream;
+    // this is the last line of defence if it does not.
+    if (!mBufferSizeMismatchReported) {
+        mBufferSizeMismatchReported = true;
+        std::cerr << "*** AudioInterface: the audio period grew to " << n_frames
+                  << " frames, but the audio buffers were allocated for "
+                  << mAllocatedFrames << ". Dropping audio to avoid corrupting memory.\n";
+    }
+    return false;
+}
+
+//*******************************************************************************
 void AudioInterface::audioInputCallback(QVarLengthArray<sample_t*>& in_buffer,
                                         unsigned int n_frames)
 {
     // in_buffer is "in" from local audio hardware
-    if (getBufferSizeInSamples() < n_frames) {  // allocated in constructor above
-        std::cerr << "*** AudioInterface::audioInputCallback n_frames = " << n_frames
-                  << " larger than expected = " << getBufferSizeInSamples() << "\n";
-        exit(1);
+    if (!framesFitAllocatedBuffers(n_frames)) {
+        return;
     }
 
 #ifndef WAIR
@@ -235,11 +269,13 @@ void AudioInterface::audioInputCallback(QVarLengthArray<sample_t*>& in_buffer,
 void AudioInterface::audioOutputCallback(QVarLengthArray<sample_t*>& out_buffer,
                                          unsigned int n_frames)
 {
-    // in_buffer is "in" from local audio hardware
-    if (getBufferSizeInSamples() < n_frames) {  // allocated in constructor above
-        std::cerr << "*** AudioInterface::audioOutputCallback n_frames = " << n_frames
-                  << " larger than expected = " << getBufferSizeInSamples() << "\n";
-        exit(1);
+    // out_buffer is "out" to local audio hardware
+    if (!framesFitAllocatedBuffers(n_frames)) {
+        // the hardware buffers are ours to fill, so hand back silence
+        for (int i = 0; i < mOutputChans.size(); i++) {
+            std::memset(out_buffer[i], 0, sizeof(sample_t) * n_frames);
+        }
+        return;
     }
 
     // 1) First, process incoming packets
@@ -406,6 +442,13 @@ void AudioInterface::audioOutputCallback(QVarLengthArray<sample_t*>& out_buffer,
 void AudioInterface::broadcastCallback(QVarLengthArray<sample_t*>& mon_buffer,
                                        unsigned int n_frames)
 {
+    if (!framesFitAllocatedBuffers(n_frames)) {
+        for (int i = 0; i < mOutputChans.size(); i++) {
+            std::memset(mon_buffer[i], 0, sizeof(sample_t) * n_frames);
+        }
+        return;
+    }
+
     /// \todo cast *mInBuffer[i] to the bit resolution
     // Output Process (from NETWORK to JACK)
     // ----------------------------------------------------------------
