@@ -1,3 +1,12 @@
+- Version: "3.0.1"
+  Date: 2026-08-29
+  Description:
+  - (added) --logtofile option now required for file logging
+  - (added) Debug builds for Linux amd64 platforms
+  - (fixed) PLC sync issues caused by out of order packets
+  - (fixed) Crash caused by writing simultaneous log events
+  - (fixed) Crash caused by JACK buffer size changes
+  - (fixed) Wrong-slot cleanup for WebRTC/WebTransport workers
 - Version: "3.0.0"
   Date: 2026-04-25
   Description:
