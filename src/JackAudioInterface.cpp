@@ -169,8 +169,8 @@ void JackAudioInterface::setupClient()
     // hands them, so we cannot let the two drift apart. JACK requires the
     // callback to be registered before the client is activated.
     setBufferSize(jack_get_buffer_size(mClient));
-    if (jack_set_buffer_size_callback(
-            mClient, JackAudioInterface::wrapperBufferSizeCallback, this)
+    if (jack_set_buffer_size_callback(mClient,
+                                      JackAudioInterface::wrapperBufferSizeCallback, this)
         != 0) {
         std::cerr << "WARNING: Could not set the Jack buffer size callback; "
                      "buffer size changes will not be detected"
@@ -391,7 +391,7 @@ int JackAudioInterface::bufferSizeCallback(jack_nframes_t nframes)
     std::string errorMsg = "The Jack server changed its buffer size from "
                            + std::to_string(configured) + " to " + std::to_string(nframes)
                            + " frames";
-    mErrorMsg            = errorMsg;
+    mErrorMsg = errorMsg;
     if (mErrorCallback) {
         mErrorCallback(errorMsg);
     }
