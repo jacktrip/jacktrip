@@ -1,0 +1,1770 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.17">
+    
+    
+      
+        <title>JackTrip Hub Server Connection Types - JackTrip</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.bcfcd587.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#jacktrip-hub-server-connection-types" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="JackTrip" class="md-header__button md-logo" aria-label="JackTrip" data-md-component="logo">
+      
+  <img src="../../assets/jacktrip.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            JackTrip
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              JackTrip Hub Server Connection Types
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/jacktrip/jacktrip" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../Install/" class="md-tabs__link">
+          
+  
+  User Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../Build/Linux/" class="md-tabs__link">
+          
+  
+  Developer Guide
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../About/Contributors/" class="md-tabs__link">
+          
+  
+  About
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="JackTrip" class="md-nav__button md-logo" aria-label="JackTrip" data-md-component="logo">
+      
+  <img src="../../assets/jacktrip.svg" alt="logo">
+
+    </a>
+    JackTrip
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/jacktrip/jacktrip" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    User Guide
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            User Guide
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Install/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Installation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../VirtualStudio/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Virtual Studio
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../CustomJackServerName/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Using custom JACK server name
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Developer Guide
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Developer Guide
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_1" id="__nav_3_1_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    QMake Build
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1">
+            <span class="md-nav__icon md-icon"></span>
+            QMake Build
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Build/Linux/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Linux
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Build/Mac/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Mac OS
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Build/Windows/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Windows
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Build/Meson_build/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Meson Build
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_3" id="__nav_3_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Development Tools
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_3">
+            <span class="md-nav__icon md-icon"></span>
+            Development Tools
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../DevTools/Formatting/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Formatting
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../DevTools/StaticAnalysis/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Static Analysis
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../NetworkProtocol/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Network Protocol
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../MkDocs/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Write Documentation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    About
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            About
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../About/Contributors/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Contributors
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../About/Resources/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Resources
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../About/CHANGELOG/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Changelog
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../About/License/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    License
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#connection-type-comparison" class="md-nav__link">
+    <span class="md-ellipsis">
+      Connection Type Comparison
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-udp-connections" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. UDP Connections
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. UDP Connections">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#connection-handshake" class="md-nav__link">
+    <span class="md-ellipsis">
+      Connection Handshake
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#port-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      Port Requirements
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      Authentication
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-webrtc-connections" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. WebRTC Connections
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. WebRTC Connections">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#connection-handshake_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Connection Handshake
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-channel-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Data Channel Configuration
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ice-server-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      ICE Server Configuration
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implementation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-webtransport-connections" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. WebTransport Connections
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. WebTransport Connections">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overview
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#connection-handshake_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Connection Handshake
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quic-datagram-transport" class="md-nav__link">
+    <span class="md-ellipsis">
+      QUIC Datagram Transport
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tls-certificate-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      TLS Certificate Requirements
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementation_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implementation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-quic" class="md-nav__link">
+    <span class="md-ellipsis">
+      Why QUIC?
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#connection-type-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      Connection Type Detection
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Connection Type Detection">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#detection-logic" class="md-nav__link">
+    <span class="md-ellipsis">
+      Detection Logic
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#audio-packet-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      Audio Packet Format
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#worker-pool-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      Worker Pool Management
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#building-with-connection-type-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      Building with Connection Type Support
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Building with Connection Type Support">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#webrtc-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      WebRTC Support
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webtransport-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      WebTransport Support
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#server-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Server Configuration
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Server Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#starting-the-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      Starting the Server
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#firewall-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Firewall Configuration
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#port-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Port Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#error-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      Error Handling
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Error Handling">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#udp-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      UDP Errors
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webrtc-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      WebRTC Errors
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#webtransport-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      WebTransport Errors
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="References">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#source-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      Source Files
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#external-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      External Documentation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="jacktrip-hub-server-connection-types">JackTrip Hub Server Connection Types</h1>
+<h2 id="overview">Overview</h2>
+<p>The JackTrip Hub Server supports three different connection types for clients, each with different characteristics suited to different deployment scenarios:</p>
+<ol>
+<li><strong>UDP</strong> - Traditional low-latency UDP transport with TCP signaling</li>
+<li><strong>WebRTC</strong> - Browser-compatible connection with NAT traversal using WebRTC data channels</li>
+<li><strong>WebTransport</strong> - Modern HTTP/3 transport using QUIC with built-in encryption</li>
+</ol>
+<p>All three connection types use the same audio packet format (see <a href="../NetworkProtocol/">NetworkProtocol.md</a>) and share the same worker pool allocation mechanism.</p>
+<h2 id="connection-type-comparison">Connection Type Comparison</h2>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>UDP</th>
+<th>WebRTC</th>
+<th>WebTransport</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Transport</strong></td>
+<td>UDP datagrams</td>
+<td>WebRTC data channels over UDP</td>
+<td>QUIC datagrams over UDP</td>
+</tr>
+<tr>
+<td><strong>Signaling</strong></td>
+<td>TCP port 4464</td>
+<td>WebSocket over TCP 4464</td>
+<td>HTTP/3 over UDP 4464</td>
+</tr>
+<tr>
+<td><strong>NAT Traversal</strong></td>
+<td>No</td>
+<td>Yes (ICE/STUN/TURN)</td>
+<td>Yes (QUIC connection migration)</td>
+</tr>
+<tr>
+<td><strong>Browser Support</strong></td>
+<td>No</td>
+<td>Yes (all modern browsers)</td>
+<td>Yes (Chrome 97+, Edge 97+)</td>
+</tr>
+<tr>
+<td><strong>Encryption</strong></td>
+<td>Optional (TLS)</td>
+<td>Mandatory (DTLS)</td>
+<td>Mandatory (TLS 1.3)</td>
+</tr>
+<tr>
+<td><strong>Setup Complexity</strong></td>
+<td>Simple</td>
+<td>Complex (ICE negotiation)</td>
+<td>Medium (HTTP/3 CONNECT)</td>
+</tr>
+<tr>
+<td><strong>Connection Time</strong></td>
+<td>Fastest</td>
+<td>Medium (ICE gathering)</td>
+<td>Fast (0-RTT after first)</td>
+</tr>
+<tr>
+<td><strong>Audio Transport Port</strong></td>
+<td>UDP (61002 + worker_id)</td>
+<td>ICE-negotiated UDP ports</td>
+<td>UDP 4464 (QUIC)</td>
+</tr>
+<tr>
+<td><strong>Library Required</strong></td>
+<td>None (Qt Network)</td>
+<td>libdatachannel</td>
+<td>msquic</td>
+</tr>
+<tr>
+<td><strong>Build Option</strong></td>
+<td>Always available</td>
+<td><code>-Dlibdatachannel=enabled</code></td>
+<td><code>-Dmsquic=enabled</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="1-udp-connections">1. UDP Connections</h2>
+<h3 id="overview_1">Overview</h3>
+<p>Traditional UDP connections use a simple TCP-based signaling handshake followed by direct UDP audio transport. This is the lowest-latency option but requires open firewall ports and doesn't work behind NAT without port forwarding.</p>
+<h3 id="connection-handshake">Connection Handshake</h3>
+<ol>
+<li>Client connects to TCP port 4464</li>
+<li>Client sends UDP port number (4 bytes, little-endian) and optional client name (64 bytes)</li>
+<li>Server allocates a worker slot and responds with server UDP port (<code>mBasePort + worker_id</code>)</li>
+<li>TCP connection closes</li>
+<li>Audio exchange begins over UDP using the negotiated ports</li>
+</ol>
+<p>For complete details on the UDP handshake protocol, packet format, and authentication flow, see <a href="../NetworkProtocol/">NetworkProtocol.md</a>.</p>
+<h3 id="port-requirements">Port Requirements</h3>
+<ul>
+<li><strong>TCP 4464</strong>: Signaling handshake</li>
+<li><strong>UDP 61002 + worker_id</strong>: Audio transport (base port configurable with <code>--udpbaseport</code>)</li>
+<li>Example: First client uses 61002, second uses 61003, etc.</li>
+</ul>
+<h3 id="authentication">Authentication</h3>
+<p>Optional TLS authentication is supported. When enabled:
+- Client sends special value (<code>65536</code>) instead of port to initiate SSL handshake
+- Credentials (username/password) are exchanged over encrypted connection
+- Server validates and responds with port assignment or error code</p>
+<h2 id="2-webrtc-connections">2. WebRTC Connections</h2>
+<h3 id="overview_2">Overview</h3>
+<p>WebRTC connections use WebSocket-based signaling followed by ICE-negotiated data channels. This provides excellent NAT traversal and works from web browsers, making it ideal for browser-based clients.</p>
+<h3 id="connection-handshake_1">Connection Handshake</h3>
+<ol>
+<li>
+<p><strong>WebSocket Upgrade</strong>: Client sends HTTP upgrade request to TCP port 4464
+   <div class="highlight"><pre><span></span><code><span class="nf">GET</span> <span class="nn">/</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Upgrade</span><span class="o">:</span> <span class="l">websocket</span>
+<span class="na">Connection</span><span class="o">:</span> <span class="l">Upgrade</span>
+<span class="na">Sec-WebSocket-Key</span><span class="o">:</span> <span class="l">&lt;key&gt;</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>SDP Exchange</strong>: Client sends SDP offer, server responds with answer
+   <div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;offer&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;sdp&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;v=0\r\no=- 4611731400430051336 2 IN IP4 127.0.0.1\r\n...&quot;</span>
+<span class="p">}</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>ICE Candidates</strong>: Both sides exchange ICE candidates for connectivity
+   <div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ice&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;candidate&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;candidate:1 1 UDP 2130706431 192.168.1.100 54321 typ host&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;sdpMid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;data&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;sdpMLineIndex&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
+<span class="p">}</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Connection Establishment</strong>: ICE performs connectivity checks, DTLS establishes encryption, SCTP creates data channel association</p>
+</li>
+<li>
+<p><strong>Audio Exchange</strong>: Audio packets are sent over the data channel using the same packet format as UDP</p>
+</li>
+</ol>
+<h3 id="data-channel-configuration">Data Channel Configuration</h3>
+<p>The data channel is configured for low-latency, unreliable delivery similar to UDP:</p>
+<div class="highlight"><pre><span></span><code><span class="n">rtc</span><span class="o">::</span><span class="n">DataChannelInit</span><span class="w"> </span><span class="n">config</span><span class="p">;</span>
+<span class="n">config</span><span class="p">.</span><span class="n">ordered</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span><span class="w">       </span><span class="c1">// Don&#39;t wait for in-order delivery</span>
+<span class="n">config</span><span class="p">.</span><span class="n">maxRetransmits</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w">    </span><span class="c1">// No retransmissions (like UDP)</span>
+</code></pre></div>
+<h3 id="ice-server-configuration">ICE Server Configuration</h3>
+<p>The server can be configured with STUN/TURN servers for NAT traversal:</p>
+<div class="highlight"><pre><span></span><code>jacktrip<span class="w"> </span>-S<span class="w"> </span>--iceservers<span class="w"> </span><span class="s2">&quot;stun:stun.l.google.com:19302&quot;</span>
+</code></pre></div>
+<h3 id="implementation">Implementation</h3>
+<ul>
+<li><strong>Library</strong>: libdatachannel</li>
+<li><strong>Classes</strong>: <code>WebRtcPeerConnection</code>, <code>WebRtcDataProtocol</code>, <code>WebRtcSignalingProtocol</code></li>
+<li><strong>Detection</strong>: Server detects WebSocket upgrade by checking for "GET" in initial TCP data</li>
+</ul>
+<h2 id="3-webtransport-connections">3. WebTransport Connections</h2>
+<h3 id="overview_3">Overview</h3>
+<p>WebTransport provides modern, low-latency transport using HTTP/3 over QUIC. Unlike WebRTC, it requires no ICE negotiation and provides a simpler connection model with built-in NAT traversal. All connections use unreliable QUIC datagrams for audio transport.</p>
+<p><strong>Important</strong>: WebTransport uses UDP (not TCP) for the entire connection, including signaling.</p>
+<h3 id="connection-handshake_2">Connection Handshake</h3>
+<ol>
+<li><strong>QUIC Connection</strong>: Client initiates QUIC connection to UDP port 4464</li>
+<li>TLS 1.3 handshake (mandatory, built into QUIC)</li>
+<li>
+<p>0-RTT capable after first connection</p>
+</li>
+<li>
+<p><strong>HTTP/3 CONNECT</strong>: Client sends HTTP/3 CONNECT request over QUIC
+   <div class="highlight"><pre><span></span><code>:method = CONNECT
+:protocol = webtransport
+:path = /webtransport
+:authority = server.example.com:4464
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Session Established</strong>: Server responds with 200 OK
+   <div class="highlight"><pre><span></span><code>:status = 200
+sec-webtransport-http3-draft = draft02
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Audio Exchange</strong>: Audio packets are sent as QUIC DATAGRAM frames (RFC 9221)</p>
+</li>
+</ol>
+<h3 id="quic-datagram-transport">QUIC Datagram Transport</h3>
+<p>Audio packets are sent as unreliable QUIC datagrams:</p>
+<div class="highlight"><pre><span></span><code>┌──────────┬────────────────────┐
+│ JackTrip │   Audio Samples    │
+│ Header   │                    │
+│ (16B)    │   (variable)       │
+└──────────┴────────────────────┘
+</code></pre></div>
+<p><strong>Key properties:</strong>
+- Unreliable (no retransmissions, like UDP)
+- Unordered (can arrive out of sequence)
+- Encrypted (TLS 1.3 via QUIC)
+- Preserve datagram boundaries
+- Typical size limit: 1200 bytes (path MTU)</p>
+<h3 id="tls-certificate-requirements">TLS Certificate Requirements</h3>
+<p>WebTransport requires TLS 1.3 certificates - encryption is mandatory and cannot be disabled.</p>
+<p><strong>Development (self-signed):</strong>
+<div class="highlight"><pre><span></span><code>openssl<span class="w"> </span>genpkey<span class="w"> </span>-algorithm<span class="w"> </span>RSA<span class="w"> </span>-out<span class="w"> </span>webtransport.key<span class="w"> </span>-pkeyopt<span class="w"> </span>rsa_keygen_bits:2048
+openssl<span class="w"> </span>req<span class="w"> </span>-new<span class="w"> </span>-x509<span class="w"> </span>-key<span class="w"> </span>webtransport.key<span class="w"> </span>-out<span class="w"> </span>webtransport.crt<span class="w"> </span>-days<span class="w"> </span><span class="m">365</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-subj<span class="w"> </span><span class="s2">&quot;/CN=jacktrip.example.com&quot;</span>
+
+jacktrip<span class="w"> </span>-S<span class="w"> </span>--certfile<span class="w"> </span>webtransport.crt<span class="w"> </span>--keyfile<span class="w"> </span>webtransport.key
+</code></pre></div></p>
+<p><strong>Production (Let's Encrypt):</strong>
+<div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>certbot<span class="w"> </span>certonly<span class="w"> </span>--standalone<span class="w"> </span>-d<span class="w"> </span>jacktrip.example.com
+
+jacktrip<span class="w"> </span>-S<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--certfile<span class="w"> </span>/etc/letsencrypt/live/jacktrip.example.com/fullchain.pem<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--keyfile<span class="w"> </span>/etc/letsencrypt/live/jacktrip.example.com/privkey.pem
+</code></pre></div></p>
+<p><strong>Note</strong>: Browsers will reject self-signed certificates unless explicitly trusted.</p>
+<h3 id="implementation_1">Implementation</h3>
+<ul>
+<li><strong>Library</strong>: msquic (only supported QUIC library)</li>
+<li><strong>Classes</strong>: <code>WebTransportSession</code>, <code>WebTransportDataProtocol</code></li>
+<li><strong>Detection</strong>: Server detects QUIC packets on UDP 4464 by examining packet header flags</li>
+<li><strong>Port</strong>: Single UDP port (4464) for both signaling and audio</li>
+</ul>
+<h3 id="why-quic">Why QUIC?</h3>
+<p>QUIC provides several advantages over TCP for real-time audio:</p>
+<ul>
+<li><strong>True unreliable datagrams</strong>: Native support for unreliable delivery (no head-of-line blocking)</li>
+<li><strong>Lower latency</strong>: 1-RTT connection setup (0-RTT after first connection)</li>
+<li><strong>Connection migration</strong>: Survives IP address changes (WiFi ↔ Cellular)</li>
+<li><strong>Single port operation</strong>: All communication over one UDP port</li>
+<li><strong>No framing overhead</strong>: QUIC datagrams preserve packet boundaries</li>
+</ul>
+<h2 id="connection-type-detection">Connection Type Detection</h2>
+<p>The server automatically detects the connection type:</p>
+<div class="highlight"><pre><span></span><code>┌─────────────────────┐
+│ Incoming Connection │
+└──────────┬──────────┘
+           │
+    ┌──────┴──────┐
+    │             │
+TCP 4464      UDP 4464
+    │             │
+    │             └──&gt; QUIC packet → WebTransport
+    │
+    └──&gt; Peek first bytes
+          │
+          ├──&gt; &quot;GET&quot; → WebRTC (WebSocket)
+          │
+          └──&gt; Binary (4 bytes) → UDP
+</code></pre></div>
+<h3 id="detection-logic">Detection Logic</h3>
+<p><strong>TCP port 4464</strong> (UDP and WebRTC):
+<div class="highlight"><pre><span></span><code><span class="n">QByteArray</span><span class="w"> </span><span class="n">peekData</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">clientConnection</span><span class="o">-&gt;</span><span class="n">peek</span><span class="p">(</span><span class="mi">512</span><span class="p">);</span>
+
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">peekData</span><span class="p">.</span><span class="n">startsWith</span><span class="p">(</span><span class="s">&quot;GET&quot;</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// WebRTC connection (WebSocket signaling)</span>
+<span class="w">    </span><span class="n">createWebRtcWorker</span><span class="p">(</span><span class="n">clientConnection</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;webrtc&quot;</span><span class="p">);</span>
+<span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Binary data - legacy UDP client</span>
+<span class="w">    </span><span class="n">readClientUdpPort</span><span class="p">(</span><span class="n">clientConnection</span><span class="p">,</span><span class="w"> </span><span class="n">clientName</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></p>
+<p><strong>UDP port 4464</strong> (WebTransport):
+<div class="highlight"><pre><span></span><code><span class="c1">// QUIC packets have distinctive header format</span>
+<span class="kt">uint8_t</span><span class="w"> </span><span class="n">first_byte</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">datagram</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+<span class="kt">bool</span><span class="w"> </span><span class="n">is_long_header</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">first_byte</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="mh">0x80</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">is_long_header</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// QUIC Initial or Handshake packet</span>
+<span class="w">    </span><span class="n">handleQuicConnection</span><span class="p">(</span><span class="n">datagram</span><span class="p">,</span><span class="w"> </span><span class="n">sender</span><span class="p">,</span><span class="w"> </span><span class="n">senderPort</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></p>
+<h2 id="audio-packet-format">Audio Packet Format</h2>
+<p>All three connection types use the same audio packet format. See <a href="../NetworkProtocol/">NetworkProtocol.md</a> for complete details on:</p>
+<ul>
+<li>Packet header structure (16 bytes)</li>
+<li>Audio payload format (planar/non-interleaved)</li>
+<li>Sample encoding (8/16/24/32-bit)</li>
+<li>Special field encodings</li>
+</ul>
+<h2 id="worker-pool-management">Worker Pool Management</h2>
+<p>All connection types share the same worker pool:</p>
+<ul>
+<li><strong>Slot allocation</strong>: First available slot from 0 to <code>gMaxThreads-1</code></li>
+<li><strong>Audio ports</strong>: All create identical JACK/RtAudio ports (<code>receive_N</code>, <code>send_N</code> where N = worker_id + 1)</li>
+<li><strong>Port assignment for UDP</strong>: Each UDP client is assigned <code>mBasePort + worker_id</code> (typically 61002 + worker_id) for audio transport</li>
+</ul>
+<h2 id="building-with-connection-type-support">Building with Connection Type Support</h2>
+<h3 id="webrtc-support">WebRTC Support</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Auto-detect libdatachannel (default)</span>
+meson<span class="w"> </span>setup<span class="w"> </span>build
+
+<span class="c1"># Explicitly enable (error if not available)</span>
+meson<span class="w"> </span>setup<span class="w"> </span>build<span class="w"> </span>-Dlibdatachannel<span class="o">=</span>enabled
+
+<span class="c1"># Explicitly disable</span>
+meson<span class="w"> </span>setup<span class="w"> </span>build<span class="w"> </span>-Dlibdatachannel<span class="o">=</span>disabled
+</code></pre></div>
+<p>When enabled, defines <code>WEBRTC_SUPPORT</code> macro.</p>
+<h3 id="webtransport-support">WebTransport Support</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Auto-detect msquic (default)</span>
+meson<span class="w"> </span>setup<span class="w"> </span>build
+
+<span class="c1"># Explicitly enable (error if not available)</span>
+meson<span class="w"> </span>setup<span class="w"> </span>build<span class="w"> </span>-Dmsquic<span class="o">=</span>enabled
+
+<span class="c1"># Explicitly disable</span>
+meson<span class="w"> </span>setup<span class="w"> </span>build<span class="w"> </span>-Dmsquic<span class="o">=</span>disabled
+</code></pre></div>
+<p>When enabled, defines <code>WEBTRANSPORT_SUPPORT</code> macro.</p>
+<h2 id="server-configuration">Server Configuration</h2>
+<h3 id="starting-the-server">Starting the Server</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Start hub server (binds to both TCP and UDP port 4464)</span>
+jacktrip<span class="w"> </span>-S
+
+<span class="c1"># Specify custom server port</span>
+jacktrip<span class="w"> </span>-S<span class="w"> </span>-p<span class="w"> </span><span class="m">4464</span>
+
+<span class="c1"># Specify custom UDP base port for legacy UDP audio</span>
+jacktrip<span class="w"> </span>-S<span class="w"> </span>--udpbaseport<span class="w"> </span><span class="m">61002</span>
+
+<span class="c1"># Configure ICE servers for WebRTC</span>
+jacktrip<span class="w"> </span>-S<span class="w"> </span>--iceservers<span class="w"> </span><span class="s2">&quot;stun:stun.l.google.com:19302&quot;</span>
+
+<span class="c1"># Enable TLS for WebTransport (and optionally UDP auth)</span>
+jacktrip<span class="w"> </span>-S<span class="w"> </span>--certfile<span class="w"> </span>server.crt<span class="w"> </span>--keyfile<span class="w"> </span>server.key
+</code></pre></div>
+<h3 id="firewall-configuration">Firewall Configuration</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># TCP for UDP and WebRTC signaling</span>
+sudo<span class="w"> </span>ufw<span class="w"> </span>allow<span class="w"> </span><span class="m">4464</span>/tcp
+
+<span class="c1"># UDP for WebTransport and legacy audio</span>
+sudo<span class="w"> </span>ufw<span class="w"> </span>allow<span class="w"> </span><span class="m">4464</span>/udp
+
+<span class="c1"># UDP port range for legacy UDP audio streams</span>
+sudo<span class="w"> </span>ufw<span class="w"> </span>allow<span class="w"> </span><span class="m">61002</span>:62000/udp
+</code></pre></div>
+<h3 id="port-summary">Port Summary</h3>
+<table>
+<thead>
+<tr>
+<th>Connection Type</th>
+<th>Port</th>
+<th>Protocol</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>UDP</td>
+<td>4464</td>
+<td>TCP</td>
+<td>Signaling handshake</td>
+</tr>
+<tr>
+<td>UDP</td>
+<td>61002 + worker_id</td>
+<td>UDP</td>
+<td>Audio transport</td>
+</tr>
+<tr>
+<td>WebRTC</td>
+<td>4464</td>
+<td>TCP</td>
+<td>WebSocket signaling</td>
+</tr>
+<tr>
+<td>WebRTC</td>
+<td>ICE-negotiated</td>
+<td>UDP</td>
+<td>Audio transport (data channels)</td>
+</tr>
+<tr>
+<td>WebTransport</td>
+<td>4464</td>
+<td>UDP</td>
+<td>QUIC (signaling + audio)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="error-handling">Error Handling</h2>
+<h3 id="udp-errors">UDP Errors</h3>
+<ul>
+<li><strong>Port already bound</strong>: Worker slot exhausted or port conflict</li>
+<li><strong>Authentication failed</strong>: Invalid credentials (if auth enabled)</li>
+<li><strong>Timeout</strong>: Client doesn't send UDP packets after handshake</li>
+</ul>
+<h3 id="webrtc-errors">WebRTC Errors</h3>
+<ul>
+<li><strong>ICE failed</strong>: No connectivity path found</li>
+<li><strong>DTLS handshake failed</strong>: Certificate or crypto mismatch</li>
+<li><strong>Data channel failed</strong>: SCTP association error</li>
+</ul>
+<h3 id="webtransport-errors">WebTransport Errors</h3>
+<ul>
+<li><strong>Handshake failed</strong>: Invalid HTTP/3 CONNECT request</li>
+<li><strong>Certificate verification failed</strong>: Invalid or untrusted TLS certificate</li>
+<li><strong>Session closed</strong>: QUIC connection terminated</li>
+</ul>
+<h2 id="references">References</h2>
+<h3 id="source-files">Source Files</h3>
+<ul>
+<li><strong>UDP</strong>: <code>src/UdpHubListener.cpp</code>, <code>src/UdpDataProtocol.cpp</code></li>
+<li><strong>WebRTC</strong>: <code>src/webrtc/WebRtcPeerConnection.cpp</code>, <code>src/webrtc/WebRtcDataProtocol.cpp</code>, <code>src/webrtc/WebRtcSignalingProtocol.cpp</code></li>
+<li><strong>WebTransport</strong>: <code>src/webtransport/WebTransportSession.cpp</code>, <code>src/webtransport/WebTransportDataProtocol.cpp</code></li>
+<li><strong>Worker</strong>: <code>src/JackTripWorker.cpp</code></li>
+</ul>
+<h3 id="external-documentation">External Documentation</h3>
+<ul>
+<li><a href="../NetworkProtocol/">NetworkProtocol.md</a> - Detailed packet format and UDP protocol</li>
+<li><a href="https://www.w3.org/TR/webrtc/">WebRTC Specification</a></li>
+<li><a href="https://www.w3.org/TR/webtransport/">WebTransport Specification</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc9221.html">RFC 9221 - QUIC Datagrams</a></li>
+<li><a href="https://github.com/paullouisageneau/libdatachannel">libdatachannel</a></li>
+<li><a href="https://github.com/microsoft/msquic">MsQuic</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs"], "search": "../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.1e8ae164.min.js"></script>
+      
+    
+  </body>
+</html>
