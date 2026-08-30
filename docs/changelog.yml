@@ -1,12 +1,14 @@
 - Version: "3.0.1"
-  Date: 2026-08-29
+  Date: 2026-08-30
   Description:
   - (added) --logtofile option now required for file logging
   - (added) Debug builds for Linux amd64 platforms
-  - (fixed) PLC sync issues caused by out of order packets
   - (fixed) Crash caused by writing simultaneous log events
   - (fixed) Crash caused by JACK buffer size changes
+  - (fixed) TCP Socket Error when connecting to a studio
+  - (fixed) PLC sync issues caused by out of order packets
   - (fixed) Wrong-slot cleanup for WebRTC/WebTransport workers
+  - (fixed) Fix for pre-installed msquic linking on Linux
 - Version: "3.0.0"
   Date: 2026-04-25
   Description:
