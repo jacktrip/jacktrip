@@ -229,6 +229,10 @@ void JackTripWorker::start()
 void JackTripWorker::stopThread()
 {
     QMutexLocker locker(&mMutex);
+    if (gVerboseFlag) {
+        cout << "JackTripWorker::stopThread: worker=" << mID << " mRunning=" << mRunning
+             << " mSpawning=" << mSpawning << endl;
+    }
     if (mRunning) {
         mRunning = false;
         mJackTrip->slotStopProcesses();
@@ -680,6 +684,12 @@ void JackTripWorker::onWebTransportSessionEstablished()
     QString peerAddress = mWebTransportSession->getPeerAddress();
     mClientName         = mWebTransportSession->getClientName();
 
+    if (gVerboseFlag) {
+        cout << "JackTripWorker::onWebTransportSessionEstablished: worker=" << mID
+             << " peer=" << peerAddress.toStdString() << ":"
+             << mWebTransportSession->getPeerPort() << endl;
+    }
+
     // Get the base port from the hub listener and calculate the server port
     int basePort             = mUdpHubListener->getBasePort();
     uint16_t serverPort      = static_cast<uint16_t>(basePort + mID);
@@ -723,6 +733,11 @@ void JackTripWorker::onWebTransportSessionEstablished()
 //*******************************************************************************
 void JackTripWorker::onWebTransportSessionClosed()
 {
+    if (gVerboseFlag) {
+        cout << "JackTripWorker::onWebTransportSessionClosed: worker=" << mID
+             << " mRunning=" << mRunning << " mSpawning=" << mSpawning << endl;
+    }
+
     // Stop the JackTrip process
     stopThread();
 
@@ -735,6 +750,15 @@ void JackTripWorker::onWebTransportSessionFailed(const QString& reason)
 {
     cerr << "JackTripWorker: WebTransport session failed for worker " << mID << ": "
          << reason.toStdString() << endl;
+    if (gVerboseFlag) {
+        cout << "JackTripWorker: worker=" << mID << " failure state mRunning=" << mRunning
+             << " mSpawning=" << mSpawning;
+        if (mWebTransportSession) {
+            cout << " peer=" << mWebTransportSession->getPeerAddress().toStdString()
+                 << ":" << mWebTransportSession->getPeerPort();
+        }
+        cout << endl;
+    }
 
     // Stop the thread and signal removal
     stopThread();

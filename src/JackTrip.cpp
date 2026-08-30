@@ -1269,6 +1269,10 @@ void JackTrip::stop(const QString& errorMessage)
     mStopped          = true;
     // Make sure we're only run once
     if (mHasShutdown) {
+        if (gVerboseFlag) {
+            std::cout << "JackTrip::stop: already shut down, ignoring duplicate call"
+                      << std::endl;
+        }
         return;
     }
     mHasShutdown = true;
@@ -1623,9 +1627,6 @@ void JackTrip::putHeaderInIncomingPacket(int8_t* full_packet, int8_t* audio_pack
 
     int8_t* audio_part;
     audio_part = full_packet + mPacketHeader->getHeaderSizeInBytes();
-    // std::memcpy(audio_part, audio_packet, mAudioInterface->getBufferSizeInBytes());
-    // std::memcpy(audio_part, audio_packet, mAudioInterface->getSizeInBytesPerChannel() *
-    // mNumChans);
     std::memcpy(audio_part, audio_packet, getTotalAudioOutputPacketSizeInBytes());
 }
 
@@ -1638,9 +1639,6 @@ void JackTrip::putHeaderInOutgoingPacket(int8_t* full_packet, int8_t* audio_pack
 
     int8_t* audio_part;
     audio_part = full_packet + mPacketHeader->getHeaderSizeInBytes();
-    // std::memcpy(audio_part, audio_packet, mAudioInterface->getBufferSizeInBytes());
-    // std::memcpy(audio_part, audio_packet, mAudioInterface->getSizeInBytesPerChannel() *
-    // mNumChans);
     std::memcpy(audio_part, audio_packet, getTotalAudioInputPacketSizeInBytes());
 }
 

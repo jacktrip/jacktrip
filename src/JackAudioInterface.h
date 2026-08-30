@@ -112,7 +112,7 @@ class JackAudioInterface : public AudioInterface
     }
     virtual void setBufferSizeInSamples(uint32_t /*buf_size*/) override
     {
-        std::cout << "WARNING: Setting the Sample Rate in Jack mode has no effect."
+        std::cout << "WARNING: Setting the Buffer Size in Jack mode has no effect."
                   << std::endl;
     }
     virtual void enableBroadcastOutput() override { mBroadcast = true; }
@@ -123,15 +123,6 @@ class JackAudioInterface : public AudioInterface
     virtual QString getAssignedClientName() final { return mAssignedClientName; }
     /// \brief Get the Jack Server Sampling Rate, in samples/second
     virtual uint32_t getSampleRate() const override;
-    /// \brief Get the Jack Server Buffer Size, in samples
-    virtual uint32_t getBufferSizeInSamples() const override;
-    /// \brief Get the Jack Server Buffer Size, in bytes
-    virtual uint32_t getBufferSizeInBytes() const
-    {
-        return (getBufferSizeInSamples() * getAudioBitResolution() / 8);
-    }
-    /// \brief Get size of each audio per channel, in bytes
-    virtual size_t getSizeInBytesPerChannel() const override;
     //------------------------------------------------------------------
 
    private:
@@ -177,6 +168,17 @@ class JackAudioInterface : public AudioInterface
      */
     // reference : http://article.gmane.org/gmane.comp.audio.jackit/12873
     static int wrapperProcessCallback(jack_nframes_t nframes, void* arg);
+    /** \brief JACK buffer size callback
+     *
+     * Called from a JACK notification thread, never the process thread, whenever
+     * the server is about to change the period size. Everything downstream of
+     * AudioInterface::setup() -- the packet buffers, the network packet size and
+     * the ring buffers -- is sized from the period in use when the client was set
+     * up, so a change means we have to stop rather than carry on.
+     */
+    int bufferSizeCallback(jack_nframes_t nframes);
+    /// \brief Wrapper to cast the member bufferSizeCallback to a static function pointer
+    static int wrapperBufferSizeCallback(jack_nframes_t nframes, void* arg);
 
     int mNumFrames;  ///< Buffer block size, in samples
 

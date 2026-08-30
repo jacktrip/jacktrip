@@ -115,6 +115,26 @@ jobs:
             vst3sdk-version: '3.7.13'
             vst3sdk-arch: amd64
 
+          # same as Linux-x64-docker-shared, but keeps debug symbols so that crashes
+          # reported by users can be turned into readable stack traces
+          - name: Linux-x64-docker-debug
+            release-name: Linux-x64-debug
+            runs-on: ubuntu-22.04
+            system-rtaudio: false
+            bundled-rtaudio: true
+            nogui: false
+            weakjack: false
+            libsamplerate: true
+            webrtc: false
+            webtransport: false
+            jacktrip-path: jacktrip
+            binary-path: binary
+            build-system: docker
+            docker-image: ubuntu:jammy-20240911.1
+            docker-platform: linux/amd64
+            meson-library-type: shared
+            debug-symbols: true # do not strip; bundle the crash capture helpers
+
           - name: Linux-arm64-docker-shared
             release-name: Linux-arm64
             runs-on: ubuntu-22.04-arm
@@ -656,6 +676,12 @@ jobs:
           else
             MESON_CONFIG="-Dmsquic=disabled $MESON_CONFIG"
           fi
+          if [[ "${{ matrix.debug-symbols }}" == true ]]; then
+            # mirror the build info string meson derives from git, so that crash
+            # reports make it obvious they came from the debug build
+            BUILD_INFO="$(git describe --tags 2>/dev/null || echo ${{ steps.set-version.outputs.version }})-$(git rev-parse --short HEAD)-debug"
+            MESON_CONFIG="-Dbuildinfo=$BUILD_INFO $MESON_CONFIG"
+          fi
           if [[ -n "${{ matrix.macosx-architectures }}" ]]; then
             # TODO: for now, just assume that we want universal if it is not empty
             if [[ -n "${{ matrix.macosx-deployment-target }}" ]]; then
@@ -696,6 +722,7 @@ jobs:
             docker buildx build --target=artifact --progress=plain -f linux/Dockerfile.build --output type=local,dest=$BUILD_PATH \
               --platform "${{ matrix.docker-platform }}" --build-arg BUILD_CONTAINER="${{ matrix.docker-image }}" \
               --build-arg MESON_ARGS="$CONFIG_STRING" \
+              --build-arg DEBUG_SYMBOLS="${{ matrix.debug-symbols }}" \
               --build-arg USE_SYSTEM_LIBSAMPLERATE="1" \
               --build-arg VST3SDK_DOWNLOAD_URL="$VST3SDK_DOWNLOAD_URL" \
               --build-arg QT_DOWNLOAD_URL="$QT_DOWNLOAD_URL" .
@@ -892,6 +919,38 @@ jobs:
               cp $GITHUB_WORKSPACE/linux/icons/jacktrip.svg $BUILD_PATH/org.jacktrip.JackTrip.svg
               cp $GITHUB_WORKSPACE/linux/icons/jacktrip_48x48.png $BUILD_PATH/org.jacktrip.JackTrip.png
               zip -j $ZIPFILE $DESKTOP_FILE_PATH $BUILD_PATH/jacktrip.1.gz $BUILD_PATH/org.jacktrip.JackTrip.svg $BUILD_PATH/org.jacktrip.JackTrip.png $GITHUB_WORKSPACE/linux/README.md
+            fi
+            if [[ "${{ matrix.debug-symbols }}" == true ]]; then
+              # ship the crash capture helpers, install instructions and enough
+              # provenance to match a core file back to this exact binary
+              BUILD_ID=$(readelf -n $BINFILE 2>/dev/null | awk '/Build ID/ {print $3}')
+              cp $GITHUB_WORKSPACE/linux/README.md $BUILD_PATH/INSTALL.md
+              cat > $BUILD_PATH/BUILD-INFO.txt <<EOF
+          JackTrip debug build
+          ====================
+
+          Version     : ${{ steps.set-version.outputs.version }}
+          Git commit  : $GITHUB_SHA
+          GNU build ID: $BUILD_ID
+          Built by    : $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
+          Built on    : $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+          Container   : ${{ matrix.docker-image }} (${{ matrix.docker-platform }})
+
+          This binary uses the same meson configuration and optimisation level as the
+          official Linux x64 release. The only differences are that it is compiled with
+          -g3 -fno-omit-frame-pointer and is not stripped, so code generation should
+          match the release build.
+
+          To read a core file produced by this binary:
+
+              gdb ./jacktrip /path/to/core
+              (gdb) thread apply all bt full
+          EOF
+              zip -j $ZIPFILE $BUILD_PATH/BUILD-INFO.txt $BUILD_PATH/INSTALL.md \
+                $GITHUB_WORKSPACE/linux/debug/README.md $GITHUB_WORKSPACE/linux/debug/crash.gdb \
+                $GITHUB_WORKSPACE/linux/debug/run-under-gdb.sh \
+                $GITHUB_WORKSPACE/linux/debug/run-with-coredump.sh \
+                $GITHUB_WORKSPACE/linux/debug/enable-core-dumps.sh
             fi
             cd $GITHUB_WORKSPACE # we need to be in the root project directory for adding licenses
             if [[ "${{ runner.os }}" == "Windows" ]]; then

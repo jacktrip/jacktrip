@@ -291,6 +291,14 @@ class AudioInterface
     virtual QVarLengthArray<int> getOutputChannels() const { return mOutputChans; }
     virtual inputMixModeT getInputMixMode() const { return mInputMixMode; }
     virtual uint32_t getBufferSizeInSamples() const { return mBufferSizeInSamples; }
+    /** \brief Get the number of frames per period the audio buffers were allocated for
+     *
+     * This is a snapshot taken by setup(). It can differ from
+     * getBufferSizeInSamples() if the audio server changes its period size
+     * afterwards. Anything that indexes into the buffers allocated by setup()
+     * must be bounded by this value, not by the current period size.
+     */
+    uint32_t getAllocatedBufferSizeInSamples() const { return mAllocatedFrames; }
     virtual uint32_t getDeviceID() const { return mDeviceID; }
     virtual std::string getInputDevice() const { return mInputDeviceName; }
     virtual std::string getOutputDevice() const { return mOutputDeviceName; }
@@ -328,6 +336,14 @@ class AudioInterface
     /// \brief Compute the process to send packets
     void computeProcessToNetwork(QVarLengthArray<sample_t*>& in_buffer,
                                  unsigned int n_frames);
+    /** \brief Check that a period handed to us by the audio backend fits the
+     * buffers that setup() allocated
+     *
+     * Returns false, and logs once, if it does not. Callers must bail out in
+     * that case: every buffer allocated by setup() is indexed with n_frames, so
+     * processing a larger period would write past the end of them.
+     */
+    bool framesFitAllocatedBuffers(unsigned int n_frames);
 
     QVarLengthArray<int> mInputChans;
     QVarLengthArray<int> mOutputChans;
@@ -345,7 +361,9 @@ class AudioInterface
     uint32_t mDeviceID;      ///< RTAudio DeviceID
     std::string mInputDeviceName, mOutputDeviceName;  ///< RTAudio device names
     uint32_t mBufferSizeInSamples;                    ///< Buffer size in samples
-    size_t mSizeInBytesPerChannel;                    ///< Size in bytes per audio channel
+    uint32_t mAllocatedFrames;  ///< Frames per period the buffers below were sized for
+    bool mBufferSizeMismatchReported;  ///< True once a period size growth has been logged
+    size_t mSizeInBytesPerChannel;     ///< Size in bytes per audio channel
     QVector<QSharedPointer<ProcessPlugin> >
         mProcessPluginsFromNetwork;  ///< Vector of ProcessPlugin<EM>s</EM>
     QVector<QSharedPointer<ProcessPlugin> >

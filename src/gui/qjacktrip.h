@@ -67,6 +67,18 @@ class QJackTrip : public QMainWindow
     void showEvent(QShowEvent* event) override;
     static QCoreApplication* createApplication(int& argc, char* argv[]);
 
+    /** \brief Redirects std::cout and std::cerr to the classic mode debug window.
+     *
+     * This affects the whole application, so it is only done while classic mode
+     * is actually in use. UserInterface::setMode() takes care of calling this
+     * and detachDebugOutput() at the right times. Both are safe to call more
+     * than once.
+     */
+    void attachDebugOutput();
+
+    /// \brief Restores std::cout and std::cerr to where they pointed at startup.
+    void detachDebugOutput();
+
    signals:
     void signalExit();
 
@@ -127,6 +139,7 @@ class QJackTrip : public QMainWindow
     QScopedPointer<QGridLayout> m_outputLayout;
     std::ostream m_realCout;
     std::ostream m_realCerr;
+    bool m_debugOutputAttached = false;
     QString m_assignedClientName;
     bool m_jackTripRunning;
     bool m_isExiting;

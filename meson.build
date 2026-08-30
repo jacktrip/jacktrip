@@ -475,6 +475,17 @@ if found_msquic
 		'src/webtransport/WebTransportSession.h',
 		'src/webtransport/WebTransportDataProtocol.h'
 	]
+	# msquic is statically linked against its own OpenSSL (libcrypto.a/libssl.a).
+	# Without this flag those ~2700 OpenSSL symbols land in the executable's dynamic
+	# symbol table and interpose the system libssl/libcrypto that Qt dlopens at runtime.
+	# The result: Qt parses an X509 with one OpenSSL while SSL_CTX_use_certificate runs
+	# against the other, so server-side TLS fails with "Error loading local certificate"
+	# (empty OpenSSL detail) and the WebRTC/ping handshake hangs. Keeping static-archive
+	# symbols local stops the interposition. GNU ld / lld only; harmless on the BSD-style
+	# macOS linker path, so restrict to Linux where the conflict occurs.
+	if host_machine.system() == 'linux'
+		link_args += '-Wl,--exclude-libs,ALL'
+	endif
 endif
 
 if host_machine.system() == 'darwin'
