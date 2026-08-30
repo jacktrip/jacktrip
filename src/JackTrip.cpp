@@ -1059,7 +1059,8 @@ void JackTrip::receivedDataTCP()
 
 void JackTrip::receivedErrorTCP(QAbstractSocket::SocketError socketError)
 {
-    if (socketError != QAbstractSocket::ConnectionRefusedError) {
+    if (socketError != QAbstractSocket::ConnectionRefusedError
+        && socketError != QAbstractSocket::NetworkError) {
         mTcpClient.close();
         mRetryTimer.stop();
         stop(QStringLiteral("TCP Socket Error: ") + QString::number(socketError));
