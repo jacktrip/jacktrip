@@ -901,7 +901,7 @@ void AudioInterface::setDevicesWarningMsg(warningMessageT msg)
         break;
     case DEVICE_WARN_ASIO_LATENCY:
         mWarningMsg =
-            "You audio device drivers may cause high latency or audio delay. Install "
+            "Your audio device drivers may cause high latency or audio delay. Install "
             "and use ASIO drivers provided by your device's manufacturer to reduce "
             "audio delays.";
         mWarningHelpUrl =
@@ -910,7 +910,7 @@ void AudioInterface::setDevicesWarningMsg(warningMessageT msg)
         break;
     case DEVICE_WARN_ALSA_LATENCY:
         mWarningMsg =
-            "You audio device drivers may cause high latency or audio delay. Use "
+            "Your audio device drivers may cause high latency or audio delay. Use "
             "JACK backend or Linux ALSA drivers to reduce audio delays.";
         mWarningHelpUrl  = "";
         mHighLatencyFlag = true;

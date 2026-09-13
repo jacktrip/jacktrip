@@ -277,7 +277,12 @@ void WebRtcDataProtocol::run()
             return;
         }
     }
-    int full_packet_size = mJackTrip->getReceivePacketSizeInBytes();
+    // A sender transmits its input channels and a receiver expects its output
+    // channels; the two sizes differ whenever the peer's channel counts are
+    // asymmetric (putHeaderInOutgoingPacket copies the input-channel size).
+    int full_packet_size = (mRunMode == RECEIVER)
+                               ? mJackTrip->getReceivePacketSizeInBytes()
+                               : mJackTrip->getSendPacketSizeInBytes();
     mFullPacket.reset(new int8_t[full_packet_size]);
     std::memset(mFullPacket.get(), 0, full_packet_size);
     mJackTrip->putHeaderInIncomingPacket(mFullPacket.get(), mAudioPacket.get());
