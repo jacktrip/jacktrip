@@ -146,6 +146,9 @@ echo "Building bundle $APPNAME (id: $BUNDLE_ID)"
 echo "for binary version $VERSION"
 
 rm -rf "$APPNAME.app"
+# sign_app.sh signs and packages whichever plugin bundles exist, so remove stale ones
+[ -f "$VST3_BINARY" ] || rm -rf "$APPNAME.vst3"
+[ -f "$AUv2_BINARY" ] || rm -rf "$APPNAME.component"
 APP_CONTENTS="$APPNAME.app/Contents"
 mkdir -p "$APP_CONTENTS/MacOS"
 mkdir -p "$APP_CONTENTS/Resources"
@@ -190,17 +193,6 @@ if [ -n "$DYNAMIC_QT" ]; then
         DEPLOY_OPTS="$DEPLOY_OPTS -qmldir=../src/vs"
     fi
     $DEPLOY_CMD "$APPNAME.app" $DEPLOY_OPTS
-
-    if [ -n "$CERTIFICATE" ]; then
-        # manually sign contents since the macdeployqt built-ins do not work (rpath errors)
-        echo "Signing app contents"
-        PATHS="$APP_CONTENTS/Frameworks $APP_CONTENTS/PlugIns $APP_CONTENTS/Resources"
-        find $PATHS -type f | while read fname; do
-            if [[ -f $fname ]]; then
-                codesign -f -s "$CERTIFICATE" --timestamp --entitlements entitlements.plist --options "runtime" "$fname"
-            fi
-        done
-    fi
 fi
 
 if [ -f "$VST3_BINARY" ]; then
@@ -257,141 +249,21 @@ if [ -f "$AUv3_BINARY" ]; then
     if [ -n "$DYNAMIC_AUv3" ]; then
         echo "Detected a dynamic AUv3 binary"
         $DEPLOY_CMD "$APP_CONTENTS/PlugIns/JackTrip.appex" -executable=$AUv3_CONTENTS/MacOS/JackTrip -libpath=$QT_PATH/lib
-        if [ -n "$CERTIFICATE" ]; then
-            echo "Signing dynamic AUv3 plugin"
-            PATHS="$AUv3_CONTENTS/Frameworks $AUv3_CONTENTS/PlugIns $AUv3_CONTENTS/Resources"
-            find $PATHS -type f | while read fname; do
-                if [[ -f $fname ]]; then
-                    codesign -f -s "$CERTIFICATE" --timestamp --entitlements entitlements_appex.plist --options "runtime" "$fname"
-                fi
-            done
-            codesign -f -s "$CERTIFICATE" --timestamp --entitlements entitlements_appex.plist --options "runtime" "$APP_CONTENTS/PlugIns/JackTrip.appex"
-        fi
-    else
-        echo "Detected a static AUv3 binary"
-        if [ -n "$CERTIFICATE" ]; then
-            echo "Signing static AUv3 plugin"
-            codesign -f -s "$CERTIFICATE" --timestamp --entitlements entitlements_appex.plist --options "runtime" "$APP_CONTENTS/PlugIns/JackTrip.appex"
-        fi
     fi
 fi
 
-if [ $PSI = true ]; then
-    cp "package/postinstall.sh" "package/postinstall.sh.bak"
-    sed -i '' "s/^open/#open/" "package/postinstall.sh"
-fi
+# Signing and packaging are handled by sign_app.sh, which can also be run
+# separately on bundles that were assembled without signing.
+SIGN_ARGS=()
+[ $BUILD_INSTALLER = true ] && SIGN_ARGS+=(-i)
+[ $NOTARIZE = true ] && SIGN_ARGS+=(-n)
+[ -n "$TEMP_KEYCHAIN" ] && SIGN_ARGS+=(-k)
+[ $USE_DEFAULT_KEYCHAIN = true ] && SIGN_ARGS+=(-l)
+[ $PSI = true ] && SIGN_ARGS+=(-q)
+[ -n "$CERTIFICATE" ] && SIGN_ARGS+=(-c "$CERTIFICATE")
+[ -n "$PACKAGE_CERT" ] && SIGN_ARGS+=(-d "$PACKAGE_CERT")
+[ -n "$USERNAME" ] && SIGN_ARGS+=(-u "$USERNAME")
+[ -n "$PASSWORD" ] && SIGN_ARGS+=(-p "$PASSWORD")
+[ -n "$TEAM_ID" ] && SIGN_ARGS+=(-t "$TEAM_ID")
 
-# Needed for notarization.
-if [ -n "$CERTIFICATE" ]; then
-    echo "Signing $APPNAME.app"
-    codesign -f -s "$CERTIFICATE" --timestamp --entitlements entitlements.plist --options "runtime" "$APPNAME.app"
-    if [ -f "$VST3_BINARY" ]; then
-      echo "Signing $APPNAME.vst3"
-      codesign -f -s "$CERTIFICATE" --timestamp --options "runtime" "$APPNAME.vst3"
-    fi
-    if [ -f "$AUv2_BINARY" ]; then
-      echo "Signing $APPNAME.component"
-      codesign -f -s "$CERTIFICATE" --timestamp --options "runtime" "$APPNAME.component"
-    fi
-fi
-
-[ $BUILD_INSTALLER = true ] || exit 0
-
-# If you have Packages installed, you can build an installer for the newly created app bundle.
-[ -z $(which packagesbuild) ] && { echo "Error: You need to have Packages installed to build a package."; exit 1; }
-
-# prepare license
-LICENSE_PATH="package/license.txt"
-cat ../LICENSE.md > "$LICENSE_PATH"
-printf "\n\n" >> "$LICENSE_PATH"
-cat ../LICENSES/MIT.txt >> "$LICENSE_PATH"
-printf "\n\n" >> "$LICENSE_PATH"
-cat ../LICENSES/GPL-3.0.txt >> "$LICENSE_PATH"
-printf "\n\n" >> "$LICENSE_PATH"
-cat ../LICENSES/LGPL-3.0-only.txt >> "$LICENSE_PATH"
-
-sed -i '' "s/# //" "$LICENSE_PATH" # remove markdown header
-perl -ane 'chop;print "\n\n" if(/^\s*$/); map{print "$_ ";}@F;' "$LICENSE_PATH" > tmp && mv tmp "$LICENSE_PATH" # unwrap lines
-
-# prepare readme
-README_PATH="package/readme.txt"
-cp ../README.md "$README_PATH"
-sed -i '' "s/# //" "$README_PATH" # remove markdown header
-perl -ane 'chop;print "\n\n" if(/^\s*$/); map{print "$_ ";}@F;' "$README_PATH" > tmp && mv tmp "$README_PATH" # unwrap lines
-
-if [[ -f "$VST3_BINARY" && -f "$AUv2_BINARY" ]]; then
-  cp package/JackTrip.pkgproj_template_with_plugins package/JackTrip.pkgproj
-else
-  cp package/JackTrip.pkgproj_template package/JackTrip.pkgproj
-fi
-sed -i '' "s/%VERSION%/$VERSION/" package/JackTrip.pkgproj
-sed -i '' "s/%BUNDLENAME%/$APPNAME/" package/JackTrip.pkgproj
-sed -i '' "s/%BUNDLEID%/$BUNDLE_ID/" package/JackTrip.pkgproj
-
-echo "Building JackTrip.pkg"
-packagesbuild package/JackTrip.pkgproj
-[ $PSI = true ] && mv "package/postinstall.sh.bak" "package/postinstall.sh"
-if pkgutil --check-signature package/build/JackTrip.pkg; then
-    echo "Package already signed."
-    SIGNED=true
-else
-    if [ -n "$PACKAGE_CERT" ]; then
-        echo "Signing package."
-        if productsign --sign "$PACKAGE_CERT" package/build/JackTrip.pkg package/build/JackTrip-signed.pkg; then
-            mv package/build/JackTrip-signed.pkg package/build/JackTrip.pkg
-            SIGNED=true
-        else
-            echo "Unable to sign package."
-            exit 1
-        fi
-    else
-        SIGNED=false
-    fi
-fi 
-
-[ $NOTARIZE = true ] || exit 0
-
-# Submit a notarization request to apple if we've chosen to and signed our package.
-if [ $SIGNED = false ]; then
-    echo "Not sending notarization request: package not signed."
-    exit 1
-fi
-
-if [ -n "$USERNAME" ] || [ -n "$PASSWORD" ] || [ -n "$TEAM_ID" ] || [ -n "$TEMP_KEYCHAIN" ]; then
-    if [ -z "$USERNAME" ] || [ -z "$PASSWORD" ] || [ -z "$TEAM_ID" ]; then
-        echo "Error: Missing credentials. Make sure you supply a username, password and team ID."
-        exit 1
-    fi
-fi 
-
-KEYCHAIN=""
-if [ -n "$TEMP_KEYCHAIN" ]; then
-    echo "Using a temporary keychain"
-    [ -e "$TEMP_KEYCHAIN" ] && rm "$TEMP_KEYCHAIN"
-    security create-keychain -p "supersecretpassword" "$TEMP_KEYCHAIN"
-    security set-keychain-settings -lut 3600 "$TEMP_KEYCHAIN"
-    security unlock-keychain -p "supersecretpassword" "$TEMP_KEYCHAIN"
-    KEYCHAIN=" --keychain \"$TEMP_KEYCHAIN\""
-elif [ $USE_DEFAULT_KEYCHAIN = true ]; then
-    echo "Using the default keychain"
-    DEFAULT_KEYCHAIN=$(security default-keychain | cut -d '"' -f2)
-    KEYCHAIN=" --keychain \"$DEFAULT_KEYCHAIN\""
-fi
-
-if [ -n "$USERNAME" ]; then
-    # We have new credentials. Store them in the keychain so we can use them.
-    ARGS="notarytool store-credentials \"$KEY_STORE\" --apple-id \"$USERNAME\" --password \"$PASSWORD\" --team-id \"$TEAM_ID\"$KEYCHAIN"
-    echo $ARGS | xargs xcrun
-fi
-
-echo "Sending notarization request"
-ARGS="notarytool submit \"package/build/$APPNAME.pkg\" --keychain-profile \"$KEY_STORE\" --wait$KEYCHAIN"
-echo $ARGS | xargs xcrun
-if [ $? -eq 0 ]; then
-    [ -n "$TEMP_KEYCHAIN" ] && security delete-keychain "$TEMP_KEYCHAIN"
-    xcrun stapler staple "package/build/$APPNAME.pkg"
-else
-    [ -n "$TEMP_KEYCHAIN" ] && security delete-keychain "$TEMP_KEYCHAIN"
-    echo "Error: Notarization failed"
-    exit 1
-fi
+./sign_app.sh "${SIGN_ARGS[@]}" "$APPNAME" "$BUNDLE_ID"

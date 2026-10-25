@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Signs JackTrip's own binaries inside the MSI, the MSI itself and the old version uninstaller.
+     Third-party files (Qt, VC runtime, etc.) are deliberately left unsigned. -->
+<artifact-configuration xmlns="http://signpath.io/artifact-configuration/v1">
+  <zip-file>
+    <msi-file path="JackTrip.msi">
+      <pe-file path="**/jacktrip.exe">
+        <authenticode-sign/>
+      </pe-file>
+      <pe-file path="**/x86_64-win/JackTrip.vst3">
+        <authenticode-sign/>
+      </pe-file>
+      <authenticode-sign/>
+    </msi-file>
+    <pe-file path="uninstall_old_jacktrip.exe">
+      <authenticode-sign/>
+    </pe-file>
+  </zip-file>
+</artifact-configuration>
