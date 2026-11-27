@@ -445,6 +445,13 @@ std::vector<uint8_t> WebTransportSession::buildSettingsFrame()
     settingsPayload.push_back(0x42);
     settingsPayload.push_back(0x01);  // value = 1 (enabled)
 
+    // SETTINGS_WEBTRANSPORT_MAX_SESSIONS (0xc671706a) = 1
+    // Newer drafts use this instead of the setting above; Safari needs it.
+    // Too large for a 4-byte varint, so top 2 bits = 0b11 (8 byte)
+    settingsPayload.insert(settingsPayload.end(),
+                           {0xc0, 0x00, 0x00, 0x00, 0xc6, 0x71, 0x70, 0x6a});
+    settingsPayload.push_back(0x01);  // value = 1 session
+
     // Frame type: 0x04 (SETTINGS)
     frame.push_back(0x04);
 
