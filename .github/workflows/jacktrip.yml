@@ -198,7 +198,7 @@ jobs:
 
           - name: macOS-x64-meson-clang-static
             release-name: macOS-x64-nogui
-            runs-on: macos-14
+            runs-on: macos-15
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: true
@@ -220,7 +220,7 @@ jobs:
 
           - name: macOS-x64-meson-clang-shared
             release-name: macOS-x64
-            runs-on: macos-14
+            runs-on: macos-15
             system-rtaudio: false
             bundled-rtaudio: true
             nogui: false
@@ -329,9 +329,11 @@ jobs:
           fi
           xcode-select -p
           xcrun --sdk macosx --show-sdk-path
-          # Remove broken clang v15 installed by homebrew on github runners
+          # Remove broken clang v15 installed by homebrew on older github runners (if present)
           which clang++
-          brew remove llvm\@15
+          if brew list --versions llvm@15 >/dev/null 2>&1; then
+            brew remove llvm@15
+          fi
           which clang++
           clang++ --version
       - name: install dependencies for Linux
@@ -383,7 +385,10 @@ jobs:
           tar -xf jack2.tar.gz
           sudo installer -pkg jack2-osx-1.9.16.pkg -target /
           sudo chmod a+rwx /opt
-          sudo spctl --master-disable
+          # macOS 15+ requires confirming this in System Settings, so it fails on newer runners;
+          # files fetched with curl/tar/unzip are not quarantined, so Gatekeeper does not block them
+          sudo spctl --master-disable || echo "spctl --master-disable not permitted on this macOS version"
+          spctl --status || true
           brew update
           brew install ninja
           if [[ "${{ matrix.system-rtaudio }}" == true ]]; then 
@@ -410,6 +415,16 @@ jobs:
         if: runner.os == 'Windows'
         shell: bash
         run: |
+          # retry choco installs, since the community feed intermittently returns 5xx errors
+          choco_install() {
+            local attempt
+            for attempt in 1 2 3 4 5; do
+              choco install "$@" && return 0
+              echo "choco install $* failed (attempt $attempt/5), retrying in $((attempt * 30))s..."
+              sleep $((attempt * 30))
+            done
+            return 1
+          }
           if [[ "${{ matrix.build-system }}" == "meson" ]]; then
             # hack to get rid of faulty patch.exe since it breaks meson diff_files
             rm -f c:/Strawberry/c/bin/patch.exe c:/Strawberry/perl/site/bin/patch.exe c:/Strawberry/perl/bin/patch.exe "C:/Program Files/Git/usr/bin/patch.exe"
@@ -419,14 +434,14 @@ jobs:
             patch --version
             # install older meson from choco which uses patch, since git is broken
             # see https://github.com/mesonbuild/meson/issues/12092 and https://github.com/mesonbuild/meson/pull/12248
-            choco install meson --version=1.1.1 --no-progress
+            choco_install meson --version=1.1.1 --no-progress
             echo "C:\Program Files\Meson" >> $GITHUB_PATH
             # disable gnu linker since it can conflict with MSVC
             rm -f /usr/bin/link.exe C:/msys64/usr/bin/link.EXE
           fi
-          choco install jack --version=1.9.17 --no-progress
-          choco install pkgconfiglite --no-progress --allow-empty-checksums
-          choco install pandoc --no-progress
+          choco_install jack --version=1.9.17 --no-progress
+          choco_install pkgconfiglite --no-progress --allow-empty-checksums
+          choco_install pandoc --no-progress
       - name: setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
         if: runner.os == 'Windows'
@@ -1027,7 +1042,7 @@ jobs:
   sign-macos:
     if: github.repository == 'jacktrip/jacktrip' && (github.event_name == 'push' || github.event_name == 'release' || github.event_name == 'workflow_dispatch') && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/'))
     needs: [build]
-    runs-on: macos-14
+    runs-on: macos-15
     name: Sign macOS installer
     environment: signing
     steps:
