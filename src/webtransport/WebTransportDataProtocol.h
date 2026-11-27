@@ -127,6 +127,7 @@ class WebTransportDataProtocol : public DataProtocol
         uint8_t* buffer;                  ///< Buffer to release
         WebTransportDataProtocol* owner;  ///< Protocol that owns the buffer
         QUIC_BUFFER quicBuffer;           ///< MsQuic buffer struct (must stay alive!)
+        int64_t acquiredNs;  ///< steady_clock time the buffer was handed to MsQuic
     };
 
     /** \brief Static callback for MsQuic to release buffer
@@ -134,6 +135,15 @@ class WebTransportDataProtocol : public DataProtocol
      * Called from WebTransportSession's MsQuic callback when datagram send completes
      */
     static void releaseSendContext(SendContext* ctx);
+
+    /** \brief Called from WebTransportSession's MsQuic callback on every datagram
+     * send state change
+     *
+     * Records debug statistics, and releases the buffer (releaseSendContext) on
+     * SENT or CANCELED — MsQuic no longer needs it then — rather than waiting for
+     * the datagram to be acknowledged or declared lost.
+     */
+    static void onSendStateChanged(SendContext* ctx, QUIC_DATAGRAM_SEND_STATE state);
 
    signals:
     /// \brief Signal emitted when session is connected
@@ -209,6 +219,46 @@ class WebTransportDataProtocol : public DataProtocol
     // Sequence number tracking
     uint16_t mLastSeqNum;
     bool mInitialState;
+
+    /// Datagrams handed to MsQuic whose final send-state indication has not yet
+    /// arrived. Each such indication carries a pointer into mSendContextPool, so
+    /// the destructor waits for this to reach zero.
+    std::atomic<int> mPendingSendIndications{0};
+
+    //--------------------------------------------------------------------------
+    // Debug statistics, logged once a second when mDebug is set (verbose mode or
+    // JACKTRIP_WEBTRANSPORT_DEBUG in the environment). Cumulative unless noted;
+    // the logger prints per-interval deltas.
+    //--------------------------------------------------------------------------
+    struct DebugStats {
+        // SENDER: sendPacketDirect outcomes
+        std::atomic<uint64_t> sendCalls{0};      ///< Audio packets offered to send
+        std::atomic<uint64_t> poolExhausted{0};  ///< Dropped: no free pool buffer
+        std::atomic<uint64_t> sendRejected{0};   ///< Dropped: sendDatagram() false
+        std::atomic<uint64_t> sendQueued{0};     ///< Handed to MsQuic
+        // SENDER: MsQuic send state changes
+        std::atomic<uint64_t> stateSent{0};
+        std::atomic<uint64_t> stateLostSuspect{0};
+        std::atomic<uint64_t> stateLostDiscarded{0};
+        std::atomic<uint64_t> stateAcked{0};
+        std::atomic<uint64_t> stateAckedSpurious{0};
+        std::atomic<uint64_t> stateCanceled{0};
+        // SENDER: time from DatagramSend() to buffer release (SENT/CANCELED)
+        std::atomic<uint64_t> holdNsSum{0};
+        std::atomic<uint64_t> holdCount{0};
+        std::atomic<uint64_t> holdNsMax{0};  ///< Per interval (reset by logger)
+        // SENDER: pool occupancy
+        std::atomic<int> inUse{0};
+        std::atomic<int> inUseMax{0};  ///< Per interval (reset by logger)
+        // RECEIVER: datagrams delivered to onDatagramReceived
+        std::atomic<uint64_t> recvDatagrams{0};
+    };
+    DebugStats mDbg;
+    bool mDebug{false};
+
+    // Print one line of per-interval debug stats (called from the run loops)
+    void logSenderDebug(double intervalSec);
+    void logReceiverDebug(double intervalSec);
 };
 
 #endif  // __WEBTRANSPORTDATAPROTOCOL_H__

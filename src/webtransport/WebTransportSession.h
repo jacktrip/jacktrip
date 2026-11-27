@@ -43,6 +43,7 @@
 #include <QObject>
 #include <QString>
 #include <QStringList>
+#include <atomic>
 #include <condition_variable>
 #include <functional>
 #include <memory>
@@ -53,7 +54,8 @@
 struct QUIC_API_TABLE;
 struct QUIC_HANDLE;
 typedef QUIC_HANDLE* HQUIC;
-struct QUIC_BUFFER;  // Forward declare for sendDatagram parameter
+struct QUIC_BUFFER;         // Forward declare for sendDatagram parameter
+struct QUIC_STATISTICS_V2;  // Forward declare for getConnectionStatistics
 
 /** \brief WebTransport Session wrapper using msquic
  *
@@ -184,6 +186,28 @@ class WebTransportSession : public QObject
      */
     size_t getMaxDatagramSize() const { return mMaxDatagramSize; }
 
+    /** \brief Why sendDatagram() returned false (debug counters, cumulative)
+     */
+    struct SendFailureCounters {
+        std::atomic<uint64_t> notConnected{0};  ///< Session/handles not ready
+        std::atomic<uint64_t> tooLarge{0};      ///< Prefix + payload > max datagram size
+        std::atomic<uint64_t> quicFailed{0};    ///< MsQuic DatagramSend() failed
+        std::atomic<uint32_t> lastQuicStatus{0};  ///< Status of the last such failure
+    };
+
+    /** \brief Debug counters for sendDatagram() failures
+     */
+    const SendFailureCounters& sendFailureCounters() const { return mSendFailures; }
+
+    /** \brief Snapshot of the QUIC connection's statistics (RTT, congestion, loss)
+     *
+     * Blocks while MsQuic services the request: call from a non-real-time thread
+     * only, and never from inside an MsQuic callback.
+     *
+     * \return true if \p stats was filled in
+     */
+    bool getConnectionStatistics(QUIC_STATISTICS_V2* stats) const;
+
     //--------------------------------------------------------------------------
     // Direct callback (bypasses Qt signals for audio path performance)
     //--------------------------------------------------------------------------
@@ -301,6 +325,7 @@ class WebTransportSession : public QObject
 
     // Datagram configuration
     size_t mMaxDatagramSize;
+    SendFailureCounters mSendFailures;
 
     // Direct callback for audio path (bypasses Qt signals)
     DatagramCallback mDatagramCallback;

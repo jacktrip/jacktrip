@@ -41,6 +41,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cstring>
+#include <iomanip>
 #include <iostream>
 
 #include "../JackTrip.h"
@@ -49,6 +50,33 @@
 using std::cerr;
 using std::cout;
 using std::endl;
+
+namespace
+{
+int64_t steadyNowNs()
+{
+    return std::chrono::duration_cast<std::chrono::nanoseconds>(
+               std::chrono::steady_clock::now().time_since_epoch())
+        .count();
+}
+
+template<typename T>
+void atomicMax(std::atomic<T>& target, T value)
+{
+    T prev = target.load(std::memory_order_relaxed);
+    while (prev < value
+           && !target.compare_exchange_weak(prev, value, std::memory_order_relaxed)) {}
+}
+
+// Per-interval delta of a cumulative counter; updates `prev` to the current value
+uint64_t takeDelta(const std::atomic<uint64_t>& counter, uint64_t& prev)
+{
+    uint64_t now   = counter.load(std::memory_order_relaxed);
+    uint64_t delta = now - prev;
+    prev           = now;
+    return delta;
+}
+}  // namespace
 
 //*******************************************************************************
 WebTransportDataProtocol::WebTransportDataProtocol(JackTrip* jacktrip,
@@ -119,6 +147,16 @@ WebTransportDataProtocol::~WebTransportDataProtocol()
         mJackTrip->setDirectSendCallback(nullptr);
     }
     stop();
+
+    // Buffers are released on SENT, but MsQuic still owes an ACKNOWLEDGED/LOST
+    // indication carrying a pointer into mSendContextPool for every datagram it
+    // sent. Wait for those (about one RTT) before the pool goes away, and for any
+    // buffer still in use.
+    for (int retries = 0;
+         mPendingSendIndications.load(std::memory_order_acquire) > 0 && retries < 100;
+         ++retries) {
+        QThread::msleep(10);
+    }
 
     // Clean up buffer pool
     for (size_t i = 0; i < BUFFER_POOL_SIZE; ++i) {
@@ -198,6 +236,8 @@ int WebTransportDataProtocol::acquirePoolBuffer()
                 expected, true, std::memory_order_acquire, std::memory_order_relaxed)) {
             mNextBufferIndex.store((index + 1) % BUFFER_POOL_SIZE,
                                    std::memory_order_relaxed);
+            int inUse = mDbg.inUse.fetch_add(1, std::memory_order_relaxed) + 1;
+            atomicMax(mDbg.inUseMax, inUse);
             return static_cast<int>(index);
         }
     }
@@ -212,6 +252,7 @@ void WebTransportDataProtocol::releasePoolBuffer(int index)
         return;
     }
     mBufferPool[index].inUse.store(false, std::memory_order_release);
+    mDbg.inUse.fetch_sub(1, std::memory_order_relaxed);
 }
 
 //*******************************************************************************
@@ -231,6 +272,66 @@ void WebTransportDataProtocol::releaseSendContext(SendContext* ctx)
 }
 
 //*******************************************************************************
+void WebTransportDataProtocol::onSendStateChanged(SendContext* ctx,
+                                                  QUIC_DATAGRAM_SEND_STATE state)
+{
+    if (!ctx || !ctx->owner) {
+        return;
+    }
+    WebTransportDataProtocol* owner = ctx->owner;
+    DebugStats& dbg                 = owner->mDbg;
+
+    switch (state) {
+    case QUIC_DATAGRAM_SEND_SENT:
+        dbg.stateSent.fetch_add(1, std::memory_order_relaxed);
+        break;
+    case QUIC_DATAGRAM_SEND_LOST_SUSPECT:
+        dbg.stateLostSuspect.fetch_add(1, std::memory_order_relaxed);
+        break;
+    case QUIC_DATAGRAM_SEND_LOST_DISCARDED:
+        dbg.stateLostDiscarded.fetch_add(1, std::memory_order_relaxed);
+        break;
+    case QUIC_DATAGRAM_SEND_ACKNOWLEDGED:
+        dbg.stateAcked.fetch_add(1, std::memory_order_relaxed);
+        break;
+    case QUIC_DATAGRAM_SEND_ACKNOWLEDGED_SPURIOUS:
+        dbg.stateAckedSpurious.fetch_add(1, std::memory_order_relaxed);
+        break;
+    case QUIC_DATAGRAM_SEND_CANCELED:
+        dbg.stateCanceled.fetch_add(1, std::memory_order_relaxed);
+        break;
+    default:
+        break;
+    }
+
+    // MsQuic copies the payload into the outgoing QUIC packet and frees its send
+    // request before indicating SENT (QuicDatagramCompleteSend), and never touches
+    // the app's buffer or QUIC_BUFFER again: lost datagrams are not retransmitted.
+    // So the pool buffer is free on SENT, or on CANCELED for a datagram that was
+    // never sent. Holding it until ACKNOWLEDGED/LOST turned the pool into a
+    // 16-packet in-flight window and capped sending at 16 / (RTT + peer ack
+    // delay) — ~125-225 packets/s against the 375 needed at 128 fpp / 48 kHz.
+    //
+    // The later ACKNOWLEDGED / LOST_* indications for a SENT datagram carry the
+    // same context pointer even though this slot may already hold a newer packet,
+    // so they must never release anything. They only count down the indications
+    // still owed (see mPendingSendIndications), which keeps `ctx` valid until
+    // MsQuic has delivered the last one.
+    if (state == QUIC_DATAGRAM_SEND_SENT || state == QUIC_DATAGRAM_SEND_CANCELED) {
+        if (ctx->acquiredNs > 0) {
+            uint64_t held = static_cast<uint64_t>(steadyNowNs() - ctx->acquiredNs);
+            dbg.holdNsSum.fetch_add(held, std::memory_order_relaxed);
+            dbg.holdCount.fetch_add(1, std::memory_order_relaxed);
+            atomicMax(dbg.holdNsMax, held);
+        }
+        releaseSendContext(ctx);
+    }
+    if (QUIC_DATAGRAM_SEND_STATE_IS_FINAL(state)) {
+        owner->mPendingSendIndications.fetch_sub(1, std::memory_order_release);
+    }
+}
+
+//*******************************************************************************
 void WebTransportDataProtocol::sendPacketDirect(const int8_t* audioPacket,
                                                 [[maybe_unused]] int audioPacketSize)
 {
@@ -244,11 +345,16 @@ void WebTransportDataProtocol::sendPacketDirect(const int8_t* audioPacket,
     }
 
     int fullPacketSize = mJackTrip->getSendPacketSizeInBytes();
+    mDbg.sendCalls.fetch_add(1, std::memory_order_relaxed);
 
     // Acquire buffer from pool (lock-free)
     int bufferIndex = acquirePoolBuffer();
     if (bufferIndex < 0) {
-        // No buffers available - skip this packet
+        // No buffers available - skip this packet, but still consume its sequence
+        // number so the peer sees the drop as a gap (and counts/conceals it)
+        // instead of a silently slower stream.
+        mDbg.poolExhausted.fetch_add(1, std::memory_order_relaxed);
+        mJackTrip->increaseSequenceNumber();
         return;
     }
 
@@ -278,19 +384,26 @@ void WebTransportDataProtocol::sendPacketDirect(const int8_t* audioPacket,
     mJackTrip->putHeaderInOutgoingPacket(fullPacket, nullptr);
 
     // Setup send context for cleanup
-    mSendContextPool[bufferIndex].buffer = buffer;
-    mSendContextPool[bufferIndex].owner  = this;
+    mSendContextPool[bufferIndex].buffer     = buffer;
+    mSendContextPool[bufferIndex].owner      = this;
+    mSendContextPool[bufferIndex].acquiredNs = steadyNowNs();
 
-    // Send the buffer - WebTransportSession will handle cleanup via callback
-    if (!mSession->sendDatagram(buffer, fullPacketSize,
-                                &mSendContextPool[bufferIndex].quicBuffer,
-                                &mSendContextPool[bufferIndex])) {
-        // Send failed - release buffer
+    // Send the buffer - WebTransportSession will handle cleanup via callback.
+    // Count the indications MsQuic will owe us before it can deliver any.
+    mPendingSendIndications.fetch_add(1, std::memory_order_relaxed);
+    if (mSession->sendDatagram(buffer, fullPacketSize,
+                               &mSendContextPool[bufferIndex].quicBuffer,
+                               &mSendContextPool[bufferIndex])) {
+        mDbg.sendQueued.fetch_add(1, std::memory_order_relaxed);
+    } else {
+        // Send failed - release buffer; no indications will arrive for it
+        mPendingSendIndications.fetch_sub(1, std::memory_order_relaxed);
+        mDbg.sendRejected.fetch_add(1, std::memory_order_relaxed);
         releasePoolBuffer(bufferIndex);
-        return;
     }
 
-    // Increment sequence number
+    // Advance the sequence number whether or not the send succeeded, so a
+    // dropped packet shows up at the peer as a gap
     mJackTrip->increaseSequenceNumber();
 }
 
@@ -309,6 +422,8 @@ void WebTransportDataProtocol::run()
         cerr << "WebTransportDataProtocol: ERROR - mSession is null!" << endl;
         return;
     }
+
+    mDebug = gVerboseFlag || qEnvironmentVariableIsSet("JACKTRIP_WEBTRANSPORT_DEBUG");
 
     // Setup audio packet buffer (without header)
     size_t audio_packet_size = getAudioPacketSizeInBites();
@@ -408,8 +523,18 @@ void WebTransportDataProtocol::runReceiver(int full_packet_size)
 
     // Main receive loop - packets are processed in onDatagramReceived callback
     // This thread just monitors for timeout conditions (like WebRTC)
+    auto lastLog = std::chrono::steady_clock::now();
     while (!mStopped && mSessionConnected) {
         QThread::msleep(10);
+
+        if (mDebug) {
+            auto now                            = std::chrono::steady_clock::now();
+            std::chrono::duration<double> since = now - lastLog;
+            if (since.count() >= 1.0) {
+                logReceiverDebug(since.count());
+                lastLog = now;
+            }
+        }
 
         // Increment time since last packet atomically
         int timeSinceLastPacket = mTimeSinceLastPacket.fetch_add(10) + 10;
@@ -445,8 +570,18 @@ void WebTransportDataProtocol::runSender(int full_packet_size)
 
     // Packets are sent directly from audio thread via sendPacketDirect()
     // This thread just monitors for stop condition
+    auto lastLog = std::chrono::steady_clock::now();
     while (!mStopped && mSessionConnected) {
         QThread::msleep(100);
+
+        if (mDebug) {
+            auto now                            = std::chrono::steady_clock::now();
+            std::chrono::duration<double> since = now - lastLog;
+            if (since.count() >= 1.0) {
+                logSenderDebug(since.count());
+                lastLog = now;
+            }
+        }
     }
 
     if (gVerboseFlag) {
@@ -462,11 +597,16 @@ void WebTransportDataProtocol::runSender(int full_packet_size)
         std::memset(buffer, 0xFF, mControlPacketSize);
 
         // Send twice for redundancy
-        mSendContextPool[bufferIndex].buffer = buffer;
-        mSendContextPool[bufferIndex].owner  = this;
-        mSession->sendDatagram(buffer, mControlPacketSize,
-                               &mSendContextPool[bufferIndex].quicBuffer,
-                               &mSendContextPool[bufferIndex]);
+        mSendContextPool[bufferIndex].buffer     = buffer;
+        mSendContextPool[bufferIndex].owner      = this;
+        mSendContextPool[bufferIndex].acquiredNs = 0;  // excluded from timing stats
+        mPendingSendIndications.fetch_add(1, std::memory_order_relaxed);
+        if (!mSession->sendDatagram(buffer, mControlPacketSize,
+                                    &mSendContextPool[bufferIndex].quicBuffer,
+                                    &mSendContextPool[bufferIndex])) {
+            mPendingSendIndications.fetch_sub(1, std::memory_order_relaxed);
+            releasePoolBuffer(bufferIndex);
+        }
 
         // Note: MsQuic will release the buffer via callback
         // For the second packet, we'd need another buffer or wait, but exit packets
@@ -643,6 +783,7 @@ void WebTransportDataProtocol::onDatagramReceived(const uint8_t* data, size_t le
 
     // Reset timeout counter atomically (audio packets only)
     mTimeSinceLastPacket.store(0);
+    mDbg.recvDatagrams.fetch_add(1, std::memory_order_relaxed);
 
     if (len < sizeof(DefaultHeaderStruct)) {
         return;
@@ -669,4 +810,108 @@ void WebTransportDataProtocol::onSessionClosed()
 
     // Stop the protocol
     mStopped = true;
+}
+
+//*******************************************************************************
+void WebTransportDataProtocol::logSenderDebug(double intervalSec)
+{
+    // Previous cumulative values, for per-interval deltas. Only this sender
+    // thread calls this, so plain members of a function-local struct suffice.
+    struct Prev {
+        uint64_t sendCalls, poolExhausted, sendRejected, sendQueued;
+        uint64_t sent, lostSuspect, lostDiscarded, acked, ackedSpurious, canceled;
+        uint64_t holdNs, holdCount;
+        uint64_t tooLarge, quicFailed, notConnected;
+        uint64_t quicSendPkts, quicSuspectLost, quicSpuriousLost, quicRecvDropped;
+        uint32_t quicCongestion;
+    };
+    thread_local Prev p{};
+
+    const uint64_t calls     = takeDelta(mDbg.sendCalls, p.sendCalls);
+    const uint64_t exhausted = takeDelta(mDbg.poolExhausted, p.poolExhausted);
+    const uint64_t rejected  = takeDelta(mDbg.sendRejected, p.sendRejected);
+    const uint64_t queued    = takeDelta(mDbg.sendQueued, p.sendQueued);
+    const uint64_t sent      = takeDelta(mDbg.stateSent, p.sent);
+    const uint64_t suspect   = takeDelta(mDbg.stateLostSuspect, p.lostSuspect);
+    const uint64_t discarded = takeDelta(mDbg.stateLostDiscarded, p.lostDiscarded);
+    const uint64_t acked     = takeDelta(mDbg.stateAcked, p.acked);
+    const uint64_t spurious  = takeDelta(mDbg.stateAckedSpurious, p.ackedSpurious);
+    const uint64_t canceled  = takeDelta(mDbg.stateCanceled, p.canceled);
+    const uint64_t holdNs    = takeDelta(mDbg.holdNsSum, p.holdNs);
+    const uint64_t holdN     = takeDelta(mDbg.holdCount, p.holdCount);
+    const uint64_t holdMaxNs = mDbg.holdNsMax.exchange(0, std::memory_order_relaxed);
+    const int inUseMax       = mDbg.inUseMax.exchange(
+        mDbg.inUse.load(std::memory_order_relaxed), std::memory_order_relaxed);
+
+    const auto& f           = mSession->sendFailureCounters();
+    const uint64_t tooLarge = takeDelta(f.tooLarge, p.tooLarge);
+    const uint64_t quicFail = takeDelta(f.quicFailed, p.quicFailed);
+    const uint64_t notConn  = takeDelta(f.notConnected, p.notConnected);
+
+    auto ms = [](uint64_t ns, uint64_t n) {
+        return n ? ns / 1e6 / n : 0.0;
+    };
+    auto rate = [intervalSec](uint64_t n) {
+        return n / intervalSec;
+    };
+
+    cout << std::fixed << std::setprecision(1) << "WebTransport["
+         << mSession->getClientName().toStdString() << "] send/s:"
+         << " offered=" << rate(calls) << " queued=" << rate(queued)
+         << " poolExhausted=" << rate(exhausted) << " rejected=" << rate(rejected)
+         << " (tooLarge=" << tooLarge << " quicFailed=" << quicFail
+         << " notConnected=" << notConn;
+    if (quicFail) {
+        cout << " lastStatus=0x" << std::hex << f.lastQuicStatus.load() << std::dec;
+    }
+    cout << ") | states: sent=" << sent << " lostSuspect=" << suspect
+         << " lostDiscarded=" << discarded << " acked=" << acked
+         << " ackedSpurious=" << spurious << " canceled=" << canceled
+         << " | pool: inUseMax=" << inUseMax << "/" << BUFFER_POOL_SIZE
+         << " holdAvg=" << std::setprecision(2) << ms(holdNs, holdN)
+         << "ms holdMax=" << holdMaxNs / 1e6 << "ms";
+
+    QUIC_STATISTICS_V2 q{};
+    if (mSession->getConnectionStatistics(&q)) {
+        const uint64_t qSent = q.SendTotalPackets - p.quicSendPkts;
+        const uint64_t qSusp = q.SendSuspectedLostPackets - p.quicSuspectLost;
+        const uint64_t qSpur = q.SendSpuriousLostPackets - p.quicSpuriousLost;
+        const uint64_t qDrop = q.RecvDroppedPackets - p.quicRecvDropped;
+        const uint32_t qCong = q.SendCongestionCount - p.quicCongestion;
+        p.quicSendPkts       = q.SendTotalPackets;
+        p.quicSuspectLost    = q.SendSuspectedLostPackets;
+        p.quicSpuriousLost   = q.SendSpuriousLostPackets;
+        p.quicRecvDropped    = q.RecvDroppedPackets;
+        p.quicCongestion     = q.SendCongestionCount;
+        cout << " | quic: rtt=" << q.Rtt / 1000.0 << "ms minRtt=" << q.MinRtt / 1000.0
+             << "ms rttVar=" << q.RttVariance / 1000.0
+             << "ms cwnd=" << q.SendCongestionWindow << " pkts/s=" << std::setprecision(1)
+             << rate(qSent) << " suspectLost=" << qSusp << " spuriousLost=" << qSpur
+             << " congestionEvents=" << qCong << " recvDropped=" << qDrop;
+    }
+    cout << endl;
+}
+
+//*******************************************************************************
+void WebTransportDataProtocol::logReceiverDebug(double intervalSec)
+{
+    struct Prev {
+        uint64_t datagrams;
+        uint32_t tot, lost, outOfOrder;
+    };
+    thread_local Prev p{};
+
+    const uint64_t datagrams = takeDelta(mDbg.recvDatagrams, p.datagrams);
+    const uint32_t tot       = mTotCount.load() - p.tot;
+    const uint32_t lost      = mLostCount.load() - p.lost;
+    const uint32_t ooo       = mOutOfOrderCount.load() - p.outOfOrder;
+    p.tot                    = mTotCount.load();
+    p.lost                   = mLostCount.load();
+    p.outOfOrder             = mOutOfOrderCount.load();
+
+    cout << std::fixed << std::setprecision(1) << "WebTransport["
+         << mSession->getClientName().toStdString() << "] recv/s:"
+         << " datagrams=" << datagrams / intervalSec
+         << " seqAdvance=" << tot / intervalSec << " lost=" << lost
+         << " outOfOrder=" << ooo << endl;
 }
