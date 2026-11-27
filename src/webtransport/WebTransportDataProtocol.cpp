@@ -120,6 +120,15 @@ WebTransportDataProtocol::~WebTransportDataProtocol()
     }
     stop();
 
+    // Buffers are released on SENT, but MsQuic still owes an ACKNOWLEDGED/LOST
+    // indication carrying a pointer into mSendContextPool for every datagram it
+    // sent. Wait for those (about one RTT) before the pool goes away.
+    for (int retries = 0;
+         mPendingSendIndications.load(std::memory_order_acquire) > 0 && retries < 100;
+         ++retries) {
+        QThread::msleep(10);
+    }
+
     // Clean up buffer pool
     for (size_t i = 0; i < BUFFER_POOL_SIZE; ++i) {
         if (mBufferPool[i].buffer) {
@@ -231,6 +240,37 @@ void WebTransportDataProtocol::releaseSendContext(SendContext* ctx)
 }
 
 //*******************************************************************************
+void WebTransportDataProtocol::onSendStateChanged(SendContext* ctx,
+                                                  QUIC_DATAGRAM_SEND_STATE state)
+{
+    if (!ctx || !ctx->owner) {
+        return;
+    }
+    WebTransportDataProtocol* owner = ctx->owner;
+
+    // MsQuic copies the payload into the outgoing QUIC packet and frees its send
+    // request before indicating SENT (QuicDatagramCompleteSend), and never touches
+    // the app's buffer or QUIC_BUFFER again: lost datagrams are not retransmitted.
+    // So the pool buffer is free on SENT, or on CANCELED for a datagram that was
+    // never sent. Holding it until ACKNOWLEDGED/LOST turned the pool into a
+    // BUFFER_POOL_SIZE-packet in-flight window and capped sending at
+    // BUFFER_POOL_SIZE / (RTT + peer ack delay) — ~125-225 packets/s on a 40-130 ms
+    // path, against the 375 needed at 128 fpp / 48 kHz.
+    //
+    // The later ACKNOWLEDGED / LOST_* indications for a SENT datagram carry the
+    // same context pointer even though this slot may already hold a newer packet,
+    // so they must never release anything. They only count down the indications
+    // still owed (mPendingSendIndications), which keeps `ctx` valid until MsQuic
+    // has delivered the last one.
+    if (state == QUIC_DATAGRAM_SEND_SENT || state == QUIC_DATAGRAM_SEND_CANCELED) {
+        releaseSendContext(ctx);
+    }
+    if (QUIC_DATAGRAM_SEND_STATE_IS_FINAL(state)) {
+        owner->mPendingSendIndications.fetch_sub(1, std::memory_order_release);
+    }
+}
+
+//*******************************************************************************
 void WebTransportDataProtocol::sendPacketDirect(const int8_t* audioPacket,
                                                 [[maybe_unused]] int audioPacketSize)
 {
@@ -248,7 +288,10 @@ void WebTransportDataProtocol::sendPacketDirect(const int8_t* audioPacket,
     // Acquire buffer from pool (lock-free)
     int bufferIndex = acquirePoolBuffer();
     if (bufferIndex < 0) {
-        // No buffers available - skip this packet
+        // No buffers available - skip this packet, but still consume its sequence
+        // number so the peer sees the drop as a gap (and counts/conceals it)
+        // instead of a silently slower stream.
+        mJackTrip->increaseSequenceNumber();
         return;
     }
 
@@ -281,16 +324,19 @@ void WebTransportDataProtocol::sendPacketDirect(const int8_t* audioPacket,
     mSendContextPool[bufferIndex].buffer = buffer;
     mSendContextPool[bufferIndex].owner  = this;
 
-    // Send the buffer - WebTransportSession will handle cleanup via callback
+    // Send the buffer - WebTransportSession will handle cleanup via callback.
+    // Count the indications MsQuic will owe us before it can deliver any.
+    mPendingSendIndications.fetch_add(1, std::memory_order_relaxed);
     if (!mSession->sendDatagram(buffer, fullPacketSize,
                                 &mSendContextPool[bufferIndex].quicBuffer,
                                 &mSendContextPool[bufferIndex])) {
-        // Send failed - release buffer
+        // Send failed - release buffer; no indications will arrive for it
+        mPendingSendIndications.fetch_sub(1, std::memory_order_relaxed);
         releasePoolBuffer(bufferIndex);
-        return;
     }
 
-    // Increment sequence number
+    // Advance the sequence number whether or not the send succeeded, so a
+    // dropped packet shows up at the peer as a gap
     mJackTrip->increaseSequenceNumber();
 }
 
@@ -464,9 +510,13 @@ void WebTransportDataProtocol::runSender(int full_packet_size)
         // Send twice for redundancy
         mSendContextPool[bufferIndex].buffer = buffer;
         mSendContextPool[bufferIndex].owner  = this;
-        mSession->sendDatagram(buffer, mControlPacketSize,
-                               &mSendContextPool[bufferIndex].quicBuffer,
-                               &mSendContextPool[bufferIndex]);
+        mPendingSendIndications.fetch_add(1, std::memory_order_relaxed);
+        if (!mSession->sendDatagram(buffer, mControlPacketSize,
+                                    &mSendContextPool[bufferIndex].quicBuffer,
+                                    &mSendContextPool[bufferIndex])) {
+            mPendingSendIndications.fetch_sub(1, std::memory_order_relaxed);
+            releasePoolBuffer(bufferIndex);
+        }
 
         // Note: MsQuic will release the buffer via callback
         // For the second packet, we'd need another buffer or wait, but exit packets

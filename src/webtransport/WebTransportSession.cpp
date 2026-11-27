@@ -814,18 +814,15 @@ unsigned int WebTransportSession::handleConnectionEvent(void* eventPtr)
         break;
 
     case QUIC_CONNECTION_EVENT_DATAGRAM_SEND_STATE_CHANGED:
-        // Datagram send state changed - only release buffer on final states
-        // States: 0=Sent, 1=LostSuspect, 2=LostDiscarded, 3=Acknowledged,
-        //         4=AcknowledgedSpurious, 5=Canceled
-        // Final states are >= 2 (LostDiscarded, Acknowledged, AcknowledgedSpurious,
-        // Canceled)
-        if (event->DATAGRAM_SEND_STATE_CHANGED.State
-            >= QUIC_DATAGRAM_SEND_LOST_DISCARDED) {
+        // Forward every state: the protocol releases the pool buffer on SENT (or
+        // CANCELED), and tracks the final ACKNOWLEDGED/LOST indications that still
+        // carry its context pointer. See WebTransportDataProtocol::onSendStateChanged.
+        {
             void* ctx = event->DATAGRAM_SEND_STATE_CHANGED.ClientContext;
             if (ctx && reinterpret_cast<uintptr_t>(ctx) > 0x10000) {
-                // This is a SendContext from the pool - release it
-                WebTransportDataProtocol::releaseSendContext(
-                    static_cast<WebTransportDataProtocol::SendContext*>(ctx));
+                WebTransportDataProtocol::onSendStateChanged(
+                    static_cast<WebTransportDataProtocol::SendContext*>(ctx),
+                    event->DATAGRAM_SEND_STATE_CHANGED.State);
             }
         }
         break;

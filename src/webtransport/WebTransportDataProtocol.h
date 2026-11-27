@@ -135,6 +135,15 @@ class WebTransportDataProtocol : public DataProtocol
      */
     static void releaseSendContext(SendContext* ctx);
 
+    /** \brief Called from WebTransportSession's MsQuic callback on every datagram
+     * send state change
+     *
+     * Releases the buffer (releaseSendContext) on SENT or CANCELED — MsQuic no
+     * longer needs it then — rather than waiting for the datagram to be
+     * acknowledged or declared lost.
+     */
+    static void onSendStateChanged(SendContext* ctx, QUIC_DATAGRAM_SEND_STATE state);
+
    signals:
     /// \brief Signal emitted when session is connected
     void signalSessionConnected();
@@ -209,6 +218,11 @@ class WebTransportDataProtocol : public DataProtocol
     // Sequence number tracking
     uint16_t mLastSeqNum;
     bool mInitialState;
+
+    /// Datagrams handed to MsQuic whose final send-state indication has not yet
+    /// arrived. Each such indication carries a pointer into mSendContextPool, so
+    /// the destructor waits for this to reach zero.
+    std::atomic<int> mPendingSendIndications{0};
 };
 
 #endif  // __WEBTRANSPORTDATAPROTOCOL_H__
